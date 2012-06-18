@@ -4,7 +4,6 @@
 #include <string>
 #include <iostream>
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // Class Usage :
 //  E14MapReader* map = new MapReader("SumupFile-ROOTfile")
 //  map->Add("ModuleName: ex> Csi")
@@ -13,7 +12,6 @@
 //  int CsiMap[4096][3]; and other modules ... // [0]:crate, [1]:FADC, [2]:channel; 
 //  int nCsiMod = map->CopyCFCtoMap(CsiMap);
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 class E14MapReader{
  public:
@@ -38,5 +36,7 @@ class E14MapReader{
   bool GetCFC(const char*, int, int& , int&, int& );
   int  FindModuleNumber( const char* );
   int  GetNmodule(){ return mNmodule; }
-  int  CopyCFCtoMap( const char*,int chmap[4096][3] );
+  int  CopyCFCtoMap( int, int[4096][3]);
+  int  CopyCFCtoMap( const char*,int[4096][3] );
+  const char* GetModuleName( int );
 };
