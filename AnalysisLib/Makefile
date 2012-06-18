@@ -32,10 +32,11 @@ CXXFLAGS    += $(shell $(ROOTSYS)/bin/root-config --cflags)
 CXXFLAGS    += -O2 -g -fmessage-length=0
 
 #LIBS        += -L$(BOOSTDIR)/lib
-LIBS        += -L$(CLHEP_BASE_DIR)/lib
+LIBS        += -L$(CLHEP_BASE_DIR)/lib -lCLHEP
 LIBS        += -L$(G4INSTALL)/lib
 LIBS        += -L$(E14_TOP_DIR)/lib/so
-LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lSpectrum -lm 
+LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lSpectrum -lm -lNew
+LIBS        += -lklong -lpi0 -lgamma -lrec2g -lgnana -lE14Fsim -lcsimap -lcluster -lGsimTools -lGsimPersistency
 
 #LIBS -- Gsim -- 
 
@@ -62,9 +63,8 @@ LINK_CXX    := $(CXX)
 TARGET_SRC   = $(wildcard *.cc)
 TARGET_BIN   = $(TARGET_SRC:%.cc=bin/%)
 TARGET_OBJS  = $(TARGET_SRC:%.cc=tmp/%.o)
-
-all: rootDict makelib
-
+TARGET       = $(TARGET_SRC:%.cc=%)
+all: rootDict makelib 
 
 makelib: $(CXX_OBJECTS)
 	@ echo $(TARGET_BIN)
@@ -86,6 +86,10 @@ ifneq "$(shell ls ./include/*LinkDef.h 2>/dev/null)" ""
 	done;
 	@ echo End making rootdicts
 endif
+
+#bin/%: tmp/%.o $(CXX_OBJECTS)
+#	@ echo COMPILE
+#	$(CXX) -o $@ $^ $(filter-out -fPIC, $(CXXFLAGS)) $(CXX_DICTSRC) $(INCLUDES) $(LIBS)
 
 tmp/%.o: src/%.c
 	@ [ -d ./tmp ] || mkdir -p ./tmp
