@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
 
 std::string sumFileDir;
 std::string convFileDir;
