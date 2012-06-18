@@ -6,7 +6,7 @@ unsigned int GetEnvironment(){
   convFileDir = std::getenv("CONVFILEDIR");
   rawFileDir  = std::getenv("RAWFILEDIR");
   expcalFileDir  = std::getenv("EXPCALFILEDIR");
-  simcalFileDir  = std::getenv("SIMCALFILEDIR"):
+  simcalFileDir  = std::getenv("SIMCALFILEDIR");
   if( sumFileDir.size() == 0){
     std::cerr << "There is no Definition : SUMUPFILEDIR" << std::endl;
     Flag |= 1;
