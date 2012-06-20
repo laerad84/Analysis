@@ -20,9 +20,9 @@ struct moduleData_t {
 
 static const short E14_NCsI  = 2716;
 static const short E14_NCC03 = 32;
-static const short E14_CV    = 10;
-static const short E14_Laser = 5;
-static const short E14_Cosmic= 20;
-static const short E14_OEV   = 44;
-
+static const short E14_NCV    = 10;
+static const short E14_NLaser = 5;
+static const short E14_NCosmic= 20;
+static const short E14_NOEV   = 44;
+static const short E14_NEtc   = 40;
 #endif /* GENERALTYPES_H_ */

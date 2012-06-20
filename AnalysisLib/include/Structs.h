@@ -1,5 +1,6 @@
 #ifndef CALIBRATION_STRUCTS__H__
 #define CALIBRATION_STRUCTS__H__
+#include <string>
 
 struct CalibrationData {
   int FlagKL_prefit;
@@ -18,5 +19,13 @@ struct CalibrationData {
   double nCalibrated;
 
 };
+
+struct MapStruct {
+  int modID;
+  int nMod;
+  int Map[4096][3];
+  std::string name;
+};
+
 
 #endif //CALIBRATION_STRUCTS__H__

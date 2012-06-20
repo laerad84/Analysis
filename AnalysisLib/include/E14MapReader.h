@@ -3,6 +3,8 @@
 #include "TFile.h"
 #include <string>
 #include <iostream>
+
+#include "Structs.h"
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Class Usage :
 //  E14MapReader* map = new MapReader("SumupFile-ROOTfile")
@@ -38,5 +40,7 @@ class E14MapReader{
   int  GetNmodule(){ return mNmodule; }
   int  CopyCFCtoMap( int, int[4096][3]);
   int  CopyCFCtoMap( const char*,int[4096][3] );
+  bool CopyMap( int, struct MapStruct );
   const char* GetModuleName( int );
+  
 };

@@ -17,21 +17,16 @@ void E14MapReader::Init(){
 }
 
 bool E14MapReader::Add( const char* moduleName ){
-  std::cout<< __FUNCTION__ << ": " << moduleName<< std::endl;
   std::string newModulename = moduleName; 
   if( !bAdd ){ return false; }
-  std::cout<< "Test" << std::endl;
   if( mNmodule >= nMaxModule || mNmodule < 0 ){bAdd = false; return false;}
-  std::cout<< "Test" << std::endl;
   if( bSet ){return false; }
-  std::cout<< "Test" << std::endl;
   for( int i = 0; i< mNmodule ;i++){
     if( newModulename.compare( module[i]->GetName() ) == 0 ){ return false; }
   }
-  std::cout<<__FUNCTION__ <<" : Make module : " <<  moduleName << std::endl;
+  std::cout<<"Make module : " <<  moduleName << " : " << mNmodule << std::endl;
   module[mNmodule] = new E14ModuleMap(moduleName, mtree);
   mNmodule++;
-  std::cout<<__FUNCTION__ <<  mNmodule << std::endl;
   return true;
 }
 
@@ -39,7 +34,7 @@ bool E14MapReader::SetMap(){
   if( bSet ) { return false; } 
   for( int i = 0; i< mNmodule ; i++){
     module[i]->GetEntry(0);
-    std::cout<< module[i]->GetAllNum() << std::endl;
+    //std::cout<< module[i]->GetAllNum() << std::endl;
   }
   bSet = true; 
   return bSet;
@@ -70,6 +65,20 @@ int E14MapReader::FindModuleNumber( const char* moduleName ){
   }
   return -1;
 }
+
+int E14MapReader::CopyCFCtoMap( int modid , int chmap[4096][3] ){
+  if( !VerifyModuleID( modid )){ return 0;}
+  for( int i = 0; i< module[modid]->GetAllNum() ; i++){
+    module[modid]->GetCFC( i, chmap[i][0], chmap[i][1], chmap[i][2]);
+  }
+  return module[modid]->GetAllNum();
+}
+
+bool E14MapReader::CopyMap( int modid, struct MapStruct map){
+  map.nMod = CopyCFCtoMap( modid , map.Map );
+  map.name = GetModuleName( modid );
+  return true;
+}
 int E14MapReader::CopyCFCtoMap(  const char* moduleName, int chmap[4096][3]){  
   int modid = FindModuleNumber( moduleName );
   if( !VerifyModuleID( modid )){ return 0;}
@@ -77,6 +86,10 @@ int E14MapReader::CopyCFCtoMap(  const char* moduleName, int chmap[4096][3]){
     module[modid]->GetCFC( i, chmap[i][0], chmap[i][1], chmap[i][2]);
   }
   return module[modid]->GetAllNum();
+}
+
+const char* E14MapReader::GetModuleName( int modid ){  
+  return (module[modid]->GetName()).c_str();
 }
 
   
