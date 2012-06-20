@@ -1,4 +1,13 @@
 #include "Environment.h"
+void PrintEnvironment(){
+
+  std::cout << "SUMUPFILEDIR :" << sumFileDir    << std::endl;
+  std::cout << "CONVFILEDIR  :" << convFileDir   << std::endl;
+  std::cout << "RAWFILEDIR   :" << rawFileDir    << std::endl;
+  std::cout << "EXPCALFILEDIR:" << expcalFileDir << std::endl;
+  std::cout << "SIMCALFILEDIR:" << simcalFileDir << std::endl;
+  return;
+}
 
 unsigned int GetEnvironment(){
   unsigned int Flag = 0;  
@@ -29,3 +38,4 @@ unsigned int GetEnvironment(){
   }
   return Flag;
 }
+

@@ -10,6 +10,8 @@ std::string convFileDir;
 std::string rawFileDir;
 std::string expcalFileDir;
 std::string simcalFileDir;
+
+void         PrintEnvironment();
 unsigned int GetEnvironment();
 
 #endif

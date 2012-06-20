@@ -1,5 +1,7 @@
+#PACKAGENAME
+PACKAGE=Conversion
+
 #OS_DEFS SOEXE,SOFLAGS,DEFS
-PACKAGE=$(shell basename `pwd`)
 UNAME= $(shell uname)
 ifeq ($(UNAME), Linux)
 SOFLAGS     = -shared
@@ -14,12 +16,12 @@ endif
 #AR           = ar
 #LD_SHARED    = g++
 
-CXX	     = g++
+CXX 		 = g++
 CC           = gcc
 ROOTCINT     = $(ROOTSYS)/bin/rootcint
 DEFS		+= -DCERNLIB_TYPE -DCERNLIB_LINUX -DCERNLIB_UNIX -DHEP_SHORT_NAMES
 
-CXX_SOURCES  = $(wildcard src/*.cc)
+CXX_SOURCES	 = $(wildcard src/*.cc)
 CXX_DICT     = $(wildcard include/*LinkDef.h)
 CXX_DICTSRC  = $(CXX_DICT:include/%LinkDef.h=src/%Dict.cxx)
 CXX_OBJECTS  = $(filter-out %Dict.o,$(CXX_SOURCES:src/%.cc=tmp/%.o))
@@ -29,14 +31,17 @@ CXXFLAGS     = -fPIC -Wall
 CXXFLAGS    += $(shell $(ROOTSYS)/bin/root-config --cflags)
 CXXFLAGS    += -O2 -g -fmessage-length=0
 
-
-LIBS        += -L$(BOOSTDIR)/lib
-LIBS        += -L$(CLHEP_BASE_DIR)/lib -lCLHEP
-LIBS        += -L$(G4INSTALL)/lib 
+#LIBS        += -L$(BOOSTDIR)/lib
+LIBS        += -L$(CLHEP_BASE_DIR)/lib
+LIBS        += -L$(G4INSTALL)/lib
 LIBS        += -L$(E14_TOP_DIR)/lib/so
-LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lEG
-LIBS        += -lGsimData -lklong -lpi0 -lgamma -lrec2g -lgnana -lE14Fsim -lcsimap -lcluster -lGsimTools -lGsimPersistency
-LIBS        += -L$(ANALYSISLIB)/lib -lAnalysisLib
+LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lSpectrum -lm 
+
+#LIBS -- Gsim -- 
+
+#LIBS        += -lGsimData
+#LIBS        += -lgamma -lcluster -lklong -lrec2g -lgnana -lpi0 
+#LIBS        += -lE14Fsim -lcsimap	 -lGsimKernel 
 
 INCLUDEDIR  += .  ./include 
 INCLUDEDIR  += $(ROOTSYS)/include 
@@ -44,12 +49,11 @@ INCLUDEDIR  += $(BOOSTDIR)/include
 INCLUDEDIR  += $(CLHEP_BASE_DIR)/include
 INCLUDEDIR  += $(G4INSTALL)/include
 INCLUDEDIR  += $(E14_TOP_DIR)/include 
-INCLUDEDIR  += $(ANALYSISLIB)/include
 
 INCLUDES     = $(INCLUDEDIR:%=-I%)
 
 COMPILE_CC  := $(CC)  -c $(DEFS) $(INCLUDES) $(CFLAGS)
-COMPILE_CXX := $(CXX) -c $(DEFS) $(INCLUDES) $(CXXFLAGS)  
+COMPILE_CXX := $(CXX) -c $(DEFS) $(INCLUDES) $(CXXFLAGS)  -fopenmp
 DEPEND_CC   := $(CC) -MM $(DEFS) $(INCLUDES) $(filter-out -fPIC, $(CFLAGS))
 DEPEND_CXX  := $(CC) -MM $(DEFS) $(INCLUDES) $(filter-out -fPIC, $(CXXFLAGS))
 LINK_CC     := $(CC)
@@ -57,21 +61,25 @@ LINK_CXX    := $(CXX)
 
 TARGET_SRC   = $(wildcard *.cc)
 TARGET_BIN   = $(TARGET_SRC:%.cc=bin/%)
-#TARGET_OBJS  = $(TARGET_SRC:%.cc=tmp/%.o)
+TARGET_OBJS  = $(TARGET_SRC:%.cc=tmp/%.o)
 
+all: rootDict makelib readmap
 
-all: rootDict makelib target
+readmap: tmp/readmap.o $(CXX_OBJECTS)
+	@ echo making $(@F)
+	@ [ -d ./bin ] || mkdir -p ./bin
+	@ echo COMPILE $(@F)
+	$(CXX) -o $@ $^ $(filter-out -fPIC, $(CXXFLAGS)) $(CXX_DICTSRC) $(INCLUDES) $(LIBS)
 
-target: $(TARGET_BIN)
-	@ basename `pwd`
 makelib: $(CXX_OBJECTS)
+	@ echo $(TARGET_BIN)
 	@ echo $(ROOTSYS)
 	@ echo $(CXX_OBJECTS)	
 	@[ -d ./lib ] || mkdir -p ./lib
 	$(CXX) $(SOFLAGS) -o lib/lib$(PACKAGE)$(LIB_EXT) $(CXX_OBJECTS) $(CXX_DICTSRC) $(CXXFLAGS) $(INCLUDES) $(LIBS)
 ifeq "$(LIB_EXT)" ".dylib"
 	rm -f $(PWD)/lib/*.so	
-	ln -s $(PWD)/lib/libConvLIB.dylib $(PWD)/lib/libConvLIB.so
+	ln -s $(PWD)/lib/lib$(PACKAGE).dylib $(PWD)/lib/lib$(PACKAGE).so
 endif
 
 rootDict:
@@ -83,15 +91,6 @@ ifneq "$(shell ls ./include/*LinkDef.h 2>/dev/null)" ""
 	done;
 	@ echo End making rootdicts
 endif
-
-bin/%: tmp/%.o $(CXX_OBJECTS)
-	@ echo making $(@F)
-	@ [ -d ./bin ] || mkdir -p ./bin
-	@ echo "##########################################################"	
-	@ echo COMPILE $(@F)		
-	@ echo "##########################################################"
-	$(CXX) -o $@ $^ $(filter-out -fPIC,$(CXXFLAGS)) $(CXX_DICTSRC) $(INCLUDES) $(LIBS)
-	@ echo "##########################################################"
 
 tmp/%.o: src/%.c
 	@ [ -d ./tmp ] || mkdir -p ./tmp
@@ -113,7 +112,6 @@ tmp/%.d: src/%.cc
 	@ echo making dependencies of $(<F)
 	@ $(SHELL) -ec '$(DEPEND_CXX) $< | sed -e "s/$*\.o[ :]*/tmp\/$(@F) tmp\/&/g" > $@'
 
-
 tmp/%.o: %.cc
 	@ echo $(INCLUDEDIR)
 	@ [ -d ./tmp ] || mkdir -p ./tmp
@@ -125,9 +123,6 @@ tmp/%.d: %.cc
 	@ echo making dependencies of $(@F)
 	@ $(SHELL) -ec '$(DEPEND_CXX) $< | sed -e "s/$*\.o[ :]*/tmp\/$(@F) tmp\/&/g" > $@'
 
-
-
-
 .PHONY: clean
 clean:
 	rm -f $(TARGET_BIN)
@@ -136,3 +131,4 @@ clean:
 	rm -f ./tmp/*.d
 	rm -f ./tmp/*.o
 	rm -f ./src/*Dict.*
+

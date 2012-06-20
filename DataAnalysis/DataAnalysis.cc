@@ -24,6 +24,7 @@
 #include "TCanvas.h"
 
 #include "WaveformFitter.h"
+#include "Environment.h"
 
 const int nCrate = 11;
 
@@ -31,6 +32,10 @@ int  main(int argc,char** argv)
 {
   
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);
+  int rtn = PrintEnvironment();
+  unsigned int rst = GetEnvironment();
+  std::cout << rst << std::endl;
+
   TGraph* gr[E14_NCsI];
 
   for( int i = 0; i< E14_NCsI ; ++i){
@@ -38,21 +43,24 @@ int  main(int argc,char** argv)
     gr[i]->SetMarkerStyle(5);
     gr[i]->SetNameTitle(Form("CH%04d",i),Form("CH%04d",i));
   }
-  
+
+  int runNumber = 4502;
   E14IDHandler* handler = new E14IDHandler();  
   E14ConvReader* conv[nCrate];  
   long nentries;
-
+  
   for( int icrate = 0 ;icrate < nCrate; ++icrate){    
     conv[icrate] = new E14ConvReader();
     conv[icrate]->SetBranchAddress();
-    conv[icrate]->AddFile(Form("pi0run/conv_data/crate%d/run4502_conv.root",icrate));
+    conv[icrate]->AddFile(Form("%s/crate%d/run%d_conv.root",convFileDir.c_str(),icrate,runNumber));
     nentries = conv[icrate]->GetChainEntries();
     std::cout<< nentries << std::endl;
     std::cout<< icrate << std::endl;    
   }
+
   DEBUGOUT();
   conv[3]->GetChainEntry(0);
   DEBUGOUT();
   return 0;
+
 }
