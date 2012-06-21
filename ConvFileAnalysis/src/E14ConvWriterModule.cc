@@ -1,23 +1,24 @@
-#include "E14ConvWriterModule.h"
+#include "ConvFileAnalysis/E14ConvWriterModule.h"
 
-E14ConvWriterModule::E14ConvWriterModule( TTree* otr, char* name ){
+E14ConvWriterModule::E14ConvWriterModule( TTree* tr, char* name ){
   strcpy(this->m_DetectorName, name );
   std::cout<< m_DetectorName << std::endl; 
-  this->m_OutputTree = otr;
+  this->m_Tree = tr;
   this->Branch();  
 }
 
-E14ConvWriterModule::E14ConvWriterModule(){
+E14ConvWriterModule::~E14ConvWriterModule(){
   ;  
 }
-Bool_t E14ConvWriterModule::InitData(){
+
+bool E14ConvWriterModule::InitData(){
   m_nDigi = 0;
   for( int i = 0; i< 4096; i++){
     m_ID[i]        = -1;
     m_Pedestal[i]  = 0;
     m_Signal[i]    = 0;
     m_Timing[i]    = -9999;
-    m_HHTimging[i] = -9999;
+    m_HHTiming[i]  = -9999;
     m_ParA[i]      = -9999;
     m_ParB[i]      = -9999;
     m_Fit[i]       = -9999;
@@ -25,7 +26,7 @@ Bool_t E14ConvWriterModule::InitData(){
   return true;
 }
 
-Bool_t E14ConvWriterModule::SetBranchAddress(){
+bool E14ConvWriterModule::SetBranchAddress(){
   m_Tree->SetBranchAddress(Form("%sNumber"  ,m_DetectorName),&m_nDigi);
   m_Tree->SetBranchAddress(Form("%sID"      ,m_DetectorName),m_ID);
   m_Tree->SetBranchAddress(Form("%sPedestal",m_DetectorName),m_Pedestal);
@@ -38,7 +39,7 @@ Bool_t E14ConvWriterModule::SetBranchAddress(){
   return kTRUE;  
 }
 
-Bool_t E14ConvWriterModule::Branch(){
+bool E14ConvWriterModule::Branch(){
   m_Tree->Branch(Form("%sNumber"  ,m_DetectorName),&m_nDigi  ,
 		 Form("%sNumber/I"            ,m_DetectorName));
   m_Tree->Branch(Form("%sID"      ,m_DetectorName),m_ID      ,
@@ -60,4 +61,7 @@ Bool_t E14ConvWriterModule::Branch(){
   return kTRUE;
 }
 
-
+bool E14ConvWriterModule::Close(){
+  m_Tree->Write();
+  return true;
+}

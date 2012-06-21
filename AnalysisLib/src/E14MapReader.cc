@@ -8,7 +8,12 @@ E14MapReader::E14MapReader( const char* filename ){
 }
 
 E14MapReader::~E14MapReader(){
-
+  /*
+  delete mtree;
+  delete mfile;
+  mtree=NULL;
+  mfile=NULL;
+  */
 }
 
 void E14MapReader::Init(){
@@ -74,7 +79,7 @@ int E14MapReader::CopyCFCtoMap( int modid , int chmap[4096][3] ){
   return module[modid]->GetAllNum();
 }
 
-bool E14MapReader::CopyMap( int modid, struct MapStruct map){
+bool E14MapReader::CopyMap( int modid, struct MapStruct& map){
   map.nMod = CopyCFCtoMap( modid , map.Map );
   map.name = GetModuleName( modid );
   return true;

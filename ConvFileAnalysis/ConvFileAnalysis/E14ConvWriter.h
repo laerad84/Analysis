@@ -6,36 +6,37 @@
 #include <iostream>
 #include <fstream>
 
+#include "TTree.h"
 #include "TGraph.h"
 #include "GeneralTypes.h"
 #include "E14MapReader.h"
 #include "Structs.h"
+#include "E14ConvWriterModule.h"
+
 
 class E14ConvWriter {
  private:
-  static const nMaxModule = 32; 
+  static const int nMaxModule = 32; 
   bool bInitialize;    
   TTree* m_tr;
-  TFile* m_tf;
   int m_nModule;
   std::string m_mapFilename;
-  std::string m_outFilename;
-
- public:
-  E14MapReader* map;
-  struct MapStruct ModMap[32];   
-
-  E14ConvWriter(char*,TFile*);
-  ~E14ConvWriter();
-
-  bool  InitMap();
-  bool  Branch(char*);
-  bool  MakeBranchAll();
-  bool  OpenMapFile();
-  bool  ReadMap();
-  bool  Write();
   
-
+ public:
+  E14MapReader*        map;
+  struct MapStruct     ModMap[32];   
+  E14ConvWriterModule* mod[32];
+  
+  E14ConvWriter( char* , TTree* );
+  ~E14ConvWriter();
+  
+  bool  AddModule(char*);
+  bool  SetMap();
+  bool  Set();
+  int   GetNmodule();
+  bool  Branch();
+  bool  SetBranchAddress();  
+  bool  InitData();
 };
 
 #endif

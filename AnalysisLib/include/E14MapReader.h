@@ -1,3 +1,6 @@
+#ifndef E14MAPREADER__H__
+#define E14MAPREADER__H__
+
 #include "E14ModuleMap.h"
 #include "TTree.h"
 #include "TFile.h"
@@ -37,10 +40,11 @@ class E14MapReader{
   bool VerifyModuleCHID(int ,int );
   bool GetCFC(const char*, int, int& , int&, int& );
   int  FindModuleNumber( const char* );
-  int  GetNmodule(){ return mNmodule; }
+  int  GetNmodule() const { return mNmodule; }
   int  CopyCFCtoMap( int, int[4096][3]);
   int  CopyCFCtoMap( const char*,int[4096][3] );
-  bool CopyMap( int, struct MapStruct );
-  const char* GetModuleName( int );
-  
+  bool CopyMap( int, struct MapStruct& );
+  const char* GetModuleName( int );  
 };
+
+#endif

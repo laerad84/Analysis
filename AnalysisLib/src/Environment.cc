@@ -7,15 +7,25 @@ void PrintEnvironment(){
   std::cout << "EXPCALFILEDIR:" << expcalFileDir << std::endl;
   std::cout << "SIMCALFILEDIR:" << simcalFileDir << std::endl;
   return;
+
 }
 
 unsigned int GetEnvironment(){
   unsigned int Flag = 0;  
+  /*
   sumFileDir  = std::getenv("SUMUPFILEDIR");
   convFileDir = std::getenv("CONVFILEDIR");
   rawFileDir  = std::getenv("RAWFILEDIR");
   expcalFileDir  = std::getenv("EXPCALFILEDIR");
   simcalFileDir  = std::getenv("SIMCALFILEDIR");
+  */
+  strcpy(sumFileDir   ,std::getenv("SUMUPFILEDIR"));
+  strcpy(convFileDir  ,std::getenv("CONVFILEDIR"));
+  strcpy(rawFileDir   ,std::getenv("RAWFILEDIR"));
+  strcpy(expcalFileDir,std::getenv("EXPCALFILEDIR"));
+  strcpy(simcalFileDir,std::getenv("SIMCALFILEDIR"));
+
+  /*
   if( sumFileDir.size() == 0){
     std::cerr << "There is no Definition : SUMUPFILEDIR" << std::endl;
     Flag |= 1;
@@ -36,6 +46,7 @@ unsigned int GetEnvironment(){
     std::cerr << "There is no Definition : SIMCALFILEDIR" << std::endl;
     Flag |= 16;
   }
+  */
   return Flag;
 }
 
