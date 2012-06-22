@@ -6,7 +6,7 @@
 #include "GeneralTypes.h"
 
 class E14ConvWriterModule {
- private:
+ public:
   TTree* m_Tree;
   char   m_DetectorName[128];
   int    m_nDigi;

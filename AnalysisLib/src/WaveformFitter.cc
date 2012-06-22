@@ -67,7 +67,7 @@ bool WaveformFitter::Approx(TGraph* gr){
     m_fitfunc->SetParLimits(2,m_width,m_width);
     m_fitfunc->SetParLimits(3,m_asymm,m_asymm);
   }else{
-    m_fitfunc->SetParLimits(2,20.,50.);
+    m_fitfunc->SetParLimits(2,10.,50.);
     m_fitfunc->SetParLimits(3,0.,1.);
   }
   m_fitfunc->SetParameters(height,mean,m_width,m_asymm,gnd);

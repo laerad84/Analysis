@@ -73,7 +73,7 @@ int  main(int argc,char** argv)
     wConv->AddModule("Etc");
     wConv->Set();
     wConv->SetMap();
-
+    wConv->Branch();
     std::cout<< "Check Entries" << std::endl;    
     for( int icrate = 0; icrate < nCrate; icrate++){
       std::cout<< conv[icrate]->GetEntries() << std::endl;
@@ -87,57 +87,74 @@ int  main(int argc,char** argv)
   }
   
   TApplication* app = new TApplication("app", &argc , argv );
-
+  
   TCanvas* can = new TCanvas( "can ", "Canvas" ,800,800);
   std::cout <<"Loop " <<std::endl;
   TGraph* gr = new TGraph();
   gr->SetMarkerStyle(6);
-
+  
   for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-
+    wConv->InitData();
     for( int icrate = 0; icrate < nCrate; icrate++){
       //std::cout << icrate << std::endl;
       conv[icrate]->GetEntry(ievent);
     } 
     if( ievent %100 == 0 && ievent ){ std::cout<< ievent << "/" << conv[0]->GetEntries() << std::endl;} 
+    
     // Analysis
     //std::cout<< "Total Number of Module :" << wConv->GetNmodule() << std::endl;
     
 
+    //for( int iMod = 1; iMod < 2; iMod++){
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){
       
       int nSubModule = (wConv->ModMap[iMod]).nMod;
       //std::cout<< iMod << std::endl;
       //std::cout<< iMod << " : " << nSubModule << std::endl;
-
+      
       for( int iSubMod = 0; iSubMod < nSubModule; iSubMod++){	
-	int iCrate = 9999;
-	int iSlot  = 9999;
-	int iCh    = 9999;
-	iCrate = (wConv->ModMap[iMod]).Map[iSubMod][0];
-	iSlot  = (wConv->ModMap[iMod]).Map[iSubMod][1];
-	iCh    = (wConv->ModMap[iMod]).Map[iSubMod][2];
-	// Ignore unmapped channel // 
-	if( iCrate == 9999 || iSlot == 9999 || iCh == 9999 ) continue;       
-	
-	gr->Set(0);
-	for( int ipoint = 0; ipoint< 48; ipoint++){
-	  if(conv[iCrate]->Data[iSlot][iCh][ipoint]>16000){ continue; }
-	  gr->SetPoint( gr->GetN(), ipoint*8, conv[iCrate]->Data[iSlot][iCh][ipoint]);
-	}
-	bool fit = wavFitter->Fit( gr ); 
-	if( !fit ){ continue; }
-	//std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 
-	//gr->Draw("AP");
-	//can->Update();
-	//can->Modified();
-	//getchar();
-	wavFitter->Clear();
-
+	  int iCrate = 9999;
+	  int iSlot  = 9999;
+	  int iCh    = 9999;
+	  iCrate = (wConv->ModMap[iMod]).Map[iSubMod][0];
+	  iSlot  = (wConv->ModMap[iMod]).Map[iSubMod][1];
+	  iCh    = (wConv->ModMap[iMod]).Map[iSubMod][2];
+	  
+	  // Ignore unmapped channel // 
+	  if( iCrate == 9999 || iSlot == 9999 || iCh == 9999 ) continue;       
+	  
+	  gr->Set(0);
+	  for( int ipoint = 0; ipoint< 48; ipoint++){
+	    if(conv[iCrate]->Data[iSlot][iCh][ipoint]>16000){ continue; }
+	    gr->SetPoint( gr->GetN(), ipoint*8, conv[iCrate]->Data[iSlot][iCh][ipoint]);
+	  }
+	  bool fit = wavFitter->Fit( gr ); 
+	  int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
+	    if( fit ){ 
+	    TF1* fitFunc = wavFitter->GetFunction();	    
+	    wConv->mod[iMod]->m_Fit[chIndex]      = 1;
+	    wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
+	    wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
+	    wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
+	    wConv->mod[iMod]->m_Timing[chIndex]   = fitFunc->GetParameter(1);
+	    wConv->mod[iMod]->m_HHTiming[chIndex] 
+	      = fitFunc->GetX(fitFunc->GetParameter(0),fitFunc->GetParameter(1)-32, fitFunc->GetParameter(1));
+	    wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
+	    wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
+	    wConv->mod[iMod]->m_nDigi++;	      	    
+	    
+	    //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 
+	    
+	    //gr->Draw("AP");
+	    //can->Update();
+	    //can->Modified();
+	    //getchar();
+	    wavFitter->Clear();	  
+	  }
       }
-    } 
+    }	
+    trout->Fill();
   }
-
 
   std::cout<< "end Loop" <<std::endl;
   //app->Run();
