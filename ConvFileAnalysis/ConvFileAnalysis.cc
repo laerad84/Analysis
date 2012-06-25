@@ -131,18 +131,18 @@ int  main(int argc,char** argv)
 	  bool fit = wavFitter->Fit( gr ); 
 	  int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
 	    if( fit ){ 
-	    TF1* fitFunc = wavFitter->GetFunction();	    
-	    wConv->mod[iMod]->m_Fit[chIndex]      = 1;
-	    wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
-	    wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
-	    wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
-	    wConv->mod[iMod]->m_Timing[chIndex]   = fitFunc->GetParameter(1);
-	    wConv->mod[iMod]->m_HHTiming[chIndex] 
-	      = fitFunc->GetX(fitFunc->GetParameter(0),fitFunc->GetParameter(1)-32, fitFunc->GetParameter(1));
-	    wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
-	    wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
-	    wConv->mod[iMod]->m_nDigi++;	      	    
-	    
+	      TF1* fitFunc = wavFitter->GetFunction();	    
+	      wConv->mod[iMod]->m_Fit[chIndex]      = 1;
+	      wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
+	      wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
+	      wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
+	      wConv->mod[iMod]->m_Timing[chIndex]   = fitFunc->GetParameter(1);
+	      wConv->mod[iMod]->m_HHTiming[chIndex] 
+		= fitFunc->GetX(fitFunc->GetParameter(0)/2+fitFunc->GetParameter(4),fitFunc->GetParameter(1)-56, fitFunc->GetParameter(1));
+	      wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
+	      wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
+	      wConv->mod[iMod]->m_nDigi++;	      	    
+	      
 	    //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 
 	    
 	    //gr->Draw("AP");
