@@ -75,7 +75,7 @@ void    FB_Module::SetTitle(const char* title){
 void    FB_Module::Reset( void ){
   ResetContent();
   UpdateValue();
-  FB->Reset();
+  FB->Reset("");
 }
 
 void    FB_Module::ResetContent( void ){

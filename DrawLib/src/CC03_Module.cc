@@ -20,23 +20,25 @@ CC03_Module::~CC03_Module(){
 void    CC03_Module::Init(const char* name ){
   CC03 = new TH2Poly(name, "" ,-100,100,-100,100);
   Double_t CC03_initx[numberOfCC03] = {  90.0  ,  90.0,  90.0,  90.0,  90.0,   90.0,   90.0,  90.0,
-					88.75 , 66.25, 43.75, 21.25, -1.25, -23.75, -46.25, -68.75,
-					-90.0 , -90.0, -90.0, -90.0, -90.0,  -90.0,  -90.0,  -90.0,
-					-88.75,-66.25,-43.75,-21.25,  1.25,  23.75,  46.25,  68.75};
+					 88.75 , 66.25, 43.75, 21.25, -1.25, -23.75, -46.25, -68.75,
+					-90.0  , -90.0, -90.0, -90.0, -90.0,  -90.0,  -90.0,  -90.0,
+					-88.75 ,-66.25,-43.75,-21.25,  1.25,  23.75,  46.25,  68.75};
   
   Double_t CC03_inity[numberOfCC03] = {  88.75 ,66.25 ,43.75  ,21.25 ,-1.25 ,-23.75,-46.25,-68.75,
 					-90.0 ,-90.0 ,-90.0  ,-90.0 ,-90.0 ,-90.0 ,-90.0 ,-90.0 ,
 					-88.75,-66.25,-43.75 ,-21.25,1.25  ,23.75 ,46.25 ,68.75 ,
 					90.0  ,90.0  ,90.0   ,90.0  ,90.0  ,90.0  ,90.0  ,90.0  };
   for( int i = 0; i < numberOfCC03; i++){
-    CC03_xx[i] = CC03_initx[i];
-    CC03_yy[i] = CC03_inity[i];
+    CC03_xx[i] = CC03_initx[(i+numberOfCC03-4)%numberOfCC03];
+    CC03_yy[i] = CC03_inity[(i+numberOfCC03-4)%numberOfCC03];
   }
 
   for( int i = 0; i< numberOfCC03; i++ ){
+  //for( int k = 0; k < numberOfCC03; k++){
+    int k = (i+numberOfCC03-4)%numberOfCC03;
     Double_t x[5]={0};
     Double_t y[5]={0};
-    switch( i/8 ){
+    switch( k/8 ){
     case 0:
     case 2:
       CC03_Box[i] = new TBox( CC03_xx[i] -10, CC03_yy[i]-11.25, CC03_xx[i] +10, CC03_yy[i]+11.25);
@@ -90,7 +92,7 @@ void    CC03_Module::SetTitle(const char* title){
 }
 
 void    CC03_Module::Reset( void ){
-  CC03->Reset();
+  CC03->Reset("");
 }
 
 void    CC03_Module::Draw(const char* option = "colz"){

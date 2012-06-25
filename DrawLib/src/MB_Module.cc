@@ -74,7 +74,7 @@ void    MB_Module::SetTitle(const char* title){
 void    MB_Module::Reset( void ){
   ResetContent();
   UpdateValue();
-  MB->Reset();
+  MB->Reset("");
 }
 
 void    MB_Module::ResetContent( void ){
@@ -98,7 +98,7 @@ void    MB_Module::Draw(const char* option = "colz"){
 
 void MB_Module::DrawWithRange( double minuser, double maxuser, const char* option = "colz"){
   MB->SetMaximum( maxuser );
-  MB->SetMimimum( minuser );
+  MB->SetMinimum( minuser );
   MB->Draw(option);
   for( int i  =0; i< numberOfMB; i++){
     MB_Poly[i]->Draw();

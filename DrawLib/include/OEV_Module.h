@@ -5,8 +5,9 @@
 
 #include <TROOT.h>
 #include <TObject.h>
-#include <TH2poly.h>
+#include <TH2Poly.h>
 #include <TPolyLine.h>
+
 class OEV_Module : public TObject {
 
  public:
@@ -23,7 +24,7 @@ class OEV_Module : public TObject {
   void UpdateValue(void);
   void SetTitle(const char*);  
   void Draw(const char*);
-
+  void DrawWithRange( double, double , const char* );
  private:
 
   Double_t OEV_xx[numberOfOEV];
@@ -32,6 +33,7 @@ class OEV_Module : public TObject {
   TH2Poly* OEV;
   TPolyLine* OEV_Poly[numberOfOEV];
   Double_t Dep[numberOfOEV];
+
   ClassDef(OEV_Module,0);
 
 };

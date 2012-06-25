@@ -5,7 +5,7 @@
 
 #include <TROOT.h>
 #include <TObject.h>
-#include <TH2poly.h>
+#include <TH2Poly.h>
 #include <TPolyLine.h>
 #include <TBox.h>
 

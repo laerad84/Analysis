@@ -15,7 +15,7 @@ OEV_Module::OEV_Module(const char* name){
   Reset();
 }
 OEV_Module::~OEV_Module(){
-  delete OEV;
+  //delete OEV;
 }
 
 void    OEV_Module::Init(const char* name ){
@@ -230,7 +230,7 @@ void    OEV_Module::SetTitle(const char* title){
 void    OEV_Module::Reset( void ){
   ResetContent();
   UpdateValue();
-  OEV->Reset();
+  OEV->Reset("");
 }
 
 void    OEV_Module::ResetContent( void ){
@@ -246,6 +246,17 @@ void    OEV_Module::UpdateValue( void ){
 }
 
 void    OEV_Module::Draw(const char* option = "COLZ"){
+  OEV->Draw(option);
+  for( int i = 0; i< numberOfOEV; i++){
+    OEV_Poly[i]->Draw();
+  }
+}
+
+
+void   OEV_Module::DrawWithRange( double minuser, double maxuser, const char* option = "colz"){
+  double maxValue = 0, minValue = 1000000000,content = 0;
+  OEV->SetMaximum( maxuser );
+  OEV->SetMinimum( minuser );
   OEV->Draw(option);
   for( int i = 0; i< numberOfOEV; i++){
     OEV_Poly[i]->Draw();

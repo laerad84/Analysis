@@ -295,7 +295,7 @@ void    CsI_Module::SetTitle(const char* title){
 }
 
 void    CsI_Module::Reset( void ){
-  CsI->Reset();
+  CsI->Reset("");
 }
 
 void    CsI_Module::Draw(const char* option = "colz"){
@@ -306,7 +306,7 @@ void    CsI_Module::Draw(const char* option = "colz"){
 }
 
 void   CsI_Module::DrawWithRange( double minuser, double maxuser, const char* option = "colz"){
-  double maxValue = 0; minValue = 1000000000,content = 0;
+  double maxValue = 0, minValue = 1000000000,content = 0;
   CsI->SetMaximum( maxuser );
   CsI->SetMinimum( minuser );
   CsI->Draw(option);
