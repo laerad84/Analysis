@@ -10,7 +10,6 @@
 #include "TStyle.h"
 #include "TFile.h"
 
-
 #include "GeneralTypes.h"
 #include "GeneralMacros.h"
 
@@ -27,20 +26,22 @@
 #include "E14ConvReader.h"
 #include "E14ConvWriter.h"
 
-const Double_t COSMIC_THRESHOLD[20] = {10000,10000,10000,10000,10000,
-				       10000,10000,10000,10000,10000,
-				       10000,10000,10000,10000,10000,
-				       10000,10000,10000,10000,10000};
+const Double_t COSMIC_THRESHOLD[20] = {1000,1000,1000,1000,1000,
+				       1000,1000,1000,1000,1000,
+				       1000,1000,1000,1000,1000,
+				       1000,1000,1000,1000,1000};
 
 int
 main(int argc, char** argv){
   gStyle->SetPalette(1);
   // ARGV[0]  <InputROOTFile> <OutputROOTFile> [<Vision>]
-
+  const int CosmicArr[20] = {0 ,5 ,2 ,1 ,6 ,7 ,4 ,13,12,11,
+  			     14,3 ,10,15,8 ,9 ,16,17,18,19};
+  
   int RunNumber;
   std::string OutputFile;
 
-  Double_t ADCThreshold = 300;//in case of rawData 300;
+  Double_t ADCThreshold    = 300;//in case of rawData 300;
   Double_t HeightThreshold = 20;// in case of Signal Height;~200 in ADC
   Double_t energyThreshold = 3;
 
@@ -61,9 +62,6 @@ main(int argc, char** argv){
   TTree* trRead = (TTree*)tfRead->Get("WFTree");
   E14ConvWriter* wConv = new E14ConvWriter(Form("%s/Sum%d.root",sumFileDir, RunNumber),
 					   trRead);
-  const int CsiID    = 0;
-  const int CosmicID = 1;
-  const int LaserID  = 2; 
   {
 
     //  ID 0 : Csi; 1 : Cosmic; 2 : Laser
@@ -77,8 +75,8 @@ main(int argc, char** argv){
   
   // Set OutputFile
   TFile* tfOut  = new TFile(OutputFile.c_str(),"Recreate");
-  TTree* trOut  = new TTree("CosmicOut","");
-  
+  TTree* trOut  = new TTree("CosmicOut","");  
+
   TH2D* hisTriggerHitPosition
     = new TH2D("hisTriggerHitposition",
 	       "TriggerHitPosition;XPosition[mm];ZPosition;nHit",
@@ -104,26 +102,56 @@ main(int argc, char** argv){
   Int_t    CosmicFit;
   Int_t    CosmicBoolUp;
   Int_t    CosmicBoolDn;
-  
-  trOut->Branch("nDigi"    ,&nDigi    ,"nDigi/I");
-  trOut->Branch("CsIID"    ,CsIID     ,"CsIID[nDigi]/I");//nDigi;
-  trOut->Branch("CsIADC"   ,CsIADC    ,"CsIADC[nDigi]/I");//nDigi;
-  trOut->Branch("nHitUp"   ,&nHitUp   ,"nHitUp/I");
-  trOut->Branch("nHitDn"   ,&nHitDn   ,"nHitDn/I");
-  trOut->Branch("UpperID"  ,&UpperID  ,"UpperID[nHitUp]/I");//nHitUp;
-  trOut->Branch("DownID"   ,&DownID   ,"DownID[nHitDn]/I");//nHitDn;
-  trOut->Branch("Trigger"  ,&Trigger  ,"Trigger/I");
-  trOut->Branch("CalFactor",&CalFactor,"CalFactor/D");
-  trOut->Branch("roh"      ,&roh      ,"roh/D");
-  trOut->Branch("theta"    ,&theta    ,"theta/D");
-  trOut->Branch("CosmicFit",&CosmicFit,"CosmicFit/I");
-  trOut->Branch("CosmicBoolUp",&CosmicBoolUp,"CosmicBoolUp/I");
-  trOut->Branch("CosmicBoolDn",&CosmicBoolDn,"CosmicBoolDn/I");
-  //trOut->Branch("PathLength"  ,&PathLength  ,"PathLength[nDigi]/D");
+
+  Int_t    HitCoinUp;
+  Int_t    HitCoinDn;
+  Int_t    HitUp;
+  Int_t    HitDn;
+  {
+    trOut->Branch("nDigi"    ,&nDigi    ,"nDigi/I");
+    trOut->Branch("CsIID"    ,CsIID     ,"CsIID[nDigi]/I");//nDigi;
+    trOut->Branch("CsIADC"   ,CsIADC    ,"CsIADC[nDigi]/I");//nDigi;
+    trOut->Branch("nHitUp"   ,&nHitUp   ,"nHitUp/I");
+    trOut->Branch("nHitDn"   ,&nHitDn   ,"nHitDn/I");
+    
+    trOut->Branch("HitCoinUp",&HitCoinUp,"HitCoinUp/I");
+    trOut->Branch("HitCoinDn",&HitCoinDn,"HitCoinDn/I");
+    
+    trOut->Branch("HitUp"   ,&HitUp   ,"HitUp/I");
+    trOut->Branch("HitDn"   ,&HitDn   ,"HitDn/I");
+    
+    trOut->Branch("UpperID"  ,&UpperID  ,"UpperID[nHitUp]/I");//nHitUp;
+    trOut->Branch("DownID"   ,&DownID   ,"DownID[nHitDn]/I");//nHitDn;
+    trOut->Branch("Trigger"  ,&Trigger  ,"Trigger/I");
+    trOut->Branch("CalFactor",&CalFactor,"CalFactor/D");
+    trOut->Branch("roh"      ,&roh      ,"roh/D");
+    trOut->Branch("theta"    ,&theta    ,"theta/D");
+    trOut->Branch("CosmicFit",&CosmicFit,"CosmicFit/I");
+    trOut->Branch("CosmicBoolUp",&CosmicBoolUp,"CosmicBoolUp/I");
+    trOut->Branch("CosmicBoolDn",&CosmicBoolDn,"CosmicBoolDn/I");
+    //trOut->Branch("PathLength"  ,&PathLength  ,"PathLength[nDigi]/D");
+  }
+
+
+  int    CsiNumber;
+  int    CsiID[4096];
+  double CsiSignal[4096];
+  double CsiTime[4096];
+  int    CosmicNumber;
+  int    CosmicID[4096];
+  double CosmicSignal[4096];
+  double CosmicTime[4096];
+  int    LaserNumber;
+  int    LaserID[4096];
+  double LaserSignal[4096];
+  double LaserTime[4096];
+
+  double CosmicOut[20];
 
   IDHandler* handler       = new IDHandler();
   HoughCsI*  hough         = new HoughCsI();
   Chisq_cosmic* chi2Cosmic = new Chisq_cosmic();
+
   
 
   long nEntries = wConv->GetEntries();
@@ -152,24 +180,87 @@ main(int argc, char** argv){
 	UpperID[i] = 0;
 	DownID[i]  = 0; 
       }
+
+      HitUp = 0;
+      HitDn = 0; 
+      HitCoinUp = 0;
+      HitCoinDn = 0; 
+    }
+
+    for( int i = 0; i< 20; i++){
+      CosmicSignal[i] = 0;
+      CosmicTime[i]   = 0;
     }
     
     // Cosmic Trigger Judge // 
-    
-    
-    
+    for( int iMod = 0; iMod < 3; iMod++ ){
+      int nSubMod = (wConv->mod[iMod])->m_nDigi;      
+      switch( iMod ){
+      case 0:
+	// Csi
+	CsiNumber = nSubMod;
+	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
+	  CsiID[iSubMod]     = wConv->mod[iMod]->m_ID[iSubMod];
+	  CsiSignal[iSubMod] = wConv->mod[iMod]->m_Signal[iSubMod];
+	  CsiTime[iSubMod]   = wConv->mod[iMod]->m_Timing[iSubMod];
+	}
+	break;
+      case 1:
+	CosmicNumber = nSubMod;
+	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
+	  //CosmicID[iSubMod]     = wConv->mod[iMod]->m_ID[iSubMod];
+	  CosmicSignal[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]] = wConv->mod[iMod]->m_Signal[iSubMod];
+	  CosmicTime[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]   = wConv->mod[iMod]->m_Timing[iSubMod];
+	}
+	break;
+      case 2:
+	LaserNumber = nSubMod;
+	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
+	  LaserID[iSubMod]     = wConv->mod[iMod]->m_ID[iSubMod];
+	  LaserSignal[iSubMod] = wConv->mod[iMod]->m_Signal[iSubMod];
+	  LaserTime[iSubMod]   = wConv->mod[iMod]->m_Timing[iSubMod];
+	}
+	break;
+      default:
+	break;
+      }
+    }
     
     // Analysis Code 
     gr->Set(0);
     hough->Reset();
-    // Set Activated Crystal to graph
-    
-    for ( int idigi = 0; idigi < wConv->mod[0]->m_nDigi; idigi++){
+
+    // Set Activated Crystal to graph    
+    for ( int idigi = 0; idigi < CsiNumber; idigi++){
+      if( CsiSignal[idigi] < 20 ){ continue; }
       double x,y;
-      handler->GetMetricPosition( wConv->mod[0]->m_ID[idigi]);
+      handler->GetMetricPosition(CsiID[idigi], x,y);
       gr->SetPoint(gr->GetN(), x, y);      
     }
-  }
+    
+    // Trigger Judgement // 
+    nHitUp = 0; 
+    nHitDn = 0;
+    if( LaserNumber == 0 ){
+      for( int iCosmic = 0; iCosmic< 5; iCosmic++){
+	if( CosmicSignal[ iCosmic    ] > COSMIC_THRESHOLD[ iCosmic     ] &&
+	    CosmicSignal[ iCosmic+10 ] > COSMIC_THRESHOLD[ iCosmic +10 ]){
+	  HitCoinUp |= 1 << iCosmic;
+	}
+	if( CosmicSignal[ iCosmic    ] > COSMIC_THRESHOLD[ iCosmic     ] ||
+	    CosmicSignal[ iCosmic+10 ] > COSMIC_THRESHOLD[ iCosmic +10 ]){
+	  HitUp |= 1 << iCosmic;
+	}
+	if( CosmicSignal[ iCosmic+5  ] > COSMIC_THRESHOLD[ iCosmic +5  ] &&
+	    CosmicSignal[ iCosmic+15 ] > COSMIC_THRESHOLD[ iCosmic +15 ]){
+	  HitCoinDn |= 1 << iCosmic;
+	}
+	if( CosmicSignal[ iCosmic+5  ] > COSMIC_THRESHOLD[ iCosmic +5  ] ||
+	    CosmicSignal[ iCosmic+15 ] > COSMIC_THRESHOLD[ iCosmic +15 ]){
+	  HitDn |= 1 << iCosmic;
+	}       	  
+      }
+    }
   
 
   /*
