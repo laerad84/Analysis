@@ -1,13 +1,14 @@
 #include "Environment.h"
+
 void PrintEnvironment(){
 
-  std::cout << "SUMUPFILEDIR :" << sumFileDir    << std::endl;
-  std::cout << "CONVFILEDIR  :" << convFileDir   << std::endl;
-  std::cout << "RAWFILEDIR   :" << rawFileDir    << std::endl;
-  std::cout << "EXPCALFILEDIR:" << expcalFileDir << std::endl;
-  std::cout << "SIMCALFILEDIR:" << simcalFileDir << std::endl;
+  std::cout << "SUMUPFILEDIR  :" << sumFileDir     << std::endl;
+  std::cout << "CONVFILEDIR   :" << convFileDir    << std::endl;
+  std::cout << "RAWFILEDIR    :" << rawFileDir     << std::endl;
+  std::cout << "EXPCALFILEDIR :" << expcalFileDir  << std::endl;
+  std::cout << "SIMCALFILEDIR :" << simcalFileDir  << std::endl;
+  std::cout << "WAVEANAFILEDIR:" << waveAnaFileDir << std::endl; 
   return;
-
 }
 
 unsigned int GetEnvironment(){
@@ -19,12 +20,12 @@ unsigned int GetEnvironment(){
   expcalFileDir  = std::getenv("EXPCALFILEDIR");
   simcalFileDir  = std::getenv("SIMCALFILEDIR");
   */
-  strcpy(sumFileDir   ,std::getenv("SUMUPFILEDIR"));
-  strcpy(convFileDir  ,std::getenv("CONVFILEDIR"));
-  strcpy(rawFileDir   ,std::getenv("RAWFILEDIR"));
-  strcpy(expcalFileDir,std::getenv("EXPCALFILEDIR"));
-  strcpy(simcalFileDir,std::getenv("SIMCALFILEDIR"));
-
+  strcpy(sumFileDir    ,std::getenv("SUMUPFILEDIR"));
+  strcpy(convFileDir   ,std::getenv("CONVFILEDIR"));
+  strcpy(rawFileDir    ,std::getenv("RAWFILEDIR"));
+  strcpy(expcalFileDir ,std::getenv("EXPCALFILEDIR"));
+  strcpy(simcalFileDir ,std::getenv("SIMCALFILEDIR"));
+  strcpy(waveAnaFileDir,std::getenv("WAVEANAFILEDIR"));
   /*
   if( sumFileDir.size() == 0){
     std::cerr << "There is no Definition : SUMUPFILEDIR" << std::endl;

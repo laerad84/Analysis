@@ -86,8 +86,7 @@ int  main(int argc,char** argv)
     }
   }
   
-  TApplication* app = new TApplication("app", &argc , argv );
-  
+  TApplication* app = new TApplication("app", &argc , argv );  
   TCanvas* can = new TCanvas( "can ", "Canvas" ,800,800);
   std::cout <<"Loop " <<std::endl;
   TGraph* gr = new TGraph();
@@ -106,8 +105,7 @@ int  main(int argc,char** argv)
     
 
     //for( int iMod = 1; iMod < 2; iMod++){
-    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){
-      
+    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
       int nSubModule = (wConv->ModMap[iMod]).nMod;
       //std::cout<< iMod << std::endl;
       //std::cout<< iMod << " : " << nSubModule << std::endl;
