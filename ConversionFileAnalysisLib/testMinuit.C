@@ -88,176 +88,176 @@ bool idcut( int region, int id )
 
 void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
-  //std::cout<< "fcn " << std::endl;
-  //calculate chisquare
-  
-  Double_t delta = 0.;
-  chisq = 0.0;
-  for ( int index=0; index<N; index++) {
-    for( int jndex=index+1; jndex<N; jndex++ ){
-      if( errors[index][jndex]!=0 ){
-	delta  = ( means[index][jndex] - par[index] + par[jndex] ) / errors[index][jndex];
-	chisq += delta*delta;
-      }
-    }
-  }
-  
-  f = chisq;
-  
-  
-  if( cycle%100 == 0 ){
-    cerr << "Iteration:" << cycle << "\tchisquare: " << f << "\t";
-    for( int index=0; index<N; index++ ){
-      if( index%500==0 ){
-	cerr << par[index] << " ";
-      }
-    }
-    cerr << endl;
-    oldChi2 = f;
-  }
-  
-  cycle++;
-  //std::cout<< "end fcn" << std::endl;
+  std::cout<< "fcn " << std::endl;
+	//calculate chisquare
+	
+	Double_t delta = 0.;
+	chisq = 0.0;
+	for ( int index=0; index<N; index++) {
+		for( int jndex=index+1; jndex<N; jndex++ ){
+			if( errors[index][jndex]!=0 ){
+				delta  = ( means[index][jndex] - par[index] + par[jndex] ) / errors[index][jndex];
+				chisq += delta*delta;
+			}
+		}
+	}
+						   
+	f = chisq;
+
+	
+	if( cycle%100 == 0 ){
+		cerr << "Iteration:" << cycle << "\tchisquare: " << f << "\t";
+		for( int index=0; index<N; index++ ){
+			if( index%500==0 ){
+				cerr << par[index] << " ";
+			}
+		}
+		cerr << endl;
+		oldChi2 = f;
+	}
+	
+	cycle++;
+	std::cout<< "end fcn" << std::endl;
 }
 
 
 
 
-
+/*
 //______________________________________________________________________________
 void cosmicAnalysis3( const char* kind, const int region )
 {
 	
 	
-  // Initialize
-  offsets = new Double_t [N];
-  means   = new Double_t [N][N];
-  errors  = new Double_t [N][N];
+	// Initialize
+	offsets = new Double_t [N];
+	means   = new Double_t [N][N];
+	errors  = new Double_t [N][N];
 	
-  bool idFlag[N] = {false};
+	bool idFlag[N] = {false};
 	
-  for( int index=0; index<N; index++ ){
-    offsets[index] = 0.0;
-    for( int jndex=0; jndex<N; jndex++ ){
-      means[index][jndex]  = 0.0;
-      errors[index][jndex] = 0.0;
-    }
-  }
-	
-	
-  // Get data points
-  TFile* tf = new TFile("timing.root");
-  TTree* tr = (TTree*)tf->Get("tr");
-  const long numberOfEntries = tr->GetEntries();
-	
-  Int_t firstID=0, secondID=0, numberOfEvents=0, ndf=0;
-  Double_t mean=0.0, meanError=0.0, chi2=0.0;
-  {
-    tr->SetBranchAddress( "firstID", &firstID );
-    tr->SetBranchAddress( "secondID", &secondID );
-    tr->SetBranchAddress( Form( "%sMean", kind), &mean );
-    tr->SetBranchAddress( Form( "%sMeanErr", kind), &meanError );
-    tr->SetBranchAddress( Form( "%sChi2", kind), &chi2 );
-    tr->SetBranchAddress( Form( "%sNdf", kind), &ndf );
-    tr->SetBranchAddress( "numberOfEvents", &numberOfEvents );
-  }
-  for( long index=0; index<numberOfEntries; index++ ){
-    tr->GetEntry( index );
-    if( numberOfEvents>0 && meanError!=1.41421 && ndf>10 && abs(chi2/ndf-1.0)<0.5 && meanError<5. && idcut(region, firstID) && idcut(region, secondID) ){
-      means[firstID][secondID]  = mean;
-      errors[firstID][secondID] = meanError;
-      idFlag[firstID]  = true;
-      idFlag[secondID] = true;
-    }
-  }
-  tf->Close();
-  delete tf;
-	
-	
-  // Get initial values for iteration
-  if( region==0 ){
-    for( int index=0; index<N; index++ ){
-      if( idFlag[index] ){
-	if( index < 2240 ){
-	  offsets[index] += 14./1196.*139.;
-	}else{
-	  offsets[index] -= 14./1196.*1057.;
+	for( int index=0; index<N; index++ ){
+		offsets[index] = 0.0;
+		for( int jndex=0; jndex<N; jndex++ ){
+			means[index][jndex]  = 0.0;
+			errors[index][jndex] = 0.0;
+		}
 	}
-      }
-    }
-  }
+	
+	
+	// Get data points
+	TFile* tf = new TFile("timing.root");
+	TTree* tr = (TTree*)tf->Get("tr");
+	const long numberOfEntries = tr->GetEntries();
+	
+	Int_t firstID=0, secondID=0, numberOfEvents=0, ndf=0;
+	Double_t mean=0.0, meanError=0.0, chi2=0.0;
+	{
+		tr->SetBranchAddress( "firstID", &firstID );
+		tr->SetBranchAddress( "secondID", &secondID );
+		tr->SetBranchAddress( Form( "%sMean", kind), &mean );
+		tr->SetBranchAddress( Form( "%sMeanErr", kind), &meanError );
+		tr->SetBranchAddress( Form( "%sChi2", kind), &chi2 );
+		tr->SetBranchAddress( Form( "%sNdf", kind), &ndf );
+		tr->SetBranchAddress( "numberOfEvents", &numberOfEvents );
+	}
+	for( long index=0; index<numberOfEntries; index++ ){
+		tr->GetEntry( index );
+		if( numberOfEvents>0 && meanError!=1.41421 && ndf>10 && abs(chi2/ndf-1.0)<0.5 && meanError<5. && idcut(region, firstID) && idcut(region, secondID) ){
+			means[firstID][secondID]  = mean;
+			errors[firstID][secondID] = meanError;
+			idFlag[firstID]  = true;
+			idFlag[secondID] = true;
+		}
+	}
+	tf->Close();
+	delete tf;
+	
+	
+	// Get initial values for iteration
+	if( region==0 ){
+		for( int index=0; index<N; index++ ){
+			if( idFlag[index] ){
+				if( index < 2240 ){
+					offsets[index] += 14./1196.*139.;
+				}else{
+					offsets[index] -= 14./1196.*1057.;
+				}
+			}
+		}
+	}
 	
 	
 	
 	
-  //getchar();
+	//getchar();
 	
-  TMinuit* gMinuit = new TMinuit(N);
-  gMinuit->SetFCN( fcn );
-  gMinuit->SetPrintLevel( -1 );
+	TMinuit* gMinuit = new TMinuit(N);
+	gMinuit->SetFCN( fcn );
+	gMinuit->SetPrintLevel( -1 );
 	
 	
 	
-  // Set starting values and step sizes for parameters
-  gMinuit->Command( "SET ERR" );
+	// Set starting values and step sizes for parameters
+	gMinuit->Command( "SET ERR" );
 
-  double minValue=-10.0, maxValue=10.0;
-  for( int index=0; index<N; index++ ){
-    if( idFlag[index] ){
-      if( region ){
-	if( gMinuit->DefineParameter( index, Form("p%d",index), offsets[index], 0.1, minValue, maxValue ) ){
-	  cerr << "DEBUG : index=" << index << endl;
-	  return;
+	double minValue=-10.0, maxValue=10.0;
+	for( int index=0; index<N; index++ ){
+		if( idFlag[index] ){
+			if( region ){
+				if( gMinuit->DefineParameter( index, Form("p%d",index), offsets[index], 0.1, minValue, maxValue ) ){
+					cerr << "DEBUG : index=" << index << endl;
+					return;
+				}
+			}else{
+				if( index < 2240 ){
+					if( gMinuit->DefineParameter( index, Form("p%d",index), offsets[index], 0.1, minValue, maxValue ) ){
+						cerr << "DEBUG : index=" << index << endl;
+						return;
+					}
+				}else{
+					if( gMinuit->DefineParameter( index, Form("p%d",index), offsets[index], 0.1, minValue-14., maxValue-14. ) ){
+						cerr << "DEBUG : index=" << index << endl;
+						return;
+					}
+				}
+			}
+		}else{
+			if( gMinuit->DefineParameter( index, Form("p%d",index), 0, 1., -2., 2. ) ){
+				cerr << "DEBUG : index=" << index << endl;
+				return;
+			}
+			gMinuit->FixParameter( index );
+		}
 	}
-      }else{
-	if( index < 2240 ){
-	  if( gMinuit->DefineParameter( index, Form("p%d",index), offsets[index], 0.1, minValue, maxValue ) ){
-	    cerr << "DEBUG : index=" << index << endl;
-	    return;
-	  }
-	}else{
-	  if( gMinuit->DefineParameter( index, Form("p%d",index), offsets[index], 0.1, minValue-14., maxValue-14. ) ){
-	    cerr << "DEBUG : index=" << index << endl;
-	    return;
-	  }
+
+	
+	gMinuit->SetMaxIterations(0x7FFFFFFF);
+	gMinuit->Migrad();
+	
+	cerr << "Iteration:" << cycle << "\tchisquare: " << chisq << endl;
+	cycle = 0;
+	
+	ofstream output( Form("%sOffset.txt", kind) );
+	double par=0.0, err=0.0;
+	for( int index=0; index<N; index++ ){
+		gMinuit->GetParameter( index, par, err );
+		output << index << "\t" << par << "\t" << err << endl;
 	}
-      }
-    }else{
-      if( gMinuit->DefineParameter( index, Form("p%d",index), 0, 1., -2., 2. ) ){
-	cerr << "DEBUG : index=" << index << endl;
+	
+	
+
+	
+	
+	delete   gMinuit;
+	delete[] offsets;
+	delete[] means;
+	delete[] errors;
+
 	return;
-      }
-      gMinuit->FixParameter( index );
-    }
-  }
-
-	
-  gMinuit->SetMaxIterations(0x7FFFFFFF);
-  gMinuit->Migrad();
-	
-  cerr << "Iteration:" << cycle << "\tchisquare: " << chisq << endl;
-  cycle = 0;
-	
-  ofstream output( Form("%sOffset.txt", kind) );
-  double par=0.0, err=0.0;
-  for( int index=0; index<N; index++ ){
-    gMinuit->GetParameter( index, par, err );
-    output << index << "\t" << par << "\t" << err << endl;
-  }
-	
-	
-
-	
-	
-  delete   gMinuit;
-  delete[] offsets;
-  delete[] means;
-  delete[] errors;
-
-  return;
 
 }
-
+*/
 
 
 
