@@ -1,5 +1,5 @@
 #ifndef E14CONVREADER__H__
-#include "ConvFileAnalysis/E14ConvReader.h"
+#include "E14ConvReader.h"
 #include <iostream>
 #endif
 

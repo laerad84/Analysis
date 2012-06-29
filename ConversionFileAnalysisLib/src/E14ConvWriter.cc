@@ -1,4 +1,4 @@
-#include "ConvFileAnalysis/E14ConvWriter.h"
+#include "E14ConvWriter.h"
 
 E14ConvWriter::E14ConvWriter(char* SumupFile,TTree* tr){  
   m_mapFilename = SumupFile;

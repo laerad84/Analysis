@@ -19,7 +19,7 @@ char convFileDir[128];
 char rawFileDir[128];
 char simcalFileDir[128];
 char expcalFileDir[128];
-char waveAnaFileDir[128];
+char waveAnaFileDir[256];
 
 void         PrintEnvironment();
 unsigned int GetEnvironment();

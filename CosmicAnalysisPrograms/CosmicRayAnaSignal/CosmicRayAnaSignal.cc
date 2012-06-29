@@ -26,6 +26,9 @@
 #include "E14ConvReader.h"
 #include "E14ConvWriter.h"
 
+#include "E14CosmicAnalyzer.h"
+
+
 const Double_t COSMIC_THRESHOLD[20] = {1000,1000,1000,1000,1000,
 				       1000,1000,1000,1000,1000,
 				       1000,1000,1000,1000,1000,
@@ -33,11 +36,15 @@ const Double_t COSMIC_THRESHOLD[20] = {1000,1000,1000,1000,1000,
 
 int
 main(int argc, char** argv){
-  gStyle->SetPalette(1);
-  // ARGV[0]  <InputROOTFile> <OutputROOTFile> [<Vision>]
-  const int CosmicArr[20] = {0 ,5 ,2 ,1 ,6 ,7 ,4 ,13,12,11,
-  			     14,3 ,10,15,8 ,9 ,16,17,18,19};
   
+  gStyle->SetOptFit ( 11111111 );
+  gStyle->SetOptStat( "neMRiuo"  );  
+  gStyle->SetPalette(1);
+
+  // ARGV[0]  <InputROOTFile> <OutputROOTFile> [<Vision>]
+
+  const int CosmicArr[20]= {4 ,5 ,2 ,3 ,6 ,7 ,0 ,1 ,12,13,
+			    10,11,14,15,8 ,9 ,16,17,18,19};
   int RunNumber;
   std::string OutputFile;
 
@@ -54,10 +61,13 @@ main(int argc, char** argv){
   }
   
   // ReadEnvironment 
+  std::cout<< "ENVIRONMENT" << std::endl;
   int envRtn = GetEnvironment();
   PrintEnvironment();
   
+  
   // Set InputFile
+  std::cout<< "FILE SETTING" << std::endl;
   TFile* tfRead = new TFile(Form("%s/run%d_wav.root",waveAnaFileDir,RunNumber));
   TTree* trRead = (TTree*)tfRead->Get("WFTree");
   E14ConvWriter* wConv = new E14ConvWriter(Form("%s/Sum%d.root",sumFileDir, RunNumber),
@@ -108,9 +118,11 @@ main(int argc, char** argv){
   Int_t    HitUp;
   Int_t    HitDn;
   {
+
     trOut->Branch("nDigi"    ,&nDigi    ,"nDigi/I");
     trOut->Branch("CsIID"    ,CsIID     ,"CsIID[nDigi]/I");//nDigi;
     trOut->Branch("CsIADC"   ,CsIADC    ,"CsIADC[nDigi]/I");//nDigi;
+
     trOut->Branch("nHitUp"   ,&nHitUp   ,"nHitUp/I");
     trOut->Branch("nHitDn"   ,&nHitDn   ,"nHitDn/I");
     
@@ -122,6 +134,7 @@ main(int argc, char** argv){
     
     trOut->Branch("UpperID"  ,&UpperID  ,"UpperID[nHitUp]/I");//nHitUp;
     trOut->Branch("DownID"   ,&DownID   ,"DownID[nHitDn]/I");//nHitDn;
+
     trOut->Branch("Trigger"  ,&Trigger  ,"Trigger/I");
     trOut->Branch("CalFactor",&CalFactor,"CalFactor/D");
     trOut->Branch("roh"      ,&roh      ,"roh/D");
@@ -149,16 +162,21 @@ main(int argc, char** argv){
   double CosmicOut[20];
 
   IDHandler* handler       = new IDHandler();
-  HoughCsI*  hough         = new HoughCsI();
-  Chisq_cosmic* chi2Cosmic = new Chisq_cosmic();
-
+  /*
+    HoughCsI*  hough         = new HoughCsI();
+    Chisq_cosmic* chi2Cosmic = new Chisq_cosmic();
+  */
+  E14CosmicAnalyzer* CosmicAna = new E14CosmicAnalyzer();
   
-
+  
   long nEntries = wConv->GetEntries();
   std::cout << "TotalEntries::" << nEntries  << std::endl;  
   
   TGraph* gr  = new TGraph();
   for( int iEntry = 0; iEntry < nEntries; iEntry++){
+    bool Trigger=false;
+    bool CoinTrigger=false;
+    
     wConv->GetEntry(iEntry);
     if( iEntry && iEntry % 100 == 0){
       std::cout<< "\r" << iEntry << "/" << nEntries << std::endl;
@@ -225,14 +243,14 @@ main(int argc, char** argv){
 	break;
       }
     }
+
     
     // Analysis Code 
     gr->Set(0);
-    hough->Reset();
 
     // Set Activated Crystal to graph    
     for ( int idigi = 0; idigi < CsiNumber; idigi++){
-      if( CsiSignal[idigi] < 20 ){ continue; }
+      if( CsiSignal[idigi] < HeightThreshold ){ continue; }
       double x,y;
       handler->GetMetricPosition(CsiID[idigi], x,y);
       gr->SetPoint(gr->GetN(), x, y);      
@@ -249,7 +267,7 @@ main(int argc, char** argv){
 	}
 	if( CosmicSignal[ iCosmic    ] > COSMIC_THRESHOLD[ iCosmic     ] ||
 	    CosmicSignal[ iCosmic+10 ] > COSMIC_THRESHOLD[ iCosmic +10 ]){
-	  HitUp |= 1 << iCosmic;
+	  HitUp     |= 1 << iCosmic;
 	}
 	if( CosmicSignal[ iCosmic+5  ] > COSMIC_THRESHOLD[ iCosmic +5  ] &&
 	    CosmicSignal[ iCosmic+15 ] > COSMIC_THRESHOLD[ iCosmic +15 ]){
@@ -257,137 +275,36 @@ main(int argc, char** argv){
 	}
 	if( CosmicSignal[ iCosmic+5  ] > COSMIC_THRESHOLD[ iCosmic +5  ] ||
 	    CosmicSignal[ iCosmic+15 ] > COSMIC_THRESHOLD[ iCosmic +15 ]){
-	  HitDn |= 1 << iCosmic;
+	  HitDn     |= 1 << iCosmic;
 	}       	  
       }
     }
-  
-
-  /*
-    ///AnalysisCode    
-    TGraph* gr = new TGraph();
-    hough->Reset();
-    
-    for( int idigi = 0; idigi< Reader->CsiNumber; idigi++){
-      if( Reader->CsiIntegratedADC[idigi] > ADCThreshold){//MeV
-	double x,y;
-	//std::cout << "ID::" << Reader->CsiModID[idigi] << std::endl;
-	handler->GetMetricPosition(Reader->CsiModID[idigi], x, y);
-	gr->SetPoint( gr->GetN(), x,y);	
-      }
-    }    
-    nHitUp = 0; 
-    nHitDn = 0; 
-    
-    //Trigger Judgement
-    if( gr->GetN() < 350 ){      
-      for( int icosmic = 0; icosmic< 5 ; icosmic++){	
-	if( Reader->CosmicEne[icosmic]    > COSMIC_THRESHOLD[icosmic]  ||
-	    Reader->CosmicEne[icosmic+10] > COSMIC_THRESHOLD[icosmic+10]){
-	  UpperID[nHitUp] = icosmic;
-	  CosmicBoolUp |= 1 << icosmic;
-	  nHitUp++;	  
-	}
-	
-	if( Reader->CosmicEne[icosmic+5]  > COSMIC_THRESHOLD[icosmic+5] ||
-	    Reader->CosmicEne[icosmic+15] > COSMIC_THRESHOLD[icosmic+15]){	
-	  DownID[nHitDn]  = icosmic%5;
-	  nHitDn++;	  
-	  CosmicBoolDn |= 1<< icosmic;
-	}	
-      }      
-    }
-    
-    if( nHitDn  >= 1 && nHitUp >= 1){
-      bCosmicTrigger = true;
-      Trigger = 1;
-    }else{
-      bCosmicTrigger = false;
-      Trigger = 0;
-    }    
-    nDigi = 0; 
-    if( bCosmicTrigger){
-      if(hough->CosmicJudgment(gr)){	
-	gr->Set(0);
-	CosmicFit = 1;
-	roh       = hough->GetRoh();
-	theta     = hough->GetTheta();
-	
-	for( int idigi = 0; idigi< Reader->CsiNumber; idigi++){	
-	  if( Reader->CsiIntegratedADC[idigi] > ADCThreshold ){
-	    double x,y;
-	    //std::cout << "ID::" << Reader->CsiModID[idigi] << std::endl;
-	    handler->GetMetricPosition(Reader->CsiModID[idigi], x, y);
-	    if( hough->CalDistance(x,y) <= 50 ){
-	      gr->SetPoint( gr->GetN(), x,y);	    
-	    }	
-	  }
-	}	
-	
-	chi2Cosmic->Reset();
-	chi2Cosmic->SetFunction(gr);
-	chi2Cosmic->SetRange(hough->GetRoh(),hough->GetTheta());
-	chi2Cosmic->CalChisq();
-	//std::cout << hough->GetRoh() << "\t" 
-	//<< hough->GetTheta() << std::endl;
-	roh = chi2Cosmic->GetRoh();
-	theta = chi2Cosmic->GetTheta();
-	
-	if( nHitUp  > 0 && nHitDn > 0){
-	  Double_t xPosOnScinti[2];//0:Up // 1:Down
-	  Double_t RadTheta = TMath::Pi()/180*theta;
-	  xPosOnScinti[0] = (roh - 1000*TMath::Sin(RadTheta))/TMath::Cos(RadTheta);
-	  xPosOnScinti[1] = (roh + 1000*TMath::Sin(RadTheta))/TMath::Cos(RadTheta);
-	  for( int ipos = 0; ipos < nHitUp ; ipos++){	    
-	    hisTriggerHitPosition->Fill(xPosOnScinti[0],UpperID[ipos]);
-	  }
-	  for( int ipos = 0; ipos < nHitDn; ipos++){	    
-	    hisTriggerHitPosition->Fill(xPosOnScinti[1],DownID[ipos]+5);
-	  }
-	}
-
-
-	for( int idigi = 0; idigi<Reader->CsiNumber; idigi++){	  
-	  double x,y;
-	  if( Reader->CsiIntegratedADC[idigi] > ADCThreshold ){
-	    handler->GetMetricPosition(Reader->CsiModID[idigi],x, y);
-	    Double_t length;
-	    if( Reader->CsiModID[idigi] < 2240){
-	      length = 25.;
-	    }else{
-	      length = 50.;
-	    }
-	    if( chi2Cosmic->GetDistance(x,y) < length/2.*(TMath::Cos(theta*TMath::Pi()/180.)-TMath::Sin(theta*TMath::Pi()/180.)) && TMath::Abs(theta) < 45){
-	      CsIID[nDigi]   = Reader->CsiModID[idigi];
-	      CsIdepE[nDigi] = Reader->CsiEne[idigi];
-	      CsIADC[nDigi]  = Reader->CsiIntegratedADC[idigi];
-	      //hisCosmicHit[Reader->CsiModID[idigi]]->Fill(Reader->CsiIntegratedADC[idigi]);
-	      nDigi++;
-	    }
-	  }
-	}
-	CalFactor = chi2Cosmic->GetCalibrationFactor();      
-
-      }else{	
+    if( HitUp != 0 && HitDn != 0 ){ Trigger = true; }
+    if( HitCoinUp != 0 && HitCoinDn != 0 ){ CoinTrigger = true ; } 
+    if( Trigger ){ 
+      CosmicAna->Reset();
+      if( CosmicAna->GetResult( gr, roh, theta ) ){
+	CalFactor = CosmicAna->mc_chi2Cosmic->GetCalibrationFactor();      
+	CosmicFit = 1; 
+      }else{
+	CosmicFit = 0;
 	CalFactor = 0;
-	nDigi     = 0;
-	roh       = 0;
-	theta     = 0;
       }
-      
-    }else{
+    }else{	
       CalFactor = 0;
       nDigi     = 0;
-      roh       = 0; 
+      roh       = 0;
       theta     = 0;
-    }
+    }  
     trOut->Fill();
   }
-
-  */
+  
 
   std::cout << "Analysis cosmic ray event is over" << std::endl;
   hisTriggerHitPosition->Write();
   trOut->Write();
   tfOut->Close();  
 }
+
+
+

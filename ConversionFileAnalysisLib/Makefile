@@ -36,7 +36,7 @@ LIBS        += -L$(G4INSTALL)/lib
 LIBS        += -L$(E14_TOP_DIR)/lib/so
 LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lEG
 LIBS        += -lGsimData -lklong -lpi0 -lgamma -lrec2g -lgnana -lE14Fsim -lcsimap -lcluster -lGsimTools -lGsimPersistency
-#LIBS        += -L$(ANALYSISLIB)/lib -lAnalysisLib
+LIBS        += -L$(ANALYSISLIB)/lib -lAnalysisLib
 
 INCLUDEDIR  += .  ./include 
 INCLUDEDIR  += $(ROOTSYS)/include 
@@ -44,7 +44,7 @@ INCLUDEDIR  += $(BOOSTDIR)/include
 INCLUDEDIR  += $(CLHEP_BASE_DIR)/include
 INCLUDEDIR  += $(G4INSTALL)/include
 INCLUDEDIR  += $(E14_TOP_DIR)/include 
-#INCLUDEDIR  += $(ANALYSISLIB)/include
+INCLUDEDIR  += $(ANALYSISLIB)/include
 
 INCLUDES     = $(INCLUDEDIR:%=-I%)
 
@@ -64,6 +64,7 @@ all: rootDict makelib target
 
 target: $(TARGET_BIN)
 	@ basename `pwd`
+
 makelib: $(CXX_OBJECTS)
 	@ echo $(ROOTSYS)
 	@ echo $(CXX_OBJECTS)	
@@ -84,14 +85,13 @@ ifneq "$(shell ls ./include/*LinkDef.h 2>/dev/null)" ""
 	@ echo End making rootdicts
 endif
 
-#bin/%: tmp/%.o $(CXX_OBJECTS)
-bin/%: tmp/%.o 
+bin/%: tmp/%.o $(CXX_OBJECTS)
 	@ echo making $(@F)
 	@ [ -d ./bin ] || mkdir -p ./bin
 	@ echo "##########################################################"	
 	@ echo COMPILE $(@F)		
 	@ echo "##########################################################"
-	$(CXX) -o $@ $^ $(filter-out -fPIC,$(CXXFLAGS)) $(CXX_DICTSRC) $(INCLUDES) $(LIBS) -lAnalysisLib -L./lib
+	$(CXX) -o $@ $^ $(filter-out -fPIC,$(CXXFLAGS)) $(CXX_DICTSRC) $(INCLUDES) $(LIBS)
 	@ echo "##########################################################"
 
 tmp/%.o: src/%.c

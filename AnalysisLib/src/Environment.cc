@@ -1,3 +1,4 @@
+#ifndef ENVIRONMENT__H__
 #include "Environment.h"
 
 void PrintEnvironment(){
@@ -20,12 +21,14 @@ unsigned int GetEnvironment(){
   expcalFileDir  = std::getenv("EXPCALFILEDIR");
   simcalFileDir  = std::getenv("SIMCALFILEDIR");
   */
+
   strcpy(sumFileDir    ,std::getenv("SUMUPFILEDIR"));
   strcpy(convFileDir   ,std::getenv("CONVFILEDIR"));
   strcpy(rawFileDir    ,std::getenv("RAWFILEDIR"));
   strcpy(expcalFileDir ,std::getenv("EXPCALFILEDIR"));
   strcpy(simcalFileDir ,std::getenv("SIMCALFILEDIR"));
   strcpy(waveAnaFileDir,std::getenv("WAVEANAFILEDIR"));
+
   /*
   if( sumFileDir.size() == 0){
     std::cerr << "There is no Definition : SUMUPFILEDIR" << std::endl;
@@ -51,3 +54,4 @@ unsigned int GetEnvironment(){
   return Flag;
 }
 
+#endif

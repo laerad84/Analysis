@@ -84,14 +84,13 @@ ifneq "$(shell ls ./include/*LinkDef.h 2>/dev/null)" ""
 	@ echo End making rootdicts
 endif
 
-#bin/%: tmp/%.o $(CXX_OBJECTS)
-bin/%: tmp/%.o 
+bin/%: tmp/%.o $(CXX_OBJECTS)
 	@ echo making $(@F)
 	@ [ -d ./bin ] || mkdir -p ./bin
 	@ echo "##########################################################"	
 	@ echo COMPILE $(@F)		
 	@ echo "##########################################################"
-	$(CXX) -o $@ $^ $(filter-out -fPIC,$(CXXFLAGS)) $(CXX_DICTSRC) $(INCLUDES) $(LIBS) -lAnalysisLib -L./lib
+	$(CXX) -o $@ $^ $(filter-out -fPIC,$(CXXFLAGS)) $(CXX_DICTSRC) $(INCLUDES) $(LIBS)
 	@ echo "##########################################################"
 
 tmp/%.o: src/%.c
