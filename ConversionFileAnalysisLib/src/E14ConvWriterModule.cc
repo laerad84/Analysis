@@ -54,6 +54,8 @@ bool E14ConvWriterModule::Branch(){
 		 Form("%sSignal[%sNumber]/D"   ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sTiming"  ,m_DetectorName) ,m_Timing  ,
 		 Form("%sTiming[%sNumber]/D"   ,m_DetectorName,m_DetectorName));//m_nDigi
+  m_Tree->Branch(Form("%sHHTiming",m_DetectorName) ,m_HHTiming,
+		 Form("%sHHTiming[%sNumber]/D" ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sFitTiming",m_DetectorName),m_FitTiming,
 		 Form("%sFitTiming[%sNumber]/D",m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sSplTiming",m_DetectorName),m_SplTiming,

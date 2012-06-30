@@ -55,7 +55,7 @@ public:
 };
 double TSplineGetX( TSpline3* spl,  double y, double xmin, double xmax, int npx = 100){
 
-  Gspline g(spl, y);
+  GSpline g(spl, y);
   ROOT::Math::WrappedFunction<GSpline> wf1(g);
   ROOT::Math::BrentRootFinder brf;
   brf.SetFunction( wf1,xmin, xmax);
@@ -65,7 +65,7 @@ double TSplineGetX( TSpline3* spl,  double y, double xmin, double xmax, int npx 
   if( brf.Root() == xmax || brf.Root() == xmin ){
     return 1.E-10;
   }
-  return brf.Root();
+  return brf.Root();  
 }
 
 
@@ -127,8 +127,8 @@ int  main(int argc,char** argv)
   TGraph* gr = new TGraph();
   gr->SetMarkerStyle(6);
   
-  //for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-  for( int ievent  = 0; ievent < 100; ievent++){
+  for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
+  //for( int ievent  = 0; ievent < 100; ievent++){
     wConv->InitData();
     for( int icrate = 0; icrate < nCrate; icrate++){
       //std::cout << icrate << std::endl;
@@ -179,8 +179,11 @@ int  main(int argc,char** argv)
 	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
 	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
 	  wConv->mod[iMod]->m_FitTiming[chIndex]= halfFitTiming;
-	  TSpline3* spl = new TSpline3( "spl", gr);
+	  TSpline3* spl    = new TSpline3( "spl", gr);
+	  double splTiming = TSplineGetX(spl, halfHeight, halfTiming-12,  halfTiming +12 );
+	  wConv->mod[iMod]->m_SplTiming[chIndex]=splTiming;
 
+	  delete spl;	    
 	  delete linearFunction;
 	  //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 
 	      
