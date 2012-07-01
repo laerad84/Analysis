@@ -15,7 +15,9 @@ class E14ConvWriterModule {
   double m_Pedestal[4096];
   double m_Signal[4096];
   double m_Timing[4096];
+  double m_FitTiming[4096];
   double m_HHTiming[4096];
+  double m_SplTiming[4096];
   double m_ParA[4096];
   double m_ParB[4096];
 

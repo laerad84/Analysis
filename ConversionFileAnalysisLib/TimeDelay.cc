@@ -66,7 +66,7 @@ int main( int argc , char** argv ){
   }
 
   E14ConvWriter* wConv= new E14ConvWriter( Form("%s/Sum%d.root", sumFileDir,RunNumber), trin );
-  wconv->AddModule("Csi");
+  wConv->AddModule("Csi");
   wConv->AddModule("CC03");
   wConv->AddModule("OEV");
   wConv->AddModule("CV");
@@ -91,8 +91,8 @@ int main( int argc , char** argv ){
   std::cout << "Entries" << trin->GetEntries() << std::endl;
   
   std::cout << "Loop Start" << std::endl; 
-  for( int ievnt = 0; ievent < trin->GetEntries() ; ievent++ ) {
-    trin->GetEntry(i);
+  for( int ievent = 0; ievent < trin->GetEntries() ; ievent++ ) {
+    trin->GetEntry(ievent);
     
     
 

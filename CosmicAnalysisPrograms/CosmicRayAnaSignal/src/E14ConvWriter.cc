@@ -68,13 +68,11 @@ int E14ConvWriter::GetNmodule() {
   return m_nModule;
 }
 
-int E14ConvWriter::GetEntries() {
-  if( m_tr ==NULL ){return 0;}
-  int m_Entries = m_tr->GetEntries();
-  return m_Entries;
+int E14ConvWriter::GetEntries(){
+  return m_tr->GetEntries();
 }
 
-int E14ConvWriter::GetEntry( int entry ){
-  if( m_tr == NULL ){ return 0; } 
-  return m_tr->GetEntry( entry );
+int E14ConvWriter::GetEntry( int eventNum ){
+  return m_tr->GetEntry( eventNum );
 }
+  

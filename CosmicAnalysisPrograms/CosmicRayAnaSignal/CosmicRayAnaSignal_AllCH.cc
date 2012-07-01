@@ -126,13 +126,13 @@ main(int argc, char** argv){
   {
 
     trOut->Branch("nDigi"    ,&nDigi    ,"nDigi/I");
-    trOut->Branch("CsIID"    ,CsIID     ,"CsIID[nDigi]/I");//nDigi;
-    trOut->Branch("CsIADC"   ,CsIADC    ,"CsIADC[nDigi]/I");//nDigi;
-    trOut->Branch("CsIdepE"  ,CsIdepE   ,"CsidepE[nDigi]/D");//nDigi;
-    trOut->Branch("CsITiming"    ,CsITiming      ,"CsITiming[nDigi]/D");//nDigi;
-    trOut->Branch("CsIHHTiming"  ,CsIHHTiming    ,"CsIHHTiming[nDigi]/D");//nDigi;
-    trOut->Branch("CsIFitTiming" ,CsIFitTiming   ,"CsIFitTiming[nDigi]/D");//nDigi;
-    trOut->Branch("CsISplTiming" ,CsISplTiming   ,"CsISplTiming[nDigi]/D");//nDigi;
+    trOut->Branch("CsIID"    ,CsIID     ,"CsIID[2716]/I");
+    trOut->Branch("CsIADC"   ,CsIADC    ,"CsIADC[2716]/I");
+    trOut->Branch("CsIdepE"  ,CsIdepE   ,"CsidepE[2716]/D");
+    trOut->Branch("CsITiming"    ,CsITiming      ,"CsITiming[2716]/D");
+    trOut->Branch("CsIHHTiming"  ,CsIHHTiming    ,"CsIHHTiming[2716]/D");
+    trOut->Branch("CsIFitTiming" ,CsIFitTiming   ,"CsIFitTiming[2716]/D");
+    trOut->Branch("CsISplTiming" ,CsISplTiming   ,"CsISplTiming[2716]/D");
 
     trOut->Branch("nHitUp"   ,&nHitUp   ,"nHitUp/I");
     trOut->Branch("nHitDn"   ,&nHitDn   ,"nHitDn/I");
@@ -285,12 +285,12 @@ main(int argc, char** argv){
       handler->GetMetricPosition(CsiID[idigi], x,y);
       gr->SetPoint(gr->GetN(), x, y);
 
-      CsIID[nDigi]   = CsiID[idigi];
-      CsIdepE[nDigi]      = CsiSignal[idigi];
-      CsITiming[nDigi]    = CsiTime[idigi];
-      CsIHHTiming[nDigi]  = CsiHHTime[idigi];
-      CsIFitTiming[nDigi] = CsiFitTime[idigi];
-      CsISplTiming[nDigi] = CsiSplTime[idigi];
+      CsIID[CsiID[idigi]]   = CsiID[idigi];
+      CsIdepE[CsiID[idigi]]      = CsiSignal[idigi];
+      CsITiming[CsiID[idigi]]    = CsiTime[idigi];
+      CsIHHTiming[CsiID[idigi]]  = CsiHHTime[idigi];
+      CsIFitTiming[CsiID[idigi]] = CsiFitTime[idigi];
+      CsISplTiming[CsiID[idigi]] = CsiSplTime[idigi];
 
       nDigi++;
     }
