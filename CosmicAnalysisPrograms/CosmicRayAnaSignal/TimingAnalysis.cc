@@ -35,7 +35,8 @@ main( int argc , char** argv){
   for( int i = 0; i< nChannel; i++){
     hisTimeDiff[i] =  new TH1D(Form("his__%d", i),Form("__%d;ns;",i), 50,-25,25);
   }
-  double x[2]; y[2];
+  double x[2]; 
+  double y[2];
   for( int iID = 0; iID < nChannel ; iID++){
     handler->GetMetricPosition( iID, x[0], y[0] );
 
@@ -45,7 +46,8 @@ main( int argc , char** argv){
       //hisTimeDiff[i]  = new TH1D(Form("his_%d_%d", iID, i),Form("%d_%d;ns;",iID,i),50,-25,25);
     }
     
-    for( int ievent = 0; ievent < CosmicOut->GetEntries(); ievent++){
+    //for( int ievent = 0; ievent < CosmicOut->GetEntries(); ievent++){
+    for( int ievent = 0; ievent < 100; ievent++){
       if( (ievent % 1000) == 0  && ievent ){ std::cout << "EVENT:" << ievent << std::endl; }        
       CosmicOut->GetEntry(ievent);
       // Except Laser Event // 

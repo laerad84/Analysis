@@ -91,9 +91,10 @@ int  main(int argc,char** argv)
   for( int icrate = 0; icrate < nCrate; icrate++){
     tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",convFileDir, icrate, RunNumber)); 
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
-  }  
-
-  TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
+  }
+  //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
+  TFile* tfout = new TFile(Form("%s/run%d_wav.root",waveFileDir,RunNumber),
+			   "recreate");
   TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");   
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",sumFileDir,RunNumber),
 					    trout);

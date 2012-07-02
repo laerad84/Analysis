@@ -128,7 +128,7 @@ main(int argc, char** argv){
     trOut->Branch("nDigi"    ,&nDigi    ,"nDigi/I");
     trOut->Branch("CsIID"    ,CsIID     ,"CsIID[2716]/I");
     trOut->Branch("CsIADC"   ,CsIADC    ,"CsIADC[2716]/I");
-    trOut->Branch("CsIdepE"  ,CsIdepE   ,"CsidepE[2716]/D");
+    trOut->Branch("CsIdepE"  ,CsIdepE   ,"CsIdepE[2716]/D");
     trOut->Branch("CsITiming"    ,CsITiming      ,"CsITiming[2716]/D");
     trOut->Branch("CsIHHTiming"  ,CsIHHTiming    ,"CsIHHTiming[2716]/D");
     trOut->Branch("CsIFitTiming" ,CsIFitTiming   ,"CsIFitTiming[2716]/D");
@@ -242,21 +242,22 @@ main(int argc, char** argv){
 	// Csi
 	CsiNumber = nSubMod;
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
-	  CsiID[iSubMod]     = wConv->mod[iMod]->m_ID[iSubMod];
-	  CsiSignal[iSubMod] = wConv->mod[iMod]->m_Signal[iSubMod];
+	  CsiID[iSubMod]        = wConv->mod[iMod]->m_ID[iSubMod];
+	  CsiSignal[iSubMod]    = wConv->mod[iMod]->m_Signal[iSubMod];
 	  CsiTime[iSubMod]      = wConv->mod[iMod]->m_Timing[iSubMod];
 	  CsiFitTime[iSubMod]   = wConv->mod[iMod]->m_FitTiming[iSubMod];
 	  CsiSplTime[iSubMod]   = wConv->mod[iMod]->m_SplTiming[iSubMod];
 	  CsiHHTime[iSubMod]    = wConv->mod[iMod]->m_HHTiming[iSubMod];
-
 	}
 	break;
       case 1:
 	CosmicNumber = nSubMod;
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
 	  //CosmicID[iSubMod]     = wConv->mod[iMod]->m_ID[iSubMod];
-	  CosmicSignal[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]] = wConv->mod[iMod]->m_Signal[iSubMod];
-	  CosmicTime[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]   = wConv->mod[iMod]->m_Timing[iSubMod];
+	  CosmicSignal[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]
+	    = wConv->mod[iMod]->m_Signal[iSubMod];
+	  CosmicTime[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]   
+	    = wConv->mod[iMod]->m_Timing[iSubMod];
 	}
 	break;
       case 2:
