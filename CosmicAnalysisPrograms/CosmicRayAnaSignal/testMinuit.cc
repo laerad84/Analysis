@@ -30,6 +30,7 @@
 #include "TPad.h"
 #include "TMath.h"
 #include "TMinuit.h"
+
 //#include "IDHandler.cpp"
 
 
@@ -292,7 +293,8 @@ void cosmicAnalysis3( const char* kind, const int region )
  */
 	
  
-void testMinuit(){
+int main(){
+  // testMinuit(){
 
   offsets = new Double_t [N];
   means   = new Double_t [N][N];
@@ -393,7 +395,7 @@ void testMinuit(){
 
   std::cerr << "Iteration :" << cycle << "\tChisquare : " << chisq << std::endl;
   cycle = 0; 
-  ofstream output ( Form("%sOffset.txt","testNewWORK"));
+  ofstream output ( Form("%sOffset.txt","testNewWORKCompile"));
   double par=0.0, err= 0.0;
   for( int index = 0; index < N; index++){
     gMinuit->GetParameter(index, par, err );

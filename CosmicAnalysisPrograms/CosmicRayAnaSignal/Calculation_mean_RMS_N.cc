@@ -64,36 +64,89 @@ main( int argc , char** argv){
     CosmicOut->GetEntry(ievent);
 
     // Except Laser Event // 
-    if( CosmicOut->CosmicFit != 1  && CosmicOut->nDigi!=0 && CosmicOut->nDigi < 300 ){ continue; }    
-
-    for( int idigi = 0 ;idigi < CosmicOut->nDigi; idigi++){      
-      
+    if( CosmicOut->CosmicFit != 1  && CosmicOut->nDigi!=0 && CosmicOut->nDigi < 300 ){ continue; }        
+    if( CosmicOut->CalFactor < 0.8 ) { continue; }
+    Double_t cos       = TMath::Cos(CosmicOut->theta*TMath::Pi()/180.);
+    Double_t sin       = TMath::Sin(CosmicOut->theta*TMath::Pi()/180.);	
+    
+    for( int idigi = 0 ;idigi < CosmicOut->nDigi; idigi++){            
       if(CosmicOut->CsIdepE[idigi]< 30 ){ continue; }
-      if( CosmicOut->CsIHHTiming[idigi] < -500 ){ continue; }
+      if( CosmicOut->CsIFitTiming[idigi] < -500 ){ continue; }
       handler->GetMetricPosition(CosmicOut->CsIID[idigi], x[0], y[0] );
-      
+      double idist = TMath::Abs((x[0] -(1./cos*(CosmicOut->roh - y[0]*sin ))) * cos );
+      if( idist >50){ continue; }
       for( int jdigi = idigi+1; jdigi < CosmicOut->nDigi; jdigi++){
-
+	
 	if(CosmicOut->CsIdepE[jdigi]< 30 ){ continue; }
-	if( CosmicOut->CsIHHTiming[jdigi] < -500 ){ continue; }
-
+	if( CosmicOut->CsIFitTiming[jdigi] < -500 ){ continue; }	
 	handler->GetMetricPosition(CosmicOut->CsIID[jdigi], x[1], y[1] );
+	double jdist = TMath::Abs((x[1] -(1./cos*(CosmicOut->roh - y[1]*sin ))) * cos );
+	if( jdist > 50 ){ continue; }
 
-	Double_t cos       = TMath::Cos(CosmicOut->theta*TMath::Pi()/180.);
-	Double_t sin       = TMath::Sin(CosmicOut->theta*TMath::Pi()/180.);	
 	Double_t Distance  = (x[1]-x[0])*-1*sin + (y[1]-y[0])*cos;
 	Double_t TimeDelay = Distance/299.792458;
-	Double_t DeltaTime = CosmicOut->CsIHHTiming[idigi] -CosmicOut->CsIHHTiming[jdigi]-TimeDelay;
+	Double_t DeltaTime = CosmicOut->CsIFitTiming[idigi] -CosmicOut->CsIFitTiming[jdigi]-TimeDelay;
 	//std::cout<< (x[1]-x[0]) << " : " << (y[1]-y[0]) << " : " << TimeDelay << std::endl;
 	//mm/sec
 	
 	Delta_Mean[CosmicOut->CsIID[idigi]][CosmicOut->CsIID[jdigi]]       += DeltaTime;
-	Delta_SquareMean[CosmicOut->CsIID[idigi]][CosmicOut->CsIID[jdigi]] += TMath::Power(DeltaTime,2);
+	//Delta_SquareMean[CosmicOut->CsIID[idigi]][CosmicOut->CsIID[jdigi]] += TMath::Power(DeltaTime,2);
 	Delta_Entries[CosmicOut->CsIID[idigi]][CosmicOut->CsIID[jdigi]]++;
 
       }
     }
   }
+
+  for( int ievent = 0; ievent < CosmicOut->GetEntries(); ievent++){
+    if( (ievent % 1000) == 0  && ievent ){ std::cout << "EVENT:" << ievent << std::endl; }        
+    CosmicOut->GetEntry(ievent);
+
+    // Except Laser Event // 
+    if( CosmicOut->CosmicFit != 1  && CosmicOut->nDigi!=0 && CosmicOut->nDigi < 300 ){ continue; }        
+    if( CosmicOut->CalFactor < 0.8 ) { continue; }
+    Double_t cos       = TMath::Cos(CosmicOut->theta*TMath::Pi()/180.);
+    Double_t sin       = TMath::Sin(CosmicOut->theta*TMath::Pi()/180.);	
+    
+    for( int idigi = 0 ;idigi < CosmicOut->nDigi; idigi++){            
+      if(CosmicOut->CsIdepE[idigi]< 30 ){ continue; }
+      if( CosmicOut->CsIFitTiming[idigi] < -500 ){ continue; }
+      handler->GetMetricPosition(CosmicOut->CsIID[idigi], x[0], y[0] );
+      double idist = TMath::Abs((x[0] -(1./cos*(CosmicOut->roh - y[0]*sin ))) * cos );
+      if( idist >50){ continue; }
+      for( int jdigi = idigi+1; jdigi < CosmicOut->nDigi; jdigi++){
+	
+	if(CosmicOut->CsIdepE[jdigi]< 30 ){ continue; }
+	if( CosmicOut->CsIFitTiming[jdigi] < -500 ){ continue; }	
+	handler->GetMetricPosition(CosmicOut->CsIID[jdigi], x[1], y[1] );
+	double jdist = TMath::Abs((x[1] -(1./cos*(CosmicOut->roh - y[1]*sin ))) * cos );
+	if( jdist > 50 ){ continue; }
+
+	Double_t Distance  = (x[1]-x[0])*-1*sin + (y[1]-y[0])*cos;
+	Double_t TimeDelay = Distance/299.792458;
+	Double_t DeltaTime = CosmicOut->CsIFitTiming[idigi] -CosmicOut->CsIFitTiming[jdigi]-TimeDelay;
+	//std::cout<< (x[1]-x[0]) << " : " << (y[1]-y[0]) << " : " << TimeDelay << std::endl;
+	//mm/sec
+	
+	//Delta_Mean[CosmicOut->CsIID[idigi]][CosmicOut->CsIID[jdigi]]       += DeltaTime;
+	DeltaTime = DeltaTime-Delta_Mean[CosmicOut->CsIID[idigi]][CosmicOut->CsIID[jdigi]]/Delta_Entries[CosmicOut->CsIID[idigi]][CosmicOut->CsIID[jdigi]];
+	Delta_SquareMean[CosmicOut->CsIID[idigi]][CosmicOut->CsIID[jdigi]] += TMath::Power(DeltaTime,2);
+	//Delta_Entries[CosmicOut->CsIID[idigi]][CosmicOut->CsIID[jdigi]]++;
+
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   TTree*   trout = new TTree("TimeDeltaCosmic","");
@@ -117,7 +170,8 @@ main( int argc , char** argv){
       Entries = (Delta_Entries[iID][jID]);
       if( Entries != 0){
 	Mean     = Delta_Mean[iID][jID]/Entries; 
-	RMS      = TMath::Sqrt( (Delta_SquareMean[iID][jID] -TMath::Power( Delta_Mean[iID][jID], 2)) )/Entries;
+	//RMS      = TMath::Sqrt( Delta_SquareMean[iID][jID] -TMath::Power( Delta_Mean[iID][jID], 2)) )/Entries;
+	RMS      = TMath::Sqrt( Delta_SquareMean[iID][jID] )/Entries;
 	Error=  RMS / TMath::Sqrt( (double)(Entries) );
       }else{
 	Mean = 0;
