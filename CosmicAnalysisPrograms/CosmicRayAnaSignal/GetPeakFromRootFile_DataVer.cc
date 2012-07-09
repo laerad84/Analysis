@@ -85,7 +85,7 @@ bool searchPeak(TH1D* hisCosmic, Double_t& Norm, Double_t& Peak, Double_t& Sigma
       Sigma= fitFunction->GetParameter(2);
       chi2 = fitFunction->GetChisquare();
       ndf  = fitFunction->GetNDF();
-      if( Peak <  PeakX-0.5*hisCosmic->GetRMS() || Peak < 300 ){
+      if( Peak <  PeakX-0.5*hisCosmic->GetRMS()){
 	
 	Peak  = -1;
 	Sigma = -1;
@@ -110,14 +110,16 @@ bool searchPeak(TH1D* hisCosmic, Double_t& Norm, Double_t& Peak, Double_t& Sigma
 
 int 
 main( int argc, char** argv){
+
   std::string inputFile;
   std::string outputFile;
   
-  if( argc != 2){
+  if( argc != 3){
     std::cerr << "Argument Error" << std::endl;
     return -1; 
   }else{
-    outputFile = argv[1];
+    inputFile  = argv[1];
+    outputFile = argv[2];
   }
 
   TApplication* app = new TApplication("app",&argc, argv);
@@ -158,33 +160,53 @@ main( int argc, char** argv){
 
   gr->SetNameTitle("cosmic","cosmic");
   grGain->SetNameTitle("gain","gain");
-  TH1D* CosmicHist;
+  TH1D* CosmicHist = NULL;
+  TH1D* CosmicTempHist =NULL;
   for( int i = 0; i < 2716 ; i++){    
+    //for( int i = 0; i < 100 ; i++){    
     std::cout << i << std::endl;
-    CosmicHist = new TH1D(Form("his_CH%04d",i),Form("Cosmic_%04d",i),
-			  200,-16,64);
-    trCosmic->Project(CosmicHist->GetName(),
+    
+    CosmicTempHist = new TH1D( Form("hisTEMPCH%04d",i),Form("CosmicTemp_%04d",i),
+			       200,-200,800);
+    trCosmic->Project(CosmicTempHist->GetName(),
 		      "CsidepE*CalFactor",
 		      Form("CsIID==%d && CalFactor>0.9",i));
+      
+    ID = i;
     Double_t Peak;
     Double_t Sigma;
-    Double_t Norm;
-    ID = i;
-    if( searchPeak( CosmicHist,Norm, Peak, Sigma ,Chi2,Ndf) ){
+    Double_t Norm;    
+    if( searchPeak( CosmicTempHist,Norm, Peak, Sigma ,Chi2,Ndf) ){
       std::cout<< i << " : " <<  Peak << " : " << Sigma << std::endl;
-      if( i >= 2240){
-	Peak  = Peak /2;
-	Sigma = Sigma/2;
+      CosmicHist = new TH1D(Form("his_CH%04d",i),Form("Cosmic_%04d",i),
+			    160,0,8*Peak);
+      trCosmic->Project(CosmicHist->GetName(),
+			"CsidepE*CalFactor",
+			Form("CsIID==%d && CalFactor>0.9",i));
+      if( searchPeak( CosmicHist,Norm, Peak, Sigma ,Chi2,Ndf) ){      	
+	if( i >= 2240){
+	  Peak  = Peak /2;
+	  Sigma = Sigma/2;
+	}
+	
+	gr->SetPoint(gr->GetN(), Peak, Sigma);
+	grGain->SetPoint(grGain->GetN(), i, Peak);
+	grGain->SetPointError(grGain->GetN()-1, 0, Sigma);
+	hisGain->Fill(Peak);      
+	std::cout<< Norm << std::endl;
+	LandauNorm  = Norm;
+	LandauPeak  = Peak;
+	LandauSigma = Sigma; 
+      }else{
+	gr->SetPoint(gr->GetN(), 0, 0);
+	grGain->SetPoint(grGain->GetN(), i, 0);
+	grGain->SetPointError(grGain->GetN()-1, 0, 0);
+	LandauNorm = -1;
+	LandauPeak = -1;
+	LandauSigma = -1;
+	Chi2 = -1;
+	Ndf  = -1;
       }
-      
-      gr->SetPoint(gr->GetN(), Peak, Sigma);
-      grGain->SetPoint(grGain->GetN(), i, Peak);
-      grGain->SetPointError(grGain->GetN()-1, 0, Sigma);
-      hisGain->Fill(Peak);      
-      std::cout<< Norm << std::endl;
-      LandauNorm  = Norm;
-      LandauPeak  = Peak;
-      LandauSigma = Sigma; 
     }else{
       gr->SetPoint(gr->GetN(), 0, 0);
       grGain->SetPoint(grGain->GetN(), i, 0);
@@ -200,10 +222,19 @@ main( int argc, char** argv){
     //can->Modified();
     //can->Update();
     //getchar();
-    CosmicHist->Write();
-    CosmicHist->Clear();
-
+    
+    if( CosmicTempHist ){
+      CosmicTempHist->Write();
+      CosmicTempHist->Clear();
+      CosmicTempHist = NULL;
+    }
+    if( CosmicHist ){
+      CosmicHist->Write();
+      CosmicHist->Clear();
+      CosmicHist = NULL;
+    }
   }
+
   std::cout<< "Analysis is Done" << std::endl;
 
   TCanvas* canNew = new TCanvas("canNew","",1600,800);    

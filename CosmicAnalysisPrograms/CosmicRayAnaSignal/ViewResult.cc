@@ -92,30 +92,6 @@ main ( int argc, char** argv ){
   TTree* trRead = new TTree("ReadFile","");
   trRead->ReadFile("testNewWORKCompileOffset.txt","CHID/I:Offset/D:OffsetError/D");
 
-  TFile* tfRead = new TFile("TestTimeOutLogic_3897.root");
-  TTree* trRead = (TTree*)tf->Get("TimeDeltaCosmic");
-  Int_t IDFirst;
-  Int_t IDSecond;
-  Double_t Mean;
-  Double_t RMS;
-  Double_t Error;
-  Int_t Entries;
-  trRead->SetBranchAddress("IDFirst",&IDFirst);
-  trRead->SetBranchAddress("IDSecond",&IDSecond);
-  trRead->SetBranchAddress("Mean",&Mean);
-  trRead->SetBranchAddress("RMS",&RMS);
-  trRead->SetBranchAddress("Error",&Error);
-  trRead->SetBranchAddress("Entries",&Entries);
-  for( int i = 0; i< trRead->GetEntries(); i++){
-    trRead->GetEntry(i);
-    if( EntrReadies > 100  && Error < 5 ){
-      means[IDFirst][IDSecond]  = Mean;
-      errors[IDFirst][IDSecond] = Error;
-      idFlag[IDFirst] = true;
-      idFlag[IDSecond]= true;
-    }
-  }
-  
   int CHID;
   double Offset;
   trRead->SetBranchAddress("CHID",&CHID);
@@ -204,7 +180,7 @@ main ( int argc, char** argv ){
   hisDis->SetLineColor(2);
   hisDis->Draw("same");
   pro->Draw("same");
-  tfout->Close();
+
   app->Run();
       
 }    

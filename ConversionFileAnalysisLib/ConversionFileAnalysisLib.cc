@@ -87,13 +87,16 @@ int  main(int argc,char** argv)
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
   TFile* tf[nCrate];
 
+  char* pi0RunDir = "/Volume0/ExpData/2012_Feb_Beam/pi0run_conv/pi0run/conv_data";
+
   E14ConvReader* conv[nCrate];
   for( int icrate = 0; icrate < nCrate; icrate++){
-    tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",convFileDir, icrate, RunNumber)); 
+    //tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",convFileDir, icrate, RunNumber)); 
+    tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",pi0RunDir, icrate, RunNumber)); 
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
   }
   //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
-  TFile* tfout = new TFile(Form("%s/run%d_wav.root",waveFileDir,RunNumber),
+  TFile* tfout = new TFile(Form("%s/run%d_wav.root",waveAnaFileDir,RunNumber),
 			   "recreate");
   TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");   
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",sumFileDir,RunNumber),
