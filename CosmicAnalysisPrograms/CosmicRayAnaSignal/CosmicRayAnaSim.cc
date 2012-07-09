@@ -68,7 +68,7 @@ main(int argc, char** argv){
 
   // Set InputFile
   std::cout<< "FILE SETTING" << std::endl;
-  TFile* tfRead = new TFile(Form("/media/3TB_3/CosmicSim/Conv_Cosmic/cosmic_conv_%d.root",RunNumber));
+  TFile* tfRead = new TFile(Form("/Volume0/CosmicSim/Conv_Cosmic/cosmic_conv_%d.root",RunNumber));
   TTree* trRead = (TTree*)tfRead->Get("T");
 
   E14ReadConvSim* wConv = new E14ReadConvSim(trRead);
@@ -115,12 +115,15 @@ main(int argc, char** argv){
   Int_t    HitCoinDn;
   Int_t    HitUp;
   Int_t    HitDn;
+  Double_t Chisq;
+  Int_t    nPoint;
+  Double_t SIM_roh;
+  Double_t SIM_theta;
   {
-
-    trOut->Branch("nDigi"    ,&nDigi    ,"nDigi/I");
-    trOut->Branch("CsIID"    ,CsIID     ,"CsIID[nDigi]/I");//nDigi;
-    trOut->Branch("CsIADC"   ,CsIADC    ,"CsIADC[nDigi]/I");//nDigi;
-    trOut->Branch("CsIdepE"  ,CsIdepE   ,"CsidepE[nDigi]/D");//nDigi;
+    trOut->Branch("nDigi"        ,&nDigi    ,"nDigi/I");
+    trOut->Branch("CsIID"        ,CsIID     ,"CsIID[nDigi]/I");//nDigi;
+    trOut->Branch("CsIADC"       ,CsIADC    ,"CsIADC[nDigi]/I");//nDigi;
+    trOut->Branch("CsIdepE"      ,CsIdepE   ,"CsidepE[nDigi]/D");//nDigi;
     trOut->Branch("CsITiming"    ,CsITiming      ,"CsITiming[nDigi]/D");//nDigi;
     trOut->Branch("CsIHHTiming"  ,CsIHHTiming    ,"CsIHHTiming[nDigi]/D");//nDigi;
     trOut->Branch("CsIFitTiming" ,CsIFitTiming   ,"CsIFitTiming[nDigi]/D");//nDigi;
@@ -145,6 +148,12 @@ main(int argc, char** argv){
     trOut->Branch("CosmicFit",&CosmicFit,"CosmicFit/I");
     trOut->Branch("CosmicBoolUp",&CosmicBoolUp,"CosmicBoolUp/I");
     trOut->Branch("CosmicBoolDn",&CosmicBoolDn,"CosmicBoolDn/I");
+
+    trOut->Branch("Chisq"    ,&Chisq    ,"Chisq/D");
+    trOut->Branch("nPoint"   ,&nPoint   ,"nPoint/I");
+    trOut->Branch("SIM_roh"  ,&SIM_roh  ,"SIM_roh/D");
+    trOut->Branch("SIM_theta",&SIM_theta,"SIM_theta/D");
+    
     //trOut->Branch("PathLength"  ,&PathLength  ,"PathLength[nDigi]/D");
   }
 
@@ -191,6 +200,10 @@ main(int argc, char** argv){
     
     //Init
     { 
+      Chisq     = 0.;
+      nPoint    = 0;
+      SIM_roh   = 0.;
+      SIM_theta = 0.;
       CosmicBoolUp = 0;
       CosmicBoolDn = 0;
       nDigi        = 0; 
@@ -249,7 +262,7 @@ main(int argc, char** argv){
       CsIHHTiming[nDigi]  = CsiHHTime[idigi];
       CsIFitTiming[nDigi] = CsiFitTime[idigi];
       CsISplTiming[nDigi] = CsiSplTime[idigi];
-
+      
       nDigi++;
     }
 
@@ -268,11 +281,28 @@ main(int argc, char** argv){
     std::cout<< HitCoinUp << " : " << HitCoinDn << std::endl ;
     
     if( HitUp != 0 && HitDn != 0 ){ Trigger = true; }
+    else{ Trigger = false;}
     if( HitCoinUp != 0 && HitCoinDn != 0 ){ CoinTrigger = true ; } 
+
     if( Trigger ){ 
       CosmicAna->Reset();
       if( CosmicAna->GetResult( gr, roh, theta ) ){
-	CalFactor = CosmicAna->mc_chi2Cosmic->GetCalibrationFactor();      
+	double xpos[2];
+	double ypos[2];
+	xpos[0] = wConv->v[0][0];
+	xpos[1] = wConv->end_v[0][0];
+	ypos[0] = wConv->v[0][2];
+	ypos[1] = wConv->end_v[0][2];
+	double RR = TMath::Sqrt((xpos[0] - xpos[1])*(xpos[0] - xpos[1])+(ypos[0] - ypos[1])*(ypos[0] - ypos[1]));
+	double cos =  (ypos[1]-ypos[0])/RR;
+	double sin =  (xpos[0]-xpos[1])/RR;
+	SIM_roh   = xpos[0]*cos + ypos[0]*sin;
+	SIM_theta = -180*TMath::ATan(( xpos[1]-xpos[0] )/( ypos[0] - ypos[1] ))/TMath::Pi();
+
+
+	CalFactor = CosmicAna->mc_chi2Cosmic->GetCalibrationFactor();
+	Chisq     = CosmicAna->mc_chi2Cosmic->GetChisq(); 
+	nPoint    = CosmicAna->m_gr->GetN();
 	CosmicFit = 1; 
       }else{
 	CosmicFit = 0;

@@ -8,6 +8,7 @@
 #include "TGraph.h"
 #include "TFile.h"
 #include "TH1D.h"
+#include "TCanvas.h"
 
 #include "TClonesArray.h"
 #include "IDHandler.h"
@@ -18,6 +19,7 @@
 #include "TMath.h"
 int
 main ( int argc, char** argv ){
+
   TApplication* app = new TApplication("app", & argc ,argv );
   const int nChannel = 2716;
   IDHandler* handler = new IDHandler();
@@ -89,12 +91,36 @@ main ( int argc, char** argv ){
   std::cout<< __LINE__ << std::endl;
   TTree* trRead = new TTree("ReadFile","");
   trRead->ReadFile("testNewWORKCompileOffset.txt","CHID/I:Offset/D:OffsetError/D");
-    
+
+  TFile* tfRead = new TFile("TestTimeOutLogic_3897.root");
+  TTree* trRead = (TTree*)tf->Get("TimeDeltaCosmic");
+  Int_t IDFirst;
+  Int_t IDSecond;
+  Double_t Mean;
+  Double_t RMS;
+  Double_t Error;
+  Int_t Entries;
+  trRead->SetBranchAddress("IDFirst",&IDFirst);
+  trRead->SetBranchAddress("IDSecond",&IDSecond);
+  trRead->SetBranchAddress("Mean",&Mean);
+  trRead->SetBranchAddress("RMS",&RMS);
+  trRead->SetBranchAddress("Error",&Error);
+  trRead->SetBranchAddress("Entries",&Entries);
+  for( int i = 0; i< trRead->GetEntries(); i++){
+    trRead->GetEntry(i);
+    if( EntrReadies > 100  && Error < 5 ){
+      means[IDFirst][IDSecond]  = Mean;
+      errors[IDFirst][IDSecond] = Error;
+      idFlag[IDFirst] = true;
+      idFlag[IDSecond]= true;
+    }
+  }
+  
   int CHID;
   double Offset;
   trRead->SetBranchAddress("CHID",&CHID);
   trRead->SetBranchAddress("Offset",&Offset);
-    
+  
   const int nCH = 2716;
   int CHIDList[nCH]={-1};
   double OffsetList[nCH]={0};
@@ -103,6 +129,8 @@ main ( int argc, char** argv ){
     std::cout<< "Error" << std::endl; 
     return 0 ;
   }
+  TH1D* hisDis = new TH1D("hisDis","",200,-20,20);
+  TH1D* hisDist= new TH1D("hisDist","",200,-20,20);
   TH2D* hisDistrib = new TH2D( "hisDistrib" , "" , 2716,0,2716, 200, -20, 20);
   {}
   {    
@@ -112,8 +140,6 @@ main ( int argc, char** argv ){
       OffsetList[CHID] = Offset;    
     }
     
-    
-    TFile* tfout = new TFile("TestTimeOutLogic_3897.root","recreate");
     std::cout<< __LINE__ << std::endl;  
     double x[2],y[2];
     int TestID = 1000;
@@ -121,13 +147,17 @@ main ( int argc, char** argv ){
       TestID = atoi( argv[1] );
     }
     
-
+    
     for( int ievent  =0; ievent < CosmicOut->GetEntries(); ievent++){
-      if( ievent %1000 ==0  && ievent ) { std::cout<< "Event : " << ievent << std::endl; }
+      if( ievent %1000 ==0  && ievent ) {
+	std::cout<< "Event : " << ievent << std::endl; 
+      }
       CosmicOut->GetEntry(ievent);
       if( CosmicOut->CalFactor < 0.8){ continue; }
-      if( CosmicOut->CosmicFit != 1 || CosmicOut->nDigi == 0 || CosmicOut->nDigi>300){ continue; }
-
+      if( CosmicOut->CosmicFit != 1   ||
+	  CosmicOut->nDigi     == 0   ||
+	  CosmicOut->nDigi     >  300 ){ continue; }
+      
       Double_t cos       = TMath::Cos(CosmicOut->theta*TMath::Pi()/180.);
       Double_t sin       = TMath::Sin(CosmicOut->theta*TMath::Pi()/180.);	
       
@@ -141,32 +171,40 @@ main ( int argc, char** argv ){
 	  continue; 
 	}
       }
-
+      
       handler->GetMetricPosition( TestID ,x[0],y[0] );
       double idist = TMath::Abs((x[0] -(1./cos*(CosmicOut->roh - y[0]*sin ))) * cos );
       if( idist >50){ continue; }
       
       for( int jdigi = 0; jdigi <CosmicOut->nDigi; jdigi++){
 	IDSecond = CosmicOut->CsIID[jdigi];
-	if( IDSecond == IDFirst ) { continue ; }
-	
-	handler->GetMetricPosition(CosmicOut->CsIID[jdigi], x[1], y[1] );	  
-	
+	if( IDSecond == IDFirst ) { continue ; }	
+	handler->GetMetricPosition(CosmicOut->CsIID[jdigi], x[1], y[1] );	
 	double jdist = TMath::Abs((x[1] -(1./cos*(CosmicOut->roh - y[1]*sin ))) * cos );
 	if( jdist > 50 ){ continue; }
-	Double_t DeltaTime = time0 - CosmicOut->CsIFitTiming[jdigi] 
-	  - OffsetList[IDFirst] + OffsetList[IDSecond];
+	Double_t DeltaTime = time0 - CosmicOut->CsIFitTiming[jdigi] - OffsetList[IDFirst] + OffsetList[IDSecond];
 	hisDistrib->Fill(IDSecond, DeltaTime);	
+	hisDis->Fill(DeltaTime+OffsetList[IDFirst]-OffsetList[IDSecond]);
+	hisDist->Fill(DeltaTime);
       }
     }
   }
+  
   TProfile* pro = hisDistrib->ProfileX();  
   pro->SetLineColor( 2 );
   pro->SetLineWidth( 2 );
   pro->SetMarkerStyle(8);
 
+  TCanvas* can = new TCanvas("can","",800,400);
+  can->Divide(2,1);
+  can->cd(1);
   hisDistrib->Draw("colz");
+  can->cd(2);
+  hisDist->Draw();
+  hisDis->SetLineColor(2);
+  hisDis->Draw("same");
   pro->Draw("same");
+  tfout->Close();
   app->Run();
       
 }    

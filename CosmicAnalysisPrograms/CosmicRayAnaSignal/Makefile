@@ -34,7 +34,7 @@ LIBS        += -L$(BOOSTDIR)/lib
 LIBS        += -L$(CLHEP_BASE_DIR)/lib -lCLHEP
 LIBS        += -L$(G4INSTALL)/lib 
 LIBS        += -L$(E14_TOP_DIR)/lib/so
-LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lEG -lMinuit
+LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lEG -lMinuit -lSpectrum
 LIBS        += -lGsimData -lklong -lpi0 -lgamma -lrec2g -lgnana -lE14Fsim -lcsimap -lcluster -lGsimTools -lGsimPersistency
 LIBS        += -L$(ANALYSISLIB)/lib -lAnalysisLib
 
