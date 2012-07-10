@@ -22,6 +22,7 @@
 #include "TApplication.h"
 #include "TChain.h"
 
+#include "CsI_Module.h"
 
 bool searchPeak(TH1D* hisCosmic, Double_t& Norm, Double_t& Peak, Double_t& Sigma, Double_t& chi2, Int_t& ndf){
   TSpectrum* spec    = new TSpectrum(10,10);
@@ -134,6 +135,8 @@ main( int argc, char** argv){
     trCosmic->Add(Filename.c_str());
   }
   */
+  CsI_Module* csi = new CsI_Module("csi");
+
 
   TFile* tf =new TFile(inputFile.c_str());
   TTree* trCosmic = (TTree*)tf->Get("CosmicOut");
@@ -197,6 +200,9 @@ main( int argc, char** argv){
 	LandauNorm  = Norm;
 	LandauPeak  = Peak;
 	LandauSigma = Sigma; 
+
+	csi->Fill( i, LandauPeak );
+
       }else{
 	gr->SetPoint(gr->GetN(), 0, 0);
 	grGain->SetPoint(grGain->GetN(), i, 0);
@@ -242,15 +248,19 @@ main( int argc, char** argv){
   canNew->cd(1);
   gr->Draw("AP");
   canNew->cd(2);
-  hisGain->Draw();
+
+  csi->Draw("colz");
+
+  can->Modified();
+  can->Update();
   gr->Write();
+
   grGain->Write();
   hisGain->Write();
+
   tr->Write();
   tfout->Close();
   
-  can->Modified();
-  can->Update();
   app->Run();
 
 }

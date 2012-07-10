@@ -71,11 +71,19 @@ double TSplineGetX( TSpline3* spl,  double y, double xmin, double xmax, int npx 
 
 int  main(int argc,char** argv)
 {
-  if( argc !=2 ){
-    std::cerr << "Please Input RunNumber " << std::endl;
-    return -1; 
+  /// Usage /// 
+  // DumpWaveForm [RunNumber] [ Name of Module ] [ Threshold  ] 
+  if( argc != 4 ){
+    std::cout<< "Usage:\n"
+	     << Form(" %s [ RunNumber ] [ Name of Module ] [ Threshold ] ", argv[0] )
+	     << std::endl;
+    return -1;
   }
-  Int_t RunNumber = atoi( argv[1] );
+
+  // Get Arguement 
+  Int_t    RunNumber  = atoi( argv[1] );
+  char*    ModName    = argv[2];
+  Double_t Thereshold = atof( argv[2] );
 
   // GetEnvironment // 
   std::string ANALIBDIR = std::getenv("ANALYSISLIB");
@@ -85,30 +93,39 @@ int  main(int argc,char** argv)
 
   // Setting  Classes //
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
-  TFile* tf[nCrate];
 
+  TFile* tf[nCrate];
   E14ConvReader* conv[nCrate];
   for( int icrate = 0; icrate < nCrate; icrate++){
     tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",convFileDir, icrate, RunNumber)); 
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
   }
+
+  std::cout<< "SetIO" <<std::endl ;
   //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
-  TFile* tfout = new TFile(Form("%s/run%d_wav.root",waveAnaFileDir,RunNumber),
+  TFile* tfout = new TFile(Form("%s/run%d_wavDump.root",waveAnaFileDir,RunNumber),
 			   "recreate");
-  TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");   
+  TTree* trout = new TTree("WFTree",Form("Waveform of %s",ModName));
+
+  Int_t Data[48];
+  Int_t Time[48];
+  Int_t ID;
+  Int_t EventNumber;
+  trout->Branch("Data",Data,"Data[48]/I");
+  trout->Branch("Time",Time,"Time[48]/I");
+  trout->Branch("ID",&ID,"ID/I");
+  trout->Branch("EventNumber",&EventNumber,"EventNumber/I");
+  TTree* trdummy = new TTree("dummy","");
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",sumFileDir,RunNumber),
-					    trout);
+					    trdummy);
   tfout->cd();
   {
-    wConv->AddModule("Csi");
-    wConv->AddModule("CC03");
-    wConv->AddModule("OEV");
-    wConv->AddModule("CV");
-    wConv->AddModule("Cosmic");
-    wConv->AddModule("Laser");
-    wConv->AddModule("Etc");
+    wConv->AddModule(ModName);
+    std::cout << __LINE__ << std::endl;
     wConv->Set();
+    std::cout << __LINE__ << std::endl;
     wConv->SetMap();
+    std::cout << __LINE__ << std::endl;
     wConv->Branch();
     std::cout<< "Check Entries" << std::endl;    
     for( int icrate = 0; icrate < nCrate; icrate++){
@@ -120,29 +137,24 @@ int  main(int argc,char** argv)
 	std::cout << "Entries is Different" << std::endl;
       }
     }
-  }
+  }  
   
   TApplication* app = new TApplication("app", &argc , argv );  
   TCanvas* can = new TCanvas( "can ", "Canvas" ,800,800);
   std::cout <<"Loop " <<std::endl;
   TGraph* gr = new TGraph();
   gr->SetMarkerStyle(6);
-  
+
+  std::cout << "Loop" << std::endl;
   for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-  //for( int ievent  = 0; ievent < 100; ievent++){
-    wConv->InitData();
     for( int icrate = 0; icrate < nCrate; icrate++){
-      //std::cout << icrate << std::endl;
       conv[icrate]->GetEntry(ievent);
     } 
+    
     if( ievent %100 == 0 && ievent ){ std::cout<< ievent << "/" << conv[0]->GetEntries() << std::endl;} 
     
-    // Analysis
-    //for( int iMod = 1; iMod < 2; iMod++){
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
       int nSubModule = (wConv->ModMap[iMod]).nMod;
-      //std::cout<< iMod << std::endl;
-      //std::cout<< iMod << " : " << nSubModule << std::endl;      
       for( int iSubMod = 0; iSubMod < nSubModule; iSubMod++){	
 	int iCrate = 9999;
 	int iSlot  = 9999;
@@ -153,52 +165,19 @@ int  main(int argc,char** argv)
 	  
 	// Ignore unmapped channel // 
 	if( iCrate == 9999 || iSlot == 9999 || iCh == 9999 ) continue;       
-	  
-	gr->Set(0);
+	
 	for( int ipoint = 0; ipoint< 48; ipoint++){
 	  if(conv[iCrate]->Data[iSlot][iCh][ipoint]>16000){ continue; }
-	  gr->SetPoint( gr->GetN(), ipoint*8, conv[iCrate]->Data[iSlot][iCh][ipoint]);
+	  Data[ipoint] = conv[iCrate]->Data[iSlot][iCh][ipoint];
+	  Data[ipoint] = ipoint*8;
 	}
-	bool fit = wavFitter->Fit( gr ); 
-	int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
-	if( fit ){ 
-	  TF1* fitFunc = wavFitter->GetFunction();	    
-	  double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
-	  double halfTiming = fitFunc->GetX( halfHeight,
-					     fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
-	  wConv->mod[iMod]->m_Fit[chIndex]      = 1;
-	  wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
-	  wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
-	  wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
-	  wConv->mod[iMod]->m_Timing[chIndex]   = fitFunc->GetParameter(1);
-	  wConv->mod[iMod]->m_HHTiming[chIndex] = halfTiming;
-	  wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
-	  wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
-	  wConv->mod[iMod]->m_nDigi++;	      	    
-	      
-	  TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
-	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
-	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
-	  wConv->mod[iMod]->m_FitTiming[chIndex]= halfFitTiming;
-	  TSpline3* spl    = new TSpline3( "spl", gr);
-	  double splTiming = TSplineGetX(spl, halfHeight, halfTiming-12,  halfTiming +12 );
-	  wConv->mod[iMod]->m_SplTiming[chIndex]=splTiming;
-
-	  delete spl;	    
-	  delete linearFunction;
-	  //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 
-	      
-	  //gr->Draw("AP");
-	  //can->Update();
-	  //can->Modified();
-	  //getchar();
-	  wavFitter->Clear();	  
-	}
+	ID = iSubMod;
+	EventNumber = ievent;
+	trout->Fill();
       }
     }	
-    trout->Fill();
   }
-
+  
   std::cout<< "end Loop" <<std::endl;
   //app->Run();
   std::cout<< "Close" << std::endl;
