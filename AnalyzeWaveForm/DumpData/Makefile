@@ -34,11 +34,9 @@ LIBS        += -L$(BOOSTDIR)/lib
 LIBS        += -L$(CLHEP_BASE_DIR)/lib -lCLHEP
 LIBS        += -L$(G4INSTALL)/lib 
 LIBS        += -L$(E14_TOP_DIR)/lib/so
-LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lEG -lMinuit -lSpectrum
+LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lEG
 LIBS        += -lGsimData -lklong -lpi0 -lgamma -lrec2g -lgnana -lE14Fsim -lcsimap -lcluster -lGsimTools -lGsimPersistency
 LIBS        += -L$(ANALYSISLIB)/lib -lAnalysisLib
-LIBS        += -L$(DRAWLIB)/lib -lDrawLib
-
 
 INCLUDEDIR  += .  ./include 
 INCLUDEDIR  += $(ROOTSYS)/include 
@@ -47,7 +45,6 @@ INCLUDEDIR  += $(CLHEP_BASE_DIR)/include
 INCLUDEDIR  += $(G4INSTALL)/include
 INCLUDEDIR  += $(E14_TOP_DIR)/include 
 INCLUDEDIR  += $(ANALYSISLIB)/include
-INCLUDEDIR  += $(DRAWLIB)/include
 
 INCLUDES     = $(INCLUDEDIR:%=-I%)
 

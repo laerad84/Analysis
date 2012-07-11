@@ -103,7 +103,7 @@ int  main(int argc,char** argv)
 
   std::cout<< "SetIO" <<std::endl ;
   //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
-  TFile* tfout = new TFile(Form("%s/run%d_wavDump.root",waveAnaFileDir,RunNumber),
+  TFile* tfout = new TFile(Form("%s/run%d_wavDump_%s.root",waveAnaFileDir,RunNumber,ModName),
 			   "recreate");
   TTree* trout = new TTree("WFTree",Form("Waveform of %s",ModName));
 
@@ -169,7 +169,7 @@ int  main(int argc,char** argv)
 	for( int ipoint = 0; ipoint< 48; ipoint++){
 	  if(conv[iCrate]->Data[iSlot][iCh][ipoint]>16000){ continue; }
 	  Data[ipoint] = conv[iCrate]->Data[iSlot][iCh][ipoint];
-	  Data[ipoint] = ipoint*8;
+	  Time[ipoint] = ipoint*8;
 	}
 	ID = iSubMod;
 	EventNumber = ievent;
