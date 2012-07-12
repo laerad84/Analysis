@@ -25,9 +25,9 @@ class CsI_Module : public TObject {
   void SetTitle(const char*);  
   void Draw(const char*);
   void DrawWithRange( double , double , const char*);
- private:
 
   TH2Poly* CsI;
+ private:
   TBox* CsI_Box[numberOfCsI];
   Double_t Dep[numberOfCsI];
   Double_t CsI_xx[numberOfCsI];

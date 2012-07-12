@@ -40,7 +40,7 @@ main(int argc, char** argv){
   
 
   //
-  E14ReadSumFile* Reader = new E14ReadSumFile();
+  E14ReadSumFile* Reader = new E14ReadSumFile(0);
   Reader->Add(InputFile.c_str());
   
 
@@ -91,7 +91,7 @@ main(int argc, char** argv){
   trOut->Branch("CosmicBoolDn",&CosmicBoolDn,"CosmicBoolDn/I");
 
 
-  IDHandler* handler = new IDHandler("Data/crystal.txt");
+  IDHandler* handler = new IDHandler();
   HoughCsI*  hough   = new HoughCsI();
   Chisq_cosmic* chi2Cosmic = new Chisq_cosmic();
 

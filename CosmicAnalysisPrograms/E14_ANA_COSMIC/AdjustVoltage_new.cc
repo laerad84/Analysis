@@ -33,13 +33,13 @@ main( int argc, char** argv){
 
   gStyle->SetPalette(1);
   gStyle->SetOptFit(111111111);
-  gStyle->SetOPtStat("NeMRI");
+  gStyle->SetOptStat("NeMRI");
   
   ///////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   std::cout << "Initialize IMAGE" << std::endl;
-  IDHandler* handler    = new IDHandler("Data/crystal.txt");
+  IDHandler* handler    = new IDHandler();
   CsIImage*  imageGain[3];
   CsIImage*  imageVolt[3];  
   for( int i = 0; i< 3; i++){

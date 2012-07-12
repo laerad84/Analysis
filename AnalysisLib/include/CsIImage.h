@@ -31,8 +31,7 @@ public:
 private:
   TH2D* smallHist;
   TH2D* largeHist;
-  TH2D* CC03Hist[4];
-  
+  TH2D* CC03Hist[4];  
 
   static const int numberOfSmall   = 2240;
   static const int numberOfLarge   = 476;

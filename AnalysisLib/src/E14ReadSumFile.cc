@@ -30,6 +30,11 @@ bool E14ReadSumFile::SetBranchAddress(){
   ch->SetBranchAddress("CVModID",CVModID);//CVNumber
   ch->SetBranchAddress("CVEne",CVEne);//CVNumber
   ch->SetBranchAddress("CVTime",CVTime);//CVNumber
+
+  ch->SetBranchAddress("OEVNumber",&OEVNumber);
+  ch->SetBranchAddress("OEVModID",OEVModID);//OEVNumber
+  ch->SetBranchAddress("OEVEne",OEVEne);//OEVNumber
+  ch->SetBranchAddress("OEVTime",OEVTime);//OEVNumber
   
   ch->SetBranchAddress("LaserNumber",&LaserNumber);
   ch->SetBranchAddress("LaserModID",LaserModID);//LaserNumber
