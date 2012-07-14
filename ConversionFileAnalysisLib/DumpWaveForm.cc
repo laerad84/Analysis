@@ -90,7 +90,7 @@ int  main(int argc,char** argv)
   std::string ANALIBDIR   = std::getenv("ANALYSISLIB"  );
   std::string CONVFILEDIR = std::getenv("ROOTFILE_CONV");
   std::string WAVEFILEDIR = std::getenv("ROOTFILE_WAV" );
-  std::string SUMFILEIDR  = std::getenv("ROOTFILE_SUMUP");
+  std::string SUMFILEDIR  = std::getenv("ROOTFILE_SUMUP");
   std::cout << ANALIBDIR   << std::endl;  
   std::cout << CONVFILEDIR << std::endl;
   std::cout << WAVEFILEDIR << std::endl;

@@ -78,10 +78,14 @@ int  main(int argc,char** argv)
   Int_t RunNumber = atoi( argv[1] );
 
   // GetEnvironment // 
-  std::string ANALIBDIR = std::getenv("ANALYSISLIB");
-  std::cout << ANALIBDIR << std::endl;
-  int envRtn = GetEnvironment();
-  PrintEnvironment();
+  std::string ANALIBDIR   = std::getenv("ANALYSISLIB"  );
+  std::string CONVFILEDIR = std::getenv("ROOTFILE_CONV");
+  std::string WAVEFILEDIR = std::getenv("ROOTFILE_WAV" );
+  std::string SUMFILEDIR  = std::getenv("ROOTFILE_SUMUP");
+  std::cout << ANALIBDIR   << std::endl;  
+  std::cout << CONVFILEDIR << std::endl;
+  std::cout << WAVEFILEDIR << std::endl;
+  std::cout << SUMFILEDIR  << std::endl;
 
   // Setting  Classes //
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
@@ -89,14 +93,14 @@ int  main(int argc,char** argv)
 
   E14ConvReader* conv[nCrate];
   for( int icrate = 0; icrate < nCrate; icrate++){
-    tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",convFileDir, icrate, RunNumber)); 
+    tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, RunNumber)); 
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
   }
   //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
-  TFile* tfout = new TFile(Form("%s/run%d_wav.root",waveAnaFileDir,RunNumber),
+  TFile* tfout = new TFile(Form("%s/run%d_wav.root",WAVEFILEDIR.c_str(),RunNumber),
 			   "recreate");
   TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");   
-  E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",sumFileDir,RunNumber),
+  E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
 					    trout);
   tfout->cd();
   {
