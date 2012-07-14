@@ -26,7 +26,6 @@
 #include "WaveformFitter.h"
 #include "E14MapReader.h"
 #include "Structs.h"
-#include "Environment.h"
 
 #include "E14ConvReader.h"
 #include "E14IDHandler.h"

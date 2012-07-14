@@ -14,7 +14,6 @@
 #include "GeneralTypes.h"
 #include "GeneralMacros.h"
 #include "Structs.h"
-#include "Environment.h"
 #include "WaveformFitter.h"
 
 #include "TApplication.h"

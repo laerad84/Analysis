@@ -33,7 +33,6 @@
 #include "WaveformFitter.h"
 #include "E14MapReader.h"
 #include "Structs.h"
-#include "Environment.h"
 
 #include "E14ConvReader.h"
 #include "E14IDHandler.h"
@@ -49,9 +48,10 @@
 int main( int argc , char** argv ){
   
   std::string ANALIBDIR = std::getenv("ANALYSISLIB");
-  std::cout << ANALIBDIR << std::endl;
-  int evnvRtn = GetEnvironment();
-  PrintEnvironment();
+  std::string SUMFILEDIR= std::getenv("ROOTFILE_SUMUP");
+  std::cout << ANALIBDIR  << std::endl;
+  std::cout << SUMFILEDIR << std::endl; 
+
   if( argc != 2 ) {
     std::cerr <<" Please Input RUnNumber "  << std::endl;
     return -1;    
@@ -65,7 +65,7 @@ int main( int argc , char** argv ){
     return -1; 
   }
 
-  E14ConvWriter* wConv= new E14ConvWriter( Form("%s/Sum%d.root", sumFileDir,RunNumber), trin );
+  E14ConvWriter* wConv= new E14ConvWriter( Form("%s/Sum%d.root", SUMFILEDIR.c_str(),RunNumber), trin );
   wConv->AddModule("Csi");
   wConv->AddModule("CC03");
   wConv->AddModule("OEV");
