@@ -20,7 +20,7 @@ int main(int argc, char** argv){
   std::cout<< __LINE__ << std::endl;
   
   TApplication* app = new TApplication("app",&argc, argv);
-  IDHandler* handler = new IDHandler("Data/crystal.txt");
+  IDHandler* handler = new IDHandler();
   
   const int nCH = 2716;
   const int nPoint  = 4; 
@@ -32,7 +32,7 @@ int main(int argc, char** argv){
   std::cout<< __LINE__ << std::endl;
   
   for(int ipoint  =0 ;ipoint < nPoint;++ipoint){
-    Reader[ipoint] = new E14ReadSumFile();
+    Reader[ipoint] = new E14ReadSumFile(0);
     Reader[ipoint]->Add(Form(filename.c_str(),RunNumber[ipoint]));     
     image[ipoint]  = new CsIImage(handler);
   }

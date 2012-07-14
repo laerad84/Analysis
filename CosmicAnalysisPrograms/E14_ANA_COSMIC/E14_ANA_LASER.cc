@@ -33,10 +33,10 @@ main(int argc, char** argv){
   TApplication* app = new TApplication("app",&argc, argv);
 
  
-  E14ReadSumFile* Reader = new E14ReadSumFile();
+  E14ReadSumFile* Reader = new E14ReadSumFile(0);
   Reader->Add(InputFile.c_str());
 
-  IDHandler* handler = new IDHandler("Data/crystal.txt");
+  IDHandler* handler = new IDHandler();
   CsIImage*  image   = new CsIImage(handler);
   CsIImage*  image1   = new CsIImage(handler);
   TCanvas*   can     = new TCanvas("can","",800,0,800,800);
@@ -53,7 +53,7 @@ main(int argc, char** argv){
   Double_t roh;
   Double_t theta;
   Int_t    HitFlag[N_TOTAL_CSI]={};
-
+  HoughCsI* hough = new HoughCsI();
   for( int iEntry = 0; iEntry < nEntries; iEntry++){
     Reader->GetEntry(iEntry);
     

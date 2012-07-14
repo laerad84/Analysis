@@ -21,11 +21,8 @@
 
 #include "E14MapReader.h"
 #include "Structs.h"
-#include "Environment.h"
-
 #include "E14ConvReader.h"
 #include "E14ConvWriter.h"
-
 #include "E14CosmicAnalyzer.h"
 
 
@@ -60,20 +57,24 @@ main(int argc, char** argv){
     return -1;
   }
   
-  // ReadEnvironment 
-  std::cout<< "ENVIRONMENT" << std::endl;
-  int envRtn = GetEnvironment();
-  PrintEnvironment();    
-
+  // ReadEnvironment
+  std::cout << "ENVIRONMENT" << std::endl;
+  std::string ANALIBDIR   = std::getenv("ANALYSISLIB"  );
+  std::string CONVFILEDIR = std::getenv("ROOTFILE_CONV");
+  std::string WAVEFILEDIR = std::getenv("ROOTFILE_WAV" );
+  std::string SUMFILEDIR  = std::getenv("ROOTFILE_SUMUP");
+  std::cout << ANALIBDIR   << std::endl;  
+  std::cout << CONVFILEDIR << std::endl;
+  std::cout << WAVEFILEDIR << std::endl;
+  std::cout << SUMFILEDIR  << std::endl;
 
   // Set InputFile
   std::cout<< "FILE SETTING" << std::endl;
-  TFile* tfRead = new TFile(Form("%s/run%d_wav.root",waveAnaFileDir,RunNumber));
+  TFile* tfRead = new TFile(Form("%s/run%d_wav.root",WAVEFILEDIR.c_str(), RunNumber));
   TTree* trRead = (TTree*)tfRead->Get("WFTree");
-  E14ConvWriter* wConv = new E14ConvWriter(Form("%s/Sum%d.root",sumFileDir, RunNumber),
-					   trRead);
+  E14ConvWriter* wConv = new E14ConvWriter(Form("%s/Sum%d.root",SUMFILEDIR.c_str(), RunNumber), trRead);
   {
-
+    
     //  ID 0 : Csi; 1 : Cosmic; 2 : Laser
     wConv->AddModule("Csi");
     wConv->AddModule("Cosmic"); 
@@ -81,6 +82,7 @@ main(int argc, char** argv){
     wConv->Set();
     wConv->SetMap();
     wConv->SetBranchAddress();
+
   }
   
   // Set OutputFile
@@ -91,7 +93,7 @@ main(int argc, char** argv){
     = new TH2D("hisTriggerHitposition",
 	       "TriggerHitPosition;XPosition[mm];ZPosition;nHit",
 	       200,-1000,1000,
-	       10,0,10);  
+	       10 ,0    ,10);  
   
   Int_t    CosmicTrigger[20]={0};
   Int_t    UpperID[5];
@@ -270,6 +272,7 @@ main(int argc, char** argv){
       default:
 	break;
       }
+
     }
 
     

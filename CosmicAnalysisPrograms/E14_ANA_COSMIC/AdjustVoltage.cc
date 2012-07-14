@@ -18,7 +18,7 @@ main( int argc, char** argv){
   gStyle->SetPalette(1);
   TApplication* app = new TApplication("App",&argc,argv);
   
-  IDHandler* handler = new IDHandler("Data/crystal.txt");
+  IDHandler* handler = new IDHandler();
   CsIImage*  image   = new CsIImage(handler);
   TF1* GainCurve_Small_raw = new TF1("GainCurve_Small_raw","TMath::Power(x-657.8,0.9635)",0,5000);
   TF1* GainCurve_Large_raw = new TF1("GainCurve_Large_raw","TMath::Power(x-627.9,1.369)",0,5000);

@@ -76,7 +76,7 @@ main( int argc, char** argv){
   ///////////////////////////////////////////////////////////////////////////////////////////
   
   std::cout << "Initialize IMAGE" << std::endl;
-  IDHandler* handler    = new IDHandler("Data/crystal.txt");
+  IDHandler* handler    = new IDHandler();
   CsIImage*  imageGain[3];
   CsIImage*  imageVolt[3];  
   for( int i = 0; i< 3; i++){

@@ -26,7 +26,7 @@ main( int argc, char** argv){
   TApplication* app = new TApplication("app",&argc, argv);
   //gSystem->Load("lib/libtest.so");
   
-  IDHandler* handler      = new IDHandler("Data/crystal.txt");
+  IDHandler* handler      = new IDHandler();
   CsIImage*  imagePeak    = new CsIImage(handler);
   CsIImage*  imageHit     = new CsIImage(handler);
   CsIImage*  imageNorm    = new CsIImage(handler);

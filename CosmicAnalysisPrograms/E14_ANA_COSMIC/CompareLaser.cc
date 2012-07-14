@@ -12,7 +12,7 @@
 
 int main( int argc, char** argv){
   
-  IDHandler* handler = new IDHandler("Data/crystal.txt");
+  IDHandler* handler = new IDHandler();
   CsIImage*  image   = new CsIImage(handler);
   
   std::vector<int> runNumberList;
