@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <vector>
 
+#include "TChain.h"
 #include "TTree.h"
 #include "TFile.h"
 #include "TCanvas.h"
@@ -127,19 +128,17 @@ main( int argc, char** argv){
   TCanvas* can  =  new TCanvas("can","can",0,0,800,800);
   can->Draw();
 
-  /*
-  TChain* trCosmic = new TChain("CosmicOut");
-  for( int i = 0; i< 8; i++){
-    std::string Filename = Form("CosmicTest_%d.root",i);
-    std::cout<< Filename << std::endl;
-    trCosmic->Add(Filename.c_str());
-  }
-  */
+
   CsI_Module* csi = new CsI_Module("csi");
 
-
-  TFile* tf =new TFile(inputFile.c_str());
-  TTree* trCosmic = (TTree*)tf->Get("CosmicOut");
+  //TFile* tf =new TFile(inputFile.c_str());
+  //TTree* trCosmic = (TTree*)tf->Get("CosmicOut");
+  TChain* trCosmic = new TChain("CosmicOut");
+  Int_t RunID;
+  std::ifstream ifs( inputFile.c_str() );
+  while ( ifs >> RunID ){
+    trCosmic->Add(Form("Cosmic_%d.root",RunID));
+  }
 
   TFile* tfout = new TFile(outputFile.c_str(),"recreate");
   TGraph* gr = new TGraph();

@@ -21,7 +21,6 @@
 
 #include "E14MapReader.h"
 #include "Structs.h"
-#include "Environment.h"
 
 #include "E14ConvReader.h"
 #include "E14ConvWriter.h"
@@ -62,8 +61,15 @@ main(int argc, char** argv){
   
   // ReadEnvironment 
   std::cout<< "ENVIRONMENT" << std::endl;
-  int envRtn = GetEnvironment();
-  PrintEnvironment();    
+  std::string ANALIBDIR   = std::getenv("ANALYSISLIB"  );
+  std::string CONVFILEDIR = std::getenv("ROOTFILE_CONV");
+  std::string WAVEFILEDIR = std::getenv("ROOTFILE_WAV" );
+  std::string SUMFILEDIR  = std::getenv("ROOTFILE_SUMUP");
+  std::cout << ANALIBDIR   << std::endl;  
+  std::cout << CONVFILEDIR << std::endl;
+  std::cout << WAVEFILEDIR << std::endl;
+  std::cout << SUMFILEDIR  << std::endl;
+
 
 
   // Set InputFile

@@ -26,7 +26,6 @@
 #include "WaveformFitter.h"
 #include "E14MapReader.h"
 #include "Structs.h"
-#include "Environment.h"
 
 #include "E14ConvReader.h"
 #include "E14IDHandler.h"
@@ -85,25 +84,32 @@ int  main(int argc,char** argv)
   char*    ModName    = argv[2];
   Double_t Thereshold = atof( argv[2] );
 
+
   // GetEnvironment // 
-  std::string ANALIBDIR = std::getenv("ANALYSISLIB");
-  std::cout << ANALIBDIR << std::endl;
-  int envRtn = GetEnvironment();
-  PrintEnvironment();
+
+  std::string ANALIBDIR   = std::getenv("ANALYSISLIB"  );
+  std::string CONVFILEDIR = std::getenv("ROOTFILE_CONV");
+  std::string WAVEFILEDIR = std::getenv("ROOTFILE_WAV" );
+  std::string SUMFILEIDR  = std::getenv("ROOTFILE_SUMUP");
+  std::cout << ANALIBDIR   << std::endl;  
+  std::cout << CONVFILEDIR << std::endl;
+  std::cout << WAVEFILEDIR << std::endl;
+  std::cout << SUMFILEDIR  << std::endl;
 
   // Setting  Classes //
-  WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
+  WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);
 
   TFile* tf[nCrate];
   E14ConvReader* conv[nCrate];
+
   for( int icrate = 0; icrate < nCrate; icrate++){
-    tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",convFileDir, icrate, RunNumber)); 
+    tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, RunNumber)); 
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
   }
 
   std::cout<< "SetIO" <<std::endl ;
   //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
-  TFile* tfout = new TFile(Form("%s/run%d_wavDump_%s.root",waveAnaFileDir,RunNumber,ModName),
+  TFile* tfout = new TFile(Form("%s/run%d_wavDump_%s.root",WAVEFILEDIR.c_str(),RunNumber,ModName),
 			   "recreate");
   TTree* trout = new TTree("WFTree",Form("Waveform of %s",ModName));
 
@@ -111,12 +117,12 @@ int  main(int argc,char** argv)
   Int_t Time[48];
   Int_t ID;
   Int_t EventNumber;
-  trout->Branch("Data",Data,"Data[48]/I");
-  trout->Branch("Time",Time,"Time[48]/I");
-  trout->Branch("ID",&ID,"ID/I");
+  trout->Branch("Data"       ,Data        ,"Data[48]/I");
+  trout->Branch("Time"       ,Time        ,"Time[48]/I");
+  trout->Branch("ID"         ,&ID         ,"ID/I");
   trout->Branch("EventNumber",&EventNumber,"EventNumber/I");
   TTree* trdummy = new TTree("dummy","");
-  E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",sumFileDir,RunNumber),
+  E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
 					    trdummy);
   tfout->cd();
   {
