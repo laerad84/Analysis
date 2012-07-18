@@ -295,7 +295,7 @@ void    CsI_Module::SetTitle(const char* title){
 }
 
 void    CsI_Module::Reset( void ){
-  CsI->Reset("");
+  CsI->Reset();
 }
 
 void    CsI_Module::Draw(const char* option = "colz"){
