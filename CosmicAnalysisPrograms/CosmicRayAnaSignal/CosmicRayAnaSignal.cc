@@ -34,8 +34,8 @@ const Double_t COSMIC_THRESHOLD[20] = {1000,1000,1000,1000,1000,
 int
 main(int argc, char** argv){
   
-  gStyle->SetOptFit ( 11111111 );
-  gStyle->SetOptStat( "neMRiuo"  );  
+  gStyle->SetOptFit ( 11111111  );
+  gStyle->SetOptStat( "neMRiuo" );  
   gStyle->SetPalette(1);
 
   // ARGV[0]  <InputROOTFile> <OutputROOTFile> [<Vision>]
@@ -49,9 +49,9 @@ main(int argc, char** argv){
   Double_t HeightThreshold = 30;// in case of Signal Height;~200 in ADC
   Double_t energyThreshold = 3;
 
-  if( argc == 3){
+  if( argc == 2){
     RunNumber = atoi(argv[1]);
-    OutputFile = argv[2];
+    //OutputFile = argv[2];
   }else{
     std::cerr << "ARGUEMENT ERROR" << std::endl;
     return -1;
@@ -59,17 +59,18 @@ main(int argc, char** argv){
   
   // ReadEnvironment
   std::cout << "ENVIRONMENT" << std::endl;
-  std::string ANALIBDIR   = std::getenv("ANALYSISLIB"  );
-  std::string CONVFILEDIR = std::getenv("ROOTFILE_CONV");
-  std::string WAVEFILEDIR = std::getenv("ROOTFILE_WAV" );
-  std::string SUMFILEDIR  = std::getenv("ROOTFILE_SUMUP");
+  std::string ANALIBDIR     = std::getenv("ANALYSISLIB"    );
+  std::string CONVFILEDIR   = std::getenv("ROOTFILE_CONV"  );
+  std::string WAVEFILEDIR   = std::getenv("ROOTFILE_WAV"   );
+  std::string SUMFILEDIR    = std::getenv("ROOTFILE_SUMUP" );
+  std::string COSMICFILEDIR = std::getenv("ROOTFILE_COSMIC");
   std::cout << ANALIBDIR   << std::endl;  
   std::cout << CONVFILEDIR << std::endl;
   std::cout << WAVEFILEDIR << std::endl;
   std::cout << SUMFILEDIR  << std::endl;
 
   // Set InputFile
-  std::cout<< "FILE SETTING" << std::endl;
+  std::cout << "FILE SETTING" << std::endl;
   TFile* tfRead = new TFile(Form("%s/run%d_wav.root",WAVEFILEDIR.c_str(), RunNumber));
   TTree* trRead = (TTree*)tfRead->Get("WFTree");
   E14ConvWriter* wConv = new E14ConvWriter(Form("%s/Sum%d.root",SUMFILEDIR.c_str(), RunNumber), trRead);
@@ -82,11 +83,11 @@ main(int argc, char** argv){
     wConv->Set();
     wConv->SetMap();
     wConv->SetBranchAddress();
-
+    
   }
   
   // Set OutputFile
-  TFile* tfOut  = new TFile(OutputFile.c_str(),"Recreate");
+  TFile* tfOut  = new TFile(Form("%s/run%d_cosmic.root",COSMICFILEDIR.c_str(),RunNumber),"Recreate");
   TTree* trOut  = new TTree("CosmicOut","");  
 
   TH2D* hisTriggerHitPosition
@@ -98,8 +99,8 @@ main(int argc, char** argv){
   Int_t    CosmicTrigger[20]={0};
   Int_t    UpperID[5];
   Int_t    DownID[5];
-  Int_t    nHitUp  =  0;
-  Int_t    nHitDn  =  0;
+  Int_t    nHitUp         =  0;
+  Int_t    nHitDn         =  0;
   Bool_t   bCosmicTrigger =  false;
   Int_t    TriggerIndex   = -1;
 

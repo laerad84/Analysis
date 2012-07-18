@@ -110,7 +110,7 @@ bool searchPeak(TH1D* hisCosmic, Double_t& Norm, Double_t& Peak, Double_t& Sigma
 
 int 
 main( int argc, char** argv){
-  std::string inputFile;
+  std::string inputFileList;
   std::string outputFile;
   
   if( argc != 2){
@@ -124,18 +124,28 @@ main( int argc, char** argv){
   TCanvas* can  =  new TCanvas("can","can",0,0,800,800);
   can->Draw();
 
-  /*
-  TChain* trCosmic = new TChain("CosmicOut");
-  for( int i = 0; i< 8; i++){
-    std::string Filename = Form("CosmicTest_%d.root",i);
-    std::cout<< Filename << std::endl;
-    trCosmic->Add(Filename.c_str());
-  }
-  */
+  std::string COSMICFILEDIR = std::getenv("ROOTFILE_COSMIC");
 
+  TChain* trCosmic = new TChain("CosmicOut");
+  std::ifstream ifs( inputFileList.c_str() );
+  int RunNumber;
+  while( ifs >> RunNumber ){
+    trCosmic->Add(Form("%s/run%d_cosmic.root", COSMICFILEDIR.c_str(), RunNumber));
+    std::cout<< "ADDFILE: " << trCosmic->GetEntries() << std::endl; 
+  }
+  Int_t CsiNumber;
+  Double_t CalFactor;
+  Int_t CsIID[2716];
+  Double_t CsiDepE[2716];
+  trCosmic->SetBranchAddress("CsiNumber", &CsiNumber );
+  trCosmic->SetBranchAddress("CsiDepE"  , CsiDepE    );//CsiNumber
+  trCosmic->SetBranchAddress("CsIID"    , CsIID      );//CsiNumber
+  trCosmic->SetBranchAddress("CalFactor", &CalFactor );
+  
+  /*
   TFile* tf =new TFile(inputFile.c_str());
   TTree* trCosmic = (TTree*)tf->Get("CosmicOut");
-
+  */
   TFile* tfout = new TFile(outputFile.c_str(),"recreate");
   TGraph* gr = new TGraph();
   TGraphErrors* grGain = new TGraphErrors();
@@ -218,9 +228,9 @@ main( int argc, char** argv){
   tr->Write();
   tfout->Close();
   
-  can->Modified();
-  can->Update();
-  app->Run();
+  //can->Modified();
+  //can->Update();
+  //app->Run();
 
 }
  
