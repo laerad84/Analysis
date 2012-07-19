@@ -245,7 +245,10 @@ main( int argc, char** argv){
   }
 
   std::cout<< "Analysis is Done" << std::endl;
-
+  for( int ich  =0 ;ich < 2716; ich++){
+    CosmicTempHist[ich]->Write();
+    CosmicHist[ich]->Write();
+  }
   tr->Write();
   tfout->Close();
 
