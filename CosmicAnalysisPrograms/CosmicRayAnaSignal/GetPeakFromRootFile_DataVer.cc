@@ -21,7 +21,6 @@
 #include "TMath.h"
 #include "TChain.h"
 
-#include "CsI_Module.h"
 
 bool searchPeak(TH1D* hisCosmic, Double_t& Norm, Double_t& Peak, Double_t& Sigma, Double_t& chi2, Int_t& ndf){
   TSpectrum* spec    = new TSpectrum(10,10);
@@ -125,8 +124,6 @@ main( int argc, char** argv){
   can->Draw();
 
   std::string ROOTFILE_COSMIC = std::getenv("ROOTFILE_COSMIC");
-
-  CsI_Module* csi = new CsI_Module("csi");
 
   //TFile* tf =new TFile(inputFile.c_str());
   //TTree* trCosmic = (TTree*)tf->Get("CosmicOut");
@@ -245,10 +242,12 @@ main( int argc, char** argv){
   }
 
   std::cout<< "Analysis is Done" << std::endl;
+
   for( int ich  =0 ;ich < 2716; ich++){
     CosmicTempHist[ich]->Write();
     CosmicHist[ich]->Write();
   }
+
   tr->Write();
   tfout->Close();
 
