@@ -97,7 +97,7 @@ main(int argc,char** argv){
   for( int ievt=0; ievt<nloop; ievt++ ){
     if(ievt%(nloop/10)==0&&nloop>100)
       std::cout<<ievt/(nloop/100)<<"%"<<std::endl;
-    
+    data.OrigEventID = ievt;
     for( int ichannel = 0; ichannel < 3000; ichannel++){
       CSIDigiID[ichannel]  = 0; 
       CSIDigiE[ichannel]   = 0; 

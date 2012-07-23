@@ -73,7 +73,7 @@ class E14ReadSumFile{
   Double_t end_p[nMaxTrack][3];//nTrack
   Double_t end_v[nMaxTrack][3];//nTrack
   
-  E14ReadSumFile(Int_t Flag);
+  E14ReadSumFile(Int_t Flag = 0);
   ~E14ReadSumFile();
   
   bool SetBranchAddress();

@@ -1,12 +1,13 @@
 #include <iostream>
 #include <fstream>
-
 #include <iomanip>
 #include <string>
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
 #include <vector>
+
+#include <libgen.h>
 
 #include "TChain.h"
 #include "TTree.h"
@@ -120,31 +121,39 @@ main( int argc, char** argv){
     inputFileList = argv[1];
   }
 
-  TCanvas* can  =  new TCanvas("can","can",0,0,800,800);
-  can->Draw();
+  char* basenameStr = basename( argv[1] );
+  Int_t YMD = 0; 
+  sscanf( basenameStr , "CosmicList_%d.txt", &YMD);
+  std::cout<< basenameStr << " : " << YMD << std::endl ;
 
   std::string ROOTFILE_COSMIC = std::getenv("ROOTFILE_COSMIC");
 
   //TFile* tf =new TFile(inputFile.c_str());
   //TTree* trCosmic = (TTree*)tf->Get("CosmicOut");
-  TChain* trCosmic = new TChain("CosmicOut");
+  std::cout << "Input TChain Settig" << std::endl; 
+  TChain* trCosmic = new TChain("CosmicOut");  
   Int_t RunID;
   std::ifstream ifs( inputFileList.c_str() );
+  if( !ifs.is_open() ){ std::cout<< "confirm File path" << std::endl; }
   while ( ifs >> RunID ){
-    trCosmic->Add(Form("%s/Cosmic_%d.root",ROOTFILE_COSMIC.c_str(),RunID));
+    std::cout<< "Read:" << Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),RunID) << std::endl;
+    trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),RunID));
   }
+
   Int_t    nDigi;
-  Int_t    CsIID[2716];
-  Double_t CsIdepE[2716];
+  Int_t    CsIID[2716];//nDigi
+  Double_t CsIdepE[2716];//nDigi
   Double_t CalFactor;
   trCosmic->SetBranchAddress("nDigi",&nDigi);
   trCosmic->SetBranchAddress("CsIID",CsIID);//nDigi
-  trCosmic->SetBranchAddress("CsidepE",CsIdepE);//nDigi
+  trCosmic->SetBranchAddress("CsIdepE",CsIdepE);//nDigi
   trCosmic->SetBranchAddress("CalFactor",&CalFactor);
-  
-  TFile* tfout = new TFile(Form("%s/CosmicResult_%s.root",
+
+
+  std::cout <<  "Output confirmation" << std::endl; 
+  TFile* tfout = new TFile(Form("%s/CosmicResult_%d.root",
 				ROOTFILE_COSMIC.c_str(), 
-				inputFileList.substr(0,inputFileList.length()-4).c_str()),
+				YMD),
 			   "recreate");
 
   TGraph* gr = new TGraph();
@@ -159,6 +168,7 @@ main( int argc, char** argv){
   Int_t    ID;
   Int_t    Ndf;
   Int_t    Nentries;
+
   tr->Branch("Norm" ,&LandauNorm,"Norm/D");
   tr->Branch("Peak" ,&LandauPeak,"Peak/D");
   tr->Branch("Sigma",&LandauSigma,"Sigma/D");
@@ -169,41 +179,58 @@ main( int argc, char** argv){
   gr->SetNameTitle("cosmic","cosmic");
   grGain->SetNameTitle("gain","gain");
 
+  std::cout << "Define Histogram" << std::endl; 
   TH1D* CosmicHist[2716];
   TH1D* CosmicTempHist[2716];
   for( int i = 0; i< 2716; i++){
     CosmicTempHist[i] = new TH1D( Form("hisTempCH%04d",i), Form("CosmicTemp_%04d",i),
 				  240,-200,1000);
   }
+
+  std::cout << "///////////////////////////////////////////////////////" << std::endl;
+  std::cout << "Total Entries : " << trCosmic->GetEntries() << std::endl; 
+  std::cout << "///////////////////////////////////////////////////////" << std::endl;
+  std::cout << "First Loop Start" << std::endl;
   for( int ievent  =0 ;ievent < trCosmic->GetEntries(); ievent++){
     trCosmic->GetEntry(ievent);
     if( CalFactor <= 0.9 ) continue; 
     for( int idigi = 0; idigi < nDigi; idigi++){
-      CosmicTempHist[ CsIID[ idigi ] ]->Fill( CsIdepE[ idigi ] );
+      CosmicTempHist[ CsIID[ idigi ] ]->Fill( CsIdepE[ idigi ]*CalFactor );
     }
   }
+
   Double_t Peak;
   Double_t Sigma; 
   Double_t Norm; 
-
+  std::cout<< " Get First  Result and Set Output Histogram " << std::endl; 
   for( int ich = 0 ; ich< 2716; ich++){
     if( searchPeak ( CosmicTempHist[ich], Norm ,Peak, Sigma, Chi2, Ndf ) ){
-      //std::cout<< ich << " : " <<< Peak << " : " << Sigma << std::endl;
+      //std::cout<< ich << " : " << Peak << " : " << Sigma << std::endl;
       CosmicHist[ich] = new TH1D( Form( "his_CH%04d", ich ),
 				  Form( "his_CH%04d", ich ),
 				  160,0,Peak*8);
+    }else{
+      CosmicHist[ich] = new TH1D( Form( "his_CH%04d", ich ),
+				  Form( "his_CH%04d", ich ),
+				  160,0, 1000);
     }
   }
 
+  std::cout<< "Second Loop Start" << std::endl; 
   for( int ievent  =0 ;ievent < trCosmic->GetEntries(); ievent++){
+    //std::cout<< ievent << std::endl;
     trCosmic->GetEntry(ievent);
     if( CalFactor <= 0.9 ) continue; 
     for( int idigi = 0; idigi < nDigi; idigi++){
-      CosmicHist[ CsIID[ idigi ] ]->Fill( CsIdepE[ idigi ] );
+      CosmicHist[ CsIID[ idigi ] ]->Fill( CsIdepE[ idigi ]*CalFactor );
     }
   }
 
+  
+  std::cout<< "Get Result " << std::endl;
+
   for( int ich = 0; ich < 2716; ich ++){ 
+    ID= ich;
     if( CosmicHist[ich]->GetEntries() > 100){
       if( searchPeak( CosmicHist[ich], Norm, Peak, Sigma, Chi2, Ndf ) ){
 	if( ich >= 2240 ){
