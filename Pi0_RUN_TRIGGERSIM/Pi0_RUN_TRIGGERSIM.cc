@@ -46,7 +46,7 @@ main(int argc,char** argv){
   //TApplication* app = new TApplication("app",&argc, argv);
   
   // set input file 
-  E14ReadSumFile* ReadSum = new E14ReadSumFile();
+  E14ReadSumFile* ReadSum = new E14ReadSumFile(1);
   ReadSum->Add(ifname.c_str());
   
   // set output file
