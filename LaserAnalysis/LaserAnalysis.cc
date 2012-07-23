@@ -51,7 +51,7 @@ main( int argc, char **argv){
   laserRootTree->SetBranchAddress("SpillFlag",&SpillFlag);
 
   //TFile* SumRootFile   = new TFile(SumFilenameStr.c_str());
-  E14ReadSumFile* Reader = new E14ReadSumFile();
+  E14ReadSumFile* Reader = new E14ReadSumFile(0);
   Reader->Add(SumFilenameStr.c_str());
 
 
