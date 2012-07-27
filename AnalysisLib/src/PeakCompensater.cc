@@ -39,8 +39,10 @@ bool PeakCompensater::Init(){
 double PeakCompensater::Compensate(int id , double Peak ){
   int splID=-1;
   double CompensateOut=0;
-  if( id < 0 || id >2716 ){
-    return -1; 
+  if( id == -1 ){
+    splID = 1;
+  }else if( id < 0 || id >2716){
+    return -1;
   }else if( id < 2240 ){
     splID = 0;
   }else if( id >= 2240){
@@ -48,6 +50,12 @@ double PeakCompensater::Compensate(int id , double Peak ){
   }else{
     return -1;
   }
-  CompensateOut = Peak/m_spl[splID]->Eval(Peak);
+  if( Peak < 0. ){
+    CompensateOut = -1;
+  }else if( Peak > 15840 ){
+    CompensateOut = Peak/m_spl[splID]->Eval(15840);
+  }else{
+    CompensateOut = Peak/m_spl[splID]->Eval(Peak);
+  }
   return CompensateOut;
 }

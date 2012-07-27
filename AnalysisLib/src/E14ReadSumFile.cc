@@ -1,7 +1,7 @@
 #ifndef __E14ReadSumFile__h__
 #include "E14ReadSumFile.h"
 
-E14ReadSumFile::E14ReadSumFile(Int_t Flag = 0){
+E14ReadSumFile::E14ReadSumFile(Int_t Flag){
   ch = new TChain("T");
   this->SetBranchAddress();
   if( Flag == 1 ){

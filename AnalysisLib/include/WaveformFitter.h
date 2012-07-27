@@ -30,10 +30,10 @@ public:
   bool Fit(TGraph* gr);
   bool Clear();
 protected:
-  int m_Nsamples;
-  bool m_fixed;
-  TF1* m_fitfunc;
-  int m_pedsmpl;
+  int    m_Nsamples;
+  bool   m_fixed;
+  TF1*   m_fitfunc;
+  int    m_pedsmpl;
   
   double m_width;
   double m_asymm;

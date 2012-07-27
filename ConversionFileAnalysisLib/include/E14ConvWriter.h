@@ -5,6 +5,9 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include <list>
+#include <string>
+#include <cstring>
 
 #include "TTree.h"
 #include "TGraph.h"
@@ -17,11 +20,26 @@
 class E14ConvWriter {
  private:
   static const int nMaxModule = 32; 
-  bool bInitialize;    
   TTree* m_tr;
-  int m_nModule;
+  int    m_nModule;
+  bool   bInitialize;    
   std::string m_mapFilename;
-  
+  std::list<std::string> m_modList;
+  int    m_RunNo;
+  int    m_EventNo;
+  int    m_TrigFlag;
+  int    m_CosmicTrig;
+  int    m_LaserTrig;
+  int    m_CVTrig;
+  int    m_CosmicTrigFlagUp;
+  int    m_CosmicTrigFlagDn;
+  int    m_CVTrigFlag;
+  int    m_LaserTrigFlag;
+  int    m_ModID_Cocmic;
+  int    m_ModID_CV;
+  int    m_ModID_Laser;
+
+  TGraph* m_gr;
  public:
   E14MapReader*        map;
   struct MapStruct     ModMap[32];   
@@ -31,12 +49,17 @@ class E14ConvWriter {
   ~E14ConvWriter();
 
   bool  AddModule(char*);
-  bool  SetMap();
   bool  Set();
-  int   GetNmodule();
+  bool  SetMap();
   bool  Branch();
   bool  SetBranchAddress();  
-  bool  InitData();
+  bool  InitTriggerFlag();
+  bool  TrigJudgement();
+  bool  ScanMod(char*);
+  int   GetNmodule();
+  int   GetModuleID( char* );
+  int   Fit( int );
+  int   FitAll( );
 };
 
 #endif

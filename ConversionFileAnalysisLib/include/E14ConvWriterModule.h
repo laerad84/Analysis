@@ -9,6 +9,7 @@ class E14ConvWriterModule {
  public:
   TTree* m_Tree;
   char   m_DetectorName[128];
+  int    m_DetectorID;
   int    m_nDigi;
   int    m_Fit[4096];
   int    m_ID[4096];

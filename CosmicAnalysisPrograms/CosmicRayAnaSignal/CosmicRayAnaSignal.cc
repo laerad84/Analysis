@@ -96,24 +96,6 @@ main(int argc, char** argv){
 	       200,-1000,1000,
 	       10 ,0    ,10);  
   
-  Int_t    CosmicTrigger[20]={0};
-  Int_t    UpperID[5];
-  Int_t    DownID[5];
-  Int_t    nHitUp         =  0;
-  Int_t    nHitDn         =  0;
-  Bool_t   bCosmicTrigger =  false;
-  Int_t    TriggerIndex   = -1;
-
-  Double_t CsIdepE[N_TOTAL_CSI];
-  Double_t CsITiming[N_TOTAL_CSI];
-  Double_t CsIHHTiming[N_TOTAL_CSI];
-  Double_t CsISplTiming[N_TOTAL_CSI];
-  Double_t CsIFitTiming[N_TOTAL_CSI];
-
-  Int_t    CsIID[N_TOTAL_CSI];
-  Double_t CsIADC[N_TOTAL_CSI];
-  Double_t PathLength[N_TOTAL_CSI];
-  Double_t CalFactor;
   Int_t    nDigi;
   Int_t    Trigger;
   Double_t roh;
@@ -126,6 +108,25 @@ main(int argc, char** argv){
   Int_t    HitCoinDn;
   Int_t    HitUp;
   Int_t    HitDn;
+  Int_t    CosmicTrigger[20]={0};
+  Int_t    nHitUp         =  0;
+  Int_t    nHitDn         =  0;
+  Int_t    UpperID[5];//nHitUp
+  Int_t    DownID[5];//nHitDn
+  Bool_t   bCosmicTrigger =  false;
+  Int_t    TriggerIndex   = -1;
+
+  Double_t CsIdepE[N_TOTAL_CSI];//nDigi
+  Double_t CsITiming[N_TOTAL_CSI];//nDigi
+  Double_t CsIHHTiming[N_TOTAL_CSI];//nDigi
+  Double_t CsISplTiming[N_TOTAL_CSI];//nDigi
+  Double_t CsIFitTiming[N_TOTAL_CSI];//nDigi
+
+  Int_t    CsIID[N_TOTAL_CSI];//nDigi
+  Double_t CsIADC[N_TOTAL_CSI];//nDigi
+  Double_t PathLength[N_TOTAL_CSI];//nDigi
+  Double_t CalFactor;
+
   {
 
     trOut->Branch("nDigi"    ,&nDigi    ,"nDigi/I");

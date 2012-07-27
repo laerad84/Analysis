@@ -22,7 +22,7 @@
 int
 main(int argc, char** argv ){
   TApplication* app = new TApplication("app",&argc,argv);
-  std::string TestFileDir="/Volume0/ExpData/2012_Feb_Beam/wave_data/run4502_wavDump_CV.root";  
+  std::string TestFileDir="/Volume0/ExpData/2012_Feb_Beam/RootFile_wav/run3949_wavDump_Cosmic.root";
   TFile* tf = new TFile(TestFileDir.c_str());  
   TTree* tr = (TTree*)tf->Get("WFTree");
   
@@ -37,8 +37,8 @@ main(int argc, char** argv ){
   tr->SetBranchAddress("EventNumber",&EventNumber);
 
   WaveformFitter* wavFitter = new WaveformFitter( 48, kFALSE );
-  TGraph* wf[16];
-  for( int i = 0; i< 16; i++){
+  TGraph* wf[20];
+  for( int i = 0; i< 20; i++){
     wf[i] = new TGraph();
   }
   int igr = 0;
@@ -52,16 +52,16 @@ main(int argc, char** argv ){
   std::cout<< tr->GetEntries() << std::endl;  
   long nentries = tr->GetEntries();   
 
-  TH1D* hisRMS[16];
-  TH1D* hisSpc[16];
-  for( int i = 0; i< 16; i++){
+  TH1D* hisRMS[20];
+  TH1D* hisSpc[20];
+  for( int i = 0; i< 20; i++){
     hisRMS[i] = new TH1D(Form("hisRMS%d",i),"",200,0,10000);
     hisSpc[i] = new TH1D(Form("hisSpc%d",i),"",200,0,100000);
   }
 
   for( int ievent = 0; ievent < nentries; ievent++){
     tr->GetEntry( ievent );
-    igr = ievent%16;
+    igr = ievent%20;
     wf[igr]->Set(0);
     wf[igr]->SetNameTitle(Form("Gr%d",igr),Form("%d:CH%d",EventNumber, ID));
 
@@ -85,11 +85,11 @@ main(int argc, char** argv ){
     bool Fit = wavFitter->Fit(wf[igr]);
   }
 
-  TPostScript* ps = new TPostScript("View.ps",111);
-  TCanvas* can = new TCanvas( "can", "", 1000,1000);
-  can->Divide(4,4);
+  TPostScript* ps = new TPostScript("Cosmic.ps",111);
+  TCanvas* can = new TCanvas( "can", "", 1250,1000);
+  can->Divide(5,4);
   ps->NewPage();
-  for( int i = 0; i< 16; i++){
+  for( int i = 0; i< 20; i++){
     can->cd(i+1);
     hisRMS[i]->Draw();
     gPad->SetLogy();
@@ -99,7 +99,7 @@ main(int argc, char** argv ){
   can->Update();
   can->Modified();
   ps->NewPage();
-  for( int i = 0; i< 16; i++){
+  for( int i = 0; i< 20; i++){
     can->cd(i+1);
     hisSpc[i]->Draw();
     gPad->SetLogy();

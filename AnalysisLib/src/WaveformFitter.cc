@@ -54,7 +54,51 @@ bool WaveformFitter::Approx(TGraph* gr){
     tgr.Fit("pol0","Q");
     gnd=tgr.GetFunction("pol0")->GetParameter(0);
   */
+
+  // Edited by J.W.Lee 20120726 //
+  // Commented 
   gnd=tgr.GetMean(2);
+  // Added 
+  /*
+  const int ngndSample = 7; 
+  double gndRMS[m_Nsamples-7 +1];
+  double gndMean[m_Nsamples-7 +1];
+  double currentMinimumRMS = 0; 
+  double currentGND        = 0;
+  double tempX,tempY;
+  int    currentPosition   = 0; 
+  for( int iCombination = 0;
+       iCombination < m_Nsamples - ngndSample +1; 
+       iCombination++){
+    Double_t MaxValue = 0;
+    for( int ipoint = iCombination;
+	 ipoint < iCombination + ngndSample;
+	 ipoint++){
+      gr->GetPoint( ipoint, tempX, tempY );
+      if( MaxValue < tempY ){ MaxValue = tempY; } 
+    }
+    gndRMS[iCombination]  = 0.;
+    gndMean[iCombination] = 0.;
+    for( int ipoint = iCombination;
+	 ipoint < iCombination + ngndSample;
+	 ipoint++){
+      gr->GetPoint( ipoint, tempX, tempY );
+      gndRMS[iCombination]  += pow( tempY - MaxValue, 2 );
+      gndMean[iCombination] += tempY;
+    }
+    gndRMS[iCombination] = sqrt( gndRMS[iCombination] )/( ngndSample -1.);
+    gndMean[iCombination]= gndMean[iCombination]/7.;
+    if( gndRMS[iCombination] < currentMinimumRMS ){
+      currentMinimumRMS = gndRMS[iCombination];
+      currentGND        = gndMean[iCombination];
+      currentPosition   = 8*iCombination;
+    }
+  }
+  gnd = currentGND;
+  */
+  // End Edit
+
+
   height-=gnd;
   
   //gr->Clear();
