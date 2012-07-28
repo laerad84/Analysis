@@ -34,6 +34,10 @@
 #include "E14ConvReader.h"
 #include "E14IDHandler.h"
 #include "E14ConvWriter.h"
+#include "TH2.h"
+#include "TH1.h"
+#include "TProfile.h"
+#include "TGraph.h"
 
 
 #include "TROOT.h"
@@ -130,9 +134,6 @@ int  main(int argc,char** argv)
 
   TH2D* hisCosmicTemplete[20];
   TH2D* hisLaserTemplete[5];
-
-
-
 
   TApplication* app = new TApplication("app", &argc , argv );  
   TCanvas* can = new TCanvas( "can ", "Canvas" ,800,800);

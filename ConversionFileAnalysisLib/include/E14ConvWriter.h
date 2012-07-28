@@ -8,18 +8,19 @@
 #include <list>
 #include <string>
 #include <cstring>
-
+#include <cstdlib>
+#include <cstdio>
 #include "TTree.h"
 #include "TGraph.h"
 #include "GeneralTypes.h"
 #include "E14MapReader.h"
 #include "Structs.h"
 #include "E14ConvWriterModule.h"
-
+#include "E14ConvReader.h"
 
 class E14ConvWriter {
  private:
-  static const int nMaxModule = 32; 
+  static const int nMaxModule = 32;
   TTree* m_tr;
   int    m_nModule;
   bool   bInitialize;    
@@ -46,6 +47,7 @@ class E14ConvWriter {
   E14ConvWriterModule* mod[32];
   
   E14ConvWriter( char* , TTree* );
+  E14ConvWriter( int , TTree* );
   ~E14ConvWriter();
 
   bool  AddModule(char*);
@@ -60,6 +62,8 @@ class E14ConvWriter {
   int   GetModuleID( char* );
   int   Fit( int );
   int   FitAll( );
+  bool  InitData();
+
 };
 
 #endif
