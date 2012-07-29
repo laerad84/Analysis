@@ -10,7 +10,6 @@ E14ConvWriter::E14ConvWriter( char* mapFilename, TTree* tr){
   map         = new E14MapReader( m_mapFilename.c_str() );
   m_nModule   = 0; 
   bInitialize = false;
-  m_gr        = new TGraph();
  
 }
 
@@ -23,7 +22,6 @@ E14ConvWriter::E14ConvWriter( int RunNumber, TTree* tr){
   map         = new E14MapReader( m_mapFilename.c_str() );
   m_nModule   = 0; 
   bInitialize = false;
-  m_gr        = new TGraph();
  
 }
 
@@ -67,12 +65,34 @@ bool E14ConvWriter::Branch(){
   return true;
 }
 bool E14ConvWriter::SetBranchAddress(){
+
+  m_tr->SetBranchAddress("RunNo",&m_RunNo);
+  m_tr->SetBranchAddress("EventNo",&m_EventNo);
+  m_tr->SetBranchAddress("TrigFlag",&m_TrigFlag);
+  m_tr->SetBranchAddress("CosmicTrig",&m_CosmicTrig);
+  m_tr->SetBranchAddress("LaserTrig",&m_LaserTrig);
+  m_tr->SetBranchAddress("CVTrig",&m_CVTrig);
+  m_tr->SetBranchAddress("CosmicTrigFlagUp",&m_CosmicTrigFlagUp);
+  m_tr->SetBranchAddress("CosmicTrigFlagDn",&m_CosmicTrigFlagDn);
+  m_tr->SetBranchAddress("CVTrigFlag",&m_CVTrigFlag);
+  m_tr->SetBranchAddress("LaserTrigFlag",&m_LaserTrigFlag);
+
   for( int i = 0; i< m_nModule; i++){
     mod[i]->SetBranchAddress();
   }
   return true;
 }
 bool E14ConvWriter::InitData(){
+
+  m_TrigFlag         = 0;
+  m_CosmicTrig       = 0;
+  m_LaserTrig        = 0;
+  m_CVTrig           = 0;
+  m_CosmicTrigFlagUp = 0; 
+  m_CosmicTrigFlagDn = 0;
+  m_CVTrigFlag       = 0; 
+  m_LaserTrigFlag    = 0;  
+
   for( int i = 0; i < m_nModule; i++){
     mod[i]->InitData();
   }
@@ -91,7 +111,6 @@ bool E14ConvWriter::ScanMod(char* modName){
   }
   return false;
 }
-
 
 int  E14ConvWriter::GetNmodule(){
   return m_nModule;

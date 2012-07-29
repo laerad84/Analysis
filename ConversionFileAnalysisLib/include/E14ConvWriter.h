@@ -26,6 +26,7 @@ class E14ConvWriter {
   bool   bInitialize;    
   std::string m_mapFilename;
   std::list<std::string> m_modList;
+ public:
   int    m_RunNo;
   int    m_EventNo;
   int    m_TrigFlag;
@@ -36,12 +37,7 @@ class E14ConvWriter {
   int    m_CosmicTrigFlagDn;
   int    m_CVTrigFlag;
   int    m_LaserTrigFlag;
-  int    m_ModID_Cocmic;
-  int    m_ModID_CV;
-  int    m_ModID_Laser;
 
-  TGraph* m_gr;
- public:
   E14MapReader*        map;
   struct MapStruct     ModMap[32];   
   E14ConvWriterModule* mod[32];
