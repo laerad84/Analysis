@@ -198,9 +198,9 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // Loop Start  /// 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
-  //for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
   std::cout <<"Loop " <<std::endl;
-  for( int ievent  = 0; ievent < 10000; ievent++){
+  for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
+  //for( int ievent  = 0; ievent < 10000; ievent++){
     std::cout<< ievent << std::endl;
 
     wConv->InitData();
