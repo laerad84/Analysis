@@ -185,15 +185,16 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
  
-  TH2D* hisTempCsI_Cosmic[2716];
-  //TH2D* hisTempCsI_Laser[2716];
+  //TH2D* hisTempCsI_Cosmic[2716];
+  TH2D* hisTempCsI_Laser[2716];
   for( int i = 0; i< 2716; i++){
+    /*
     hisTempCsI_Cosmic[i] = new TH2D(Form("hisTempCsI_Cosmic%d", i),Form("hisTempCsI_Cosmic%d",i),
 				    400,-200, 200,200, -0.5, 1.5);
-    /*
+    */
     hisTempCsI_Laser[i]  = new TH2D(Form("hisTempCsI_Laser%d", i) ,Form("hisTempCsI_Laser%d" ,i),
 				    400,-200, 200,400, -0.5, 1.5);
-    */
+
   }
 
 
@@ -343,15 +344,14 @@ int  main(int argc,char** argv)
 	  if( iCrate == 9999 | iSlot == 9999 | iCh == 9999 ){
 	    continue; 
 	  }
-	  /*
 	  for( int ipoint = 0; ipoint < 48; ipoint++){
 	    hisTempCsI_Laser[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_HHTiming[idigi],
 					     (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
 	  }
-	  */
 	}
       }
     }else if ( wConv->m_TrigFlag == 2 ){ // Case of Cosmic ;;;
+      /*
       for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
 	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
 	  int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
@@ -368,6 +368,7 @@ int  main(int argc,char** argv)
 	  }
 	}
       }
+      */
     }else{
       ;
     }
