@@ -138,10 +138,10 @@ int  main(int argc,char** argv)
 
   TH2D* hisCosmicTemplete[20];
   TH2D* hisLaserTemplete[5];
-
+  TH2D* hisGammaTemplete[20][8];
   TApplication* app = new TApplication("app", &argc , argv );  
-  TCanvas* can = new TCanvas( "can ", "Canvas" ,800,800);
-  TGraph* gr = new TGraph();
+  TCanvas* can      = new TCanvas( "can ", "Canvas" ,800,800);
+  TGraph* gr        = new TGraph();
   gr->SetMarkerStyle(6);
 
   int CsiModuleID    = wConv->GetModuleID("Csi");
@@ -153,9 +153,9 @@ int  main(int argc,char** argv)
   // Set Trigger Map Cosmic Laser CV 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  const int nCVModule  = 10;
-  const int nCosmicModule  = 20; 
-  const int CosmicArr[20]= {4 ,5 ,2 ,3 ,6 ,7 ,0 ,1 ,12,13,10,11,14,15,8 ,9 ,16,17,18,19};
+  const int nCVModule     = 10;
+  const int nCosmicModule = 20; 
+  const int CosmicArr[20] = {4 ,5 ,2 ,3 ,6 ,7 ,0 ,1 ,12,13,10,11,14,15,8 ,9 ,16,17,18,19};
 
   if((wConv->ModMap[CVModuleID]).nMod     != 10){ std::cout<< "CV nModule is not equal" << std::endl;}
   if((wConv->ModMap[CosmicModuleID]).nMod != 20){ std::cout<< "Cosmic nModule is not equal" << std::endl;}  
@@ -189,9 +189,11 @@ int  main(int argc,char** argv)
   TH2D* hisTempCsI_Laser[2716];
   for( int i = 0; i< 2716; i++){
     hisTempCsI_Cosmic[i] = new TH2D(Form("hisTempCsI_Cosmic%d", i),Form("hisTempCsI_Cosmic%d",i),
-				    400,-200, 200,400, -0.5, 1.5);
+				    400,-200, 200,200, -0.5, 1.5);
+    /*
     hisTempCsI_Laser[i]  = new TH2D(Form("hisTempCsI_Laser%d", i) ,Form("hisTempCsI_Laser%d" ,i),
 				    400,-200, 200,400, -0.5, 1.5);
+    */
   }
 
 
@@ -268,7 +270,6 @@ int  main(int argc,char** argv)
 	  TSpline3* spl    = new TSpline3( "spl", gr);
 	  double splTiming = TSplineGetX(spl, halfHeight, halfTiming-12,  halfTiming +12 );
 	  wConv->mod[iMod]->m_SplTiming[chIndex]=splTiming;
-
 	  delete spl;	    
 	  delete linearFunction;
 	  //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 	      
@@ -342,10 +343,12 @@ int  main(int argc,char** argv)
 	  if( iCrate == 9999 | iSlot == 9999 | iCh == 9999 ){
 	    continue; 
 	  }
+	  /*
 	  for( int ipoint = 0; ipoint < 48; ipoint++){
 	    hisTempCsI_Laser[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_HHTiming[idigi],
 					     (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
 	  }
+	  */
 	}
       }
     }else if ( wConv->m_TrigFlag == 2 ){ // Case of Cosmic ;;;
@@ -376,7 +379,7 @@ int  main(int argc,char** argv)
     //trout->Fill();
   }
   for( int ch = 0; ch < 2716; ch++){
-    hisTempCsI_Laser[ch]->Write();
+    //hisTempCsI_Laser[ch]->Write();
     hisTempCsI_Cosmic[ch]->Write();    
   }
 
