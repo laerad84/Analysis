@@ -1,6 +1,8 @@
 // The Propose of this program is making Templetes of Trigger Signal
 // For example, Cosmic, Laser and CV
-
+// Make CsI templete by 2%
+//
+//
 
 //#include "gnana/DigiReader.h"
 //#include "gnana/E14GNAnaDataContainer.h"
@@ -79,13 +81,50 @@ double TSplineGetX( TSpline3* spl,  double y, double xmin, double xmax, int npx 
   return brf.Root();  
 }
 
+double PeakRegion_1pct[3][16]={{6313 ,7947 ,8946 ,9935 ,10509,10919,11313,11698,
+				12016,12329,12576,12799,12995,13171,13411,14232},
+			       {6942 ,8102 ,9214 ,10085,10616,11030,11437,11835,
+				12189,12483,12739,12950,13118,13304,13708,14000},
+			       {6359 ,8078 ,8952 ,10020,10531,10892,11306,11715,
+				12100,12402,12636,12888,13066,13216,13406,13701}};
+double PeakRegion_2pct[3][8]={{7947 ,9935 ,10919,11698,12329,12799,13171,14232},
+			      {8102 ,10085,11030,11835,12483,12950,13304,14000},
+			      {8078 ,10020,10892,11715,12402,12888,13216,13701}};
+
+
 int  main(int argc,char** argv)
 {
-  if( argc !=2 ){
-    std::cerr << "Please Input RunNumber " << std::endl;
+  if( argc !=3 ){
+    std::cerr << "Please Input RunNumber and section Number" << std::endl;
     return -1; 
   }
+
   Int_t RunNumber = atoi( argv[1] );
+  Int_t SectionNumber  = atoi( argv[2] ); 
+  if( SectionNumber < 0 || SectionNumber > 8 ){
+    std::cerr <<"Section Number must be the number form 0 to 8" << std::endl; 
+    return -1; 
+  }    
+  Double_t MinimumHeight[3];
+  Double_t MaximumHeight[3];
+  if( SectionNumber == 0 ){
+    for( int index = 0 ; index < 3; index++ ){
+      MinimumHeight[index] = 0.;
+    }
+  }else{
+    for( int index = 0 ; index < 3; index++ ){
+      MinimumHeight[index] = PeakRegion_2pct[index][ SectionNumber -1 ];
+    }
+  }
+  if( SectionNumber == 7 ){
+    for( int index = 0; index < 3; index++){
+      MaximumHeight[index] = 15000;
+    }
+  }else{
+    for( int index = 0; index <3; index++ ){     
+      MaximumHeight[index] = PeakRegion_2pct[index][ SectionNumber ];
+    }
+  }
 
   // GetEnvironment // 
   std::string ANALIBDIR   = std::getenv("ANALYSISLIB"  );
@@ -99,21 +138,21 @@ int  main(int argc,char** argv)
 
   // Setting  Classes //
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Setting IO
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Setting IO 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   TFile* tf[nCrate];
+
   E14ConvReader* conv[nCrate];
   for( int icrate = 0; icrate < nCrate; icrate++){
     tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, RunNumber)); 
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
   }
   //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
-  TFile* tfout = new TFile(Form("%s/TEMPLETE_LASER_%d.root",WAVEFILEDIR.c_str(),RunNumber),
+  TFile* tfout = new TFile(Form("%s/TEMPLETE_HEIGHT_%d_%d.root",WAVEFILEDIR.c_str(),RunNumber,SectionNumber),
 			   "recreate");
   TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");   
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
@@ -141,9 +180,11 @@ int  main(int argc,char** argv)
       }
     }
   }
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////// 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   TH2D* hisCosmicTemplete[20];
   TH2D* hisLaserTemplete[5];
@@ -168,6 +209,7 @@ int  main(int argc,char** argv)
 
   if((wConv->ModMap[CVModuleID]).nMod     != 10){ std::cout<< "CV nModule is not equal" << std::endl;}
   if((wConv->ModMap[CosmicModuleID]).nMod != 20){ std::cout<< "Cosmic nModule is not equal" << std::endl;}  
+
   int LaserCFC[3];
   int CVCFC[10][3];  
   int CosmicCFC[20][3];
@@ -194,16 +236,11 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
  
-  //TH2D* hisTempCsI_Cosmic[2716];
-  TH2D* hisTempCsI_Laser[2716];
+  TH2D* hisTempCsI_Height[2716];
   for( int i = 0; i< 2716; i++){
-    /*
-    hisTempCsI_Cosmic[i] = new TH2D(Form("hisTempCsI_Cosmic%d", i),Form("hisTempCsI_Cosmic%d",i),
+    hisTempCsI_Height[i] = new TH2D(Form("hisTempCsI_Height_%d_%d", i, SectionNumber),
+				    Form("hisTempCsI_Height_%d_%d", i, SectionNumber),
 				    400,-200, 200,200, -0.5, 1.5);
-    */
-    hisTempCsI_Laser[i]  = new TH2D(Form("hisTempCsI_Laser%d", i) ,Form("hisTempCsI_Laser%d" ,i),
-				    400,-200, 200,200, -0.5, 1.5);
-
   }
 
 
@@ -340,6 +377,7 @@ int  main(int argc,char** argv)
 
     // Fill Templete //
     if( wConv->m_TrigFlag == 1 ){ // Case of Laser ;;;      
+      /*
       std::cout << wConv->mod[CsiModuleID]->m_nDigi << std::endl;
       for( int idigi = 0; idigi <  wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
 	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
@@ -354,11 +392,12 @@ int  main(int argc,char** argv)
 	    continue; 
 	  }
 	  for( int ipoint = 0; ipoint < 48; ipoint++){
-	    hisTempCsI_Laser[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_Timing[idigi],
+	    hisTempCsI_Laser[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_HHTiming[idigi],
 					     (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
 	  }
 	}
       }
+      */
     }else if ( wConv->m_TrigFlag == 2 ){ // Case of Cosmic ;;;
       /*
       for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
@@ -379,7 +418,33 @@ int  main(int argc,char** argv)
       }
       */
     }else{
-      ;
+      for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
+	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
+
+	  int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
+	  int CompensateID;
+	  if( iSubMod  < 2240 ){
+	    CompensateID = 0;
+	  }else{ 
+	    CompensateID = 2;
+	  }
+	  if( wConv->mod[CsiModuleID]->m_Signal[idigi] < MinimumHeight[CompensateID] ||
+	      wConv->mod[CsiModuleID]->m_Signal[idigi] > MaximumHeight[CompensateID] ){
+	    continue;
+	  }
+	  int iCrate = 9999;
+	  int iSlot  = 9999;
+	  int iCh    = 9999;
+	  iCrate = (wConv->ModMap[CsiModuleID]).Map[iSubMod][0];
+	  iSlot  = (wConv->ModMap[CsiModuleID]).Map[iSubMod][1];
+	  iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];	
+	  for( int ipoint = 0; ipoint < 48; ipoint++){
+	    if( conv[iCrate]->Data[iSlot][iCh][ipoint] > 16000 ){ continue; }
+	    hisTempCsI_Height[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_Timing[idigi],
+					      (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
+	  }
+	}
+      }
     }
     
     /// All Convert is done ///
@@ -389,8 +454,7 @@ int  main(int argc,char** argv)
     //trout->Fill();
   }
   for( int ch = 0; ch < 2716; ch++){
-    hisTempCsI_Laser[ch]->Write();
-    //hisTempCsI_Cosmic[ch]->Write();    
+    hisTempCsI_Height[ch]->Write();    
   }
 
 

@@ -100,11 +100,11 @@ int  main(int argc,char** argv)
   // Setting  Classes //
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Setting IO
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  //  Setting IO File
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
   TFile* tf[nCrate];
   E14ConvReader* conv[nCrate];
@@ -113,7 +113,7 @@ int  main(int argc,char** argv)
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
   }
   //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
-  TFile* tfout = new TFile(Form("%s/TEMPLETE_LASER_%d.root",WAVEFILEDIR.c_str(),RunNumber),
+  TFile* tfout = new TFile(Form("%s/TEMPLETE_COSMIC_%d.root",WAVEFILEDIR.c_str(),RunNumber),
 			   "recreate");
   TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");   
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
@@ -141,9 +141,13 @@ int  main(int argc,char** argv)
       }
     }
   }
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
   TH2D* hisCosmicTemplete[20];
   TH2D* hisLaserTemplete[5];
@@ -194,16 +198,15 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
  
-  //TH2D* hisTempCsI_Cosmic[2716];
-  TH2D* hisTempCsI_Laser[2716];
+  TH2D* hisTempCsI_Cosmic[2716];
+  //TH2D* hisTempCsI_Laser[2716];
   for( int i = 0; i< 2716; i++){
-    /*
     hisTempCsI_Cosmic[i] = new TH2D(Form("hisTempCsI_Cosmic%d", i),Form("hisTempCsI_Cosmic%d",i),
 				    400,-200, 200,200, -0.5, 1.5);
-    */
+    /*
     hisTempCsI_Laser[i]  = new TH2D(Form("hisTempCsI_Laser%d", i) ,Form("hisTempCsI_Laser%d" ,i),
-				    400,-200, 200,200, -0.5, 1.5);
-
+				    400,-200, 200,400, -0.5, 1.5);
+    */
   }
 
 
@@ -282,11 +285,6 @@ int  main(int argc,char** argv)
 	  wConv->mod[iMod]->m_SplTiming[chIndex]=splTiming;
 	  delete spl;	    
 	  delete linearFunction;
-	  //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 	      
-	  //gr->Draw("AP");
-	  //can->Update();
-	  //can->Modified();
-	  //getchar();
 	  wavFitter->Clear();	  
 	}
       }      
@@ -340,6 +338,7 @@ int  main(int argc,char** argv)
 
     // Fill Templete //
     if( wConv->m_TrigFlag == 1 ){ // Case of Laser ;;;      
+      /*
       std::cout << wConv->mod[CsiModuleID]->m_nDigi << std::endl;
       for( int idigi = 0; idigi <  wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
 	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
@@ -354,13 +353,16 @@ int  main(int argc,char** argv)
 	    continue; 
 	  }
 	  for( int ipoint = 0; ipoint < 48; ipoint++){
-	    hisTempCsI_Laser[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_Timing[idigi],
+	  if( conv[iCrate]->Data[iSlot][iCh][ipoint] > 16000 ){ continue; }
+	    hisTempCsI_Laser[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_HHTiming[idigi],
 					     (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
 	  }
+	  
 	}
       }
+      */
+
     }else if ( wConv->m_TrigFlag == 2 ){ // Case of Cosmic ;;;
-      /*
       for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
 	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
 	  int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
@@ -372,12 +374,11 @@ int  main(int argc,char** argv)
 	  iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];
 	  for( int ipoint = 0; ipoint < 48; ipoint++){
 	    if( conv[iCrate]->Data[iSlot][iCh][ipoint] > 16000 ){ continue; }
-	    hisTempCsI_Cosmic[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_HHTiming[idigi],
+	    hisTempCsI_Cosmic[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_Timing[idigi],
 					      (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
 	  }
 	}
       }
-      */
     }else{
       ;
     }
@@ -389,8 +390,8 @@ int  main(int argc,char** argv)
     //trout->Fill();
   }
   for( int ch = 0; ch < 2716; ch++){
-    hisTempCsI_Laser[ch]->Write();
-    //hisTempCsI_Cosmic[ch]->Write();    
+    //hisTempCsI_Laser[ch]->Write();
+    hisTempCsI_Cosmic[ch]->Write();    
   }
 
 
