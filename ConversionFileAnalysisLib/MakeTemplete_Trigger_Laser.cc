@@ -213,7 +213,7 @@ int  main(int argc,char** argv)
   std::cout <<"Loop " <<std::endl;
   for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
   //for( int ievent  = 0; ievent < 10000; ievent++){
-    std::cout<< ievent << std::endl;
+    //std::cout<< ievent << std::endl;
 
     wConv->InitData();
     for( int icosmic = 0; icosmic < 20; icosmic++){
@@ -296,12 +296,15 @@ int  main(int argc,char** argv)
     //std::cout<< "Trigger Processing " << std::endl;
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
       if( iMod == LaserModuleID ){
-	if( wConv->mod[iMod]->m_Signal[0] > 100 ){
-	  wConv->m_LaserTrig = 1;
-	  wConv->m_TrigFlag |= 1;
+	if( wConv->mod[iMod]->m_nDigi > 0 ){
+	  if( wConv->mod[iMod]->m_Signal[0] > 100 ){
+	    wConv->m_LaserTrig = 1;
+	    wConv->m_TrigFlag |= 1;
+	  }
 	}
       }else if( iMod == CosmicModuleID ){
-	int nSubMod = (wConv->ModMap[iMod]).nMod;
+	//int nSubMod = (wConv->ModMap[iMod]).nMod;
+	int nSubMod = wConv->mod[iMod]->m_nDigi;
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
 	  CosmicSignal[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]] = wConv->mod[iMod]->m_Signal[iSubMod];
 	  CosmicTime[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]   = wConv->mod[iMod]->m_Timing[iSubMod];
@@ -322,7 +325,8 @@ int  main(int argc,char** argv)
 	  wConv->m_TrigFlag  |= 2;
 	}
       }else if( iMod == CVModuleID ){
-	int nSubMod = (wConv->ModMap[iMod]).nMod;
+	//int nSubMod = (wConv->ModMap[iMod]).nMod;
+	int nSubMod = wConv->mod[iMod]->m_nDigi;	
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
 	  CVSignal[wConv->mod[iMod]->m_ID[iSubMod]] = wConv->mod[iMod]->m_Signal[iSubMod];
 	  CVTime[wConv->mod[iMod]->m_ID[iSubMod]]   = wConv->mod[iMod]->m_Timing[iSubMod];
@@ -339,8 +343,8 @@ int  main(int argc,char** argv)
     }
 
     // Fill Templete //
+    //std::cout<< "Fill Templete" << std::endl;
     if( wConv->m_TrigFlag == 1 ){ // Case of Laser ;;;      
-      std::cout << wConv->mod[CsiModuleID]->m_nDigi << std::endl;
       for( int idigi = 0; idigi <  wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
 	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
 	  int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
@@ -380,17 +384,14 @@ int  main(int argc,char** argv)
       */
     }else{
       ;
-    }
-    
+    }    
     /// All Convert is done ///
     /// Trigger Setting     ///
     ////////////////////////////////
-
     //trout->Fill();
   }
   for( int ch = 0; ch < 2716; ch++){
     hisTempCsI_Laser[ch]->Write();
-    //hisTempCsI_Cosmic[ch]->Write();    
   }
 
 

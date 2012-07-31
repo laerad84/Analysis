@@ -105,19 +105,23 @@ int  main(int argc,char** argv)
   //  Setting IO File
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
+  std::cout << "Setting IO File" << std::endl;
   TFile* tf[nCrate];
   E14ConvReader* conv[nCrate];
   for( int icrate = 0; icrate < nCrate; icrate++){
+    std::cout << Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, RunNumber) << std::endl;
     tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, RunNumber)); 
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
   }
   //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
+  std::cout << Form("%s/TEMPLETE_COSMIC_%d.root",WAVEFILEDIR.c_str(),RunNumber) << std::endl;
   TFile* tfout = new TFile(Form("%s/TEMPLETE_COSMIC_%d.root",WAVEFILEDIR.c_str(),RunNumber),
 			   "recreate");
   TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");   
+  std::cout << Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber) << std::endl;
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
 					    trout);
+  std::cout<< "Setting Map" << std::endl;
   tfout->cd();
   {
     wConv->AddModule("Csi");
@@ -141,14 +145,14 @@ int  main(int argc,char** argv)
       }
     }
   }
-
+  std::cout << "Setting IO File End" << std::endl;
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
+  std::cout<< "Setting Hist" << std::endl;
   TH2D* hisCosmicTemplete[20];
   TH2D* hisLaserTemplete[5];
   TH2D* hisGammaTemplete[20][8];
@@ -165,7 +169,7 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // Set Trigger Map Cosmic Laser CV 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
-
+  std::cout<< "Setting Trigger" << std::endl;
   const int nCVModule     = 10;
   const int nCosmicModule = 20; 
   const int CosmicArr[20] = {4 ,5 ,2 ,3 ,6 ,7 ,0 ,1 ,12,13,10,11,14,15,8 ,9 ,16,17,18,19};
@@ -215,8 +219,8 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   std::cout <<"Loop " <<std::endl;
   for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-  //for( int ievent  = 0; ievent < 10000; ievent++){
-    std::cout<< ievent << std::endl;
+    //for( int ievent  = 0; ievent < 10000; ievent++){
+    //std::cout<< ievent << std::endl;
 
     wConv->InitData();
     for( int icosmic = 0; icosmic < 20; icosmic++){
@@ -291,19 +295,23 @@ int  main(int argc,char** argv)
     }
     
     /// Trigger dicision ///
-    //std::cout<< "Trigger Processing " << std::endl;
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
+      //std::cout << iMod << std::endl;
       if( iMod == LaserModuleID ){
-	if( wConv->mod[iMod]->m_Signal[0] > 100 ){
-	  wConv->m_LaserTrig = 1;
-	  wConv->m_TrigFlag |= 1;
+	if( wConv->mod[iMod]->m_nDigi > 0){
+	  if( wConv->mod[iMod]->m_Signal[0] > 100 ){
+	    wConv->m_LaserTrig = 1;
+	    wConv->m_TrigFlag |= 1;
+	  }
 	}
       }else if( iMod == CosmicModuleID ){
-	int nSubMod = (wConv->ModMap[iMod]).nMod;
+	//int nSubMod = (wConv->ModMap[iMod]).nMod;
+	int nSubMod = wConv->mod[iMod]->m_nDigi;
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
 	  CosmicSignal[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]] = wConv->mod[iMod]->m_Signal[iSubMod];
 	  CosmicTime[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]   = wConv->mod[iMod]->m_Timing[iSubMod];
 	}
+	//std::cout<< __LINE__ << std::endl;
 	for( int iCosmic = 0; iCosmic < 5; iCosmic++){
 	  if( CosmicSignal[ iCosmic    ] > COSMIC_THRESHOLD[ iCosmic     ] ||
 	      CosmicSignal[ iCosmic+10 ] > COSMIC_THRESHOLD[ iCosmic +10 ]){
@@ -314,13 +322,15 @@ int  main(int argc,char** argv)
 	    wConv->m_CosmicTrigFlagDn |= 1 << iCosmic;
 	  }	  
 	}
+	//std::cout<< __LINE__ << std::endl;
 	if( wConv->m_CosmicTrigFlagUp && 
 	    wConv->m_CosmicTrigFlagDn ){
 	  wConv->m_CosmicTrig = 1; 
 	  wConv->m_TrigFlag  |= 2;
 	}
       }else if( iMod == CVModuleID ){
-	int nSubMod = (wConv->ModMap[iMod]).nMod;
+	//int nSubMod = (wConv->ModMap[iMod]).nMod;
+	int nSubMod = wConv->mod[iMod]->m_nDigi;
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
 	  CVSignal[wConv->mod[iMod]->m_ID[iSubMod]] = wConv->mod[iMod]->m_Signal[iSubMod];
 	  CVTime[wConv->mod[iMod]->m_ID[iSubMod]]   = wConv->mod[iMod]->m_Timing[iSubMod];
@@ -338,7 +348,7 @@ int  main(int argc,char** argv)
 
     // Fill Templete //
     if( wConv->m_TrigFlag == 1 ){ // Case of Laser ;;;      
-      /*
+      /* 
       std::cout << wConv->mod[CsiModuleID]->m_nDigi << std::endl;
       for( int idigi = 0; idigi <  wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
 	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
@@ -361,7 +371,7 @@ int  main(int argc,char** argv)
 	}
       }
       */
-
+      ;
     }else if ( wConv->m_TrigFlag == 2 ){ // Case of Cosmic ;;;
       for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
 	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
@@ -390,7 +400,6 @@ int  main(int argc,char** argv)
     //trout->Fill();
   }
   for( int ch = 0; ch < 2716; ch++){
-    //hisTempCsI_Laser[ch]->Write();
     hisTempCsI_Cosmic[ch]->Write();    
   }
 

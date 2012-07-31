@@ -2,7 +2,7 @@
 
 
 E14ConvWriter::E14ConvWriter( char* mapFilename, TTree* tr){  
-  std::string SUMUPFILEDIR = std::getenv("SUMUPFILEDIR");
+  std::string SUMUPFILEDIR = std::getenv("ROOTFILE_SUMUP");
   std::string CONVFILEDIR  = std::getenv("ROOTFILE_CONV");
   //m_mapFilename = Form("%s/Sum%d.root",SUMUPFILEDIR,RunNumber); 
   m_mapFilename = mapFilename;
@@ -14,7 +14,7 @@ E14ConvWriter::E14ConvWriter( char* mapFilename, TTree* tr){
 }
 
 E14ConvWriter::E14ConvWriter( int RunNumber, TTree* tr){  
-  std::string SUMUPFILEDIR = std::getenv("SUMUPFILEDIR");
+  std::string SUMUPFILEDIR = std::getenv("ROOTFILE_SUMUP");
   std::string CONVFILEDIR  = std::getenv("ROOTFILE_CONV");
   m_mapFilename = Form("%s/Sum%d.root",SUMUPFILEDIR.c_str(),RunNumber); 
   //m_mapFilename = SumupFile;
