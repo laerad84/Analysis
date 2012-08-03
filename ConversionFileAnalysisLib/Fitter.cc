@@ -284,6 +284,7 @@ int main( int argc, char** argv ){
     }
     
   }
+
   can->cd(1);
   hisNormDist->Draw();
   hisNormDistCUT->SetLineColor(2);

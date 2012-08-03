@@ -66,6 +66,7 @@ main( int argc, char** argv ){
       for( int ibin = 0; ibin < 400; ibin++){
 	hisSlice[ibin] = hisTempCosmic[ich]->ProjectionY(Form("bin%d",ibin),ibin,ibin+1);
 	if( hisSlice[ibin]->GetEntries() < 100 ){ continue; }
+	if( hisTempCosmic[ich]->GetBinCenter( ibin ) < -150 ){ continue; }
 	hisSlice[ibin]->Fit("gaus","Q","",
 			    hisSlice[ibin]->GetMean()-2*hisSlice[ibin]->GetRMS(),
 			    hisSlice[ibin]->GetMean()+2*hisSlice[ibin]->GetRMS());
