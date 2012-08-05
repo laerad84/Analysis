@@ -101,9 +101,8 @@ int  main(int argc,char** argv)
 
   // Setting  Classes //
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
-
   E14WaveFitter* Fitter  = new E14WaveFitter();
-
+  
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   //  Setting IO File
@@ -117,12 +116,25 @@ int  main(int argc,char** argv)
     tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, RunNumber)); 
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
   }
+
   //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
   std::cout << Form("%s/TEMPLETE_COSMIC_%d.root",WAVEFILEDIR.c_str(),RunNumber) << std::endl;
-  TFile* tfout = new TFile(Form("%s/TEMPLETE_COSMIC_%d.root",WAVEFILEDIR.c_str(),RunNumber),
+
+  TFile* tfTemplete = new TFile("TEMPLETE_OUT_HEIGHT_0.root");
+  TGraph* tempGr[2716];
+  TSpline3* tempSpl[2716]; 
+  for( int i = 0; i< 2716; i++){
+    tempGr[i]  = (TGraphErrors*)tfTemplete->Get(Form("Waveform_Height_%d_0",i));
+    tempSpl[i] = TSpline3(Form("waveform_%d",i),(TGraph*)tempGr[i]);
+  }
+
+
+  TFile* tfout = new TFile(Form("%s/TEMPLETE_FIT_RESULT_%d.root",WAVEFILEDIR.c_str(),RunNumber),
 			   "recreate");
   TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");   
+
   std::cout << Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber) << std::endl;
+
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
 					    trout);
   std::cout<< "Setting Map" << std::endl;
@@ -150,6 +162,7 @@ int  main(int argc,char** argv)
     }
   }
   std::cout << "Setting IO File End" << std::endl;
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,9 +170,7 @@ int  main(int argc,char** argv)
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   std::cout<< "Setting Hist" << std::endl;
-  TH2D* hisCosmicTemplete[20];
-  TH2D* hisLaserTemplete[5];
-  TH2D* hisGammaTemplete[20][8];
+
   TApplication* app = new TApplication("app", &argc , argv );  
   TCanvas* can      = new TCanvas( "can ", "Canvas" ,800,800);
   TGraph* gr        = new TGraph();
@@ -178,7 +189,7 @@ int  main(int argc,char** argv)
   const int nCosmicModule = 20; 
   const int CosmicArr[20] = {4 ,5 ,2 ,3 ,6 ,7 ,0 ,1 ,12,13,10,11,14,15,8 ,9 ,16,17,18,19};
 
-  if((wConv->ModMap[CVModuleID]).nMod     != 10){ std::cout<< "CV nModule is not equal" << std::endl;}
+  if((wConv->ModMap[CVModuleID]).nMod     != 10){ std::cout<< "CV nModule is not equal"     << std::endl;}
   if((wConv->ModMap[CosmicModuleID]).nMod != 20){ std::cout<< "Cosmic nModule is not equal" << std::endl;}  
   int LaserCFC[3];
   int CVCFC[10][3];  
@@ -202,24 +213,11 @@ int  main(int argc,char** argv)
   double CVSignal[10];
   double CVTime[10];
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////////
- 
-  TH2D* hisTempCsI_Cosmic[2716];
-  //TH2D* hisTempCsI_Laser[2716];
-  for( int i = 0; i< 2716; i++){
-    hisTempCsI_Cosmic[i] = new TH2D(Form("hisTempCsI_Cosmic%d", i),Form("hisTempCsI_Cosmic%d",i),
-				    400,-200, 200,200, -0.5, 1.5);
-    /*
-    hisTempCsI_Laser[i]  = new TH2D(Form("hisTempCsI_Laser%d", i) ,Form("hisTempCsI_Laser%d" ,i),
-				    400,-200, 200,400, -0.5, 1.5);
-    */
-  }
 
-
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // Loop Start  /// 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   std::cout <<"Loop " <<std::endl;
   for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
