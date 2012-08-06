@@ -38,6 +38,10 @@ class E14ConvWriter {
   int    m_CVTrigFlag;
   int    m_LaserTrigFlag;
 
+  int    m_tempCrateID;
+  int    m_tempFADCID;
+  int    m_tempChannelID;
+
   E14MapReader*        map;
   struct MapStruct     ModMap[32];   
   E14ConvWriterModule* mod[32];
@@ -55,11 +59,13 @@ class E14ConvWriter {
   bool  TrigJudgement();
   bool  ScanMod(char*);
   int   GetNmodule();
-  int   GetModuleID( char* );
+  int   GetNsubmodule(int);
+  int   GetModuleID( char* );  
   int   Fit( int );
   int   FitAll( );
   bool  InitData();
-
+  bool  GetCFC( int , int , int&, int& , int&);
+  int   SetGraph( int, int,E14ConvReader* [], TGraph* );
 };
 
 #endif

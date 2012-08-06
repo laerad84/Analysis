@@ -38,6 +38,7 @@
 #include "TH1.h"
 #include "TProfile.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
 
 #include "TROOT.h"
 #include "Math/WrappedFunction.h"
@@ -125,7 +126,7 @@ int  main(int argc,char** argv)
   TSpline3* tempSpl[2716]; 
   for( int i = 0; i< 2716; i++){
     tempGr[i]  = (TGraphErrors*)tfTemplete->Get(Form("Waveform_Height_%d_0",i));
-    tempSpl[i] = TSpline3(Form("waveform_%d",i),(TGraph*)tempGr[i]);
+    tempSpl[i] = new TSpline3(Form("waveform_%d",i),(TGraph*)tempGr[i]);
   }
 
 
@@ -170,7 +171,7 @@ int  main(int argc,char** argv)
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   std::cout<< "Setting Hist" << std::endl;
-
+  
   TApplication* app = new TApplication("app", &argc , argv );  
   TCanvas* can      = new TCanvas( "can ", "Canvas" ,800,800);
   TGraph* gr        = new TGraph();
@@ -180,7 +181,7 @@ int  main(int argc,char** argv)
   int CosmicModuleID = wConv->GetModuleID("Cosmic");
   int CVModuleID     = wConv->GetModuleID("CV");
   int LaserModuleID  = wConv->GetModuleID("Laser");
-
+  
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // Set Trigger Map Cosmic Laser CV 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,9 +189,16 @@ int  main(int argc,char** argv)
   const int nCVModule     = 10;
   const int nCosmicModule = 20; 
   const int CosmicArr[20] = {4 ,5 ,2 ,3 ,6 ,7 ,0 ,1 ,12,13,10,11,14,15,8 ,9 ,16,17,18,19};
-
-  if((wConv->ModMap[CVModuleID]).nMod     != 10){ std::cout<< "CV nModule is not equal"     << std::endl;}
-  if((wConv->ModMap[CosmicModuleID]).nMod != 20){ std::cout<< "Cosmic nModule is not equal" << std::endl;}  
+  
+  if((wConv->ModMap[CVModuleID]).nMod     != 10)
+    { 
+      std::cout<< "CV nModule is not equal"     << std::endl;
+    }
+  if((wConv->ModMap[CosmicModuleID]).nMod != 20)
+    { 
+      std::cout<< "Cosmic nModule is not equal" << std::endl;
+    }
+  
   int LaserCFC[3];
   int CVCFC[10][3];  
   int CosmicCFC[20][3];
@@ -207,13 +215,13 @@ int  main(int argc,char** argv)
       CosmicCFC[icosmic][subID] = (wConv->ModMap[LaserModuleID]).Map[0][subID];
     }
   }
-
+  
   double CosmicSignal[20];
   double CosmicTime[20];
   double CVSignal[10];
   double CVTime[10];
-
-
+  
+  
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // Loop Start  /// 
@@ -223,7 +231,13 @@ int  main(int argc,char** argv)
   for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
     //for( int ievent  = 0; ievent < 10000; ievent++){
     //std::cout<< ievent << std::endl;
-
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Init Data Component;
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    
     wConv->InitData();
     for( int icosmic = 0; icosmic < 20; icosmic++){
       CosmicSignal[icosmic] = 0;
@@ -233,71 +247,31 @@ int  main(int argc,char** argv)
       CVSignal[icv] = 0;
       CVTime[icv]   = 0; 
     }
-      
+
     for( int icrate = 0; icrate < nCrate; icrate++){
       //std::cout << icrate << std::endl;
       conv[icrate]->GetEntry(ievent);
     } 
+    
+    //// Init Data Component; 
 
     wConv->m_RunNo   = RunNumber;
     wConv->m_EventNo = ievent;
 
-    if( ievent %100 == 0 && ievent ){ std::cout<< ievent << "/" << conv[0]->GetEntries() << std::endl;} 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+    if( ievent %100 == 0 && ievent ){ std::cout<< ievent << "/" << conv[0]->GetEntries() << std::endl;}  
 
     // Conversion Convfile to Wav File 
     //for( int iMod = 1; iMod < 2; iMod++){
     //std::cout<< "Event Processing " << std::endl ;
-    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
-      int nSubModule = (wConv->ModMap[iMod]).nMod;      
-      for( int iSubMod = 0; iSubMod < nSubModule; iSubMod++){	
-	int iCrate = 9999;
-	int iSlot  = 9999;
-	int iCh    = 9999;
-	iCrate = (wConv->ModMap[iMod]).Map[iSubMod][0];
-	iSlot  = (wConv->ModMap[iMod]).Map[iSubMod][1];
-	iCh    = (wConv->ModMap[iMod]).Map[iSubMod][2];
-	  
-	// Ignore unmapped channel // 
-	if( iCrate == 9999 || iSlot == 9999 || iCh == 9999 ) continue;       
-	  
-	gr->Set(0);
-	for( int ipoint = 0; ipoint< 48; ipoint++){
-	  if(conv[iCrate]->Data[iSlot][iCh][ipoint]>16000){ continue; }
-	  gr->SetPoint( gr->GetN(), ipoint*8, conv[iCrate]->Data[iSlot][iCh][ipoint]);
-	}
-	bool fit = wavFitter->Fit( gr ); 
-	//bool fit     = Fitter->Fit( gr );
-	int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
-	if( fit ){ 
-	  TF1* fitFunc      = wavFitter->GetFunction();	    
-	  double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
-	  double halfTiming = fitFunc->GetX( halfHeight,
-					     fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
-	  wConv->mod[iMod]->m_Fit[chIndex]      = 1;
-	  wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
-	  wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
-	  wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
-	  wConv->mod[iMod]->m_Timing[chIndex]   = fitFunc->GetParameter(1);
-	  wConv->mod[iMod]->m_HHTiming[chIndex] = halfTiming;
-	  wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
-	  wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
-	  wConv->mod[iMod]->m_nDigi++;	      	    
-	      
-	  TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
-	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
-	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
-	  wConv->mod[iMod]->m_FitTiming[chIndex]= halfFitTiming;
-	  TSpline3* spl    = new TSpline3( "spl", gr);
-	  double splTiming = TSplineGetX(spl, halfHeight, halfTiming-12,  halfTiming +12 );
-	  wConv->mod[iMod]->m_SplTiming[chIndex]=splTiming;
-	  delete spl;	    
-	  delete linearFunction;
-	  wavFitter->Clear();	  
-	}
-      }      
-    }
-    
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     /// Trigger dicision ///
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
       //std::cout << iMod << std::endl;
       if( iMod == LaserModuleID ){
@@ -349,63 +323,108 @@ int  main(int argc,char** argv)
       } 
     }
 
-    // Fill Templete //
-    if( wConv->m_TrigFlag == 1 ){ // Case of Laser ;;;      
-      /* 
-      std::cout << wConv->mod[CsiModuleID]->m_nDigi << std::endl;
-      for( int idigi = 0; idigi <  wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
-	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
-	  int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
-	  int iCrate = 9999;
-	  int iSlot  = 9999;
-	  int iCh    = 9999;
-	  iCrate = (wConv->ModMap[CsiModuleID]).Map[iSubMod][0];
-	  iSlot  = (wConv->ModMap[CsiModuleID]).Map[iSubMod][1];
-	  iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];
-	  if( iCrate == 9999 | iSlot == 9999 | iCh == 9999 ){
-	    continue; 
-	  }
-	  for( int ipoint = 0; ipoint < 48; ipoint++){
-	  if( conv[iCrate]->Data[iSlot][iCh][ipoint] > 16000 ){ continue; }
-	    hisTempCsI_Laser[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_HHTiming[idigi],
-					     (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    /// End Trigger Dicision /// 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
+      ///// Updated //////      
+      //int nSubModule = (wConv->ModMap[iMod]).nMod;      
+      int nSubModule = wConv->GetNsubmodule( iMod );
+      if( nSubModule <= 0 ){ continue ;}
+
+      for( int iSubMod = 0; iSubMod < nSubModule; iSubMod++){	
+	//////  Updated  /////// 
+	//int iCrate = 9999;
+	//int iSlot  = 9999;
+	//int iCh    = 9999;	
+	//iCrate = (wConv->ModMap[iMod]).Map[iSubMod][0];
+	//iSlot  = (wConv->ModMap[iMod]).Map[iSubMod][1];
+	//iCh    = (wConv->ModMap[iMod]).Map[iSubMod][2];	  
+	// Ignore unmapped channel // 
+	// if( iCrate == 9999 || iSlot == 9999 || iCh == 9999 ) continue;       
+
+	/////// Updated /////// 
+	//int iCrate = 9999;
+	//int iSlot  = 9999;
+	//int iCh    = 9999;	
+	//if( !(wConv->GetCFC( iMod, iSubMod, iCrate, iSlot, iCh) ) ){ continue; }	
+	//gr->Set(0);
+	//for( int ipoint = 0; ipoint< 48; ipoint++){
+	//  if(conv[iCrate]->Data[iSlot][iCh][ipoint]>16000){ continue; }
+	//  gr->SetPoint( gr->GetN(), ipoint*8, conv[iCrate]->Data[iSlot][iCh][ipoint]);
+	//}
+
+	if( wConv->SetGraph( iMod, iSubMod ,conv , gr ) == 0 ){ continue; }	
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	//// Different Analysis for each Different Module /// 
+	//// For CsI Using Templete Fitting               /// 
+	//// For other module Using Function fitting      /// 
+	if( iMod == wConv->GetModuleID("Csi") ){
+	  Fitter->SetWaveform(tempSpl[ iSubMod ]);
+	  bool fit = Fitter->Fit(gr);
+	  int chIndex = (wConv->mod[iMod])->m_nDigi;
+	  if( fit ){ 
+	    TF1* fitFunc = Fitter->GetFunction();
+	    double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
+	    double halfTiming = fitFunc->GetX( halfHeight , 
+					       fitFunc->GetParameter( 1 ) - 48,
+					       fitFunc->GetParameter( 1 ) );	    
+	    wConv->mod[iMod]->m_Fit[chIndex]      = 1;
+	    wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
+	    wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(2);
+	    wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
+	    wConv->mod[iMod]->m_Timing[chIndex]   = fitFunc->GetParameter(1);
+	    wConv->mod[iMod]->m_HHTiming[chIndex] = halfTiming;	    	    
+
+	  }else{
+	    
 	  }
 	  
-	}
-      }
-      */
-      ;
-    }else if ( wConv->m_TrigFlag == 2 ){ // Case of Cosmic ;;;
-      for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
-	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
-	  int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
-	  int iCrate = 9999;
-	  int iSlot  = 9999;
-	  int iCh    = 9999;
-	  iCrate = (wConv->ModMap[CsiModuleID]).Map[iSubMod][0];
-	  iSlot  = (wConv->ModMap[CsiModuleID]).Map[iSubMod][1];
-	  iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];
-	  for( int ipoint = 0; ipoint < 48; ipoint++){
-	    if( conv[iCrate]->Data[iSlot][iCh][ipoint] > 16000 ){ continue; }
-	    hisTempCsI_Cosmic[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_Timing[idigi],
-					      (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
+	}else{
+	  
+	  bool fit = wavFitter->Fit( gr ); 
+	  //bool fit     = Fitter->Fit( gr );
+	  int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
+	  if( fit ){ 
+	    TF1* fitFunc      = wavFitter->GetFunction();	    
+	    double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
+	    double halfTiming = fitFunc->GetX( halfHeight,
+					       fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
+	    wConv->mod[iMod]->m_Fit[chIndex]      = 1;
+	    wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
+	    wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
+	    wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
+	    wConv->mod[iMod]->m_Timing[chIndex]   = fitFunc->GetParameter(1);
+	    wConv->mod[iMod]->m_HHTiming[chIndex] = halfTiming;
+	    wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
+	    wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
+	    wConv->mod[iMod]->m_nDigi++;	      	    
+	    
+	    TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
+	    gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
+	    double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
+	    wConv->mod[iMod]->m_FitTiming[chIndex]= halfFitTiming;
+	    TSpline3* spl    = new TSpline3( "spl", gr);
+	    double splTiming = TSplineGetX(spl, halfHeight, halfTiming-12,  halfTiming +12 );
+	    wConv->mod[iMod]->m_SplTiming[chIndex]=splTiming;
+	    delete spl;	    
+	    delete linearFunction;
+	    wavFitter->Clear();	  
 	  }
 	}
-      }
-    }else{
-      ;
+      }      
     }
     
     /// All Convert is done ///
     /// Trigger Setting     ///
     ////////////////////////////////
 
-    //trout->Fill();
+    trout->Fill();
   }
-  for( int ch = 0; ch < 2716; ch++){
-    hisTempCsI_Cosmic[ch]->Write();    
-  }
-
 
   std::cout<< "end Loop" <<std::endl;
   //app->Run();

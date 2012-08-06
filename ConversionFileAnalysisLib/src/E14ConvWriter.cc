@@ -115,6 +115,11 @@ bool E14ConvWriter::ScanMod(char* modName){
 int  E14ConvWriter::GetNmodule(){
   return m_nModule;
 }
+int  E14ConvWriter::GetNsubmodule(int ModID){
+  if( ModID >= m_nModule ){ return -1;}
+  return (this->ModMap[ModID]).nMod;
+}
+  
 int  E14ConvWriter::GetModuleID( char* modName){
   std::list<std::string>::iterator it;
   std::string modNameStr  = modName;
@@ -130,4 +135,38 @@ int  E14ConvWriter::GetModuleID( char* modName){
   }
   return -1;
 }
+bool E14ConvWriter::GetCFC( int ModID, int SubModID, int& CrateID, int& FADCID, int& ChannelID ){
+  if( (ModID >= this->GetNmodule()) || 
+      (SubModID >= (this->ModMap[ModID]).nMod) ){
+    CrateID   = 9999;
+    FADCID    = 9999;
+    ChannelID = 9999; 
+  }else{
+    CrateID   = (this->ModMap[ModID]).Map[SubModID][0]; 
+    FADCID    = (this->ModMap[ModID]).Map[SubModID][1]; 
+    ChannelID = (this->ModMap[ModID]).Map[SubModID][2]; 
+  }
+  if( CrateID == 9999 || FADCID == 9999 || ChannelID == 9999 ){
+    return false;
+  }else{
+    return true; 
+  }
+}
+int E14ConvWriter::SetGraph( int ModID, int SubModID, E14ConvReader* conv[], TGraph* gr){
+  gr->Set(0);
+  int npoint  = 0; 
+  if( GetCFC( ModID, SubModID, m_tempCrateID, m_tempFADCID, m_tempChannelID) ){
+    for( int ipoint = 0; ipoint < 48; ipoint++){
+      if( conv[ m_tempFADCID ]->Data[ m_tempFADCID ][ m_tempChannelID ][ ipoint ]< 16000){
+	gr->SetPoint( gr->GetN(), ipoint*8, 
+		      conv[ m_tempFADCID ]->Data[ m_tempFADCID ][ m_tempChannelID ][ ipoint ] );
+	npoint++;
+      }
+    }
+    return npoint;
+  }else{
+    return 0;
+  }
+}
+  
 
