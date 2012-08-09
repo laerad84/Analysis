@@ -13,12 +13,15 @@
 class PeakCompensater
 {
  private:
+  ;
+ public:
   TSpline3* m_spl[3];
   TGraph*   m_gr[3];
- public:
+
   PeakCompensater();
   ~PeakCompensater();
   double Compensate( int, double );
+  void Draw(int ,char*);
  private:
     bool Init();
 };

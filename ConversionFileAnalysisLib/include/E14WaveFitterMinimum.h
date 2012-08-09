@@ -26,6 +26,7 @@ class E14WaveFitterMinimum {
   void SetWaveform( TSpline3* spl ){ E14WaveFitterMinimum::m_spl = spl; }
   int  Fit(TGraph* gr, char* goption="", char* foption="", Axis_t xmin = 0, Axis_t xmax = 0);
   bool Clear(); 
+
 };
 
 #endif

@@ -59,3 +59,7 @@ double PeakCompensater::Compensate(int id , double Peak ){
   }
   return CompensateOut;
 }
+void PeakCompensater::Draw(int id, char* DrawOption){
+  if( id >=3 ){ return ;}
+  m_gr[id]->Draw(DrawOption);
+}

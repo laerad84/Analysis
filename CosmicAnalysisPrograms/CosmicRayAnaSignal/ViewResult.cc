@@ -158,7 +158,8 @@ main ( int argc, char** argv ){
 	handler->GetMetricPosition(CosmicOut->CsIID[jdigi], x[1], y[1] );	
 	double jdist = TMath::Abs((x[1] -(1./cos*(CosmicOut->roh - y[1]*sin ))) * cos );
 	if( jdist > 50 ){ continue; }
-	Double_t DeltaTime = time0 - CosmicOut->CsIFitTiming[jdigi] - OffsetList[IDFirst] + OffsetList[IDSecond];
+	//Double_t DeltaTime = time0 - CosmicOut->CsIFitTiming[jdigi] - OffsetList[IDFirst] + OffsetList[IDSecond];
+	Double_t DeltaTime = time0 - CosmicOut->CsIFitTiming[jdigi] ;//- OffsetList[IDFirst] + OffsetList[IDSecond];
 	hisDistrib->Fill(IDSecond, DeltaTime);	
 	hisDis->Fill(DeltaTime+OffsetList[IDFirst]-OffsetList[IDSecond]);
 	hisDist->Fill(DeltaTime);
@@ -169,18 +170,20 @@ main ( int argc, char** argv ){
   TProfile* pro = hisDistrib->ProfileX();  
   pro->SetLineColor( 2 );
   pro->SetLineWidth( 2 );
-  pro->SetMarkerStyle(8);
+  pro->SetMarkerStyle(7);
 
-  TCanvas* can = new TCanvas("can","",800,400);
-  can->Divide(2,1);
-  can->cd(1);
+  TCanvas* can = new TCanvas("can","",800,800);
+  //can->Divide(2,1);
+  //can->cd(1);
   hisDistrib->Draw("colz");
-  can->cd(2);
+  pro->Draw("same");
+  //can->cd(2);
+  /*
   hisDist->Draw();
   hisDis->SetLineColor(2);
   hisDis->Draw("same");
   pro->Draw("same");
-
+  */
   app->Run();
       
 }    

@@ -12,10 +12,10 @@ E14WaveFitterMinimum::~E14WaveFitterMinimum(){
 int E14WaveFitterMinimum::MakeFunction(){
   if(m_FuncFlag == 0){
     m_FitFunc = new TF1("fitFuncTemplete",fTempleteFunction,
-			0., 500., 3);
+			4*8., 500., 3);
   }else{
     m_FitFunc = new TF1("fitFuncAsymmetric",fAsymmetricGaussian,
-			0., 500., 5);
+			4*8., 500., 5);
   }
   return m_FuncFlag;
 }    
@@ -32,9 +32,10 @@ double E14WaveFitterMinimum::fTempleteFunction( double* x ,double* par){
   double ped    = par[2];
 
   double t_fcn  = 0;
-  //std::cout<< t << " : " << spl->Eval(t+mean) << std::endl;
-  if( t - mean  < -100 || t- mean >200 ){ return ped;}
-  t_fcn         = height* m_spl->Eval(t - mean) + ped;
+  if( t - mean  <= m_spl->GetXmin() || t- mean >150 ){ return ped;}
+  //if( t -mean < -80 || t-mean >= 90 ){ return ped ;}
+  if( t == 1./0 ){ return ped; }
+  t_fcn         = height*E14WaveFitterMinimum::m_spl->Eval(t - mean) + ped;
   return t_fcn;
 }
 

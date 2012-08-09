@@ -154,12 +154,12 @@ bool E14ConvWriter::GetCFC( int ModID, int SubModID, int& CrateID, int& FADCID, 
 }
 int E14ConvWriter::SetGraph( int ModID, int SubModID, E14ConvReader* conv[], TGraph* gr){
   gr->Set(0);
-  int npoint  = 0; 
+  int npoint  = 0;
   if( GetCFC( ModID, SubModID, m_tempCrateID, m_tempFADCID, m_tempChannelID) ){
     for( int ipoint = 0; ipoint < 48; ipoint++){
-      if( conv[ m_tempFADCID ]->Data[ m_tempFADCID ][ m_tempChannelID ][ ipoint ]< 16000){
+      if( conv[ m_tempCrateID ]->Data[ m_tempFADCID ][ m_tempChannelID ][ ipoint ]< 16000){
 	gr->SetPoint( gr->GetN(), ipoint*8, 
-		      conv[ m_tempFADCID ]->Data[ m_tempFADCID ][ m_tempChannelID ][ ipoint ] );
+		      conv[ m_tempCrateID ]->Data[ m_tempFADCID ][ m_tempChannelID ][ ipoint ] );
 	npoint++;
       }
     }

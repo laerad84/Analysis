@@ -1,13 +1,27 @@
 #include <iostream>
 #include <fstream>
 #include "PeakCompensater.h"
+#include "TApplication.h"
+#include "TCanvas.h"
 
 int
 main( int argc, char** argv ){
 
   std::cout<< "Test" << std::endl;
   PeakCompensater* comp = new PeakCompensater();
+  TApplication* app = new TApplication("app",&argc, argv );
+  TCanvas* can  =new TCanvas("can","",800,600);
+  comp->m_gr[0]->SetMarkerStyle(7);
+  comp->m_gr[1]->SetMarkerStyle(7);
+  comp->m_gr[2]->SetMarkerStyle(7);
+  comp->m_gr[0]->SetMarkerColor(1);
+  comp->m_gr[1]->SetMarkerColor(2);
+  comp->m_gr[2]->SetMarkerColor(3);
   
+  comp->m_gr[0]->Draw("AP");  
+  comp->m_gr[1]->Draw("P");
+  comp->m_gr[2]->Draw("P");
+
   std::cout<< comp->Compensate(0, 10) << std::endl;
 
   double aspect_old = 1.;
@@ -61,6 +75,6 @@ main( int argc, char** argv ){
 
   ofs.close();
 
-
+  app->Run();
   return 0;
 }

@@ -1,6 +1,4 @@
-#ifndef E14WAVEFITTER__H__
 #include "E14WaveFitter.h"
-#endif 
 
 E14WaveFitter::E14WaveFitter(int SelectFunction, int nPedestal){
   m_FuncFlag = SelectFunction;
@@ -8,19 +6,104 @@ E14WaveFitter::E14WaveFitter(int SelectFunction, int nPedestal){
   MakeFunction();
 }
 E14WaveFitter::~E14WaveFitter(){
-
+  ;
 }
-bool E14WaveFitter::Fit( TGraph* gr , Double_t minX, Double_t maxX){
-  if( !Approx( gr ) ){ return false; }
-  int rst = gr->Fit( m_FitFunc, "QR");
+
+void E14WaveFitter::SetParameter( Int_t parNum , Double_t value ){
+  m_FitFunc->SetParameter( parNum, value );
+}
+
+void E14WaveFitter::SetParLimits( int parNum, double lowlimit, double highlimit ){
+  m_FitFunc->SetParLimits( parNum, lowlimit, highlimit );
+}
+
+Double_t E14WaveFitter::GetParameter( int parNum ){
+  Double_t rst = m_FitFunc->GetParameter( parNum );
+  return rst;
+}
+Double_t E14WaveFitter::GetConstantFraction( ){
+  return m_HHTime;
+}
+
+Double_t E14WaveFitter::GetFitResult(){
+  Double_t chisq = m_FitFunc->GetChisquare();
+  Int_t    ndf   = m_FitFunc->GetNDF();
+  if( ndf == 0) { return -1; }
+  return chisq/ndf; 
+}
+
+void E14WaveFitter::InitPar(){
+  m_height   = 0.;
+
+  m_peakTime   = 0.;
+  m_HHTime     = 0.;
+  m_splTime    = 0.; 
+
+  m_gnd        = 0.;
+  m_gndrms     = 0.;
+
+  m_tempheight = 0.;
+  m_tempgnd    = 0.; 
+  m_peakpoint  = 0;
+  
+  m_PeakFlag   = 0;
+}  
+  
+int  E14WaveFitter::CheckWaveform( TGraph* gr ){
+  GetPeakPoint(gr);
+  GetPedestal(gr);
+  GetHeight(gr);
+  if( m_peakpoint < 15 ){ 
+    m_PeakFlag |= 1;
+  }
+  if( m_gndrms >= 3. ){
+    m_PeakFlag |= 2;
+  }
+  if(m_height <= 10. ){
+    m_PeakFlag |= 4;
+  }
+  return m_PeakFlag;
+}
+
+bool E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
+  //if( !Approx( gr ) ){ return false; }
+  if( CheckWaveform( gr ) != 0  ){ return false; }  
+  m_FitFunc->SetParameter(2,m_gnd);
+  m_FitFunc->SetParLimits(2,m_gnd,m_gnd);
+  m_FitFunc->SetParameter(0,m_height);
+  m_FitFunc->SetParLimits(0,m_height*0.9, m_height*2);
+  m_FitFunc->SetParameter(1,m_peakTime);
+  m_FitFunc->SetParLimits(1,m_peakTime-32,m_peakTime+32);
+  std::cout<< m_height << " : " << m_peakTime << " : " << m_gnd << std::endl;
+  std::cout<< m_FitFunc->Eval( -200.) <<std::endl;
+  int rst  = gr->Fit( m_FitFunc, "","",minX,maxX);
+  std::cerr << rst << std::endl; 
   if( rst == -1 ){
     return false;
   }else{
-    return true;
+    std::cout<< "FitTime" << std::endl;
+    //FitTime( gr );
+   return true;
   }
 }
-bool E14WaveFitter::FitTime( TGraph* gr, Double_t minX, Double_t MaxX){
 
+bool E14WaveFitter::FitTime( TGraph* gr){
+  m_splTime = m_FitFunc->GetX( m_FitFunc->GetParameter(0)*0.5 + m_FitFunc->GetParameter(2),
+			       m_FitFunc->GetParameter(1)-60,   m_FitFunc->GetParameter(1));
+  std::cout<< m_splTime << std::endl; 
+  gr->Fit( "pol1","Q","",m_splTime - 16, m_splTime + 16 );
+  m_linfunc = gr->GetFunction("pol1");
+  double slope  = m_linfunc->GetParameter(1);
+  double offset = m_linfunc->GetParameter(0);
+  double xpos   = ((m_height*0.5 +m_gnd) - offset)/slope;  
+  if( m_linfunc->GetParameter(1) < 0 ){ m_HHTime = -1.; }
+  if( abs( xpos - m_splTime ) > 8 ){ m_HHTime = -1.; }
+  m_HHTime = xpos;   
+  if( m_HHTime > 0 ){
+    return true;
+  }else{
+    return false;
+  }
 }
 
 bool E14WaveFitter::Approx( TGraph* gr ){
@@ -42,6 +125,7 @@ void E14WaveFitter::GetPeakPoint( TGraph* gr ){
       m_peakpoint  = ipoint;
     }
   }
+  m_peakTime = m_peakpoint*8;
 }
      
 void E14WaveFitter::GetPedestal( TGraph* gr ){
@@ -99,51 +183,4 @@ void E14WaveFitter::GetPedestal( TGraph* gr ){
 void E14WaveFitter::GetHeight( TGraph* gr ){ 
   m_height = gr->GetY()[ m_peakpoint ];
   m_height = m_height - m_gnd;
-}
-void E14WaveFitter::InitPar(){
-  m_height   = 0.;
-
-  m_peakTime   = 0.;
-  m_HHTime     = 0.;
-  m_splTime    = 0.; 
-
-  m_gnd        = 0.;
-  m_gndrms     = 0.;
-
-  m_tempheight = 0.;
-  m_tempgnd    = 0.; 
-  m_peakpoint  = 0;
-  
-  for( int i = 0; i< 4000; i++){
-    m_PeakID[i]   = -1;
-    m_PeakFlag[i] = 0;
-  } 
-  m_nPeakFlag = 0;
-  
-}  
-  
-bool E14WaveFitter::CheckWaveform( TGraph* gr , int chID){
-  if( m_nPeakFlag == 3999 ){
-    std::cerr << "Flag Array is Full. Please use InitPar() start of event" << std::endl;
-    return false;
-  }
-  GetPeakPoint(gr);
-  GetPedestal(gr);
-  GetHeight(gr);
-  if( m_peakpoint < 15 ){ 
-    m_nPeakFlag[m_nPeakFlag] |= 1;
-  }
-  if( m_gndrms >= 3. ){
-    m_nPeakFlag[m_nPeakFlag] |= 2;
-  }
-  if(m_height <= 10. ){
-    m_nPeakFlag[m_nPeakFlag] |= 4;
-  }
-  if( m_nPeakFlag[m_nPeakFlag] != 0){
-    m_PeakID[m_nPeakFlag] = chID;   
-    m_nPeakFlag++;
-    return false; 
-  }else{
-    return true;
-  }
 }

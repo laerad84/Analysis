@@ -18,8 +18,6 @@ int main( int argc, char** argv ){
   PeakCompensater* Peak = new PeakCompensater();
   std::cout<< Peak->Compensate(0,12000) << std::endl;
 
-
-
   //app->Run();
   return 0; 
 }
