@@ -132,6 +132,7 @@ int  main(int argc,char** argv)
     wConv->SetMap();
     wConv->Branch();
     std::cout<< "Check Entries" << std::endl;
+
     for( int icrate = 0; icrate < nCrate; icrate++){
       std::cout<< conv[icrate]->GetEntries() << std::endl;
     }
@@ -226,6 +227,7 @@ int  main(int argc,char** argv)
   int nSubModule = wConv->GetNsubmodule( iMod );
   if( nSubModule <= 0 ){ return -1 ;}      
   std::cout<< __LINE__ << std::endl;
+  std::cout<< iSubMod << " : " << nSubModule << std::endl;
   if( iSubMod >= nSubModule ){ return -1 ;}
   std::cout<< __LINE__ << std::endl;
   TGraph* grother = new TGraph();
@@ -253,14 +255,23 @@ int  main(int argc,char** argv)
   
 
   can->cd(2);
-  Fitter->SetWaveform( tempSpl[iSubMod]);
-  Fitter->Fit(grother);
+  //Fitter->SetWaveform( tempSpl[iSubMod]);
+  //Fitter->Fit(grother);
+  //std::cout<< Fitter->m_FitFunc->Eval( grother->GetX()[2]) << std::endl;
+  Fitter->SetWaveform( tempSpl[iSubMod] );
+
+  std::cout << E14WaveFitter::m_spl->Eval(10)   << std::endl;
+  std::cout << Fitter->CheckWaveform( grother ) << std::endl; 
+  std::cout << tempSpl[iSubMod]->Eval(10)       << std::endl;
+  
+  tempSpl[iSubMod]->Draw();
   for( int ipoint = 0; ipoint < grother->GetN(); ipoint++){
     deltagrother->SetPoint( ipoint, ipoint*8, grother->GetY()[ipoint] - Fitter->m_FitFunc->Eval( grother->GetX()[ipoint] ));
   }
+
+  std::cout << Fitter->m_FitFunc->GetChisquare()/ Fitter->m_FitFunc->GetNDF() << std::endl;
+  std::cout << func->GetChisquare()/func->GetNDF() << std::endl;
   
-  std::cout<< Fitter->m_FitFunc->GetChisquare()/ Fitter->m_FitFunc->GetNDF() << std::endl;
-  std::cout<< func->GetChisquare() /func->GetNDF() << std::endl;
   grother->Draw("AP");
   can->Update();
   can->Modified();

@@ -1,6 +1,7 @@
 #include "E14WaveFitter.h"
 
 E14WaveFitter::E14WaveFitter(int SelectFunction, int nPedestal){
+  std::cout<< __FUNCTION__ << std::endl; 
   m_FuncFlag = SelectFunction;
   m_pedsmpl = nPedestal;
   MakeFunction();
@@ -50,9 +51,13 @@ void E14WaveFitter::InitPar(){
 }  
   
 int  E14WaveFitter::CheckWaveform( TGraph* gr ){
+  
   GetPeakPoint(gr);
   GetPedestal(gr);
   GetHeight(gr);
+
+  //std::cout << typeid(*this).name() << ":" << __FUNCTION__ << std::endl;
+  //std::cout <<  m_height << " : " << m_peakTime << " : " << m_gnd << std::endl; 
   if( m_peakpoint < 15 ){ 
     m_PeakFlag |= 1;
   }
@@ -67,21 +72,22 @@ int  E14WaveFitter::CheckWaveform( TGraph* gr ){
 
 bool E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
   //if( !Approx( gr ) ){ return false; }
+#ifdef ALALYSIS_DEBUG
+  std::cout<< __PRETTY_FUNCTION__ << std::endl;
+#endif
   if( CheckWaveform( gr ) != 0  ){ return false; }  
+
   m_FitFunc->SetParameter(2,m_gnd);
   m_FitFunc->SetParLimits(2,m_gnd,m_gnd);
   m_FitFunc->SetParameter(0,m_height);
   m_FitFunc->SetParLimits(0,m_height*0.9, m_height*2);
   m_FitFunc->SetParameter(1,m_peakTime);
   m_FitFunc->SetParLimits(1,m_peakTime-32,m_peakTime+32);
-  std::cout<< m_height << " : " << m_peakTime << " : " << m_gnd << std::endl;
-  std::cout<< m_FitFunc->Eval( -200.) <<std::endl;
   int rst  = gr->Fit( m_FitFunc, "","",minX,maxX);
-  std::cerr << rst << std::endl; 
-  if( rst == -1 ){
+  if( rst == 0 ){
     return false;
   }else{
-    std::cout<< "FitTime" << std::endl;
+    //std::cout<< "FitTime" << std::endl;
     //FitTime( gr );
    return true;
   }
@@ -90,7 +96,7 @@ bool E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
 bool E14WaveFitter::FitTime( TGraph* gr){
   m_splTime = m_FitFunc->GetX( m_FitFunc->GetParameter(0)*0.5 + m_FitFunc->GetParameter(2),
 			       m_FitFunc->GetParameter(1)-60,   m_FitFunc->GetParameter(1));
-  std::cout<< m_splTime << std::endl; 
+  //std::cout<< m_splTime << std::endl; 
   gr->Fit( "pol1","Q","",m_splTime - 16, m_splTime + 16 );
   m_linfunc = gr->GetFunction("pol1");
   double slope  = m_linfunc->GetParameter(1);
@@ -98,6 +104,7 @@ bool E14WaveFitter::FitTime( TGraph* gr){
   double xpos   = ((m_height*0.5 +m_gnd) - offset)/slope;  
   if( m_linfunc->GetParameter(1) < 0 ){ m_HHTime = -1.; }
   if( abs( xpos - m_splTime ) > 8 ){ m_HHTime = -1.; }
+  //m_linfunc->Clear();
   m_HHTime = xpos;   
   if( m_HHTime > 0 ){
     return true;

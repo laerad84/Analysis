@@ -25,6 +25,9 @@
 #include "TGraph.h"
 #include "TCanvas.h"
 #include "TSpline.h"
+#include "TTreePlayer.h"
+#include "TTreePerfStats.h"
+
 
 #include "GeneralTypes.h"
 #include "GeneralMacros.h"
@@ -100,12 +103,19 @@ int  main(int argc,char** argv)
 
   TFile* tfTemplete = new TFile("TEMPLETE_OUT_HEIGHT_0_OK.root");
   TGraphErrors* tempGr[2716];
-  TSpline3* tempSpl[2716]; 
+  TSpline3*     tempSpl[2716]; 
   for( int ispline = 0; ispline< 2716; ispline++){
+    tempGr[ispline]  = NULL;
+    tempSpl[ispline] = NULL;
     tempGr[ispline]  = (TGraphErrors*)tfTemplete->Get(Form("Waveform_Height_%d_0",ispline));
-    tempSpl[ispline] = new TSpline3(Form("waveformSpl_%d",ispline),(TGraph*)(tempGr[ispline]));
+    if( tempGr[ispline]->GetN()!= 0){
+      tempSpl[ispline] = new TSpline3(Form("waveformSpl_%d",ispline),(TGraph*)(tempGr[ispline]));
+    }else{
+      //std::cout<< "Non Exist channel:" << ispline << std::endl;
+    }
   }
   tfTemplete->Close();
+
   TCanvas* test = new TCanvas("test","",400,400);
 
   TFile* tfout = new TFile(Form("%s/TEMPLETE_FIT_RESULT_%d.root",WAVEFILEDIR.c_str(),RunNumber),
@@ -140,6 +150,7 @@ int  main(int argc,char** argv)
       }
     }
   }
+
   std::cout << "Setting IO File End" << std::endl;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,6 +159,7 @@ int  main(int argc,char** argv)
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
   std::cout<< "Setting Hist" << std::endl;
   
   TCanvas* can      = new TCanvas( "can ", "Canvas" ,800,800);
@@ -198,7 +210,7 @@ int  main(int argc,char** argv)
   double CVSignal[10];
   double CVTime[10];
   
-  TText* text = new TText(0,0,"");  
+  //TText* text = new TText(0,0,"");  
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // Loop Start  /// 
@@ -206,7 +218,8 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   std::cout <<"Loop " <<std::endl;
   //for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-  for( int ievent  = 0; ievent < 1000 ; ievent++){
+  //for( int ievent  = 0; ievent < 1000 ; ievent++){
+  for( int ievent  = 0; ievent < 100 ; ievent++){
     //std::cout<< ievent << std::endl;
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -360,30 +373,32 @@ int  main(int argc,char** argv)
 	//////////////////////////////////////////////////////
 	
 	if( iMod == wConv->GetModuleID("Csi") ){
-	  std::cout<< iSubMod << std::endl ;
 	  //tempGr[iSubMod]->Draw("AP");
-	  can->Update();
-	  can->Modified();
-	  TSpline3* tSpl = new TSpline3( "spline", (TGraph*)tempGr[iSubMod] );
+	  //can->Update();
+	  //can->Modified();
 	  //Fitter->SetWaveform( tempSpl[ iSubMod ]);
-	  E14WaveFitter::m_spl = tSpl;
+	  if( tempSpl[iSubMod] == NULL ){ std::cout<< "Spline Pointer is NULL" << std::endl;}
+	  std::cout<< "SubModID:" << iSubMod << std::endl ;
+	  E14WaveFitter::m_spl = tempSpl[iSubMod];
 	  //Fitter->SetWaveform(tSpl);
 	  Fitter->InitPar();
 	  std::cout<< "Fit" << std::endl;
 	  bool fit = Fitter->Fit(gr);
 	  int chIndex = (wConv->mod[iMod])->m_nDigi;
-	  std::cout<< RunNumber << " : " << ievent << " : " << iSubMod << std::endl ;
+	  std::cout<< RunNumber << " : "
+		   << ievent    << " : " 
+		   << iSubMod   << std::endl ;
 	  if( fit ){ 
 	    can->cd();
 	    gr->SetNameTitle(Form("gr_%d_%d",iMod,iSubMod),Form("gr_%d_%d",iMod,iSubMod));
 	    //gr->Draw("AP");
 
-	    text->DrawTextNDC(0.2,0.8,Form("CHISQ/NDF:%lf",Fitter->GetFitResult()));
+	    //text->DrawTextNDC(0.2,0.8,Form("CHISQ/NDF:%lf",Fitter->GetFitResult()));
 	    Fitter->m_FitFunc->Draw("same");
 	    can->Update();
 	    can->Modified();
 
-	    std::cout<< Fitter->GetFitResult() << std::endl;
+	    std::cout<< "Fit Result" << Fitter->GetFitResult() << std::endl;
 	    //getchar();
 	  
 	    wConv->mod[iMod]->m_Fit[chIndex]      = 1;
@@ -393,10 +408,10 @@ int  main(int argc,char** argv)
 	    wConv->mod[iMod]->m_Timing[chIndex]   = Fitter->GetParameter(1);
 	    wConv->mod[iMod]->m_HHTiming[chIndex] = Fitter->GetConstantFraction();
 	    wConv->mod[iMod]->m_nDigi++;	    
+
 	  }else{
 	    
 	  }
-	  delete tSpl;
 	  Fitter->Clear();
 	}
       }      
@@ -405,8 +420,9 @@ int  main(int argc,char** argv)
     /// All Convert is done ///
     /// Trigger Setting     ///
     ////////////////////////////////
-
+    
     trout->Fill();
+    if( (ievent % 50 == 0 ) && ievent ){ trout->AutoSave("SaveSelf"); }
   }
 
   std::cout<< "end Loop" <<std::endl;

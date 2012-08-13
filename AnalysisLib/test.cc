@@ -3,7 +3,7 @@
 #include "PeakCompensater.h"
 #include "TApplication.h"
 #include "TCanvas.h"
-
+#include "TROOT.h"
 int
 main( int argc, char** argv ){
 
@@ -11,6 +11,7 @@ main( int argc, char** argv ){
   PeakCompensater* comp = new PeakCompensater();
   TApplication* app = new TApplication("app",&argc, argv );
   TCanvas* can  =new TCanvas("can","",800,600);
+
   comp->m_gr[0]->SetMarkerStyle(7);
   comp->m_gr[1]->SetMarkerStyle(7);
   comp->m_gr[2]->SetMarkerStyle(7);

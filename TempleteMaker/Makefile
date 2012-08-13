@@ -34,7 +34,7 @@ LIBS        += -L$(BOOSTDIR)/lib
 LIBS        += -L$(CLHEP_BASE_DIR)/lib -lCLHEP
 LIBS        += -L$(G4INSTALL)/lib 
 LIBS        += -L$(E14_TOP_DIR)/lib/so
-LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lEG -lSpectrum -lTreePlayer
+LIBS        += $(shell $(ROOTSYS)/bin/root-config --glibs) -lEG
 LIBS        += -lGsimData -lklong -lpi0 -lgamma -lrec2g -lgnana -lE14Fsim -lcsimap -lcluster -lGsimTools -lGsimPersistency
 LIBS        += -L$(ANALYSISLIB)/lib -lAnalysisLib
 
@@ -71,8 +71,8 @@ makelib: $(CXX_OBJECTS)
 	@[ -d ./lib ] || mkdir -p ./lib
 	$(CXX) $(SOFLAGS) -o lib/lib$(PACKAGE)$(LIB_EXT) $(CXX_OBJECTS) $(CXX_DICTSRC) $(CXXFLAGS) $(INCLUDES) $(LIBS)
 ifeq "$(LIB_EXT)" ".dylib"
-	rm -f $(PWD)/lib/*.so	
-	ln -s $(PWD)/lib/libConvLIB.dylib $(PWD)/lib/libConvLIB.so
+	rm -f $(PWD)/lib/lib$(PACKAGE).so	
+	ln -s $(PWD)/lib/lib$(PACKAGE).dylib $(PWD)/lib/lib$(PACKAGE).so
 endif
 
 rootDict:
