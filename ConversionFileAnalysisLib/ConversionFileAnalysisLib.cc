@@ -169,12 +169,12 @@ int  main(int argc,char** argv)
 	  double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
 	  double halfTiming = fitFunc->GetX( halfHeight,
 					     fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
-	  wConv->mod[iMod]->m_Fit[chIndex]      = 1;
+	  //wConv->mod[iMod]->m_Fit[chIndex]      = 1;
 	  wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
 	  wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
 	  wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
-	  wConv->mod[iMod]->m_Timing[chIndex]   = fitFunc->GetParameter(1);
-	  wConv->mod[iMod]->m_HHTiming[chIndex] = halfTiming;
+	  wConv->mod[iMod]->m_Time[chIndex]     = fitFunc->GetParameter(1);
+	  wConv->mod[iMod]->m_HHTime[chIndex]   = halfTiming;
 	  wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
 	  wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
 	  wConv->mod[iMod]->m_nDigi++;	      	    
@@ -182,10 +182,9 @@ int  main(int argc,char** argv)
 	  TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
 	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
 	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
-	  wConv->mod[iMod]->m_FitTiming[chIndex]= halfFitTiming;
+	  wConv->mod[iMod]->m_FitTime[chIndex]= halfFitTiming;
 	  TSpline3* spl    = new TSpline3( "spl", gr);
 	  double splTiming = TSplineGetX(spl, halfHeight, halfTiming-12,  halfTiming +12 );
-	  wConv->mod[iMod]->m_SplTiming[chIndex]=splTiming;
 
 	  delete spl;	    
 	  delete linearFunction;

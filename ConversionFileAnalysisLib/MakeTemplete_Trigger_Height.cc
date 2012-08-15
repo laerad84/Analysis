@@ -300,12 +300,12 @@ int  main(int argc,char** argv)
 	  double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
 	  double halfTiming = fitFunc->GetX( halfHeight,
 					     fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
-	  wConv->mod[iMod]->m_Fit[chIndex]      = 1;
+	  wConv->mod[iMod]->m_FitHeight[chIndex]      = 1;
 	  wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
 	  wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
 	  wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
-	  wConv->mod[iMod]->m_Timing[chIndex]   = fitFunc->GetParameter(1);
-	  wConv->mod[iMod]->m_HHTiming[chIndex] = halfTiming;
+	  wConv->mod[iMod]->m_Time[chIndex]   = fitFunc->GetParameter(1);
+	  wConv->mod[iMod]->m_HHTime[chIndex] = halfTiming;
 	  wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
 	  wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
 	  wConv->mod[iMod]->m_nDigi++;	      	    
@@ -313,10 +313,9 @@ int  main(int argc,char** argv)
 	  TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
 	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
 	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
-	  wConv->mod[iMod]->m_FitTiming[chIndex]= halfFitTiming;
+	  wConv->mod[iMod]->m_FitTime[chIndex]= halfFitTiming;
 	  TSpline3* spl    = new TSpline3( "spl", gr);
 	  double splTiming = TSplineGetX(spl, halfHeight, halfTiming-12,  halfTiming +12 );
-	  wConv->mod[iMod]->m_SplTiming[chIndex]=splTiming;
 	  delete spl;	    
 	  delete linearFunction;
 	  //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 	      
@@ -344,7 +343,7 @@ int  main(int argc,char** argv)
 	int nSubMod = wConv->mod[iMod]->m_nDigi;
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
 	  CosmicSignal[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]] = wConv->mod[iMod]->m_Signal[iSubMod];
-	  CosmicTime[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]   = wConv->mod[iMod]->m_Timing[iSubMod];
+	  CosmicTime[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]   = wConv->mod[iMod]->m_Time[iSubMod];
 	}
 	for( int iCosmic = 0; iCosmic < 5; iCosmic++){
 	  if( CosmicSignal[ iCosmic    ] > COSMIC_THRESHOLD[ iCosmic     ] ||
@@ -366,7 +365,7 @@ int  main(int argc,char** argv)
 	int nSubMod = wConv->mod[iMod]->m_nDigi;
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
 	  CVSignal[wConv->mod[iMod]->m_ID[iSubMod]] = wConv->mod[iMod]->m_Signal[iSubMod];
-	  CVTime[wConv->mod[iMod]->m_ID[iSubMod]]   = wConv->mod[iMod]->m_Timing[iSubMod];
+	  CVTime[wConv->mod[iMod]->m_ID[iSubMod]]   = wConv->mod[iMod]->m_Time[iSubMod];
 	}
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++){
 	  if( wConv->mod[iMod]->m_Signal[iSubMod] > 500 ){
@@ -443,7 +442,7 @@ int  main(int argc,char** argv)
 	  iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];	
 	  for( int ipoint = 0; ipoint < 48; ipoint++){
 	    if( conv[iCrate]->Data[iSlot][iCh][ipoint] > 16000 ){ continue; }
-	    hisTempCsI_Height[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_Timing[idigi],
+	    hisTempCsI_Height[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_Time[idigi],
 					      (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
 	  }
 	}

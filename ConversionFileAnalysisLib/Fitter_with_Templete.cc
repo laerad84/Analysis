@@ -219,7 +219,7 @@ int  main(int argc,char** argv)
   std::cout <<"Loop " <<std::endl;
   //for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
   //for( int ievent  = 0; ievent < 1000 ; ievent++){
-  for( int ievent  = 0; ievent < 100 ; ievent++){
+  for( int ievent  = 0; ievent < 5 ; ievent++){
     //std::cout<< ievent << std::endl;
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -229,6 +229,7 @@ int  main(int argc,char** argv)
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     
     wConv->InitData();
+
     for( int icosmic = 0; icosmic < 20; icosmic++){
       CosmicSignal[icosmic] = 0;
       CosmicTime[icosmic]   = 0;
@@ -278,12 +279,12 @@ int  main(int argc,char** argv)
 	  double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
 	  double halfTiming = fitFunc->GetX( halfHeight,
 					     fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
-	  wConv->mod[iMod]->m_Fit[chIndex]      = 1;
+	  wConv->mod[iMod]->m_FitHeight[chIndex]= 1;
 	  wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
 	  wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
 	  wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
-	  wConv->mod[iMod]->m_Timing[chIndex]   = fitFunc->GetParameter(1);
-	  wConv->mod[iMod]->m_HHTiming[chIndex] = halfTiming;
+	  wConv->mod[iMod]->m_Time[chIndex]     = fitFunc->GetParameter(1);
+	  wConv->mod[iMod]->m_HHTime[chIndex]   = halfTiming;
 	  wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
 	  wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
 	  wConv->mod[iMod]->m_nDigi++;	      	    
@@ -291,7 +292,7 @@ int  main(int argc,char** argv)
 	  TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
 	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
 	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
-	  wConv->mod[iMod]->m_FitTiming[chIndex]= halfFitTiming;
+	  wConv->mod[iMod]->m_FitTime[chIndex]= halfFitTiming;
 	  delete linearFunction;
 	  wavFitter->Clear();	  
 	}
@@ -309,7 +310,7 @@ int  main(int argc,char** argv)
 	int nSubMod = wConv->mod[iMod]->m_nDigi;
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
 	  CosmicSignal[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]] = wConv->mod[iMod]->m_Signal[iSubMod];
-	  CosmicTime[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]   = wConv->mod[iMod]->m_Timing[iSubMod];
+	  CosmicTime[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]   = wConv->mod[iMod]->m_Time[iSubMod];
 	}
 	//std::cout<< __LINE__ << std::endl;
 	for( int iCosmic = 0; iCosmic < 5; iCosmic++){
@@ -333,7 +334,7 @@ int  main(int argc,char** argv)
 	int nSubMod = wConv->mod[iMod]->m_nDigi;
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
 	  CVSignal[wConv->mod[iMod]->m_ID[iSubMod]] = wConv->mod[iMod]->m_Signal[iSubMod];
-	  CVTime[wConv->mod[iMod]->m_ID[iSubMod]]   = wConv->mod[iMod]->m_Timing[iSubMod];
+	  CVTime[wConv->mod[iMod]->m_ID[iSubMod]]   = wConv->mod[iMod]->m_Time[iSubMod];
 	}
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++){
 	  if( wConv->mod[iMod]->m_Signal[iSubMod] > 500 ){
@@ -378,16 +379,18 @@ int  main(int argc,char** argv)
 	  //can->Modified();
 	  //Fitter->SetWaveform( tempSpl[ iSubMod ]);
 	  if( tempSpl[iSubMod] == NULL ){ std::cout<< "Spline Pointer is NULL" << std::endl;}
-	  std::cout<< "SubModID:" << iSubMod << std::endl ;
+	  //std::cout<< "SubModID:" << iSubMod << std::endl ;
 	  E14WaveFitter::m_spl = tempSpl[iSubMod];
 	  //Fitter->SetWaveform(tSpl);
 	  Fitter->InitPar();
-	  std::cout<< "Fit" << std::endl;
+	  //std::cout<< "Fit" << std::endl;
 	  bool fit = Fitter->Fit(gr);
 	  int chIndex = (wConv->mod[iMod])->m_nDigi;
+	  /*
 	  std::cout<< RunNumber << " : "
 		   << ievent    << " : " 
 		   << iSubMod   << std::endl ;
+	  */
 	  if( fit ){ 
 	    can->cd();
 	    gr->SetNameTitle(Form("gr_%d_%d",iMod,iSubMod),Form("gr_%d_%d",iMod,iSubMod));
@@ -401,12 +404,14 @@ int  main(int argc,char** argv)
 	    std::cout<< "Fit Result" << Fitter->GetFitResult() << std::endl;
 	    //getchar();
 	  
-	    wConv->mod[iMod]->m_Fit[chIndex]      = 1;
+	    wConv->mod[iMod]->m_FitHeight[chIndex]= 1;
 	    wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
-	    wConv->mod[iMod]->m_Pedestal[chIndex] = Fitter->GetParameter(2);
 	    wConv->mod[iMod]->m_Signal[chIndex]   = Fitter->GetParameter(0);
-	    wConv->mod[iMod]->m_Timing[chIndex]   = Fitter->GetParameter(1);
-	    wConv->mod[iMod]->m_HHTiming[chIndex] = Fitter->GetConstantFraction();
+	    wConv->mod[iMod]->m_Time[chIndex]     = Fitter->GetParameter(1);
+	    wConv->mod[iMod]->m_Pedestal[chIndex] = Fitter->GetParameter(2);
+	    wConv->mod[iMod]->m_HHTime[chIndex]   = Fitter->GetConstantFraction();
+	    wConv->mod[iMod]->m_Chisq[chIndex]    = Fitter->GetChisquare();
+	    wConv->mod[iMod]->m_NDF[chIndex]      = Fitter->GetNDF();
 	    wConv->mod[iMod]->m_nDigi++;	    
 
 	  }else{
@@ -414,9 +419,12 @@ int  main(int argc,char** argv)
 	  }
 	  Fitter->Clear();
 	}
-      }      
+      }
+
     }
-    
+    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
+      std::cout << wConv->mod[iMod]->m_DetectorName << " : " << wConv->mod[iMod]->m_nDigi << std::endl;
+    }
     /// All Convert is done ///
     /// Trigger Setting     ///
     ////////////////////////////////

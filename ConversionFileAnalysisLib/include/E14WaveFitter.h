@@ -31,6 +31,8 @@ class E14WaveFitter : public E14WaveFitterMinimum {
   Double_t GetParameter( int parNum );
   Double_t GetConstantFraction();
   Double_t GetFitResult( );
+  Double_t GetChisquare();
+  Int_t GetNDF();
 
   void     InitPar();
   int      CheckWaveform( TGraph* gr );
