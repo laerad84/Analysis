@@ -12,7 +12,6 @@ E14ConvWriterModule::~E14ConvWriterModule(){
 }
 
 bool E14ConvWriterModule::InitData(){
-  m_nDigi = 0;
   for( int i = 0; i< 4096; i++){
     m_ID[i]            = -1;
     m_Pedestal[i]      = 0.;
@@ -26,9 +25,10 @@ bool E14ConvWriterModule::InitData(){
     
     m_FitTime[i]       = -9999;
     m_FitShape[i]      = 0.;
-    m_DeltaDiff[i]     = 0.;
-    
+    m_DeltaDiff[i]     = 0.;    
   }
+  this->m_nDigi = 0;
+
   return true;
 }
 

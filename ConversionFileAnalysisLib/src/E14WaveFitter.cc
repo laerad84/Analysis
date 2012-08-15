@@ -1,7 +1,7 @@
 #include "E14WaveFitter.h"
 
 E14WaveFitter::E14WaveFitter(int SelectFunction, int nPedestal){
-  std::cout<< __FUNCTION__ << std::endl; 
+  //std::cout<< __FUNCTION__ << std::endl; 
   m_FuncFlag = SelectFunction;
   m_pedsmpl = nPedestal;
   MakeFunction();
@@ -32,7 +32,14 @@ Double_t E14WaveFitter::GetFitResult(){
   if( ndf == 0) { return -1; }
   return chisq/ndf; 
 }
-
+Double_t E14WaveFitter::GetChisquare(){
+  Double_t chisq = m_FitFunc->GetChisquare();
+  return chisq;
+}
+Int_t  E14WaveFitter::GetNDF(){
+  Int_t ndf = m_FitFunc->GetNDF();
+  return ndf;
+}
 void E14WaveFitter::InitPar(){
   m_height   = 0.;
 
@@ -73,7 +80,7 @@ int  E14WaveFitter::CheckWaveform( TGraph* gr ){
 bool E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
   //if( !Approx( gr ) ){ return false; }
 #ifdef ALALYSIS_DEBUG
-  std::cout<< __PRETTY_FUNCTION__ << std::endl;
+  //std::cout<< __PRETTY_FUNCTION__ << std::endl;
 #endif
   if( CheckWaveform( gr ) != 0  ){ return false; }  
 
