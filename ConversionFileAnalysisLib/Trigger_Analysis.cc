@@ -69,7 +69,12 @@ int  main(int argc,char** argv)
   }
   Int_t RunNumber = atoi( argv[1] );
 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
   // GetEnvironment // 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
   std::string ANALIBDIR   = std::getenv("ANALYSISLIB"  );
   std::string CONVFILEDIR = std::getenv("ROOTFILE_CONV");
   std::string WAVEFILEDIR = std::getenv("ROOTFILE_WAV" );
@@ -79,7 +84,12 @@ int  main(int argc,char** argv)
   std::cout << WAVEFILEDIR << std::endl;
   std::cout << SUMFILEDIR  << std::endl;
 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////  
   // Setting  Classes //
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
   E14WaveFitter* Fitter  = new E14WaveFitter();
   //TApplication* app = new TApplication("app", &argc , argv );  
@@ -126,7 +136,7 @@ int  main(int argc,char** argv)
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   //  TCanvas* test = new TCanvas("test","",400,400);
-  TFile* tfout  = new TFile(Form("%s/TEMPLATE_FIT_RESULT_%d.root",WAVEFILEDIR.c_str(),RunNumber),
+  TFile* tfout  = new TFile(Form("%s/Trigger_Analysis_%d.root",WAVEFILEDIR.c_str(),RunNumber),
 			    "recreate");
   TTree* trout  = new TTree("WFTree","Waveform Analyzed Tree");   
   std::cout << Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber) << std::endl;  
@@ -164,7 +174,6 @@ int  main(int argc,char** argv)
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
   std::cout<< "Setting Hist" << std::endl;
   
@@ -176,10 +185,13 @@ int  main(int argc,char** argv)
   int CosmicModuleID = wConv->GetModuleID("Cosmic");
   int CVModuleID     = wConv->GetModuleID("CV");
   int LaserModuleID  = wConv->GetModuleID("Laser");
-  
-  //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////  
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
   // Set Trigger Map Cosmic Laser CV 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
   std::cout<< "Setting Trigger" << std::endl;
   const int nCVModule     = 10;
   const int nCosmicModule = 20; 
@@ -215,6 +227,23 @@ int  main(int argc,char** argv)
   double CosmicTime[20];
   double CVSignal[10];
   double CVTime[10];
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  TH2D* hisCosmic[20][2];
+  TH2D* hisLaser[2];
+  TH2D* hisCV[10][2];
+  hisLaser[0] = new TH2D("hisLaser_NoHit","hisLaser_NoHit",48,0,48*8,320,0,16000);
+  hisLaser[1] = new TH2D("hisLaser_Hit"  ,"hisLaser_Hit"  ,48,0,48*8,320,0,16000);
+  for( int i = 0; i< 20; i++){
+    hisCosmic[i][0] = new TH2D(Form("hisCosmicNoHit_%d",i),Form("hisCosmicNoHit_%d",i),48,0,48*8,320,0,16000);
+    hisCosmic[i][1] = new TH2D(Form("hisCosmicHit_%d",i)  ,Form("hisCosmicHit_%d",i)  ,48,0,48*8,320,0,16000);
+  }
+  for( int i = 0; i< 10; i++){
+    hisCV[i][0] = new TH2D(Form("hisCVNoHit_%d",i),Form("hisCVNoHit_%d"), 48, 0,48*8, 320,0,16000);
+    hisCV[i][1] = new TH2D(Form("hisCVHit_%d",i)  ,Form("hisCVHit_%d")  , 48, 0,48*8, 320,0,16000);
+  }
   
   //TText* text = new TText(0,0,"");  
 
@@ -256,14 +285,6 @@ int  main(int argc,char** argv)
     wConv->m_RunNo   = RunNumber;
     wConv->m_EventNo = ievent;
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////// 
-
-    if( ievent %100 == 0 && ievent ){ std::cout<< ievent << "/" << conv[0]->GetEntries() << std::endl;}  
-
-    // Conversion Convfile to Wav File 
-    //for( int iMod = 1; iMod < 2; iMod++){
-    //std::cout<< "Event Processing " << std::endl ;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -333,8 +354,10 @@ int  main(int argc,char** argv)
 	//std::cout<< __LINE__ << std::endl;
 	if( wConv->m_CosmicTrigFlagUp && 
 	    wConv->m_CosmicTrigFlagDn ){
+
 	  wConv->m_CosmicTrig = 1; 
 	  wConv->m_TrigFlag  |= 2;
+
 	}
       }else if( iMod == CVModuleID ){
 	//int nSubMod = (wConv->ModMap[iMod]).nMod;
@@ -352,98 +375,16 @@ int  main(int argc,char** argv)
       }else{
 	continue;
       } 
-    }
+    }   
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    /// End Trigger Dicision /// 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    if( ((wConv->m_TrigFlag) & 1) != 0 ){ continue; }
-    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
-
-      int nSubModule = wConv->GetNsubmodule( iMod );
-      if( nSubModule <= 0 ){ continue ;}
-      
-      for( int iSubMod = 0; iSubMod < nSubModule; iSubMod++){	
-	/*
-	int nPoint  = wConv->SetGraph( iMod, iSubMod ,conv , gr );
-	if( nPoint == 0 ){continue;}	
-	std::cout<< nPoint << std::endl; 
-	std::cout<< iSubMod << std::endl;
-	*/
-	if( wConv->SetGraph( iMod, iSubMod ,conv , gr ) == 0 ){ continue; }		
-	
-	//////////////////////////////////////////////////////
-	//// Different Analysis for each Different Module //// 
-	//// For CsI Using Templete Fitting               //// 
-	//// For other module Using Function fitting      //// 
-	//////////////////////////////////////////////////////
-	
-	if( iMod == wConv->GetModuleID("Csi") ){
-	  //tempGr[iSubMod]->Draw("AP");
-	  //can->Update();
-	  //can->Modified();
-	  //Fitter->SetWaveform( tempSpl[ iSubMod ]);
-	  if( tempSpl[iSubMod] == NULL ){ std::cout<< "Spline Pointer is NULL" << std::endl;}
-	  //std::cout<< "SubModID:" << iSubMod << std::endl ;
-	  E14WaveFitter::m_spl = tempSpl[iSubMod];
-	  //Fitter->SetWaveform(tSpl);
-	  Fitter->InitPar();
-	  //std::cout<< "Fit" << std::endl;
-	  bool fit = Fitter->Fit(gr);
-	  int chIndex = (wConv->mod[iMod])->m_nDigi;
-	  /*
-	  std::cout<< RunNumber << " : "
-		   << ievent    << " : " 
-		   << iSubMod   << std::endl ;
-	  */
-	  if( fit ){ 
-	    can->cd();
-	    gr->SetNameTitle(Form("gr_%d_%d",iMod,iSubMod),Form("gr_%d_%d",iMod,iSubMod));
-	    //gr->Draw("AP");
-
-	    //text->DrawTextNDC(0.2,0.8,Form("CHISQ/NDF:%lf",Fitter->GetFitResult()));
-	    //Fitter->m_FitFunc->Draw("same");
-	    can->Update();
-	    can->Modified();
-
-	    std::cout<< "Fit Result" << Fitter->GetFitResult() << std::endl;
-	    //getchar();
+    if( wConv->m_CosmicTrig ){
+      for( int iSubMod = 0; iSubMod < wConv->m_nDigi; iSubMod++){
+	for( int ipoint  = 0; ipoint < 48; ipoint++){
 	  
-	    wConv->mod[iMod]->m_FitHeight[wConv->mod[iMod]->m_nDigi]= 1;
-	    wConv->mod[iMod]->m_ID[wConv->mod[iMod]->m_nDigi]       = iSubMod;
-	    wConv->mod[iMod]->m_Signal[wConv->mod[iMod]->m_nDigi]   = Fitter->GetParameter(0);
-	    wConv->mod[iMod]->m_Time[wConv->mod[iMod]->m_nDigi]     = Fitter->GetParameter(1);
-	    wConv->mod[iMod]->m_Pedestal[wConv->mod[iMod]->m_nDigi] = Fitter->GetParameter(2);
-	    wConv->mod[iMod]->m_HHTime[wConv->mod[iMod]->m_nDigi]   = Fitter->GetConstantFraction();
-	    wConv->mod[iMod]->m_Chisq[wConv->mod[iMod]->m_nDigi]    = Fitter->GetChisquare();
-	    wConv->mod[iMod]->m_NDF[wConv->mod[iMod]->m_nDigi]      = Fitter->GetNDF();
-	    wConv->mod[iMod]->m_nDigi++;	    
-
-	  }else{
-	    
-	  }
-	  Fitter->Clear();
 	}
       }
-
     }
-    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
-      std::cout << wConv->mod[iMod]->m_DetectorName << " : " << wConv->mod[iMod]->m_nDigi << std::endl;
-    }
-    /// All Convert is done ///
-    /// Trigger Setting     ///
-    ////////////////////////////////
-    
-    trout->Fill();
-    //if( (ievent % 50 == 0 ) && ievent ){ trout->AutoSave("SaveSelf"); }
   }
   trout->Write();
-  std::cout<< "end Loop" <<std::endl;
-  //app->Run();
-  std::cout<< "Close" << std::endl;
-  //trout->Write();
   tfout->Close();
-  return 0;
 }

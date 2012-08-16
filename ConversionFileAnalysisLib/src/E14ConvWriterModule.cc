@@ -57,7 +57,7 @@ bool E14ConvWriterModule::SetBranchAddress(){
 
 bool E14ConvWriterModule::Branch(){
   m_Tree->Branch(Form("%sNumber"  ,m_DetectorName),&m_nDigi  ,
-		 Form("%sNumber/S"             ,m_DetectorName));
+		 Form("%sNumber/I"             ,m_DetectorName));
   m_Tree->Branch(Form("%sID"      ,m_DetectorName) ,m_ID      ,
 		 Form("%sID[%sNumber]/S"       ,m_DetectorName,m_DetectorName));//m_nDigi
 

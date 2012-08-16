@@ -11,7 +11,7 @@ class E14ConvWriterModule {
   char   m_DetectorName[128];
   int    m_DetectorID;
 
-  short  m_nDigi;
+  int    m_nDigi;
   short  m_ID[4096];
   short  m_FitHeight[4096];
   short  m_FitTime[4096];
