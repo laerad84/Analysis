@@ -17,6 +17,7 @@ class E14ConvWriterModule {
   short  m_FitTime[4096];
   double m_FitShape[4096];
   double m_DeltaDiff[4096];
+  double m_ADC[4096];
 
   double m_Pedestal[4096];
   double m_Signal[4096];

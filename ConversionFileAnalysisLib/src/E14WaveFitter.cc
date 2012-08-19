@@ -65,15 +65,18 @@ int  E14WaveFitter::CheckWaveform( TGraph* gr ){
 
   //std::cout << typeid(*this).name() << ":" << __FUNCTION__ << std::endl;
   //std::cout <<  m_height << " : " << m_peakTime << " : " << m_gnd << std::endl; 
-  if( m_peakpoint < 15 ){ 
+  if( m_peakpoint < 10 ){ 
     m_PeakFlag |= 1;
   }
+  /*
   if( m_gndrms >= 3. ){
     m_PeakFlag |= 2;
   }
+  */
   if(m_height <= 10. ){
     m_PeakFlag |= 4;
   }
+
   return m_PeakFlag;
 }
 
@@ -90,13 +93,15 @@ bool E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
   m_FitFunc->SetParLimits(0,m_height*0.9, m_height*2);
   m_FitFunc->SetParameter(1,m_peakTime);
   m_FitFunc->SetParLimits(1,m_peakTime-32,m_peakTime+32);
-  int rst  = gr->Fit( m_FitFunc, "","",minX,maxX);
+
+  //std::cout <<m_peakTime << std::endl;
+  int rst  = gr->Fit( m_FitFunc, "Q","",m_peakTime-150,m_peakTime+50);
   if( rst == 0 ){
-    return false;
+    FitTime( gr );
+    return true;
   }else{
     //std::cout<< "FitTime" << std::endl;
-    //FitTime( gr );
-   return true;
+   return false;
   }
 }
 
@@ -110,8 +115,8 @@ bool E14WaveFitter::FitTime( TGraph* gr){
   double offset = m_linfunc->GetParameter(0);
   double xpos   = ((m_height*0.5 +m_gnd) - offset)/slope;  
   if( m_linfunc->GetParameter(1) < 0 ){ m_HHTime = -1.; }
-  if( abs( xpos - m_splTime ) > 8 ){ m_HHTime = -1.; }
-  //m_linfunc->Clear();
+  if( abs( xpos - m_splTime ) > 8 ){ m_HHTime = -1.; }  
+  m_linfunc->Clear();
   m_HHTime = xpos;   
   if( m_HHTime > 0 ){
     return true;
@@ -197,4 +202,18 @@ void E14WaveFitter::GetPedestal( TGraph* gr ){
 void E14WaveFitter::GetHeight( TGraph* gr ){ 
   m_height = gr->GetY()[ m_peakpoint ];
   m_height = m_height - m_gnd;
+}
+
+Double_t E14WaveFitter::GetADC( TGraph* gr ){
+  Double_t ADC  = 0.;
+  if( m_peakpoint >=10 && m_PeakFlag == 0){
+    for( int ipoint  = 0; ipoint < gr->GetN() ; ipoint++){
+      if( TMath::Abs(gr->GetX()[ipoint] - m_peakTime) < 50 ){      
+	ADC += gr->GetY()[ipoint] - m_gnd;
+      }
+    }
+    return ADC;
+  }else{
+    return 0.;
+  }
 }

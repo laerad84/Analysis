@@ -32,7 +32,7 @@ class E14WaveFitter : public E14WaveFitterMinimum {
   Double_t GetConstantFraction();
   Double_t GetFitResult( );
   Double_t GetChisquare();
-  Int_t GetNDF();
+  Int_t    GetNDF();
 
   void     InitPar();
   int      CheckWaveform( TGraph* gr );
@@ -40,12 +40,12 @@ class E14WaveFitter : public E14WaveFitterMinimum {
   bool     FitTime( TGraph* gr );
   bool     Approx ( TGraph* gr );
   //bool     Clear  ( void );
+  Double_t GetADC ( TGraph* gr );
 
  private:
   void     GetPeakPoint( TGraph* gr );
   void     GetPedestal ( TGraph* gr );
   void     GetHeight   ( TGraph* gr );  
-  
 };
 
 

@@ -12,7 +12,6 @@ E14ConvWriter::E14ConvWriter( char* mapFilename, TTree* tr){
   bInitialize = false;
  
 }
-
 E14ConvWriter::E14ConvWriter( int RunNumber, TTree* tr){  
   std::string SUMUPFILEDIR = std::getenv("ROOTFILE_SUMUP");
   std::string CONVFILEDIR  = std::getenv("ROOTFILE_CONV");
@@ -24,11 +23,9 @@ E14ConvWriter::E14ConvWriter( int RunNumber, TTree* tr){
   bInitialize = false;
  
 }
-
 E14ConvWriter::~E14ConvWriter(){
   //delete map;
 }
-
 bool E14ConvWriter::AddModule( char* ModuleName ){
   std::string ModuleNameStr = ModuleName;
   m_modList.push_back( ModuleNameStr );
@@ -59,6 +56,17 @@ bool E14ConvWriter::SetMap(){
   return true;
 }
 bool E14ConvWriter::Branch(){
+  m_tr->Branch("RunNo"           ,&m_RunNo           ,"RunNo/I");
+  m_tr->Branch("EventNo"         ,&m_EventNo         ,"EventNo/I");
+  m_tr->Branch("TrigFlag"        ,&m_TrigFlag        ,"TrigFlag/I");
+  m_tr->Branch("CosmicTrig"      ,&m_CosmicTrig      ,"CosmicTrig/I");
+  m_tr->Branch("LaserTrig"       ,&m_LaserTrig       ,"LaserTrig/I");
+  m_tr->Branch("CVTrig"          ,&m_CVTrig          ,"CVTrig/I");
+  m_tr->Branch("CosmicTrigFlagUp",&m_CosmicTrigFlagUp,"CosmicTrigFlagUp/I");
+  m_tr->Branch("CosmicTrigFlagDn",&m_CosmicTrigFlagDn,"CosmicTrigFlagDn/I");
+  m_tr->Branch("CVTrigFlag"      ,&m_CVTrigFlag      ,"CVTrigFlag/I");
+  m_tr->Branch("LasertrigFlag"   ,&m_LaserTrigFlag   ,"LaserTrigFlag/I");
+
   for( int i = 0; i< m_nModule; i++){
     mod[i]->Branch();
   }
@@ -66,16 +74,16 @@ bool E14ConvWriter::Branch(){
 }
 bool E14ConvWriter::SetBranchAddress(){
 
-  m_tr->SetBranchAddress("RunNo",&m_RunNo);
-  m_tr->SetBranchAddress("EventNo",&m_EventNo);
-  m_tr->SetBranchAddress("TrigFlag",&m_TrigFlag);
-  m_tr->SetBranchAddress("CosmicTrig",&m_CosmicTrig);
-  m_tr->SetBranchAddress("LaserTrig",&m_LaserTrig);
-  m_tr->SetBranchAddress("CVTrig",&m_CVTrig);
+  m_tr->SetBranchAddress("RunNo"           ,&m_RunNo);
+  m_tr->SetBranchAddress("EventNo"         ,&m_EventNo);
+  m_tr->SetBranchAddress("TrigFlag"        ,&m_TrigFlag);
+  m_tr->SetBranchAddress("CosmicTrig"      ,&m_CosmicTrig);
+  m_tr->SetBranchAddress("LaserTrig"       ,&m_LaserTrig);
+  m_tr->SetBranchAddress("CVTrig"          ,&m_CVTrig);
   m_tr->SetBranchAddress("CosmicTrigFlagUp",&m_CosmicTrigFlagUp);
   m_tr->SetBranchAddress("CosmicTrigFlagDn",&m_CosmicTrigFlagDn);
-  m_tr->SetBranchAddress("CVTrigFlag",&m_CVTrigFlag);
-  m_tr->SetBranchAddress("LaserTrigFlag",&m_LaserTrigFlag);
+  m_tr->SetBranchAddress("CVTrigFlag"      ,&m_CVTrigFlag);
+  m_tr->SetBranchAddress("LaserTrigFlag"   ,&m_LaserTrigFlag);
 
   for( int i = 0; i< m_nModule; i++){
     mod[i]->SetBranchAddress();
@@ -111,7 +119,6 @@ bool E14ConvWriter::ScanMod(char* modName){
   }
   return false;
 }
-
 int  E14ConvWriter::GetNmodule(){
   return m_nModule;
 }
@@ -119,7 +126,6 @@ int  E14ConvWriter::GetNsubmodule(int ModID){
   if( ModID >= m_nModule ){ return -1;}
   return (this->ModMap[ModID]).nMod;
 }
-  
 int  E14ConvWriter::GetModuleID( char* modName){
   std::list<std::string>::iterator it;
   std::string modNameStr  = modName;

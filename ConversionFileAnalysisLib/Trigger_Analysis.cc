@@ -245,6 +245,19 @@ int  main(int argc,char** argv)
     hisCV[i][1] = new TH2D(Form("hisCVHit_%d",i)  ,Form("hisCVHit_%d")  , 48, 0,48*8, 320,0,16000);
   }
   
+  TH1D* hisTrig_Raw = new TH1D("hisTrig_Raw","hisTrig_Raw",8,0,8);
+  char* binIndex[8] = {"Laser",
+		       "Cosmic",
+		       "CV",
+		       "Laser&Cosmic",
+		       "Laser&CV",
+		       "Cosmic&CV",
+		       "Laser&Cosmic&CV",
+		       "Other Triggers"};
+  for( int ibin  = 1; ibin < 8+1; ibin++){
+    hisTrig_Raw->GetXaxis()->SetBinLabel(ibin,binIndex[ibin-1]);
+  }
+
   //TText* text = new TText(0,0,"");  
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -253,8 +266,8 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   std::cout <<"Loop " <<std::endl;
-  //for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-  for( int ievent  = 0; ievent < 1000 ; ievent++){
+  for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
+  //for( int ievent  = 0; ievent < 2000 ; ievent++){
   //for( int ievent  = 0; ievent < 5 ; ievent++){
     //std::cout<< ievent << std::endl;
     
@@ -321,6 +334,7 @@ int  main(int argc,char** argv)
 	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
 	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
 	  wConv->mod[iMod]->m_FitTime[chIndex]= halfFitTiming;
+	  //fitFunc->Clear();
 	  delete linearFunction;
 	  wavFitter->Clear();	  
 	}
@@ -378,13 +392,86 @@ int  main(int argc,char** argv)
     }   
 
     if( wConv->m_CosmicTrig ){
-      for( int iSubMod = 0; iSubMod < wConv->m_nDigi; iSubMod++){
+      for( int iSubMod = 0; iSubMod < wConv->mod[CosmicModuleID]->m_nDigi; iSubMod++){
+	int crate;
+	int FADC;
+	int channel;
+	wConv->GetCFC( CosmicModuleID , wConv->mod[CosmicModuleID]->m_ID[iSubMod], crate, FADC, channel );	
 	for( int ipoint  = 0; ipoint < 48; ipoint++){
-	  
+	  hisCosmic[wConv->mod[CosmicModuleID]->m_ID[iSubMod]][1]->Fill( ipoint*8,conv[crate]->Data[ FADC ][ channel ][ ipoint ]);
+	}
+      }
+    }else{
+      for( int iSubMod = 0; iSubMod < (wConv->ModMap[CosmicModuleID]).nMod; iSubMod++){
+	int crate;
+	int FADC;
+	int channel;
+	wConv->GetCFC( CosmicModuleID, iSubMod, crate, FADC, channel );
+	for( int ipoint  = 0;ipoint < 48; ipoint++){
+	  hisCosmic[iSubMod][0]->Fill( ipoint* 8 , conv[crate]->Data[ FADC ][ channel ][ ipoint ] );
 	}
       }
     }
+
+    if( wConv->m_LaserTrig ){
+      int crate;
+      int FADC;
+      int channel; 
+      wConv->GetCFC( LaserModuleID, 0, crate, FADC , channel );
+      for( int ipoint = 0; ipoint < 48; ipoint++ ){
+	hisLaser[1]->Fill( ipoint*8, conv[crate]->Data[ FADC ][ channel ][ ipoint ] );
+      }
+    }else{
+      int crate;
+      int FADC; 
+      int channel;
+      wConv->GetCFC( LaserModuleID, 0 , crate, FADC, channel );
+      for( int ipoint = 0; ipoint < 48; ipoint++){
+	hisLaser[0]->Fill( ipoint*8, conv[crate]->Data[ FADC ][ channel ][ ipoint ] );
+      }
+    }
+    if( wConv->m_LaserTrig ){
+      hisTrig_Raw->Fill(0);
+      if( wConv->m_CosmicTrig ){
+	hisTrig_Raw->Fill(3);
+	if( wConv->m_CVTrig ){
+	  hisTrig_Raw->Fill(6);
+	}
+      }else if( wConv->m_CVTrig ){
+	hisTrig_Raw->Fill(4);
+      }
+    }
+    
+    if( wConv->m_CosmicTrig ){
+      hisTrig_Raw->Fill(1);
+      if( wConv->m_CVTrig ){
+	hisTrig_Raw->Fill(5);
+      }
+    }
+    
+    if( wConv->m_CVTrig){
+      hisTrig_Raw->Fill(2);
+    }
+    
+    if( !(wConv->m_CVTrig)     &&
+	!(wConv->m_CosmicTrig) &&
+	!(wConv->m_LaserTrig)  ){    
+      hisTrig_Raw->Fill(7);
+    }
+    
   }
+  
+  for( int i = 0; i< 20; i++){
+    hisCosmic[i][0]->Write();
+    hisCosmic[i][1]->Write();
+  }
+  
+
+  hisLaser[0]->Write();
+  hisLaser[1]->Write();
+
+  hisTrig_Raw->Write();
+
   trout->Write();
   tfout->Close();
 }

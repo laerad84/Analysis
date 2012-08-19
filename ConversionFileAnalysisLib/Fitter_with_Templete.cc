@@ -81,8 +81,8 @@ int  main(int argc,char** argv)
 
   // Setting  Classes //
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
-  E14WaveFitter* Fitter  = new E14WaveFitter();
-  //TApplication* app = new TApplication("app", &argc , argv );  
+  E14WaveFitter* Fitter     = new E14WaveFitter();
+  TApplication* app = new TApplication("app", &argc , argv );  
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +125,8 @@ int  main(int argc,char** argv)
   /// Set input / output File 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //  TCanvas* test = new TCanvas("test","",400,400);
+  TCanvas* test = new TCanvas("test","",400,400);
+  
   TFile* tfout  = new TFile(Form("%s/TEMPLATE_FIT_RESULT_%d.root",WAVEFILEDIR.c_str(),RunNumber),
 			    "recreate");
   TTree* trout  = new TTree("WFTree","Waveform Analyzed Tree");   
@@ -169,6 +170,7 @@ int  main(int argc,char** argv)
   std::cout<< "Setting Hist" << std::endl;
   
   TCanvas* can      = new TCanvas( "can ", "Canvas" ,800,800);
+  can->Divide( 2,2 );
   TGraph* gr        = new TGraph();
   gr->SetMarkerStyle(6);
 
@@ -224,8 +226,8 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   std::cout <<"Loop " <<std::endl;
-  //for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-  for( int ievent  = 0; ievent < 1000 ; ievent++){
+  for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
+  //for( int ievent  = 0; ievent < 80000 ; ievent++){
   //for( int ievent  = 0; ievent < 5 ; ievent++){
     //std::cout<< ievent << std::endl;
     
@@ -360,75 +362,85 @@ int  main(int argc,char** argv)
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     if( ((wConv->m_TrigFlag) & 1) != 0 ){ continue; }
-    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
-
-      int nSubModule = wConv->GetNsubmodule( iMod );
-      if( nSubModule <= 0 ){ continue ;}
-      
-      for( int iSubMod = 0; iSubMod < nSubModule; iSubMod++){	
-	/*
+    //for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
+    
+    
+    int iCsiMod = 0;
+    int nSubCsiModule = wConv->GetNsubmodule( iCsiMod );
+    if( nSubCsiModule <= 0 ){ continue ;}
+    std::cout<< nSubCsiModule << std::endl;
+    for( int iSubMod = 0; iSubMod < nSubCsiModule; iSubMod++){	
+      /*
 	int nPoint  = wConv->SetGraph( iMod, iSubMod ,conv , gr );
 	if( nPoint == 0 ){continue;}	
 	std::cout<< nPoint << std::endl; 
 	std::cout<< iSubMod << std::endl;
+      */
+      
+      if( wConv->SetGraph( iCsiMod, iSubMod ,conv , gr ) == 0 ){ continue; }		
+      
+      //////////////////////////////////////////////////////
+      //// Different Analysis for each Different Module //// 
+      //// For CsI Using Templete Fitting               //// 
+      //// For other module Using Function fitting      //// 
+      //////////////////////////////////////////////////////
+      
+      //tempGr[iSubMod]->Draw("AP");
+      //can->Update();
+      //can->Modified();
+      //Fitter->SetWaveform( tempSpl[ iSubMod ]);
+      if( tempSpl[iSubMod] == NULL ){ 
+	std::cout<< "Spline Pointer is NULL. Channel: "<< iSubMod  << std::endl;
+      }else{
+	Fitter->SetWaveform(tempSpl[iSubMod]);
+	Fitter->InitPar();
+	//std::cout<< "Fit" << std::endl;
+	bool fit = Fitter->Fit(gr);
+	int chIndex = (wConv->mod[iCsiMod])->m_nDigi;
+	/*
+	std::cout<< RunNumber << " : "
+		 << ievent    << " : " 
+		 << iSubMod   << std::endl ;
+	can->cd(1);
+	gr->SetNameTitle(Form("gr_%d_%d",iCsiMod,iSubMod),Form("gr_%d_%d",iCsiMod,iSubMod));
+	gr->Draw("AP");
 	*/
-	if( wConv->SetGraph( iMod, iSubMod ,conv , gr ) == 0 ){ continue; }		
-	
-	//////////////////////////////////////////////////////
-	//// Different Analysis for each Different Module //// 
-	//// For CsI Using Templete Fitting               //// 
-	//// For other module Using Function fitting      //// 
-	//////////////////////////////////////////////////////
-	
-	if( iMod == wConv->GetModuleID("Csi") ){
-	  //tempGr[iSubMod]->Draw("AP");
-	  //can->Update();
-	  //can->Modified();
-	  //Fitter->SetWaveform( tempSpl[ iSubMod ]);
-	  if( tempSpl[iSubMod] == NULL ){ std::cout<< "Spline Pointer is NULL" << std::endl;}
-	  //std::cout<< "SubModID:" << iSubMod << std::endl ;
-	  E14WaveFitter::m_spl = tempSpl[iSubMod];
-	  //Fitter->SetWaveform(tSpl);
-	  Fitter->InitPar();
-	  //std::cout<< "Fit" << std::endl;
-	  bool fit = Fitter->Fit(gr);
-	  int chIndex = (wConv->mod[iMod])->m_nDigi;
-	  /*
-	  std::cout<< RunNumber << " : "
-		   << ievent    << " : " 
-		   << iSubMod   << std::endl ;
-	  */
-	  if( fit ){ 
-	    can->cd();
-	    gr->SetNameTitle(Form("gr_%d_%d",iMod,iSubMod),Form("gr_%d_%d",iMod,iSubMod));
-	    //gr->Draw("AP");
+	if( fit ){ 
+	  //can->cd(2);
+	  //gr->Draw("AP");
+	  //Fitter->m_FitFunc->Draw();
 
-	    //text->DrawTextNDC(0.2,0.8,Form("CHISQ/NDF:%lf",Fitter->GetFitResult()));
-	    //Fitter->m_FitFunc->Draw("same");
-	    can->Update();
-	    can->Modified();
+	    std::cout<< "Fit Result : " << Fitter->GetFitResult() << std::endl;
 
-	    std::cout<< "Fit Result" << Fitter->GetFitResult() << std::endl;
-	    //getchar();
-	  
-	    wConv->mod[iMod]->m_FitHeight[wConv->mod[iMod]->m_nDigi]= 1;
-	    wConv->mod[iMod]->m_ID[wConv->mod[iMod]->m_nDigi]       = iSubMod;
-	    wConv->mod[iMod]->m_Signal[wConv->mod[iMod]->m_nDigi]   = Fitter->GetParameter(0);
-	    wConv->mod[iMod]->m_Time[wConv->mod[iMod]->m_nDigi]     = Fitter->GetParameter(1);
-	    wConv->mod[iMod]->m_Pedestal[wConv->mod[iMod]->m_nDigi] = Fitter->GetParameter(2);
-	    wConv->mod[iMod]->m_HHTime[wConv->mod[iMod]->m_nDigi]   = Fitter->GetConstantFraction();
-	    wConv->mod[iMod]->m_Chisq[wConv->mod[iMod]->m_nDigi]    = Fitter->GetChisquare();
-	    wConv->mod[iMod]->m_NDF[wConv->mod[iMod]->m_nDigi]      = Fitter->GetNDF();
-	    wConv->mod[iMod]->m_nDigi++;	    
+	    wConv->mod[iCsiMod]->m_FitHeight[wConv->mod[iCsiMod]->m_nDigi]= 1;
+	    wConv->mod[iCsiMod]->m_ID[wConv->mod[iCsiMod]->m_nDigi]       = iSubMod;
+	    wConv->mod[iCsiMod]->m_Signal[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetParameter(0);
+	    wConv->mod[iCsiMod]->m_Time[wConv->mod[iCsiMod]->m_nDigi]     = Fitter->GetParameter(1);
+	    wConv->mod[iCsiMod]->m_Pedestal[wConv->mod[iCsiMod]->m_nDigi] = Fitter->GetParameter(2);
+	    wConv->mod[iCsiMod]->m_HHTime[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetConstantFraction();
+	    wConv->mod[iCsiMod]->m_Chisq[wConv->mod[iCsiMod]->m_nDigi]    = Fitter->GetChisquare();
+	    wConv->mod[iCsiMod]->m_NDF[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetNDF();
+	    wConv->mod[iCsiMod]->m_ADC[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetADC(gr);
+	    wConv->mod[iCsiMod]->m_nDigi++;	    
 
-	  }else{
-	    
-	  }
-	  Fitter->Clear();
+	 }else{
+	       
 	}
-      }
 
+
+	/*
+	can->Update();
+	can->Modified();
+	if( Fitter->CheckWaveform(gr) == 0){
+	  getchar();
+	}
+	*/
+	Fitter->Clear();	
+      }
+      std::cout << wConv->mod[iCsiMod]->m_nDigi << std::endl;
     }
+    
+  //}
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
       std::cout << wConv->mod[iMod]->m_DetectorName << " : " << wConv->mod[iMod]->m_nDigi << std::endl;
     }
@@ -441,9 +453,8 @@ int  main(int argc,char** argv)
   }
   trout->Write();
   std::cout<< "end Loop" <<std::endl;
+  tfout->Close();
   //app->Run();
   std::cout<< "Close" << std::endl;
-  //trout->Write();
-  tfout->Close();
   return 0;
 }
