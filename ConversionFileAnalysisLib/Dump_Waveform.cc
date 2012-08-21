@@ -127,13 +127,41 @@ int  main(int argc,char** argv)
 
   TCanvas* test = new TCanvas("test","",400,400);
   
-  TFile* tfout  = new TFile(Form("%s/TEMPLATE_FIT_RESULT_%d.root",WAVEFILEDIR.c_str(),RunNumber),
+  TFile* tfout  = new TFile(Form("%s/TEMPLATE_FIT_RESULT_DUMP_%d.root",WAVEFILEDIR.c_str(),RunNumber),
 			    "recreate");
-  TTree* trout  = new TTree("WFTree","Waveform Analyzed Tree");   
+
+  TTree* trWaveform = new TTree("Waveform","TestFitResult");
+  Int_t EventNumber; 
+  Int_t ModuleNumber;
+  Double_t Waveform[48];
+  Short_t  TimeInfo[48];
+  Double_t ChisqNDF;
+  Double_t PeakTime;
+  Double_t HHTime;
+  Double_t Height;
+  Double_t Pedestal;
+
+  trWaveform->Branch("RunNumber",&RunNumber,"RunNumber/I");
+  trWaveform->Branch("EventNumber",&EventNumber,"EventNumber/I");
+  trWaveform->Branch("ModuleNumber",&ModuleNumber,"ModuleNumber/I");
+
+  trWaveform->Branch("Waveform",Waveform,"Waveform[48]/D");
+  trWaveform->Branch("TimeInfo",TimeInfo,"TimeInfo[48]/S");
+  trWaveform->Branch("ChisqNDF",&ChisqNDF,"ChisqNDF/D");
+  trWaveform->Branch("PeakTime",&PeakTime,"PeakTime/D");
+  trWaveform->Branch("HHTime"  ,&HHTime  ,"HHTime/D");
+  trWaveform->Branch("Height"  ,&Height  ,"Height/D");
+  trWaveform->Branch("Pedestal",&Pedestal,"Pedestal/D");
+
+
+  TTree* trout      = new TTree("WFTree","Waveform Analyzed Tree");   
   std::cout << Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber) << std::endl;  
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
 					    trout);
+  
+
   std::cout<< "Setting Map" << std::endl;
+  
   tfout->cd();
   {
     wConv->AddModule("Csi");
@@ -157,6 +185,7 @@ int  main(int argc,char** argv)
       }
     }
   }
+
 
   std::cout << "Setting IO File End" << std::endl;
 
@@ -423,6 +452,26 @@ int  main(int argc,char** argv)
 	    wConv->mod[iCsiMod]->m_ADC[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetADC(gr);
 	    wConv->mod[iCsiMod]->m_nDigi++;	    
 
+
+	    EventNumber = ievent; 
+	    ModuleNumber = iSubMod;
+	    for( int ipoint  = 0; ipoint < 48; ipoint++){	      
+	      Waveform[ipoint] = 0.;
+	      TimeInfo[ipoint] = -8;
+	    }
+	    for( int ipoint  = 0; ipoint < 48 ; ipoint++){
+	      if( ipoint >=  gr->GetN() ) { break; }
+	      Waveform[ipoint] = gr->GetY()[ipoint]; 
+	      TimeInfo[ipoint] = gr->GetX()[ipoint];
+	    }
+	    
+	    ChisqNDF = Fitter->GetChisquare()/ Fitter->GetNDF();	    
+	    PeakTime = Fitter->GetParameter(1);	    
+	    HHTime   = Fitter->GetConstantFraction();
+	    Height   = Fitter->GetParameter(0);
+	    Pedestal = Fitter->GetParameter(2);
+
+	    trWaveform->Fill();
 	 }else{
 	       
 	}
@@ -447,10 +496,11 @@ int  main(int argc,char** argv)
     /// All Convert is done ///
     /// Trigger Setting     ///
     ////////////////////////////////
-    
+
     trout->Fill();
     //if( (ievent % 50 == 0 ) && ievent ){ trout->AutoSave("SaveSelf"); }
   }
+  trWaveform->Write();
   trout->Write();
   std::cout<< "end Loop" <<std::endl;
   tfout->Close();
