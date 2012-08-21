@@ -497,7 +497,7 @@ int  main(int argc,char** argv)
     /// Trigger Setting     ///
     ////////////////////////////////
 
-    trout->Fill();
+    //trout->Fill();
     //if( (ievent % 50 == 0 ) && ievent ){ trout->AutoSave("SaveSelf"); }
   }
   trWaveform->Write();
