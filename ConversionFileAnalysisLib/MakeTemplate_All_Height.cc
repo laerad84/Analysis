@@ -57,13 +57,14 @@ main( int argc, char** argv ){
   Double_t Height;
   Double_t Pedestal;
   
-  ch->SetBranchAddress("ModuleNumber", (void*)&ModuleNumber);
-  ch->SetBranchAddress("Waveform",(void*)Waveform);
-  ch->SetBranchAddress("TimeInfo",(void*)TimeInfo);
-  ch->SetBranchAddress("PeakTime",(void*)(&PeakTime));
-  ch->SetBranchAddress("HHTime",(void*)(&HHTime));
-  ch->SetBranchAddress("Height",(void*)(&Height));
-  ch->SetBranchAddress("ChisqNDF",(void*)(&ChisqNDF));
+  ch->SetBranchAddress("ModuleNumber",(void*)(&ModuleNumber));
+  ch->SetBranchAddress("Waveform"    ,(void*)Waveform       );
+  ch->SetBranchAddress("TimeInfo"    ,(void*)TimeInfo       );
+  ch->SetBranchAddress("PeakTime"    ,(void*)(&PeakTime)    );
+  ch->SetBranchAddress("HHTime"      ,(void*)(&HHTime)      );
+  ch->SetBranchAddress("Height"      ,(void*)(&Height)      );
+  ch->SetBranchAddress("ChisqNDF"    ,(void*)(&ChisqNDF)    );
+  ch->SetBranchAddress("Pedestal"    ,(void*)(&Pedestal)    );
   while( ifs >> RunNumber ){
     ch->Add(Form("%s/TEMPLATE_FIT_RESULT_DUMP_%d.root",
 		 Env.c_str(), RunNumber)); 
@@ -72,12 +73,21 @@ main( int argc, char** argv ){
   TFile* tfout = new TFile("TEMPLATE_HEIGHT_500_1000.root","recreate");
   TH2D* hisTemp_CsI[2716];
   TProfile* prof[2716];
+  TGraph*   grTempRaw[2716];
+  TGraph*   grTemp[2716];
   TH1D* hisInsertedChannel = new TH1D("hisInsertedChannel","hisInsertedChannel",
 				      2716,0,2716);
   for( int i = 0; i< 2716; i++){
     hisTemp_CsI[i] = new TH2D(Form("hisTempCsI_Height_500_1000_%d", i),
 			      Form("hisTempCsI_Height_500_1000_%d", i),
 			      400,-150,250,150,-0.25,1.25);
+    grTempRaw[i] = new TGraph();
+    grTempRaw[i]->SetName(Form("Template_Raw_%d",i ));
+    grTempRaw[i]->SetTitle(Form("Template_Raw_%d",i ));
+    grTemp[i] = new TGraph();
+    grTemp[i]->SetName(Form("Template_%d",i));
+    grTemp[i]->SetTitle(Form("Template_%d",i));
+      
   }
   
   TGraph* gr = new TGraph();  
@@ -86,16 +96,25 @@ main( int argc, char** argv ){
     //std::cout <<ChisqNDF << std::endl;
     if( ChisqNDF >30 ) {continue; }    
     if(  Height < 500 || Height > 1000 ){ continue; }
-    //gr->Set(0);
+    gr->Set(0);
     bool frontSignal = false;
     bool backSignal  = false;
-
+    
     for( int ipoint  = 0; ipoint < 48; ipoint++){
       Double_t Timing = TimeInfo[ipoint] - PeakTime;
       Double_t Signal = (Waveform[ipoint] - Pedestal)/Height;
-      
-      //gr->Set( ipoint , Timing, Signal);
-      if( Timing < -80 ){ 
+
+      /*
+      std::cout << ModuleNumber << " : " 
+		<< Timing       << " : " 
+		<< Signal       << " : " 
+		<< Waveform[ipoint] << " : " 
+		<< Pedestal     << " : " 
+		<< Height       << std::endl; 
+      */
+
+      gr->SetPoint( ipoint , Timing, Signal);
+       if( Timing < -80 ){ 
 	if( Signal > 0.1 ){
 	  frontSignal  = true;
 	}
@@ -103,7 +122,7 @@ main( int argc, char** argv ){
 	if( Signal > 0.2 ){
 	  backSignal = true;
 	}
-      }      
+      } 
     }
 
     if( !frontSignal && !backSignal ){
@@ -115,15 +134,71 @@ main( int argc, char** argv ){
       hisInsertedChannel->Fill(ModuleNumber);
     }
   }
-  
+  std::cout << "Event Analysis is end" << std::endl;
+  /*
+  for( int ich = 0; ich < 2716; ich++){
+    TH1D* hisSlice[400];
+    grTempRaw[ich]->Set(0);
+    if( hisTemp_CsI[ich]->GetEntries() != 0 ){
+      int ipoint  = 0;
+      for( int ibin  =0; ibin < 400; ibin++){
+	hisSlice[ibin] = hisTemp_CsI[ich]->ProjectionY( Form("bin%d",ibin), 
+							ibin, ibin+1);
+	if( hisSlice[ibin]->GetEntries() < 16){ continue; }
+	if( hisTemp_CsI[ich]->GetBinCenter(ibin)-150){ continue;}
+	grTempRaw[ich]->SetPoint( ipoint,
+				  hisTemp_CsI[ich]->GetBinCenter(ibin ),
+				  hisSlice[ich]->GetMean());
+	ipoint++;
+      }
+    }
+    double minRMS = 10000; 
+    int    minpoint = 0; 
+    double pedestal = 0;
+    double height = 0; 
+    int    nsample  = 7;
+    for( int ipoint = 0; ipoint < grTempRaw[ich]->GetN()-nsample; ipoint++){
+      if( grTempRaw[ich]->GetX()[ipoint+nsample-1] > 0 ){ continue ;}
+      double rms = 0.;
+      double point  = 0; 
+      double mean = 0;
+      double sqmean = 0;
+      
+      for( int isubpoint = 0; isubpoint < nsample; isubpoint++){
+	mean += grTempRaw[ich]->GetY()[ipoint + isubpoint ];
+	sqmean += grTempRaw[ich]->GetY()[ipoint + isubpoint];
+      }
+
+      mean   /= nsample;
+      sqmean /= nsample;
+      
+      rms = TMath::Sqrt( sqmean - mean*mean );
+      if( rms < minRMS ){
+	minpoint  = ipoint;
+	minRMS    = rms; 
+	pedestal  = mean;
+      }
+
+    }
+
+    TSpline3* spl =  new TSpline3("spl",grTempRaw[ich]);
+    height = spl->Eval(0) - pedestal;
+    for( int ipoint  =0; ipoint < grTempRaw[ich]->GetN(); ipoint++){
+      grTemp[ich]->SetPoint( ipoint , grTempRaw[ich]->GetX()[ipoint],
+			     (grTempRaw[ich]->GetY()[ipoint] - pedestal)/height);
+    }
+    delete spl;
+    }
+  */
   for( Int_t ich  =0; ich < 2716; ich++){
     prof[ich] = hisTemp_CsI[ich]->ProfileX();
     prof[ich]->Write();
     hisTemp_CsI[ich]->Write();
+    //grTemp[ich]->Write();    
   }
   hisInsertedChannel->Write();
   tfout->Close();
-
+  
 }  
 
   
