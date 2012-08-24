@@ -42,7 +42,23 @@
 
 int
 main( int argc, char** argv ){
-  
+  if( argc != 3 ){ 
+    std::cerr << "Number of argumemt must be 3" << std::endl;
+    std::cerr << Form( "%s [Height Low Limit] [Height High Limit]", argv[0])
+	      << std::endl;
+    return -1;
+  }
+
+  Double_t LowLimit  = atof( argv[1] );
+  Double_t HighLimit = atof( argv[2] );
+  if( LowLimit > HighLimit || LowLimit < 0 ){
+    std::cerr << "Please Confirm Limit\n"
+	      << "Invalid Number for Limit" << std::endl;
+    return -1; 
+  }
+
+
+
   std::ifstream ifs("/home/jwlee/local/Analysis/RunList/EtRunList.txt");
   
   TChain* ch  = new TChain("Waveform");
@@ -70,7 +86,7 @@ main( int argc, char** argv ){
 		 Env.c_str(), RunNumber)); 
   }
       
-  TFile* tfout = new TFile("TEMPLATE_HEIGHT_500_1000.root","recreate");
+  TFile* tfout = new TFile("TEMPLATE_HEIGHT_250_500.root","recreate");
   TH2D* hisTemp_CsI[2716];
   TProfile* prof[2716];
   TGraph*   grTempRaw[2716];
@@ -78,8 +94,8 @@ main( int argc, char** argv ){
   TH1D* hisInsertedChannel = new TH1D("hisInsertedChannel","hisInsertedChannel",
 				      2716,0,2716);
   for( int i = 0; i< 2716; i++){
-    hisTemp_CsI[i] = new TH2D(Form("hisTempCsI_Height_500_1000_%d", i),
-			      Form("hisTempCsI_Height_500_1000_%d", i),
+    hisTemp_CsI[i] = new TH2D(Form("hisTempCsI_Height_%d_%d_%d",(int)LowLimit,(int)HighLimit, i),
+			      Form("hisTempCsI_Height_%d_%d_%d",(int)LowLimit,(int)HighLimit, i),
 			      400,-150,250,150,-0.25,1.25);
     grTempRaw[i] = new TGraph();
     grTempRaw[i]->SetName(Form("Template_Raw_%d",i ));
@@ -95,7 +111,7 @@ main( int argc, char** argv ){
     ch->GetEntry(ievent);
     //std::cout <<ChisqNDF << std::endl;
     if( ChisqNDF >30 ) {continue; }    
-    if(  Height < 500 || Height > 1000 ){ continue; }
+    if(  Height < LowLimit || Height > HighLimit ){ continue; }
     gr->Set(0);
     bool frontSignal = false;
     bool backSignal  = false;

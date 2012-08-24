@@ -33,7 +33,7 @@ double E14WaveFitterMinimum::fTempleteFunction( double* x ,double* par){
   double ped    = par[2];
 
   double t_fcn  = 0;
-  if( t - mean  <= m_spl->GetXmin() || t- mean >150 ){ return ped;}
+  if( t - mean  <= -150 || t- mean >= 300 ){ return ped;}
   //if( t -mean < -80 || t-mean >= 90 ){ return ped ;}
   if( t == 1./0 ){ return ped; }
   t_fcn         = height*E14WaveFitterMinimum::m_spl->Eval(t - mean) + ped;

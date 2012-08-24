@@ -42,17 +42,30 @@
 
 int
 main( int argc, char** argv){
+  if( argc != 3 ){ 
+    std::cerr << "Number of argumemt must be 3" << std::endl;
+    std::cerr << Form( "%s [Height Low Limit] [Height High Limit]", argv[0])
+	      << std::endl;
+    return -1;
+  }
 
+  Double_t LowLimit  = atof( argv[1] );
+  Double_t HighLimit = atof( argv[2] );
+  if( LowLimit > HighLimit || LowLimit < 0 ){
+    std::cerr << "Please Confirm Limit\n"
+	      << "Invalid Number for Limit" << std::endl;
+    return -1; 
+  }
 
-  TFile* tf = new TFile("TEMPLATE_HEIGHT_500_1000.root");
-  TFile* tfout = new TFile("TEMPLATE_SPLINE_500_1000.root","recreate");
-
+  TFile* tf = new TFile(Form("TEMPLATE_HEIGHT_%d_%d.root",(int)LowLimit,(int)HighLimit));
+  TFile* tfout = new TFile(Form("TEMPLATE_SPLINE_%d_%d.root",(int)LowLimit, (int)HighLimit) ,"recreate");
+  
   TGraph* grTemp[2716];
   TGraph* grTempRaw[2716];
-  TH2D* hisTemplate[2716];
+  TH2D*   hisTemplate[2716];
   TSpline3* splTemp[2716];
   for( int ich = 0; ich < 2716; ich++){
-    hisTemplate[ich] = (TH2D*)tf->Get(Form("hisTempCsI_Height_500_1000_%d",ich));
+    hisTemplate[ich] = (TH2D*)tf->Get(Form("hisTempCsI_Height_%d_%d_%d",(int)LowLimit, (int)HighLimit,ich));
     grTemp[ich] = new TGraph();
     grTempRaw[ich] = new TGraph();
     grTemp[ich]->SetName(Form("Template_graph_%d", ich));
@@ -73,7 +86,7 @@ main( int argc, char** argv){
     for( int  ibin  =0; ibin < 400 ; ibin++) {
       hisSlice[ibin] = hisTemplate[ich]->ProjectionY(Form("bin%d", ibin),
 						      ibin,ibin+1);
-      if( hisSlice[ibin]->GetEntries() < 16 ) { continue; }
+      if( hisSlice[ibin]->GetEntries() < 4 ) { continue; }
       if( hisTemplate[ich]->GetBinCenter( ibin ) < -150 ){ continue; }      
       grTempRaw[ich]->SetPoint( ipoint,
 				hisTemplate[ich]->GetBinCenter( ibin ),
@@ -120,6 +133,34 @@ main( int argc, char** argv){
 			     (grTempRaw[ich]->GetY()[ipoint]-ped)/sig);
     }
     delete spl;
+
+    std::cout<< grTemp[ich]->GetX()[ grTemp[ich]->GetN() -1 ] << std::endl;
+    if( grTemp[ich]->GetX()[grTemp[ich]->GetN()-1 ] >0 ){
+      std::cout<<"Fit:" << ich << std::endl;
+      grTemp[ich]->Fit("pol1","Q","",180,300);
+      TF1* func = grTemp[ich]->GetFunction("pol1");
+      if( func->GetParameter(1) >= 0 ){ std::cout << "Unexpected Fit result : " << ich << std::endl;}
+      else{
+	while( 1 ){	  
+ 	  Double_t xpos = grTemp[ich]->GetX()[ grTemp[ich]->GetN() -1 ]+1;
+	  Double_t ypos = func->Eval(xpos);
+	  if( xpos <= 300 ){
+	    if( xpos == 300 ){
+	      if( ypos > 0 ){ std::cout<< "Check Channel:" <<  ich << std::endl; }
+	    }
+	    
+	    if( ypos >= 0 ){
+	      grTemp[ich]->SetPoint( grTemp[ich]->GetN(), xpos, ypos );
+	    }else{
+	      grTemp[ich]->SetPoint( grTemp[ich]->GetN(), xpos, 0 );
+	    }
+	  }else{
+	    break;
+	  }	    
+	}
+	grTemp[ich]->GetListOfFunctions()->Delete();
+      }
+    } 
   }				
   std::cout<< "End Fill" << std::endl;
 
