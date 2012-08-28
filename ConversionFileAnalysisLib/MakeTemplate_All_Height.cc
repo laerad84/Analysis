@@ -42,15 +42,16 @@
 
 int
 main( int argc, char** argv ){
-  if( argc != 3 ){ 
+  if( argc != 4 ){ 
     std::cerr << "Number of argumemt must be 3" << std::endl;
-    std::cerr << Form( "%s [Height Low Limit] [Height High Limit]", argv[0])
+    std::cerr << Form( "%s [list of RunNumber] [Height Low Limit] [Height High Limit]", argv[0])
 	      << std::endl;
     return -1;
   }
 
-  Double_t LowLimit  = atof( argv[1] );
-  Double_t HighLimit = atof( argv[2] );
+  std::string Filename  = argv[1];
+  Double_t LowLimit  = atof( argv[2] );
+  Double_t HighLimit = atof( argv[3] );
   if( LowLimit > HighLimit || LowLimit < 0 ){
     std::cerr << "Please Confirm Limit\n"
 	      << "Invalid Number for Limit" << std::endl;
@@ -59,8 +60,8 @@ main( int argc, char** argv ){
 
 
 
-  std::ifstream ifs("/home/jwlee/local/Analysis/RunList/EtRunList.txt");
-  
+  //std::ifstream ifs("/home/jwlee/local/Analysis/RunList/EtRunList.txt");
+  std::ifstream ifs(Filename.c_str());
   TChain* ch  = new TChain("Waveform");
   std::string Env = std::getenv("ROOTFILE_WAV");
   Int_t RunNumber; 
@@ -86,7 +87,8 @@ main( int argc, char** argv ){
 		 Env.c_str(), RunNumber)); 
   }
       
-  TFile* tfout = new TFile("TEMPLATE_HEIGHT_250_500.root","recreate");
+  TFile* tfout = new TFile(Form("TEMPLATE_HEIGHT_%d_%d.root",(int)LowLimit,(int)HighLimit),
+			   "recreate");
   TH2D* hisTemp_CsI[2716];
   TProfile* prof[2716];
   TGraph*   grTempRaw[2716];

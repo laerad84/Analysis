@@ -21,7 +21,7 @@
 int
 main( int argc, char** argv ){
   const Int_t nChannel = 2716;
-  const Double_t FluctPedestal = 2;
+  const Double_t FluctPedestal = 1;
   TApplication* app = new TApplication("App", &argc , argv );
 
   E14WaveFitter* Fitter = new E14WaveFitter();
@@ -67,6 +67,8 @@ main( int argc, char** argv ){
   
   Fitter->SetWaveform( spl[0] );
   TH1D* hisTime = new TH1D( "hisTimeDelta" ,"", 800,-8,8);
+  TH1D* hisHeight = new TH1D("hisHeight","Height",800,-0.2,0.2);
+  TH1D* hisChisquare = new TH1D("hisChisquare","Chisquare",1000,0,1000);
   Int_t nLoop = 0; 
   
 
@@ -74,12 +76,12 @@ main( int argc, char** argv ){
   while(1){
 
     TimeDelta = 8*gRandom->Rndm();
-    Height    = 100000; 
+    Height    = 1000; 
     grWaveform->Set(0);
     for( int i = 0; i< 48; i++){
 
       Noise = gRandom->Gaus(0,FluctPedestal);
-      Signal = Height*spl[0]->Eval( i*8 -TimeOffset + TimeDelta ) + Noise; 
+      Signal = (int)(Height*spl[0]->Eval( i*8 -TimeOffset + TimeDelta ) + Noise); 
       std::cout<< i << " : " << Signal << std::endl;
       grWaveform->SetPoint(i,i*8, Signal);      
     }
@@ -89,7 +91,17 @@ main( int argc, char** argv ){
     grWaveform->GetListOfFunctions()->Delete();
     std::cout << Fitter->GetChisquare()/ Fitter->GetNDF() << std::endl;
     hisTime->Fill(Fitter->GetParameter(1) -(TimeOffset - TimeDelta));
+    hisHeight->Fill((Fitter->GetParameter(0)- Height)/Height);
+    hisChisquare->Fill(Fitter->GetChisquare()/Fitter->GetNDF());
     if( nLoop % 1000 == 0 ){
+      can->cd(1);
+      gPad->SetGridx();
+      gPad->SetGridy();
+      hisChisquare->Draw();
+      can->cd(2);
+      gPad->SetGridx();
+      gPad->SetGridy();
+      hisHeight->Draw();
       can->cd(3);
       gPad->SetGridx();
       gPad->SetGridy();
