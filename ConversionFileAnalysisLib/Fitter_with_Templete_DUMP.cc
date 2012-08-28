@@ -53,10 +53,10 @@ main( int argc, char** argv){
   }
   Int_t RunNumber  = atoi( argv[1]);
   
-  std::string ANALIBDIR  = std::getenv("ANALYSISLIB");
+  std::string ANALIBDIR   = std::getenv("ANALYSISLIB");
   std::string CONVFILEDIR = std::getenv("ROOTFILE_CONV");
   std::string WAVEFILEDIR = std::getenv("ROOTFILE_WAV");
-  std::string SUBFILEDIR = std::getenv("ROOTFILE_SUMUP");
+  std::string SUBFILEDIR  = std::getenv("ROOTFILE_SUMUP");
 
 
   WaveformFitter* wavFitter = new WaveformFitter( 48, kFALSE );
