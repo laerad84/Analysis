@@ -11,7 +11,7 @@ E14WaveFitterMinimum::~E14WaveFitterMinimum(){
 
 int E14WaveFitterMinimum::MakeFunction(){
   if(m_FuncFlag == 0){
-    m_FitFunc = new TF1("fitFuncTemplete",fTempleteFunction,
+    m_FitFunc = new TF1("fitFuncTemplete",fTemplateFunction,
 			0., 500., 3);
   }else{
     m_FitFunc = new TF1("fitFuncAsymmetric",fAsymmetricGaussian,
@@ -19,13 +19,14 @@ int E14WaveFitterMinimum::MakeFunction(){
   }
   return m_FuncFlag;
 }    
+
 int E14WaveFitterMinimum::Fit( TGraph* gr , char* goption, char* foption,
 			       Axis_t xmin, Axis_t xmax){
   int rst = gr->Fit(this->m_FitFunc, goption, foption, xmin, xmax);
   return rst;
 }
 
-double E14WaveFitterMinimum::fTempleteFunction( double* x ,double* par){
+double E14WaveFitterMinimum::fTemplateFunction( double* x ,double* par){
 
   double t=x[0];
   double height = par[0];

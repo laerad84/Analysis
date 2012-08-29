@@ -41,11 +41,18 @@ Int_t  E14WaveFitter::GetNDF(){
   return ndf;
 }
 void E14WaveFitter::InitPar(){
+  if( m_linfunc != NULL ){
+    m_linfunc->Delete();
+  }
+  if( m_FitFunc != NULL ){
+    m_FitFunc->Delete();
+  }
   m_height   = 0.;
 
   m_peakTime   = 0.;
   m_HHTime     = 0.;
   m_splTime    = 0.; 
+  m_slope      = 0.;
 
   m_gnd        = 0.;
   m_gndrms     = 0.;
@@ -55,6 +62,16 @@ void E14WaveFitter::InitPar(){
   m_peakpoint  = 0;
   
   m_PeakFlag   = 0;
+
+  m_PedLimitHigh = 0;
+  m_PedLimitLow  = 0;
+  m_HighestPoint = 0;
+  m_LowestPoint  = 0;
+  m_HighestTime  = 0;
+  m_LowestTime   = 0;
+
+  m_FitLimitLow  = 0;
+  m_FitLimitHigh = 0;
 }  
   
 int  E14WaveFitter::CheckWaveform( TGraph* gr ){
@@ -65,7 +82,7 @@ int  E14WaveFitter::CheckWaveform( TGraph* gr ){
 
   //std::cout << typeid(*this).name() << ":" << __FUNCTION__ << std::endl;
   //std::cout <<  m_height << " : " << m_peakTime << " : " << m_gnd << std::endl; 
-  if( m_peakpoint < 10 ){ 
+  if( m_peakpoint < 8 ){ 
     m_PeakFlag |= 1;
   }
   /*
@@ -90,7 +107,7 @@ bool E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
   m_FitFunc->SetParameter(2,m_gnd);
   m_FitFunc->SetParLimits(2,m_PedLimitLow,m_PedLimitHigh);
   m_FitFunc->SetParameter(0,m_height);
-  m_FitFunc->SetParLimits(0,m_height*0.9, m_height*2);
+  m_FitFunc->SetParLimits(0,m_height*0.8, m_height*2);
   m_FitFunc->SetParameter(1,m_peakTime);
   m_FitFunc->SetParLimits(1,m_peakTime-16,m_peakTime+16);
 
@@ -116,7 +133,8 @@ bool E14WaveFitter::FitTime( TGraph* gr){
   double xpos   = ((m_height*0.5 +m_gnd) - offset)/slope;  
   if( m_linfunc->GetParameter(1) < 0 ){ m_HHTime = -1.; }
   if( abs( xpos - m_splTime ) > 8 ){ m_HHTime = -1.; }  
-  m_linfunc->Clear();
+  m_slope = m_linfunc->GetParameter(1);
+  //m_linfunc->Clear();
   m_HHTime = xpos;   
   if( m_HHTime > 0 ){
     return true;
@@ -134,6 +152,7 @@ bool E14WaveFitter::Approx( TGraph* gr ){
   
   return true;
 }
+
 bool E14WaveFitter::GetLimits( TGraph* gr ){
   m_HighestPoint = 0;
   m_LowestPoint  = 20000;
@@ -291,7 +310,7 @@ bool E14WaveFitter::GetHeight( TGraph* gr ){
 
 Double_t E14WaveFitter::GetADC( TGraph* gr ){
   Double_t ADC  = 0.;
-  if( m_peakpoint >=10 && m_PeakFlag == 0){
+  if( m_peakpoint >= 8 && m_PeakFlag == 0){
     for( int ipoint  = 0; ipoint < gr->GetN() ; ipoint++){
       if( TMath::Abs(gr->GetX()[ipoint] - m_peakTime) < 50 ){      
 	ADC += gr->GetY()[ipoint] - m_gnd;
@@ -301,4 +320,68 @@ Double_t E14WaveFitter::GetADC( TGraph* gr ){
   }else{
     return 0.;
   }
+}
+
+Double_t E14WaveFitter::GetADCPeak( TGraph* gr ){
+  Double_t ADC = 0;
+  m_FitLimitLow = m_FitFunc->GetParameter(1) - 80;
+  m_FitLimitHigh= m_FitFunc->GetParameter(1) + 24;
+  
+  if( m_peakpoint >= 8 && m_PeakFlag == 0 ){
+    for( int ipoint = 0 ; ipoint < gr->GetN(); ipoint++){
+      if( gr->GetX()[ipoint] > m_FitLimitLow && gr->GetX()[ipoint] < m_FitLimitHigh ){
+	ADC += gr->GetY()[ipoint] - m_gnd;
+      }
+    }
+    return ADC;
+  }else{
+    return 0;
+  }
+}
+
+Double_t E14WaveFitter::GetFuncADC( TGraph* gr ){
+  Double_t ADC = 0;
+  if( m_peakpoint >= 8 && m_PeakFlag  == 0 ){
+    for( int ipoint = 0; ipoint < gr->GetN() ; ipoint++ ){      
+      ADC += m_FitFunc->Eval( gr->GetX()[ipoint] ) - m_gnd;
+    }
+  }else{
+    return 0.;
+  }
+  return ADC; 
+}
+
+Double_t E14WaveFitter::GetFuncADCPeak( TGraph* gr ){
+  Double_t ADC = 0;
+  m_FitLimitLow = m_FitFunc->GetParameter(1) - 80;
+  m_FitLimitHigh= m_FitFunc->GetParameter(1) + 24;
+  
+  if( m_peakpoint >= 8 && m_PeakFlag == 0 ){
+    for( int ipoint = 0 ; ipoint < gr->GetN(); ipoint++){
+      if( gr->GetX()[ipoint] > m_FitLimitLow && gr->GetX()[ipoint] < m_FitLimitHigh ){
+	ADC += m_FitFunc->Eval( gr->GetX()[ipoint] ) - m_gnd;
+      }
+    }
+    return ADC;
+  }else{
+    return 0;
+  }
+}
+
+
+Double_t E14WaveFitter::GetFitResultAspect( TGraph* gr){
+  
+  Double_t  fOut = this->GetFuncADC( gr );
+  Double_t  gOut = this->GetFuncADC( gr ); 
+  
+  if( fOut <= 0 || gOut <= 0 ){
+    return 0;
+  }else{
+    return fOut/gOut; 
+  }
+}
+
+bool E14WaveFitter::ClearFunction( TGraph* gr ){
+  gr->GetListOfFunctions()->Delete();
+  return true;
 }
