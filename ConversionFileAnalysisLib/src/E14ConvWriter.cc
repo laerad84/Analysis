@@ -174,5 +174,16 @@ int E14ConvWriter::SetGraph( int ModID, int SubModID, E14ConvReader* conv[], TGr
     return 0;
   }
 }
-  
+bool E14ConvWriter::SetData( int iModID, int SubModID, E14ConvReader* conv[], Double_t Data[]){
+  int npoint  = 0; 
+  if( GetCFC( iModID, SubModID, m_tempCrateID, m_tempFADCID, m_tempChannelID ) ){
+    for( int ipoint = 0; ipoint < 48; ipoint++){
+      Data[ipoint] = conv[ m_tempCrateID ]->Data[ m_tempFADCID ][ m_tempChannelID ][ ipoint ];
+	npoint++;
+    }
+  }
+  if( npoint == 48 ) return true; 
+  else return false; 
+}
+
 

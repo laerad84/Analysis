@@ -21,6 +21,13 @@ class E14WaveFitter : public E14WaveFitterMinimum {
   int      m_PeakFlag;  
   TF1*     m_linfunc;
 
+  double   m_PedLimitHigh;
+  double   m_PedLimitLow;
+  double   m_HighestPoint;
+  double   m_LowestPoint;
+  double   m_HighestTime;
+  double   m_LowestTime;
+
  public:
 
   E14WaveFitter(int SelectFunction = 0,int nPedestal = 7);
@@ -43,9 +50,10 @@ class E14WaveFitter : public E14WaveFitterMinimum {
   Double_t GetADC ( TGraph* gr );
 
  private:
-  void     GetPeakPoint( TGraph* gr );
-  void     GetPedestal ( TGraph* gr );
-  void     GetHeight   ( TGraph* gr );  
+  bool     GetLimits  ( TGraph* gr );
+  bool     GetPeakPoint( TGraph* gr ,Double_t MinimumLimit = 0., Double_t MaximumLimit  = 384. );
+  bool     GetPedestal ( TGraph* gr );
+  bool     GetHeight   ( TGraph* gr );  
 };
 
 

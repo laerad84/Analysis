@@ -88,11 +88,11 @@ bool E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
   if( CheckWaveform( gr ) != 0  ){ return false; }  
 
   m_FitFunc->SetParameter(2,m_gnd);
-  m_FitFunc->SetParLimits(2,m_gnd,m_gnd);
+  m_FitFunc->SetParLimits(2,m_PedLimitLow,m_PedLimitHigh);
   m_FitFunc->SetParameter(0,m_height);
   m_FitFunc->SetParLimits(0,m_height*0.9, m_height*2);
   m_FitFunc->SetParameter(1,m_peakTime);
-  m_FitFunc->SetParLimits(1,m_peakTime-32,m_peakTime+32);
+  m_FitFunc->SetParLimits(1,m_peakTime-16,m_peakTime+16);
 
   //std::cout <<m_peakTime << std::endl;
   int rst  = gr->Fit( m_FitFunc, "Q","",m_peakTime-150,m_peakTime+50);
@@ -134,25 +134,81 @@ bool E14WaveFitter::Approx( TGraph* gr ){
   
   return true;
 }
+bool E14WaveFitter::GetLimits( TGraph* gr ){
+  m_HighestPoint = 0;
+  m_LowestPoint  = 20000;
+  for( int ipoint = 0; ipoint < gr->GetN(); ipoint++ ){
+    double point = gr->GetY()[ipoint];
+    double t     = gr->GetX()[ipoint]; 
+    if( m_HighestPoint < point ) { m_HighestPoint = point;m_HighestTime =t; }
+    if( m_LowestPoint  > point ) { m_LowestPoint  = point;m_LowestTime  =t; }    
+  }
+  // Check graph is exist or not (./.) 
+  if( m_HighestPoint <= m_LowestPoint ){ return false; } 
+  if( m_HighestTime  == m_LowestTime ){ return false; }
+  return true;
+}
 
-void E14WaveFitter::GetPeakPoint( TGraph* gr ){
+bool E14WaveFitter::GetPeakPoint( TGraph* gr ,Double_t MinimumLimit, Double_t MaximumLimit){
   m_peakpoint  = 0;
   m_tempheight = 0;
+  if( MinimumLimit > MaximumLimit ){ return false;}
+  /// Maximum Point method (./.) /// 
+  /**************************************************************************************
   for( int ipoint = 0; ipoint < gr->GetN(); ipoint++){
+    if( gr->GetX()[ipoint] <= MinimumLimit || gr->GetX()[ipoint] > MaximumLimit ){
+      continue;
+    }
     if( gr->GetY()[ipoint] > m_tempheight ){
       m_tempheight = gr->GetY()[ipoint];
       m_peakpoint  = ipoint;
     }
   }
+  **************************************************************************************/
+  /// Maximum in 3point method (./.) ///
+  //**************************************************************************************//
+
+  double sum3heightest       = 0;
+  double sum3heightestpoint  = 0;
+  double sum3                = 0;
+  double sum3Point           = 0;
+  for( int ipoint = 1; ipoint < gr->GetN()-1; ipoint++){
+    if( gr->GetX()[ipoint] < MinimumLimit || gr->GetX()[ipoint]> MaximumLimit ){
+      continue;
+    }
+
+    sum3      = 0.;
+    sum3Point = 0.;
+
+    sum3 += gr->GetY()[ipoint - 1]; 
+    sum3 += gr->GetY()[ipoint    ]; 
+    sum3 += gr->GetY()[ipoint + 1]; 
+
+    sum3Point += gr->GetY()[ipoint -1]*gr->GetX()[ipoint-1];
+    sum3Point += gr->GetY()[ipoint   ]*gr->GetX()[ipoint  ];
+    sum3Point += gr->GetY()[ipoint +1]*gr->GetX()[ipoint+1];
+    sum3Point /= sum3;
+
+    if( sum3 > sum3heightest ){ 
+      sum3heightest      = sum3;
+      sum3heightestpoint = sum3Point;
+      m_peakpoint        = ipoint;
+      m_tempheight       = gr->GetY()[ipoint];
+    }    
+  }
+
+  //**************************************************************************************//
   m_peakTime = m_peakpoint*8;
+  return true;
 }
      
-void E14WaveFitter::GetPedestal( TGraph* gr ){
+bool E14WaveFitter::GetPedestal( TGraph* gr ){
   double MinimumSigma = 1000000;
   int    MinimumPoint = 0;
   double localMaximum;
   double localSigma;
   double localMean;
+
   // Local Maximum RMS method /// 
   /******************************************************************************
   for( int ipoint = 0; ipoint < m_peakpoint - m_pedsmpl; ipoint++){
@@ -174,7 +230,7 @@ void E14WaveFitter::GetPedestal( TGraph* gr ){
   }
   ******************************************************************************/
   /// Minimum RMS method ///
-  /******************************************************************************/
+  /******************************************************************************
   for( int ipoint = 0; ipoint < m_peakpoint - m_pedsmpl; ipoint++){
     localMean  = 0.;
     localSigma = 0.;
@@ -189,7 +245,6 @@ void E14WaveFitter::GetPedestal( TGraph* gr ){
       MinimumPoint = ipoint;
     }
   }
-  /******************************************************************************/
   double gnd = 0;
   for( int ipoint = MinimumPoint; ipoint < MinimumPoint + m_pedsmpl; ipoint++){
     gnd += gr->GetY()[ipoint];
@@ -197,11 +252,41 @@ void E14WaveFitter::GetPedestal( TGraph* gr ){
   gnd = gnd / m_pedsmpl;
   m_gndrms = MinimumSigma;
   m_gnd    = gnd;
+  ******************************************************************************/
+  /// Set RMS Region and Minimum value method ///
+  ///******************************************************************************
+  // All Csi Output ///
+  double minimumPeak = 20000;
+
+  m_PedLimitHigh = 0;
+  m_PedLimitLow  = 20000;
+  
+  for( int ipoint  = 0; ipoint < m_peakpoint - 8; ipoint++ ){    
+    if( minimumPeak > gr->GetY()[ipoint] ){
+      minimumPeak  = gr->GetY()[ipoint];
+      MinimumPoint = ipoint;      
+    }
+    if( m_PedLimitHigh < gr->GetY()[ipoint] ){
+      m_PedLimitHigh = gr->GetY()[ipoint];
+    }
+    if( m_PedLimitLow > gr->GetY()[ipoint] ){
+      m_PedLimitLow = gr->GetY()[ipoint];
+    }
+  }
+  if( m_PedLimitHigh - m_PedLimitLow > 10 ){
+    m_PedLimitHigh  = m_PedLimitLow + 10;
+    m_gnd = m_PedLimitLow;
+    return false;
+  }
+  m_gnd = m_PedLimitLow;
+  //******************************************************************************/
+  return true;
 }
 
-void E14WaveFitter::GetHeight( TGraph* gr ){ 
+bool E14WaveFitter::GetHeight( TGraph* gr ){ 
   m_height = gr->GetY()[ m_peakpoint ];
   m_height = m_height - m_gnd;
+  return true;
 }
 
 Double_t E14WaveFitter::GetADC( TGraph* gr ){

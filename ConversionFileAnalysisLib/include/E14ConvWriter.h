@@ -66,6 +66,7 @@ class E14ConvWriter {
   bool  InitData();
   bool  GetCFC( int , int , int&, int& , int&);
   int   SetGraph( int, int,E14ConvReader* [], TGraph* );
+  bool  SetData( int , int, E14ConvReader* [], Double_t []);
 };
 
 #endif
