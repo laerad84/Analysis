@@ -41,12 +41,14 @@ Int_t  E14WaveFitter::GetNDF(){
   return ndf;
 }
 void E14WaveFitter::InitPar(){
+  /*
   if( m_linfunc != NULL ){
     m_linfunc->Delete();
   }
   if( m_FitFunc != NULL ){
     m_FitFunc->Delete();
   }
+  */
   m_height   = 0.;
 
   m_peakTime   = 0.;

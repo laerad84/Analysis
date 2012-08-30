@@ -51,7 +51,7 @@
 #include "Math/WrappedTF1.h"
 
 #include "E14WaveFitter.h"
-
+#include "CsI_Module.h"
 
 const int nCrate = 11;
 
@@ -105,16 +105,21 @@ int  main(int argc,char** argv)
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Set Template  /// 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
-  
-  TFile* tfTemplate = new TFile("TEMPLETE_OUT_HEIGHT_0_OK.root");
-  TGraphErrors* tempGr[2716];
+  std::cout << "Load Template" << std::endl;
+
+  //TFile* tfTemplate = new TFile("TEMPLETE_OUT_HEIGHT_0_OK.root");
+  TFile* tfTemplate = new TFile("TEMPLATE_SPLINE_250_500.root");
+  TGraph*       tempGr[2716];
   TSpline3*     tempSpl[2716]; 
   for( int ispline = 0; ispline< 2716; ispline++){
+    std::cout<< ispline << std::endl;
     tempGr[ispline]  = NULL;
     tempSpl[ispline] = NULL;
-    tempGr[ispline]  = (TGraphErrors*)tfTemplate->Get(Form("Waveform_Height_%d_0",ispline));
+    //tempGr[ispline]  = (TGraphErrors*)tfTemplate->Get(Form("Waveform_Height_%d_0",ispline));
+    tempGr[ispline]  = (TGraph*)tfTemplate->Get(Form("Template_graph_%d",ispline));
+    std::cout<< ispline << std::endl;
     if( tempGr[ispline]->GetN()!= 0){
-      tempSpl[ispline] = new TSpline3(Form("waveformSpl_%d",ispline),(TGraph*)(tempGr[ispline]));
+      tempSpl[ispline] = new TSpline3(Form("waveformSpl_%d",ispline),tempGr[ispline]);
     }else{
       std::cout<< "Non Exist channel:" << ispline << std::endl;
     }
@@ -124,7 +129,7 @@ int  main(int argc,char** argv)
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Set input / output File 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
-
+  std::cout<< "Set I/O File" <<std::endl;
   TCanvas* test = new TCanvas("test","",400,400);
   
   TFile* tfout  = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVEFILEDIR.c_str(),RunNumber),
@@ -169,12 +174,18 @@ int  main(int argc,char** argv)
 
   std::cout<< "Setting Hist" << std::endl;
   
-  TCanvas* can      = new TCanvas( "can ", "Canvas" ,800,800);
-  can->Divide( 2,2 );
+  TCanvas* can      = new TCanvas( "can ", "Canvas" ,0,0,1900,1000);
+  can->Divide( 3,3 );
   TGraph* gr        = new TGraph();
   TGraph* grTotal   = new TGraph();
-  TH2D*   hisTotal  = new TH2D("hisTotal","TotalHist",48,0,48*8,1000,0,50000);
-  TTree*  trTimeWindow  = new TTree("TimeWindow","");
+  TGraph* grHeightTime = new TGraph();  
+  TH2D*   hisEvent     = new TH2D("hisEvent"    ,"hisEvent",48,0,384,320,0,16000);
+  TH2D*   hisEventNorm = new TH2D("hisEventNorm","hisEventNorm",48,0,384,320,-0.25,1.25);
+  TH1D*   hisEventTime = new TH1D("hisEventTime","hisEventTime",48,0,384);
+  CsI_Module* CsIOut   = new CsI_Module("CsIOut");
+  CsI_Module* CsITime  = new CsI_Module("CsITime");
+  TH2D*   hisTotal     = new TH2D("hisTotal","TotalHist",48,0,48*8,1000,0,50000);
+  TTree*  trTimeWindow = new TTree("TimeWindow","");
 
   Double_t RegionSum[3];
   Double_t TotalSum;
@@ -187,9 +198,10 @@ int  main(int argc,char** argv)
   trTimeWindow->Branch("TotalMinimum",&TotalMinimum,"TotalMinimum/D");
   trTimeWindow->Branch("TotalWaveform",TotalWaveform,"TotalWaveform[48]/D");
   trTimeWindow->Branch("TimeInfo",TimeInfo,"TimeInfo[48]/S");
-  trTimeWindow->Branch("TotalTriggerFlag",TotalTriggerFlag,"TotalTriggerFlag/I");
+  trTimeWindow->Branch("TotalTriggerFlag",&TotalTriggerFlag,"TotalTriggerFlag/I");
   gr->SetMarkerStyle(6);
   grTotal->SetMarkerStyle(6);
+  grHeightTime->SetMarkerStyle(6);
 
   int CsiModuleID    = wConv->GetModuleID("Csi");
   int CosmicModuleID = wConv->GetModuleID("Cosmic");
@@ -243,12 +255,12 @@ int  main(int argc,char** argv)
   // Loop Start  /// 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
-
   std::cout <<"Loop " <<std::endl;
   //for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-  for( int ievent  = 0; ievent < 8000 ; ievent++){
+  for( int ievent  = 0; ievent < 8000 ; ievent++){    
   //for( int ievent  = 0; ievent < 5 ; ievent++){
-    //std::cout<< ievent << std::endl;
+
+    std::cout<< "Event Number:" << ievent << std::endl;
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -291,8 +303,10 @@ int  main(int argc,char** argv)
     /// Trigger dicision  && Other detector...
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    std::cout<< "Trigger Dicision" << std::endl;
+
     TotalTriggerFlag  =0;
-    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
+    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){            
       //std::cout << iMod << std::endl;
       if( iMod == wConv->GetModuleID("Csi") ){ continue; }
       int nSubModule = wConv->GetNsubmodule( iMod );
@@ -377,12 +391,14 @@ int  main(int argc,char** argv)
 	continue;
       } 
     }
+    std::cout<< "End Trigger Dicision " << std::endl;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     /// End Trigger Decision /// 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
+    std::cout<< "Check Trig" << std::endl;
     if( ((wConv->m_TrigFlag) & 1) != 0 ){ continue; }
     //for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
     
@@ -432,14 +448,6 @@ int  main(int argc,char** argv)
     }
     trTimeWindow->Fill();
 
-    /*
-    grTotal->Draw("AP");
-    can->Update();
-    can->Modified();
-    getchar();
-    */
-
-    /*
     for( int iSubMod = 0; iSubMod < nSubCsiModule; iSubMod++){	
       if( wConv->SetGraph( iCsiMod, iSubMod ,conv , gr ) == 0 ){ continue; }		
       //////////////////////////////////////////////////////
@@ -452,6 +460,7 @@ int  main(int argc,char** argv)
       //can->Update();
       //can->Modified();
       //Fitter->SetWaveform( tempSpl[ iSubMod ]);
+
       if( tempSpl[iSubMod] == NULL ){ 
 	std::cout<< "Spline Pointer is NULL. Channel: "<< iSubMod  << std::endl;
       }else{
@@ -464,30 +473,47 @@ int  main(int argc,char** argv)
 	  //can->cd(2);
 	  //gr->Draw("AP");
 	  //Fitter->m_FitFunc->Draw();
+	  if( Fitter->GetParameter(0) < 50 ){ continue ; }
+	  /*
+	  can->cd(1);
+	  gr->Draw("AP");
+	  Fitter->m_FitFunc->Draw("same");
+	  can->Update();
+	  can->Modified();
+	  getchar();
+	  */
 
-	    std::cout<< "Fit Result : " << Fitter->GetFitResult() << std::endl;
+	  for( int ipoint = 0; ipoint < gr->GetN(); ipoint++){
+	    hisEvent->Fill( gr->GetX()[ipoint], gr->GetY()[ipoint] );
+	    hisEventNorm->Fill( gr->GetX()[ipoint], (gr->GetY()[ipoint] - Fitter->GetParameter(2))/Fitter->GetParameter(0));
+	  }
+	  hisEventTime->Fill(Fitter->GetParameter(1));
+	  grHeightTime->SetPoint( grHeightTime->GetN(), Fitter->GetParameter(1), Fitter->GetParameter(0));
+	  CsIOut->Fill( iSubMod, Fitter->GetParameter(0));
+	  CsITime->Fill( iSubMod, Fitter->GetParameter(1));
 
-	    wConv->mod[iCsiMod]->m_FitHeight[wConv->mod[iCsiMod]->m_nDigi]= 1;
-	    wConv->mod[iCsiMod]->m_ID[wConv->mod[iCsiMod]->m_nDigi]       = iSubMod;
-	    wConv->mod[iCsiMod]->m_Signal[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetParameter(0);
-	    wConv->mod[iCsiMod]->m_Time[wConv->mod[iCsiMod]->m_nDigi]     = Fitter->GetParameter(1);
-	    wConv->mod[iCsiMod]->m_Pedestal[wConv->mod[iCsiMod]->m_nDigi] = Fitter->GetParameter(2);
-	    wConv->mod[iCsiMod]->m_HHTime[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetConstantFraction();
-	    wConv->mod[iCsiMod]->m_Chisq[wConv->mod[iCsiMod]->m_nDigi]    = Fitter->GetChisquare();
-	    wConv->mod[iCsiMod]->m_NDF[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetNDF();
-	    wConv->mod[iCsiMod]->m_ADC[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetADC(gr);
-	    wConv->mod[iCsiMod]->m_nDigi++;	    
-
-	 }else{
-	       
+	  std::cout<< "Fit Result : " << Fitter->GetFitResult() << std::endl;
+	  
+	  wConv->mod[iCsiMod]->m_FitHeight[wConv->mod[iCsiMod]->m_nDigi]= 1;
+	  wConv->mod[iCsiMod]->m_ID[wConv->mod[iCsiMod]->m_nDigi]       = iSubMod;
+	  wConv->mod[iCsiMod]->m_Signal[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetParameter(0);
+	  wConv->mod[iCsiMod]->m_Time[wConv->mod[iCsiMod]->m_nDigi]     = Fitter->GetParameter(1);
+	  wConv->mod[iCsiMod]->m_Pedestal[wConv->mod[iCsiMod]->m_nDigi] = Fitter->GetParameter(2);
+	  wConv->mod[iCsiMod]->m_HHTime[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetConstantFraction();
+	  wConv->mod[iCsiMod]->m_Chisq[wConv->mod[iCsiMod]->m_nDigi]    = Fitter->GetChisquare();
+	  wConv->mod[iCsiMod]->m_NDF[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetNDF();
+	  wConv->mod[iCsiMod]->m_ADC[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetADC(gr);
+	  wConv->mod[iCsiMod]->m_nDigi++;	    
+	  
+	}else{
+	  
 	}
 
 	Fitter->Clear();	
       }
-
-      std::cout << wConv->mod[iCsiMod]->m_nDigi << std::endl;
+      //std::cout << wConv->mod[iCsiMod]->m_nDigi << std::endl;
     }
-    */
+
     
   //}
 
@@ -504,6 +530,38 @@ int  main(int argc,char** argv)
     
     //trout->Fill();
     //if( (ievent % 50 == 0 ) && ievent ){ trout->AutoSave("SaveSelf"); }
+    if( hisEventTime->GetRMS()<10){
+      can->cd(2);
+      grTotal->Draw("AP");
+      can->cd(3);
+      hisEvent->Draw("colz");
+      can->cd(4);
+      hisEventTime->Draw();
+      can->cd(5);
+      grHeightTime->GetXaxis()->SetRange(0,384);
+      grHeightTime->Draw("AP");
+      can->cd(6);
+      hisEventNorm->Draw("col");
+      can->cd(7);
+      CsIOut->Draw("colz");
+      can->cd(8);
+      CsITime->Draw("colz");
+      can->cd(9);
+      can->Update();
+      can->Modified();
+      std::cout<< "EndEvent()" << std::endl;
+      getchar();
+      getchar();
+    }
+    gr->Set(0);
+    gr->GetListOfFunctions()->Delete();
+    grHeightTime->Set(0);
+    grTotal->Set(0);
+    hisEvent->Reset();
+    hisEventNorm->Reset();
+    hisEventTime->Reset();
+    CsIOut->Reset();
+    CsITime->Reset();
   }
   //trout->Write();
 
