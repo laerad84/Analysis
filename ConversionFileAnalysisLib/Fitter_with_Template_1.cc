@@ -52,7 +52,7 @@
 
 #include "E14WaveFitter.h"
 #include "CsI_Module.h"
-
+#include "IDHandler.h"
 const int nCrate = 11;
 
 const Double_t COSMIC_THRESHOLD[20] = {100,100,100,100,100,
@@ -125,6 +125,21 @@ int  main(int argc,char** argv)
     }
   }
   tfTemplate->Close();
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Read TimeOffset // 
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  std::ifstream  ifsTimeOffset("testNewWORKCompileOffset.txt");
+  Double_t TimeOffset[2716]={0};
+  Int_t    tempID;
+  Double_t tempOffset;
+  Double_t tempChisq;
+  while(  ifsTimeOffset >> tempID >> tempOffset >> tempChisq ){
+    TimeOffset[tempID] = tempOffset;
+  }
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Read ID map // 
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  IDHandler* idHandler = new IDHandler();
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Set input / output File 
@@ -179,13 +194,21 @@ int  main(int argc,char** argv)
   TGraph* gr        = new TGraph();
   TGraph* grTotal   = new TGraph();
   TGraph* grHeightTime = new TGraph();  
+  TGraph* grRadialTime = new TGraph();
   TH2D*   hisEvent     = new TH2D("hisEvent"    ,"hisEvent",48,0,384,320,0,16000);
   TH2D*   hisEventNorm = new TH2D("hisEventNorm","hisEventNorm",48,0,384,320,-0.25,1.25);
   TH1D*   hisEventTime = new TH1D("hisEventTime","hisEventTime",48,0,384);
   CsI_Module* CsIOut   = new CsI_Module("CsIOut");
   CsI_Module* CsITime  = new CsI_Module("CsITime");
+  gr->SetMarkerStyle(6);
+  grTotal->SetMarkerStyle(6);
+  grHeightTime->SetMarkerStyle(6);
+  grRadialTime->SetMarkerStyle(6);  
+
   TH2D*   hisTotal     = new TH2D("hisTotal","TotalHist",48,0,48*8,1000,0,50000);
   TTree*  trTimeWindow = new TTree("TimeWindow","");
+  
+
 
   Double_t RegionSum[3];
   Double_t TotalSum;
@@ -199,9 +222,6 @@ int  main(int argc,char** argv)
   trTimeWindow->Branch("TotalWaveform",TotalWaveform,"TotalWaveform[48]/D");
   trTimeWindow->Branch("TimeInfo",TimeInfo,"TimeInfo[48]/S");
   trTimeWindow->Branch("TotalTriggerFlag",&TotalTriggerFlag,"TotalTriggerFlag/I");
-  gr->SetMarkerStyle(6);
-  grTotal->SetMarkerStyle(6);
-  grHeightTime->SetMarkerStyle(6);
 
   int CsiModuleID    = wConv->GetModuleID("Csi");
   int CosmicModuleID = wConv->GetModuleID("Cosmic");
@@ -473,7 +493,7 @@ int  main(int argc,char** argv)
 	  //can->cd(2);
 	  //gr->Draw("AP");
 	  //Fitter->m_FitFunc->Draw();
-	  if( Fitter->GetParameter(0) < 50 ){ continue ; }
+	  if( Fitter->GetParameter(0) < 20 ){ continue ; }
 	  /*
 	  can->cd(1);
 	  gr->Draw("AP");
@@ -484,13 +504,17 @@ int  main(int argc,char** argv)
 	  */
 
 	  for( int ipoint = 0; ipoint < gr->GetN(); ipoint++){
-	    hisEvent->Fill( gr->GetX()[ipoint], gr->GetY()[ipoint] );
-	    hisEventNorm->Fill( gr->GetX()[ipoint], (gr->GetY()[ipoint] - Fitter->GetParameter(2))/Fitter->GetParameter(0));
+	    hisEvent->Fill( gr->GetX()[ipoint]-TimeOffset[iSubMod], gr->GetY()[ipoint] );
+	    hisEventNorm->Fill( gr->GetX()[ipoint] - TimeOffset[iSubMod], (gr->GetY()[ipoint] - Fitter->GetParameter(2))/Fitter->GetParameter(0));
 	  }
-	  hisEventTime->Fill(Fitter->GetParameter(1));
-	  grHeightTime->SetPoint( grHeightTime->GetN(), Fitter->GetParameter(1), Fitter->GetParameter(0));
+	  hisEventTime->Fill(Fitter->GetParameter(1)- TimeOffset[iSubMod] );
+
+	  Double_t x,y;
+	  idHandler->GetMetricPosition( iSubMod , x, y ); 
+	  grRadialTime->SetPoint( grRadialTime->GetN(), TMath::Sqrt(x*x + y*y),Fitter->GetParameter(1) - TimeOffset[iSubMod] );
+	  grHeightTime->SetPoint( grHeightTime->GetN(), Fitter->GetParameter(1) - TimeOffset[iSubMod], Fitter->GetParameter(0));
 	  CsIOut->Fill( iSubMod, Fitter->GetParameter(0));
-	  CsITime->Fill( iSubMod, Fitter->GetParameter(1));
+	  CsITime->Fill( iSubMod, Fitter->GetParameter(1) - TimeOffset[iSubMod] );
 
 	  std::cout<< "Fit Result : " << Fitter->GetFitResult() << std::endl;
 	  
@@ -530,7 +554,7 @@ int  main(int argc,char** argv)
     
     //trout->Fill();
     //if( (ievent % 50 == 0 ) && ievent ){ trout->AutoSave("SaveSelf"); }
-    if( hisEventTime->GetRMS()<10){
+    if( hisEventTime->GetRMS()< 10){
       can->cd(2);
       grTotal->Draw("AP");
       can->cd(3);
@@ -543,10 +567,12 @@ int  main(int argc,char** argv)
       can->cd(6);
       hisEventNorm->Draw("col");
       can->cd(7);
+      gPad->SetLogz();
       CsIOut->Draw("colz");
       can->cd(8);
       CsITime->Draw("colz");
       can->cd(9);
+      grRadialTime->Draw("AP");
       can->Update();
       can->Modified();
       std::cout<< "EndEvent()" << std::endl;
@@ -556,6 +582,7 @@ int  main(int argc,char** argv)
     gr->Set(0);
     gr->GetListOfFunctions()->Delete();
     grHeightTime->Set(0);
+    grRadialTime->Set(0);
     grTotal->Set(0);
     hisEvent->Reset();
     hisEventNorm->Reset();
