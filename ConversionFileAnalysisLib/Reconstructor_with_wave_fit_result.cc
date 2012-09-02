@@ -226,7 +226,7 @@ int  main(int argc,char** argv)
     trin->GetEntry( ievt );
     double timePeak = wConv->m_TimePeak;
     double timeSigma= wConv->m_TimeSigma;
-    if( timeSigma >=3.5 ) { continue; }
+    //if( timeSigma >=3.5 ) { continue; }
     nCSIDigi = 0;
     for( int ich = 0; ich < wConv->mod[iCsiMod]->m_nDigi;ich++){
       int CsiChannelID = wConv->mod[iCsiMod]->m_ID[ich];
