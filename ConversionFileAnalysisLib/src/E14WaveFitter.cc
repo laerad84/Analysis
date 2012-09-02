@@ -114,7 +114,7 @@ bool E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
   m_FitFunc->SetParLimits(1,m_peakTime-16,m_peakTime+16);
 
   //std::cout <<m_peakTime << std::endl;
-  int rst  = gr->Fit( m_FitFunc, "Q","",m_peakTime-150,m_peakTime+50);
+  int rst  = gr->Fit( m_FitFunc, "Q","",m_peakTime-150,m_peakTime+35);
   if( rst == 0 ){
     FitTime( gr );
     return true;

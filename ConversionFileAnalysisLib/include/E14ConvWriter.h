@@ -42,6 +42,9 @@ class E14ConvWriter {
   int    m_tempFADCID;
   int    m_tempChannelID;
 
+  double m_TimePeak;
+  double m_TimeSigma;
+ 
   E14MapReader*        map;
   struct MapStruct     ModMap[32];   
   E14ConvWriterModule* mod[32];

@@ -27,6 +27,7 @@ bool E14ConvWriterModule::InitData(){
     m_FitShape[i]      = 0.;
     m_DeltaDiff[i]     = 0.;    
     m_ADC[i]           = 0.;
+    m_FitADC[i]        = 0.;
   }
   this->m_nDigi = 0;
 
@@ -45,7 +46,7 @@ bool E14ConvWriterModule::SetBranchAddress(){
   m_Tree->SetBranchAddress(Form("%sParA"     ,m_DetectorName),m_ParA);
   m_Tree->SetBranchAddress(Form("%sParB"     ,m_DetectorName),m_ParB);
   m_Tree->SetBranchAddress(Form("%sADC"      ,m_DetectorName),m_ADC);
-
+  m_Tree->SetBranchAddress(Form("%sFitADC"   ,m_DetectorName),m_FitADC);
   m_Tree->SetBranchAddress(Form("%sFitHeight",m_DetectorName),m_FitHeight);
   m_Tree->SetBranchAddress(Form("%sFitTime"  ,m_DetectorName),m_FitTime);
   m_Tree->SetBranchAddress(Form("%sFitShape" ,m_DetectorName),m_FitShape);
@@ -91,6 +92,8 @@ bool E14ConvWriterModule::Branch(){
 		 Form("%sParB[%sNumber]/D"     ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sADC"     ,m_DetectorName) ,m_ADC     ,
 		 Form("%sADC[%sNumber]/D"      ,m_DetectorName,m_DetectorName));//m_nDigi
+  m_Tree->Branch(Form("%sFitADC"  ,m_DetectorName) ,m_FitADC  ,
+		 Form("%sFitADC[%sNumber]/D"   ,m_DetectorName,m_DetectorName));//m_nDigi
   return kTRUE;
 }
 

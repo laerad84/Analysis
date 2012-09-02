@@ -66,6 +66,8 @@ bool E14ConvWriter::Branch(){
   m_tr->Branch("CosmicTrigFlagDn",&m_CosmicTrigFlagDn,"CosmicTrigFlagDn/I");
   m_tr->Branch("CVTrigFlag"      ,&m_CVTrigFlag      ,"CVTrigFlag/I");
   m_tr->Branch("LasertrigFlag"   ,&m_LaserTrigFlag   ,"LaserTrigFlag/I");
+  m_tr->Branch("TimePeak"        ,&m_TimePeak        ,"TimePeak/D");
+  m_tr->Branch("TimeSigma"       ,&m_TimeSigma       ,"TimeSigma/D");
 
   for( int i = 0; i< m_nModule; i++){
     mod[i]->Branch();
@@ -73,19 +75,34 @@ bool E14ConvWriter::Branch(){
   return true;
 }
 bool E14ConvWriter::SetBranchAddress(){
-
-  m_tr->SetBranchAddress("RunNo"           ,&m_RunNo);
+  std::cout<< "SetBranchAddress" << std::endl;
+  std::cout<<__LINE__ << std::endl;
+  m_tr->SetBranchAddress("RunNo"           ,&(this->m_RunNo));
+  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("EventNo"         ,&m_EventNo);
+  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("TrigFlag"        ,&m_TrigFlag);
+  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("CosmicTrig"      ,&m_CosmicTrig);
+  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("LaserTrig"       ,&m_LaserTrig);
+  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("CVTrig"          ,&m_CVTrig);
+  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("CosmicTrigFlagUp",&m_CosmicTrigFlagUp);
+  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("CosmicTrigFlagDn",&m_CosmicTrigFlagDn);
+  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("CVTrigFlag"      ,&m_CVTrigFlag);
+  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("LaserTrigFlag"   ,&m_LaserTrigFlag);
+  std::cout<<__LINE__ << std::endl;
+  m_tr->SetBranchAddress("TimePeak"        ,&m_TimePeak);
+  std::cout<<__LINE__ << std::endl;
+  m_tr->SetBranchAddress("TimeSigma"       ,&m_TimeSigma);
 
   for( int i = 0; i< m_nModule; i++){
+    std::cout << i << std::endl;
     mod[i]->SetBranchAddress();
   }
   return true;
@@ -100,12 +117,15 @@ bool E14ConvWriter::InitData(){
   m_CosmicTrigFlagDn = 0;
   m_CVTrigFlag       = 0; 
   m_LaserTrigFlag    = 0;  
+  m_TimePeak         = 0;
+  m_TimeSigma        = 0;
 
   for( int i = 0; i < m_nModule; i++){
     mod[i]->InitData();
   }
   return true;
 }
+
 bool E14ConvWriter::ScanMod(char* modName){
 
   std::string modNameStr  = modName;
@@ -119,13 +139,16 @@ bool E14ConvWriter::ScanMod(char* modName){
   }
   return false;
 }
+
 int  E14ConvWriter::GetNmodule(){
   return m_nModule;
 }
+
 int  E14ConvWriter::GetNsubmodule(int ModID){
   if( ModID >= m_nModule ){ return -1;}
   return (this->ModMap[ModID]).nMod;
 }
+
 int  E14ConvWriter::GetModuleID( char* modName){
   std::list<std::string>::iterator it;
   std::string modNameStr  = modName;
@@ -141,6 +164,7 @@ int  E14ConvWriter::GetModuleID( char* modName){
   }
   return -1;
 }
+
 bool E14ConvWriter::GetCFC( int ModID, int SubModID, int& CrateID, int& FADCID, int& ChannelID ){
   if( (ModID >= this->GetNmodule()) || 
       (SubModID >= (this->ModMap[ModID]).nMod) ){
@@ -174,6 +198,7 @@ int E14ConvWriter::SetGraph( int ModID, int SubModID, E14ConvReader* conv[], TGr
     return 0;
   }
 }
+
 bool E14ConvWriter::SetData( int iModID, int SubModID, E14ConvReader* conv[], Double_t Data[]){
   int npoint  = 0; 
   if( GetCFC( iModID, SubModID, m_tempCrateID, m_tempFADCID, m_tempChannelID ) ){

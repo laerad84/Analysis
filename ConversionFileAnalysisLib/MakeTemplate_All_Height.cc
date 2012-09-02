@@ -87,7 +87,7 @@ main( int argc, char** argv ){
 		 Env.c_str(), RunNumber)); 
   }
       
-  TFile* tfout = new TFile(Form("TEMPLATE_HEIGHT_%d_%d.root",(int)LowLimit,(int)HighLimit),
+  TFile* tfout = new TFile(Form("TEMPLATE_HEIGHT_3pi0_%d_%d.root",(int)LowLimit,(int)HighLimit),
 			   "recreate");
   TH2D* hisTemp_CsI[2716];
   TProfile* prof[2716];

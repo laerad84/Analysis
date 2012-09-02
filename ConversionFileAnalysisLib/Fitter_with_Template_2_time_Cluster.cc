@@ -63,16 +63,11 @@ const Double_t COSMIC_THRESHOLD[20] = {100,100,100,100,100,
 
 int  main(int argc,char** argv)
 {
-  if( argc !=2  && argc != 3  ){
+  if( argc !=2 ){
     std::cerr << "Please Input RunNumber " << std::endl;
     return -1; 
   }
   Int_t RunNumber = atoi( argv[1] );
-
-  Int_t iDiv;
-  if( argc ==3 ){
-    iDiv = atoi( argv[2] );
-  }
 
   // GetEnvironment // 
   std::string ANALIBDIR   = std::getenv("ANALYSISLIB"  );
@@ -142,12 +137,6 @@ int  main(int argc,char** argv)
     TimeOffset[tempID] = tempOffset;
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Read TimeOffset // 
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
-  TFile*  tfPedRMS = new TFile(Form("%s/Pedestal_RMS_4503.root",WAVEFILEDIR.c_str()));
-  TGraph* grPedRMS = (TGraph*)tfPedRMS->Get("grPedestalRMS");
-  tfPedRMS->Close();
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
   // Read ID map // 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   IDHandler* idHandler = new IDHandler();
@@ -156,15 +145,10 @@ int  main(int argc,char** argv)
   /// Set input / output File 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   std::cout<< "Set I/O File" <<std::endl;
-  //TCanvas* test = new TCanvas("test","",400,400);
+  TCanvas* test = new TCanvas("test","",400,400);
   
-  TFile* tfout;
-  if( argc ==2 ){
-    tfout = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVEFILEDIR.c_str(),RunNumber),"recreate");
-  }else if( argc ==3 ){
-    tfout = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d_%d.root",WAVEFILEDIR.c_str(),RunNumber,iDiv),"recreate");
-  }
-
+  TFile* tfout  = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVEFILEDIR.c_str(),RunNumber),
+			    "recreate");
   TTree* trout  = new TTree("WFTree","Waveform Analyzed Tree");   
   std::cout << Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber) << std::endl;  
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
@@ -205,7 +189,7 @@ int  main(int argc,char** argv)
 
   std::cout<< "Setting Hist" << std::endl;
   
-  TCanvas* can      = new TCanvas( "can ", "Canvas" ,0,0,1200,800);
+  TCanvas* can      = new TCanvas( "can ", "Canvas" ,0,0,1900,1000);
   can->Divide( 3,3 );
   TGraph* gr        = new TGraph();
   TGraph* grTotal   = new TGraph();
@@ -292,15 +276,8 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   std::cout <<"Loop " <<std::endl;
-
-  Int_t EventStart  =0;
-  Int_t EventEnd    = conv[0]->GetEntries();
-  if( argc ==3 && iDiv >=0 && iDiv < 8){
-    EventStart = (int)(conv[0]->GetEntries()/8)*iDiv;
-    EventEnd   = (int)(conv[0]->GetEntries()/8)*(iDiv+1);
-  }
   //for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-  for( int ievent  = EventStart; ievent < EventEnd; ievent++){    
+  for( int ievent  = 0; ievent < 8000 ; ievent++){    
   //for( int ievent  = 0; ievent < 5 ; ievent++){
 
     std::cout<< "Event Number:" << ievent << std::endl;
@@ -513,33 +490,25 @@ int  main(int argc,char** argv)
 	bool fit = Fitter->Fit(gr);
 	int chIndex = (wConv->mod[iCsiMod])->m_nDigi;
 	if( fit ){ 
-	  if( Fitter->GetParameter(0) < 10 ){ 
-	    gr->Set(0);
-	    gr->GetListOfFunctions()->Delete();	    
-	    continue ; 
-	  }
 	  //can->cd(2);
 	  //gr->Draw("AP");
 	  //Fitter->m_FitFunc->Draw();
+	  if( Fitter->GetParameter(0) < 20 ){ continue ; }
 	  /*
-	  if( Fitter->GetFitResult() > 20 && Fitter->GetParameter(0) <20 ){
 	  can->cd(1);
 	  gr->Draw("AP");
 	  Fitter->m_FitFunc->Draw("same");
 	  can->Update();
 	  can->Modified();
-	  std::cout<< "Fit Result : " << Fitter->GetFitResult() << std::endl;
 	  getchar();
-	  }
 	  */
 
-	  if( Fitter->GetParameter(0) > 50){
-	    for( int ipoint = 0; ipoint < gr->GetN(); ipoint++){
-	      hisEvent->Fill( gr->GetX()[ipoint]-TimeOffset[iSubMod], gr->GetY()[ipoint] );
-	      hisEventNorm->Fill( gr->GetX()[ipoint] - TimeOffset[iSubMod], (gr->GetY()[ipoint] - Fitter->GetParameter(2))/Fitter->GetParameter(0));
-	    }
-	    hisEventTime->Fill(Fitter->GetParameter(1)- TimeOffset[iSubMod] );
+	  for( int ipoint = 0; ipoint < gr->GetN(); ipoint++){
+	    hisEvent->Fill( gr->GetX()[ipoint]-TimeOffset[iSubMod], gr->GetY()[ipoint] );
+	    hisEventNorm->Fill( gr->GetX()[ipoint] - TimeOffset[iSubMod], (gr->GetY()[ipoint] - Fitter->GetParameter(2))/Fitter->GetParameter(0));
 	  }
+	  hisEventTime->Fill(Fitter->GetParameter(1)- TimeOffset[iSubMod] );
+
 	  Double_t x,y;
 	  idHandler->GetMetricPosition( iSubMod , x, y ); 
 	  grRadialTime->SetPoint( grRadialTime->GetN(), TMath::Sqrt(x*x + y*y),Fitter->GetParameter(1) - TimeOffset[iSubMod] );
@@ -547,6 +516,7 @@ int  main(int argc,char** argv)
 	  CsIOut->Fill( iSubMod, Fitter->GetParameter(0));
 	  CsITime->Fill( iSubMod, Fitter->GetParameter(1) - TimeOffset[iSubMod] );
 
+	  std::cout<< "Fit Result : " << Fitter->GetFitResult() << std::endl;
 	  
 	  wConv->mod[iCsiMod]->m_FitHeight[wConv->mod[iCsiMod]->m_nDigi]= 1;
 	  wConv->mod[iCsiMod]->m_ID[wConv->mod[iCsiMod]->m_nDigi]       = iSubMod;
@@ -555,9 +525,8 @@ int  main(int argc,char** argv)
 	  wConv->mod[iCsiMod]->m_Pedestal[wConv->mod[iCsiMod]->m_nDigi] = Fitter->GetParameter(2);
 	  wConv->mod[iCsiMod]->m_HHTime[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetConstantFraction();
 	  wConv->mod[iCsiMod]->m_Chisq[wConv->mod[iCsiMod]->m_nDigi]    = Fitter->GetChisquare();
-	  wConv->mod[iCsiMod]->m_NDF[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetNDF()/grPedRMS->GetY()[iSubMod];
-	  wConv->mod[iCsiMod]->m_ADC[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetADCPeak(gr);
-	  wConv->mod[iCsiMod]->m_FitADC[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetFuncADCPeak(gr);
+	  wConv->mod[iCsiMod]->m_NDF[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetNDF();
+	  wConv->mod[iCsiMod]->m_ADC[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetADC(gr);
 	  wConv->mod[iCsiMod]->m_nDigi++;	    
 	  
 	}else{
@@ -565,16 +534,12 @@ int  main(int argc,char** argv)
 	}
 
 	Fitter->Clear();	
-	gr->Set(0);
-	gr->GetListOfFunctions()->Delete();
-	
       }
       //std::cout << wConv->mod[iCsiMod]->m_nDigi << std::endl;
     }
-    wConv->m_TimeSigma  = hisEventTime->GetRMS();
-    wConv->m_TimePeak = hisEventTime->GetBinCenter(hisEventTime->GetMaximumBin());
 
-    //}
+    
+  //}
 
     /*
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
@@ -587,8 +552,8 @@ int  main(int argc,char** argv)
     /// Trigger Setting     ///
     ///////////////////////////
     
+    //trout->Fill();
     //if( (ievent % 50 == 0 ) && ievent ){ trout->AutoSave("SaveSelf"); }
-    /*
     if( hisEventTime->GetRMS()< 10){
       can->cd(2);
       grTotal->Draw("AP");
@@ -614,8 +579,8 @@ int  main(int argc,char** argv)
       getchar();
       getchar();
     }
-    */
-
+    gr->Set(0);
+    gr->GetListOfFunctions()->Delete();
     grHeightTime->Set(0);
     grRadialTime->Set(0);
     grTotal->Set(0);
@@ -624,9 +589,8 @@ int  main(int argc,char** argv)
     hisEventTime->Reset();
     CsIOut->Reset();
     CsITime->Reset();
-    trout->Fill();
   }
-  trout->Write();
+  //trout->Write();
 
   trTimeWindow->Write();
   std::cout<< "end Loop" <<std::endl;
