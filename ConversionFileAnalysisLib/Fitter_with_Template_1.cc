@@ -87,7 +87,7 @@ int  main(int argc,char** argv)
   // Setting  Classes //
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
   E14WaveFitter* Fitter     = new E14WaveFitter();
-  TApplication* app = new TApplication("app", &argc , argv );  
+  //TApplication* app = new TApplication("app", &argc , argv );  
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -163,6 +163,8 @@ int  main(int argc,char** argv)
     tfout = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVEFILEDIR.c_str(),RunNumber),"recreate");
   }else if( argc ==3 ){
     tfout = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d_%d.root",WAVEFILEDIR.c_str(),RunNumber,iDiv),"recreate");
+  }else{
+    return -1;
   }
 
   TTree* trout  = new TTree("WFTree","Waveform Analyzed Tree");   
@@ -205,8 +207,8 @@ int  main(int argc,char** argv)
 
   std::cout<< "Setting Hist" << std::endl;
   
-  TCanvas* can      = new TCanvas( "can ", "Canvas" ,0,0,1200,800);
-  can->Divide( 3,3 );
+  //  TCanvas* can      = new TCanvas( "can ", "Canvas" ,0,0,1200,800);
+  //  can->Divide( 3,3 );
   TGraph* gr        = new TGraph();
   TGraph* grTotal   = new TGraph();
   TGraph* grHeightTime = new TGraph();  
@@ -303,7 +305,6 @@ int  main(int argc,char** argv)
   for( int ievent  = EventStart; ievent < EventEnd; ievent++){    
   //for( int ievent  = 0; ievent < 5 ; ievent++){
 
-    std::cout<< "Event Number:" << ievent << std::endl;
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -346,7 +347,6 @@ int  main(int argc,char** argv)
     /// Trigger dicision  && Other detector...
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    std::cout<< "Trigger Dicision" << std::endl;
 
     TotalTriggerFlag  =0;
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){            
@@ -467,6 +467,7 @@ int  main(int argc,char** argv)
       }
     }
     Double_t Minimum = 10000000000;
+    
     for( int ipoint  = 0; ipoint < 48; ipoint++){
       if( TotalWaveform[ipoint] < Minimum ){
 	Minimum = TotalWaveform[ipoint];
@@ -493,6 +494,7 @@ int  main(int argc,char** argv)
 
     for( int iSubMod = 0; iSubMod < nSubCsiModule; iSubMod++){	
       if( wConv->SetGraph( iCsiMod, iSubMod ,conv , gr ) == 0 ){ continue; }		
+
       //////////////////////////////////////////////////////
       //// Different Analysis for each Different Module //// 
       //// For CsI Using Templete Fitting               //// 
@@ -507,9 +509,10 @@ int  main(int argc,char** argv)
       if( tempSpl[iSubMod] == NULL ){ 
 	std::cout<< "Spline Pointer is NULL. Channel: "<< iSubMod  << std::endl;
       }else{
+
 	Fitter->SetWaveform(tempSpl[iSubMod]);
 	Fitter->InitPar();
-	//std::cout<< "Fit" << std::endl;
+
 	bool fit = Fitter->Fit(gr);
 	int chIndex = (wConv->mod[iCsiMod])->m_nDigi;
 	if( fit ){ 
@@ -518,6 +521,7 @@ int  main(int argc,char** argv)
 	    gr->GetListOfFunctions()->Delete();	    
 	    continue ; 
 	  }
+
 	  //can->cd(2);
 	  //gr->Draw("AP");
 	  //Fitter->m_FitFunc->Draw();
@@ -533,6 +537,7 @@ int  main(int argc,char** argv)
 	  }
 	  */
 
+	  
 	  if( Fitter->GetParameter(0) > 50){
 	    for( int ipoint = 0; ipoint < gr->GetN(); ipoint++){
 	      hisEvent->Fill( gr->GetX()[ipoint]-TimeOffset[iSubMod], gr->GetY()[ipoint] );
@@ -547,7 +552,6 @@ int  main(int argc,char** argv)
 	  CsIOut->Fill( iSubMod, Fitter->GetParameter(0));
 	  CsITime->Fill( iSubMod, Fitter->GetParameter(1) - TimeOffset[iSubMod] );
 
-	  
 	  wConv->mod[iCsiMod]->m_FitHeight[wConv->mod[iCsiMod]->m_nDigi]= 1;
 	  wConv->mod[iCsiMod]->m_ID[wConv->mod[iCsiMod]->m_nDigi]       = iSubMod;
 	  wConv->mod[iCsiMod]->m_Signal[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetParameter(0);
@@ -559,11 +563,10 @@ int  main(int argc,char** argv)
 	  wConv->mod[iCsiMod]->m_ADC[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetADCPeak(gr);
 	  wConv->mod[iCsiMod]->m_FitADC[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetFuncADCPeak(gr);
 	  wConv->mod[iCsiMod]->m_nDigi++;	    
-	  
 	}else{
 	  
 	}
-
+	
 	Fitter->Clear();	
 	gr->Set(0);
 	gr->GetListOfFunctions()->Delete();
