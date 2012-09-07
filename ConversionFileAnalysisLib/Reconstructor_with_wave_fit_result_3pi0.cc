@@ -61,9 +61,14 @@
 #include "gamma/GammaFinder.h"
 #include "cluster/ClusterFinder.h"
 #include "rec2g/Rec2g.h"
+#include "klong/Klong.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "user_func.h"
+
+#include "Calibration.h"
+#include "CalibrationTree.h"
+
 
 
 
@@ -77,33 +82,72 @@ const Double_t COSMIC_THRESHOLD[20] = {100,100,100,100,100,
 
 int  main(int argc,char** argv)
 {
-  if( argc !=2  && argc != 3  ){
-    std::cerr << "Please Input RunNumber " << std::endl;
+  if(  argc != 3  ){
+    std::cerr << "Please Input RunNumber and Iteration Number " << std::endl;
+    std::cerr << "<<< Arguement Error >>>" << "\n"
+	      << "Usage:: " << argv[0] 
+	      << " : [runNumber] [iterationNumber]"
+	      << std::endl;
     return -1; 
   }
-  Int_t RunNumber = atoi( argv[1] );
-
-  Int_t iDiv;
-  if( argc ==3 ){
-    iDiv = atoi( argv[2] );
-  }
-
+  
+  Int_t RunNumber        = atoi( argv[1] );
+  Int_t IterationNumber  = atoi( argv[2] );
+  
   // GetEnvironment // 
-  std::string ANALIBDIR   = std::getenv("ANALYSISLIB"  );
-  std::string CONVFILEDIR = std::getenv("ROOTFILE_CONV");
-  std::string WAVEFILEDIR = std::getenv("ROOTFILE_WAV" );
-  std::string SUMFILEDIR  = std::getenv("ROOTFILE_SUMUP");
+  std::string ANALIBDIR     = std::getenv("ANALYSISLIB"  );
+  std::string CONVFILEDIR   = std::getenv("ROOTFILE_CONV");
+  std::string WAVEFILEDIR   = std::getenv("ROOTFILE_WAV" );
+  std::string SUMFILEDIR    = std::getenv("ROOTFILE_SUMUP");
   std::string COSMICFILEDIR = std::getenv("ROOTFILE_COSMIC");
-  std::cout << ANALIBDIR   << std::endl;  
-  std::cout << CONVFILEDIR << std::endl;
-  std::cout << WAVEFILEDIR << std::endl;
-  std::cout << SUMFILEDIR  << std::endl;
+  std::string CALFILEDIR    = std::getenv("ROOTFILE_3PI0CALIBRATION");
+
+  std::cout << ANALIBDIR     << std::endl;  
+  std::cout << CONVFILEDIR   << std::endl;
+  std::cout << WAVEFILEDIR   << std::endl;
+  std::cout << SUMFILEDIR    << std::endl;
   std::cout << COSMICFILEDIR << std::endl;
+
+  std::string InputFilename;
+  std::string OutputFilename;
+  std::string CalibrationFilename;
+  std::string TempCalibrationFilename;
+
+  InputFilename       = Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",
+			     WAVEFILEDIR.c_str(),RunNumber);
+  OutputFilename      = Form("%s/CalibrationFile_%d_%d.root",
+			     CALFILEDIR.c_str() ,RunNumber, IterationNumber );
+  CalibrationFilename = Form("%s/CalibrationFacotrADC_%d.dat",
+			     CALFILEDIR.c_str() ,IterationNumber);
+  TempCalibrationFilename = Form("%s/TemperatureCorrectionFactor.root",
+				 CALFILEDIR.c_str());
+
+  std::cout << InputFilename           << std::endl;
+  std::cout << OutputFilename          << std::endl;
+  std::cout << CalibrationFilename     << std::endl; 
+  std::cout << TempCalibrationFilename << std::endl;
+
   // Setting  Classes //
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
-  E14WaveFitter* Fitter     = new E14WaveFitter();
-  TApplication* app = new TApplication("app", &argc , argv );  
+  E14WaveFitter*  Fitter    = new E14WaveFitter();
+  TApplication*   app       = new TApplication("app", &argc , argv );  
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  /// Set Temperature correction Factor 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  TFile* tfTempCorr       = new TFile( TempCalibrationFilename.c_str());
+  TTree* trTempCorr       = (TTree*)tfTempCorr->Get("TemperatureCorrectionCsI");
+  Double_t TempCorrFactor = 0;
+  trTempCorr->SetBranchAddress("CorrectionFactor",&TempCorrFactor);
+  trTempCorr->GetEntry(RunNumber);
+  if( TempCorrFactor ==0 ){
+    TempCorrFactor = 1;
+  }
+  std::cout<< "Temperature Correction Factor of Run " << RunNumber << " : " << TempCorrFactor << std::endl;
   
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   //  Setting Calibration Factor
@@ -126,6 +170,7 @@ int  main(int argc,char** argv)
       CosmicCalibrationFactor[CosmicID] = 0;
     }
   }
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   // Read TimeOffset // 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -151,12 +196,7 @@ int  main(int argc,char** argv)
   std::cout<< "Set I/O File" <<std::endl;  
 
   TFile* tfin;
-  if( argc == 2){
-    tfin = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVEFILEDIR.c_str(),RunNumber));
-  }else if( argc == 3){
-    tfin = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d_%d.root",WAVEFILEDIR.c_str(),RunNumber,iDiv));
-  }
-
+  tfin = new TFile(InputFilename.c_str());
   TTree* trin  = (TTree*)tfin->Get("WFTree");
 
   std::cout << Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber) << std::endl;  
@@ -178,12 +218,7 @@ int  main(int argc,char** argv)
   }
   std::cout<< " Prepare OutputFile " << std::endl;
 
-  TFile* tfout;
-  if( argc == 2){
-    tfout = new TFile(Form("%s/RECONSTRUCT_RESULT_%d.root",SUMFILEDIR.c_str(),RunNumber),"recreate");
-  }else if( argc == 3){
-    tfout = new TFile(Form("%s/RECONSTRUCT_RESULT_%d_%d.root",SUMFILEDIR.c_str(),RunNumber,iDiv),"recreate");
-  }
+  TFile* tfout = new TFile(OutputFilename.c_str(),"recreate");
   TTree* trout  =new TTree("Tree","Reconstruct CsiEvent");
   double timePeak;
   double timeSigma;
@@ -200,6 +235,10 @@ int  main(int argc,char** argv)
   data.branchOfClusterList( trout );
   data.branchOfDigi( trout );
   data.branchOfPi0List( trout );
+  data.branchOfKlong( trout );
+  CalibrationTree calData; 
+  calData.Branch( trout );
+  Calibration*  calibrator = new Calibration();
   ClusterFinder clusterFinder;
   GammaFinder   gFinder;
   ///////////////////////////////////////////////////////////////////////////////////////////////////////  
@@ -210,12 +249,14 @@ int  main(int argc,char** argv)
   for( int ich = 0; ich < 3000; ++ich){
     CSICalFactor[ich] = 1;
   }
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   
-  std::cout<< "Pi0 Calibration" << std::endl;
+  std::cout<< "KL3pi0 Calibration" << std::endl;
   // loop analysis
   int nloop = trin->GetEntries();
   int iCsiMod = 0;
+  int nKL;
   TH1D* hist = new TH1D("his","",1000,0,2000);  
   std::cout<<"start loop analysis"<<std::endl;
   std::cout<<"# of entry : "<<nloop<<std::endl;
@@ -249,39 +290,44 @@ int  main(int argc,char** argv)
     std::cout<< nCSIDigi << std::endl;
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
+    std::vector<Klong> klVec;
+
     clist = clusterFinder.findCluster(nCSIDigi, CSIDigiID, CSIDigiE, CSIDigiTime);
-    for( std::list<Cluster>::iterator it  = clist.begin();
-	 it != clist.end();
-	 ++it){
-      std::cout<< (*it).e() << std::endl;
-    }
     gFinder.findGamma(clist,glist);
-
-    // pi0 reconstrunction and position correction for angle dependency
-    if( glist.size() != 2 ) continue; 
-    std::list<Pi0> piList; 
-    double mass=0;
-
-    //double position =3484.; //shiomisan:3534.;
-    double position = 3526;
-    if(!user_rec(glist,piList,mass,position)) continue;
-    std::cout<< mass << std::endl;
-    hist->Fill(mass);
-    // cuts
-    //user_cut(data,piList);    
-    
-    // fill data to TTree
-    data.setData( piList );
-    trout->Fill();
+    if( glist.size() == 6 ){
+      if( user_rec( glist, klVec )){
+	data.setData(clist);
+	data.setData(glist);
+	user_cut(data,klVec);
+	data.setData(klVec);
+	bool GammaFlag =false;
+	for( int pi0Index = 0 ; pi0Index< klVec[0].pi0().size(); pi0Index++){
+	  if( TMath::Abs(klVec[0].pi0()[pi0Index].g1().y()) > 550 ){
+	    GammaFlag = true;
+	  }
+	  if( TMath::Abs(klVec[0].pi0()[pi0Index].g1().y() ) > 550){
+	    GammaFlag = true;
+	  }
+	}
+	int result = calibrator->CalEnergy_idv(klVec);
+	if( result >= 1){
+	  nKL++;
+	  calibrator->GetResult(calData);
+	}
+	trout->Fill();
+      }
+    }else{
+      data.CutCondition = -1;
+    }
     data.eventID++;
-
   }
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
   trout->Write();
   tfout->Close();
   
-  std::cout<< "Close" << std::endl;
+  std::cout<< "Finish!!!" << std::endl;
   return 0;
 
 }

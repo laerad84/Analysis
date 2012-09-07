@@ -73,6 +73,7 @@ main(int argc,char** argv){
   }
 
   // if Calibration Factor File is defined //
+
   if( argc ==4){
     std::cout << "OpenFile:" << cfname << std::endl;
     std::ifstream ifs(cfname.c_str());
@@ -84,7 +85,7 @@ main(int argc,char** argv){
       CSICalFactor[id] = CalibrationFactor;
     }
   }
-  
+
   /////////////////////////////////////////////////////////////////////////
   // loop
   /////////////////////////////////////////////////////////////////////////
@@ -109,7 +110,7 @@ main(int argc,char** argv){
     ReadSum->GetEntry( ievt );
     nCSIDigi = 0; 
     for( int ich = 0; ich < ReadSum->CsiNumber; ++ich){
-      double Energy = ReadSum->CsiEne[ich]*CSICalFactor[ReadSum->CsiModID[ich]];
+      double Energy = ReadSum->CsiEne[ich]*CSICalFactor[ReadSum->CsiModID[ich]]/0.99;
       //std::cout<< ReadSum->CsiModID[ich]  << " : " <<  Energy << std::endl;
       //double Energy = ReadSum->CsiEne[ich];
       if( Energy > 3 ){
@@ -135,9 +136,13 @@ main(int argc,char** argv){
     if( glist.size() != 2 ) continue; 
     std::list<Pi0> piList; 
     double mass=0;
+    
+    // Al target position 2622 from CsI
 
     //double position =3484.; //shiomisan:3534.;
-    double position = 3526;
+    //double position = 3534.;    
+    double position = 3526;//20120906
+
     if(!user_rec(glist,piList,mass,position)) continue;
     std::cout<< mass << std::endl;
     hist->Fill(mass);
