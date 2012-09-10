@@ -139,8 +139,8 @@ main(int argc,char** argv){
     
     // Al target position 2622 from CsI
 
-    //double position =3484.; //shiomisan:3534.;
-    //double position = 3534.;    
+    //double position =3484.;
+    //double position = 3534.;//shiomisan    
     double position = 3526;//20120906
 
     if(!user_rec(glist,piList,mass,position)) continue;
