@@ -59,7 +59,7 @@ double PeakRegion_2pct[3][8]={{7947 ,9935 ,10919,11698,12329,12799,13171,14232},
 
 int  main(int argc,char** argv)
 {
-  if( argc !=3 ){
+  if( argc !=4 ){
     std::cerr << "Please Input RunNumber and section Number" << std::endl;
     std::cerr << argv[0] << " [RunNumber] [MinimumHeight] [MaximumHeight] " << std::endl; 
     return -1; 
