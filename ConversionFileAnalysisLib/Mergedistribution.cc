@@ -11,6 +11,7 @@
 #include "TTree.h"
 #include "TFile.h"
 
+#include <libgen.h>
 
 int
 main( int argc, char** argv ){
@@ -22,10 +23,12 @@ main( int argc, char** argv ){
     RunNumberList = argv[1]; 
   }
   
-  std::string ROOTFILEWAV = std::getenv("ROOTFILE_WAV");
+  std::string ROOTFILEWAV    = std::getenv("ROOTFILE_WAV");  
+  std::string BaseFilename   = basename( argv[1] );
   std::string OutputFilename = Form("%s/HeightDistributionMerge_%s.root",
 				    ROOTFILEWAV.c_str(),
-				    RunNumberList.substr(0,RunNumberList.size() - 4 ).c_str());
+				    BaseFilename.substr( 0, BaseFilename.size() -4 ));
+  
   std::ifstream ifsRunNumberList(RunNumberList.c_str());
   TFile* tfout  = new TFile(OutputFilename.c_str(),"RECREATE");
 
