@@ -19,14 +19,6 @@
 #include <iomanip>
 #include <iostream>
 
-#include "TApplication.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TAxis.h"
-#include "TGraph.h"
-#include "TCanvas.h"
-#include "TSpline.h"
-
 #include "GeneralTypes.h"
 #include "GeneralMacros.h"
 #include "WaveformFitter.h"
@@ -36,18 +28,18 @@
 #include "E14ConvReader.h"
 #include "E14IDHandler.h"
 #include "E14ConvWriter.h"
+
+#include "TROOT.h"
+#include "TApplication.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TAxis.h"
+#include "TGraph.h"
+#include "TCanvas.h"
+#include "TSpline.h"
 #include "TH2.h"
 #include "TH1.h"
 #include "TProfile.h"
-#include "TGraph.h"
-
-#include "TROOT.h"
-#include "Math/WrappedFunction.h"
-#include "Math/BrentRootFinder.h"
-#include "Math/BrentMethods.h"
-#include "Math/WrappedTF1.h"
-
-
 const int nCrate = 11;
 
 const Double_t COSMIC_THRESHOLD[20] = {100,100,100,100,100,
@@ -69,34 +61,16 @@ int  main(int argc,char** argv)
 {
   if( argc !=3 ){
     std::cerr << "Please Input RunNumber and section Number" << std::endl;
+    std::cerr << argv[0] << " [RunNumber] [MinimumHeight] [MaximumHeight] " << std::endl; 
     return -1; 
   }
 
   Int_t RunNumber = atoi( argv[1] );
-  Int_t SectionNumber  = atoi( argv[2] ); 
-  if( SectionNumber < 0 || SectionNumber > 8 ){
-    std::cerr <<"Section Number must be the number form 0 to 8" << std::endl; 
-    return -1; 
-  }    
-  Double_t MinimumHeight[3];
-  Double_t MaximumHeight[3];
-  if( SectionNumber == 0 ){
-    for( int index = 0 ; index < 3; index++ ){
-      MinimumHeight[index] = 0.;
-    }
-  }else{
-    for( int index = 0 ; index < 3; index++ ){
-      MinimumHeight[index] = PeakRegion_2pct[index][ SectionNumber -1 ];
-    }
-  }
-  if( SectionNumber == 7 ){
-    for( int index = 0; index < 3; index++){
-      MaximumHeight[index] = 15000;
-    }
-  }else{
-    for( int index = 0; index <3; index++ ){     
-      MaximumHeight[index] = PeakRegion_2pct[index][ SectionNumber ];
-    }
+  Int_t MinHeight = atoi( argv[2] );
+  Int_t MaxHeight = atoi( argv[3] );
+  if( MinHeight >= MaxHeight ){
+    std::cerr << "MinHeight >= MaxHeight" << std::endl;
+    return -1;
   }
 
   // GetEnvironment // 
@@ -125,7 +99,8 @@ int  main(int argc,char** argv)
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
   }
   //TFile* tfout = new TFile(Form("run%d_wav.root",RunNumber),"recreate");
-  TFile* tfout = new TFile(Form("%s/TEMPLETE_HEIGHT_%d_%d.root",WAVEFILEDIR.c_str(),RunNumber,SectionNumber),
+  TFile* tfout = new TFile(Form("%s/TEMPLETE_HEIGHT_%d_%d_%d.root",
+				WAVEFILEDIR.c_str(),RunNumber,MinHeight,MaxHeight),
 			   "recreate");
   TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");   
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
@@ -208,14 +183,24 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////
- 
-  TH2D* hisTempCsI_Height[2716];
-  for( int i = 0; i< 2716; i++){
-    hisTempCsI_Height[i] = new TH2D(Form("hisTempCsI_Height_%d_%d", i, SectionNumber),
-				    Form("hisTempCsI_Height_%d_%d", i, SectionNumber),
-				    400,-200, 200,200, -0.5, 1.5);
+  Double_t HeightArr[91];
+  HeightArr[0] = 1.;
+  HeightArr[1] = 10.;
+  HeightArr[2] = 50.;
+  for( int i = 3; i < 91; i++){    
+    HeightArr[i] = 50*TMath::Power(2,(i-2)*0.1);
   }
 
+  TH2D* hisTempCsI_Height[2716];
+  TH1D* hisTempCsI_Spectrum[2716];
+  for( int i = 0; i< 2716; i++){
+    hisTempCsI_Height[i] = new TH2D(Form("hisTemplateCsI_Height_%d_%d_%d",MinHeight,MaxHeight,i),
+				    Form("hisTemplateCsI_Height_%d_%d_%d",MinHeight,MaxHeight,i),
+				    400,-200, 200,200, -0.5, 1.5);
+    hisTempCsI_Spectrum[i] = new TH1D(Form("hisTemplateSpectrum_%d_%d_%d",MinHeight,MaxHeight,i),
+				      Form("hisTemplateSpectrum_%d_%d_%d",MinHeight,MaxHeight,i),
+				      90,HeightArr);
+  }  
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // Loop Start  /// 
@@ -269,7 +254,7 @@ int  main(int argc,char** argv)
 	bool fit = wavFitter->Fit( gr ); 
 	int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
 	if( fit ){ 
-	  TF1* fitFunc = wavFitter->GetFunction();	    
+	  TF1* fitFunc      = wavFitter->GetFunction();	    
 	  double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
 	  double halfTiming = fitFunc->GetX( halfHeight,
 					     fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
@@ -287,13 +272,14 @@ int  main(int argc,char** argv)
 	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
 	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
 	  wConv->mod[iMod]->m_FitTime[chIndex]= halfFitTiming;
-	  delete linearFunction;
+	  //delete linearFunction;
 	  //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 	      
 	  //gr->Draw("AP");
 	  //can->Update();
 	  //can->Modified();
 	  //getchar();
-	  wavFitter->Clear();	  
+	  gr->GetListOfFunctions()->Delete();
+	  wavFitter->Clear();
 	}
       }      
     }
@@ -348,73 +334,41 @@ int  main(int argc,char** argv)
       } 
     }
 
-    // Fill Templete //
-    if( wConv->m_TrigFlag == 1 ){ // Case of Laser ;;;      
-      /*
-      std::cout << wConv->mod[CsiModuleID]->m_nDigi << std::endl;
-      for( int idigi = 0; idigi <  wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
-	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
-	  int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
-	  int iCrate = 9999;
-	  int iSlot  = 9999;
-	  int iCh    = 9999;
-	  iCrate = (wConv->ModMap[CsiModuleID]).Map[iSubMod][0];
-	  iSlot  = (wConv->ModMap[CsiModuleID]).Map[iSubMod][1];
-	  iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];
-	  if( iCrate == 9999 | iSlot == 9999 | iCh == 9999 ){
-	    continue; 
-	  }
-	  for( int ipoint = 0; ipoint < 48; ipoint++){
-	    hisTempCsI_Laser[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_HHTiming[idigi],
-					     (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
-	  }
-	}
-      }
-      */
-    }else if ( wConv->m_TrigFlag == 2 ){ // Case of Cosmic ;;;
-      /*
+    if( wConv->m_TrigFlag  == 1  || wConv->m_TrigFlag ==2 ){
+      continue;
+    }else{ //Other Beam Event// 
       for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
-	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
-	  int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
-	  int iCrate = 9999;
-	  int iSlot  = 9999;
-	  int iCh    = 9999;
-	  iCrate = (wConv->ModMap[CsiModuleID]).Map[iSubMod][0];
-	  iSlot  = (wConv->ModMap[CsiModuleID]).Map[iSubMod][1];
-	  iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];
-	  for( int ipoint = 0; ipoint < 48; ipoint++){
-	    if( conv[iCrate]->Data[iSlot][iCh][ipoint] > 16000 ){ continue; }
-	    hisTempCsI_Cosmic[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_HHTiming[idigi],
-					      (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
-	  }
+	if( wConv->mod[CsiModuleID]->m_Signal[idigi]  <  MinHeight ||
+	    wConv->mod[CsiModuleID]->m_Signal[idigi]  >= MaxHeight ){
+	  continue;
 	}
-      }
-      */
-    }else{
-      for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
-	if( wConv->mod[CsiModuleID]->m_Signal[idigi] > 30){ 
-	  int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
-	  int CompensateID;
-	  if( iSubMod  < 2240 ){
-	    CompensateID = 0;
-	  }else{ 
-	    CompensateID = 2;
-	  }
-	  if( wConv->mod[CsiModuleID]->m_Signal[idigi] < MinimumHeight[CompensateID] ||
-	      wConv->mod[CsiModuleID]->m_Signal[idigi] > MaximumHeight[CompensateID] ){
-	    continue;
-	  }
-	  int iCrate = 9999;
-	  int iSlot  = 9999;
-	  int iCh    = 9999;
-	  iCrate = (wConv->ModMap[CsiModuleID]).Map[iSubMod][0];
-	  iSlot  = (wConv->ModMap[CsiModuleID]).Map[iSubMod][1];
-	  iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];	
-	  for( int ipoint = 0; ipoint < 48; ipoint++){
-	    if( conv[iCrate]->Data[iSlot][iCh][ipoint] > 16000 ){ continue; }
-	    hisTempCsI_Height[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_Time[idigi],
-					      (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
-	  }
+	if( wConv->mod[CsiModuleID]->m_Chisq[idigi]/wConv->mod[CsiModuleID]->m_NDF[idigi] > 250 ){
+	  // 250 is just set value ...
+	  continue;
+	}
+	
+	int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
+	int CompensateID;
+	if( iSubMod  < 2240 ){
+	  CompensateID = 0;
+	}else{ 
+	  CompensateID = 2;
+	}
+	int iCrate = 9999;
+	int iSlot  = 9999;
+	int iCh    = 9999;
+	wConv->GetCFC( CsiModuleID, iSubMod, iCrate, iSlot, iCh );
+
+	/*
+	iCrate = (wConv->ModMap[CsiModuleID]).Map[iSubMod][0];
+	iSlot  = (wConv->ModMap[CsiModuleID]).Map[iSubMod][1];
+	iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];	
+	*/
+
+	hisTempCsI_Spectrum[iSubMod]->Fill( wConv->mod[CsiModuleID]->m_Signal[idigi] );
+	for( int ipoint = 0; ipoint < 48; ipoint++){
+	  hisTempCsI_Height[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_Time[idigi],
+					    (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
 	}
       }
     }
@@ -424,14 +378,15 @@ int  main(int argc,char** argv)
     ////////////////////////////////
 
     //trout->Fill();
+
   }
+    
   for( int ch = 0; ch < 2716; ch++){
     hisTempCsI_Height[ch]->Write();    
+    hisTempCsI_Spectrum[ch]->Write();
   }
-
-
   std::cout<< "end Loop" <<std::endl;
-  //app->Run();
+  std::cout<< "All Convert is Done" << std::endl;
   std::cout<< "Close" << std::endl;
   //trout->Write();
   tfout->Close();
