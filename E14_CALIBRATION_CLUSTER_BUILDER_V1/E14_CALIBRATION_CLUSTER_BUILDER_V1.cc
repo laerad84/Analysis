@@ -217,7 +217,7 @@ main(int argc,char** argv)
     calibrator->InitValue();
     calData.InitValue();
     for( int i = 0; i< ReadSum->CsiNumber; i++){
-      Double_t Energy = ReadSum->CsiEne[i]*CSICalFactor[ReadSum->CsiModID[i]];//*TempCorFactor;      
+      Double_t Energy = ReadSum->CsiEne[i]*CSICalFactor[ReadSum->CsiModID[i]]/TempCorFactor;      
       if( Energy > 3 ){
 	CSIDigiID[nCSIDigi]  = ReadSum->CsiModID[i];
 	CSIDigiE[nCSIDigi]   = Energy;

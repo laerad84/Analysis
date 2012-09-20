@@ -196,7 +196,7 @@ int  main(int argc,char** argv)
   for( int i = 0; i< 2716; i++){
     hisTempCsI_Height[i] = new TH2D(Form("hisTemplateCsI_Height_%d_%d_%d",MinHeight,MaxHeight,i),
 				    Form("hisTemplateCsI_Height_%d_%d_%d",MinHeight,MaxHeight,i),
-				    400,-200, 200,200, -0.5, 1.5);
+				    400,-100, 300,200, -0.25, 1.25);
     hisTempCsI_Spectrum[i] = new TH1D(Form("hisTemplateSpectrum_%d_%d_%d",MinHeight,MaxHeight,i),
 				      Form("hisTemplateSpectrum_%d_%d_%d",MinHeight,MaxHeight,i),
 				      90,HeightArr);
@@ -209,6 +209,9 @@ int  main(int argc,char** argv)
   for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
   //for( int ievent  = 0; ievent < 10000; ievent++){
     //std::cout<< ievent << std::endl;
+#ifdef DEBUG
+    std::cout<< __LINE__ << std::endl;
+#endif
 
     wConv->InitData();
     for( int icosmic = 0; icosmic < 20; icosmic++){
@@ -233,57 +236,120 @@ int  main(int argc,char** argv)
     // Conversion Convfile to Wav File 
     //for( int iMod = 1; iMod < 2; iMod++){
     //std::cout<< "Event Processing " << std::endl ;
+
+#ifdef DEBUG
+    std::cout << "Event Processing " << std::endl;
+#endif
+
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
+
+#ifdef DEBUG
+    std::cout<< __LINE__ << std::endl;
+    std::cout<< iMod << std::endl;
+#endif
+      
       int nSubModule = (wConv->ModMap[iMod]).nMod;      
       for( int iSubMod = 0; iSubMod < nSubModule; iSubMod++){	
+
 	int iCrate = 9999;
 	int iSlot  = 9999;
 	int iCh    = 9999;
+	/*
 	iCrate = (wConv->ModMap[iMod]).Map[iSubMod][0];
 	iSlot  = (wConv->ModMap[iMod]).Map[iSubMod][1];
 	iCh    = (wConv->ModMap[iMod]).Map[iSubMod][2];
+	*/
+	wConv->GetCFC( iMod, iSubMod, iCrate, iSlot, iCh);
+	
 	  
 	// Ignore unmapped channel // 
 	if( iCrate == 9999 || iSlot == 9999 || iCh == 9999 ) continue;       
-	  
+#ifdef DEBUG
+	std::cout << "SetGraph" << std::endl;
+	std::cout << __LINE__   << std::endl;
+	std::cout << iSubMod    << std::endl;
+#endif	  
+	/*
 	gr->Set(0);
 	for( int ipoint = 0; ipoint< 48; ipoint++){
 	  if(conv[iCrate]->Data[iSlot][iCh][ipoint]>16000){ continue; }
 	  gr->SetPoint( gr->GetN(), ipoint*8, conv[iCrate]->Data[iSlot][iCh][ipoint]);
 	}
+	*/
+	wConv->SetGraph( iMod, iSubMod, conv, gr);
+
+#ifdef DEBUG
+	std::cout<< "Fit Graph" << std::endl;	
+#endif 
+
 	bool fit = wavFitter->Fit( gr ); 
 	int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
 	if( fit ){ 
+
+#ifdef DEBUG
+	  std::cout<< "Fit successed " << std::endl; 
+#endif
 	  TF1* fitFunc      = wavFitter->GetFunction();	    
+
+#ifdef DEBUG
+	  std::cout<< "Fit function got " << std::endl; 
+#endif
+
 	  double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
 	  double halfTiming = fitFunc->GetX( halfHeight,
 					     fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
-	  wConv->mod[iMod]->m_FitHeight[chIndex]      = 1;
-	  wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
-	  wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
-	  wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
-	  wConv->mod[iMod]->m_Time[chIndex]   = fitFunc->GetParameter(1);
-	  wConv->mod[iMod]->m_HHTime[chIndex] = halfTiming;
-	  wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
-	  wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
-	  wConv->mod[iMod]->m_nDigi++;	      	    
-	      
+#ifdef DEBUG
+	  std::cout<< "linearFunction " << std::endl; 
+#endif
 	  TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
+
+#ifdef DEBUG
+	  std::cout<< "Fit with Linear Function " << std::endl; 
+#endif
 	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
+#ifdef DEBUG
+	  std::cout<< "Get halfFitTiming" << std::endl;
+#endif 
+
 	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
-	  wConv->mod[iMod]->m_FitTime[chIndex]= halfFitTiming;
-	  //delete linearFunction;
+
+#ifdef DEBUG
+	  std::cout<< "SetData " << std::endl; 
+#endif
+
+	  wConv->mod[iMod]->m_FitHeight[chIndex] = 1;
+	  wConv->mod[iMod]->m_ID[chIndex]        = iSubMod;
+	  wConv->mod[iMod]->m_Pedestal[chIndex]  = fitFunc->GetParameter(4);
+	  wConv->mod[iMod]->m_Signal[chIndex]    = fitFunc->GetParameter(0);
+	  wConv->mod[iMod]->m_Time[chIndex]      = fitFunc->GetParameter(1);
+	  wConv->mod[iMod]->m_HHTime[chIndex]    = halfTiming;
+	  wConv->mod[iMod]->m_ParA[chIndex]      = fitFunc->GetParameter(3);
+	  wConv->mod[iMod]->m_ParB[chIndex]      = fitFunc->GetParameter(2);
+	  wConv->mod[iMod]->m_FitTime[chIndex]   = halfFitTiming;
+	  wConv->mod[iMod]->m_nDigi++;	      	    	  	      
 	  //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 	      
 	  //gr->Draw("AP");
 	  //can->Update();
 	  //can->Modified();
-	  //getchar();
+	  //getchar();	  
 	  gr->GetListOfFunctions()->Delete();
+	  delete linearFunction;
 	  wavFitter->Clear();
+#ifdef DEBUG
+	  std::cout<< "End Fit "<< std::endl;
+#endif
+	}else{
+#ifdef DEBUG
+	  std::cout<< "Fit Fail" << std::endl;
+#endif
 	}
       }      
     }
-    
+
+#ifdef DEBUG
+    std::cout << "TriggerDicision" << std::endl;
+#endif    
+
     /// Trigger dicision ///
     //std::cout<< "Trigger Processing " << std::endl;
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      

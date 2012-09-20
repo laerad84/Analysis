@@ -21,7 +21,9 @@
 
 #include "E14ReadSumFile.h"
 #include "E14_CALIBRATION_CLUSTER_BUILDERSIM/User_Function.h"
-#include "E14_CALIBRATION_CLUSTER_BUILDERSIM/KL_calibration.h"
+//#include "E14_CALIBRATION_CLUSTER_BUILDERSIM/KL_calibration.h"
+#include "E14_CALIBRATION_CLUSTER_BUILDERSIM/Calibration.h"
+#include "E14_CALIBRATION_CLUSTER_BUILDERSIM/CalibrationTree.h"
 #include "Calibration.h"
 
 #include <cstdlib>
@@ -67,7 +69,8 @@ main(int argc,char** argv)
     return -1;
   }
   
-  std::string BeamCalibrationFilename = "SimRoot/BeamCalibrationFactor.dat";
+  //std::string BeamCalibrationFilename = "SimRoot/BeamCalibrationFactor.dat";
+  std::string BeamCalibrationFilename = "Data/calibConstKe3.dat";
   Double_t BeamFactor[2716];
   for( int i = 0; i< 2716; ++i ){
     if( i >= 2240 && i< 2240+120){
@@ -138,10 +141,14 @@ main(int argc,char** argv)
   
   TFile *fout = new TFile(outputFilename.c_str(),"RECREATE");
   TTree *trout = new TTree("trCalibration","output from E14_CALIBRTION_CULSTER_BUILDER");  
+  Calibration* calibrator = new Calibration();
   E14GNAnaDataContainer data;
   data.branchOfClusterList( trout );
   data.branchOfDigi( trout );
   //data.branchOfGammaList( trout );
+  CalibrationTree calData;
+  calData.Branch( trout );
+
   data.branchOfKlong( trout );
   GammaFinder gFinder;
   
@@ -185,18 +192,18 @@ main(int argc,char** argv)
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   std::cout << "Prepare Calibration" << std::endl;
-  TH1D* his_Fit[100];
-  TH1D* his_CSI[N_CSI];
-  TH2D* his_CSIEne[N_CSI];
+  //TH1D* his_Fit[100];
+  //TH1D* his_CSI[N_CSI];
+  //TH2D* his_CSIEne[N_CSI];
 
-  user_ana_recg6_init(his_Fit,his_CSI);
-  std::cout << his_CSI[0] << std::endl;
+  //user_ana_recg6_init(his_Fit,his_CSI);
+  //std::cout << his_CSI[0] << std::endl;
   
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // loop
   /////////////////////////////////////////////////////////////////////////////////////////////////
   //loop analysis
-  Calibration* calibrator = new Calibration();
+
 
   std::cout<< "Loop!!"<< std::endl;
   int nentry = ReadSum->GetEntries();    
@@ -210,6 +217,8 @@ main(int argc,char** argv)
     
     ReadSum->GetEntry(ievt);
     nCSIDigi = 0; 
+    calibrator->InitValue();
+    calData.InitValue();
     
     for( int i = 0; i< ReadSum->CsiNumber; i++){
       Double_t Energy = ReadSum->CsiEne[i]*CSICalFactor[ReadSum->CsiModID[i]]*BeamFactor[ReadSum->CsiModID[i]];      
@@ -233,7 +242,26 @@ main(int argc,char** argv)
 	data.setData( glist );    
 	user_cut(data,klVec);
 	data.setData(klVec);    
+
+	bool GammaFlag  = false;
+	
+	for( int i = 0; i< klVec[0].pi0().size() ; i++){
+	  if( TMath::Abs( klVec[0].pi0()[i].g1().y()) > 550 ){
+	    GammaFlag = true;
+	  }
+	  if( TMath::Abs( klVec[0].pi0()[i].g2().y()) > 550 ){
+	    GammaFlag = true;
+	  }
+	}
+
+	int result = calibrator->CalEnergy_idv(klVec);
+	if( result >= 1 ){
+	  nKL++;
+	  calibrator->GetResult(calData);
+	}
 	trout->Fill();
+
+	/*
 	if((data.CutCondition & (1+8)) ==0 ){
 	  if( klVec[0].chisqZ() < 10 ){
 	    if( klVec.size() >= 2 ){
@@ -247,10 +275,15 @@ main(int argc,char** argv)
 	      int result = CalEnergy_idv(klVec[0],his_Fit,his_CSI);
 	      int classResult = calibrator->CalEnergy_idv(klVec);
 	      std::cout<< result <<" : " << classResult << std::endl;
-	      if(result == 1) nKL++;
+	      if(result == 1){
+		nKL++;
+		calibrator->GetResult(calData);
+		
+	      }
 	    }
 	  }
 	}
+	*/
       }
     }else{
       data.CutCondition = -1;
@@ -260,6 +293,7 @@ main(int argc,char** argv)
   // end of analysis
   trout->Write();
   std::cout << "nKL:"<<  nKL <<std::endl;
+  /*
   for( int i = 0; i < N_CSI; i++){
     if( his_CSI[i]->Integral() > 0)
       std::cout <<"Write()" << i <<  " : "<< his_CSI[i]->Integral()<<  std::endl;
@@ -268,7 +302,7 @@ main(int argc,char** argv)
   for( int i = 0; i< 5; i++){
     his_Fit[i]->Write();
   }
-  
+  */
   fout->Close();
   std::cout<<"finish!"<<std::endl;  
   return 0;
