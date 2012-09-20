@@ -48,10 +48,10 @@ INCLUDEDIR  += $(ANALYSISLIB)/include
 INCLUDEDIR  += $(DRAWLIB)/include
 INCLUDES     = $(INCLUDEDIR:%=-I%)
 
-COMPILE_CC  := $(CC)  -c $(DEFS) $(INCLUDES) $(CFLAGS)
-COMPILE_CXX := $(CXX) -c $(DEFS) $(INCLUDES) $(CXXFLAGS)  
-DEPEND_CC   := $(CC) -MM $(DEFS) $(INCLUDES) $(filter-out -fPIC, $(CFLAGS))
-DEPEND_CXX  := $(CC) -MM $(DEFS) $(INCLUDES) $(filter-out -fPIC, $(CXXFLAGS))
+COMPILE_CC  := $(CC)  -c $(DEFS) $(INCLUDES) $(CFLAGS) $(ARG)
+COMPILE_CXX := $(CXX) -c $(DEFS) $(INCLUDES) $(CXXFLAGS)   $(ARG)
+DEPEND_CC   := $(CC) -MM $(DEFS) $(INCLUDES) $(filter-out -fPIC, $(CFLAGS)) $(ARG)
+DEPEND_CXX  := $(CC) -MM $(DEFS) $(INCLUDES) $(filter-out -fPIC, $(CXXFLAGS)) $(ARG)
 LINK_CC     := $(CC)
 LINK_CXX    := $(CXX)
 
