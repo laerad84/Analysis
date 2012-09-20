@@ -22,13 +22,19 @@ main( int argc, char** argv ){
   }else{
     RunNumberList = argv[1]; 
   }
+  std::cout << RunNumberList << std::endl;
   
   std::string ROOTFILEWAV    = std::getenv("ROOTFILE_WAV");  
+  std::cout<< __LINE__ << std::endl;
   std::string BaseFilename   = basename( argv[1] );
+  std::cout<< __LINE__ << std::endl;
   std::string OutputFilename = Form("%s/HeightDistributionMerge_%s.root",
 				    ROOTFILEWAV.c_str(),
-				    BaseFilename.substr( 0, BaseFilename.size() -4 ));
+				    BaseFilename.substr( 0, BaseFilename.size() -4 ).c_str() );
   
+  std::cout << "BaseFilename  :" << BaseFilename << std::endl;
+  std::cout << "OutputFilename:" << OutputFilename << std::endl; 
+
   std::ifstream ifsRunNumberList(RunNumberList.c_str());
   TFile* tfout  = new TFile(OutputFilename.c_str(),"RECREATE");
 
@@ -37,7 +43,9 @@ main( int argc, char** argv ){
     hisHeightAll[i] = new TH1D(Form("hisHeightAll%d",i), Form( "HeightAll%d",i),1600, 0, 16000);
   }    
   
+  std::cout<< "Start Loop" << std::endl; 
   while ( ifsRunNumberList >> RunNumber ){
+    std::cout << RunNumber << std::endl;
     std::string InputFilename = Form("%s/HeightDistribution_%d.root",ROOTFILEWAV.c_str(), RunNumber ); 
     TFile* tfin = new TFile( InputFilename.c_str());    
     TH1D* hisHeight[2716];
