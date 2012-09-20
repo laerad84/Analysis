@@ -55,7 +55,7 @@ main( int argc, char** argv ){
   for( int ich = 0; ich < 2716; ich++){
     hisTempCosmic[ich] = new TH2D( Form("TempHist_Height_%d_%d_%d",ich,MinHeight,MaxHeight),
 				   Form("Templete_Height_%d_%d_%d",ich,MinHeight,MaxHeight),
-				   400,-100,300,
+				   450,-150,300,
 				   150,-0.25,1.25);
   }
   

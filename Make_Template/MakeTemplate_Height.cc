@@ -196,11 +196,11 @@ int  main(int argc,char** argv)
   for( int i = 0; i< 2716; i++){
     hisTempCsI_Height[i] = new TH2D(Form("hisTemplateCsI_Height_%d_%d_%d",MinHeight,MaxHeight,i),
 				    Form("hisTemplateCsI_Height_%d_%d_%d",MinHeight,MaxHeight,i),
-				    400,-100, 300,200, -0.25, 1.25);
+				    450,-150, 300, 150, -0.25, 1.25);
     hisTempCsI_Spectrum[i] = new TH1D(Form("hisTemplateSpectrum_%d_%d_%d",MinHeight,MaxHeight,i),
 				      Form("hisTemplateSpectrum_%d_%d_%d",MinHeight,MaxHeight,i),
 				      90,HeightArr);
-  }  
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // Loop Start  /// 
