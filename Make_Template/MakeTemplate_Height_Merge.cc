@@ -44,21 +44,18 @@ main( int argc, char** argv ){
 
   TGraphErrors* grTemp = new TGraphErrors();
   TGraphErrors* grWave[2716];
+  TH2D* hisTempCosmic[2716];
 
   for( int i = 0; i< 2716; i++ ){
     grWave[i] = new TGraphErrors();
-    grWave[i]->SetNameTitle(Form("Waveform_Height_%d_%d_%d",i,MinHeight,MaxHeight),
-			    Form("Waveform_Height_%d_%d_%d",i,MinHeight,MaxHeight));
-  }
+    grWave[i]->SetNameTitle(Form("Waveform_Height_%d_%d_%d",MinHeight,MaxHeight,i),
+			    Form("Waveform_Height_%d_%d_%d",MinHeight,MaxHeight,i));
+    hisTempCosmic[i] = new TH2D( Form("TempHist_Height_%d_%d_%d",MinHeight,MaxHeight,i),
+				 Form("Templete_Height_%d_%d_%d",MinHeight,MaxHeight,i),
+				 450,-150,300,
+				 150,-0.25,1.25);
+  }  
 
-  TH2D* hisTempCosmic[2716];
-  for( int ich = 0; ich < 2716; ich++){
-    hisTempCosmic[ich] = new TH2D( Form("TempHist_Height_%d_%d_%d",ich,MinHeight,MaxHeight),
-				   Form("Templete_Height_%d_%d_%d",ich,MinHeight,MaxHeight),
-				   450,-150,300,
-				   150,-0.25,1.25);
-  }
-  
   std::cout << "SumUp" << std::endl;
   std::cout << "RunNumberListSize:" << RunNumberList.size() << std::endl ;
   for( std::vector<int>::iterator it = RunNumberList.begin();
@@ -71,7 +68,7 @@ main( int argc, char** argv ){
     
     for( int ich = 0; ich< 2716; ich++){
       hisTempCosmic[ich]->Add((TH2D*)tf->Get(Form("hisTempCsI_Height_%d_%d_%d",
-						  ich,MinHeight,MaxHeight)));
+						  MinHeight,MaxHeight,ich)));
     }
     tf->Close();
   }
