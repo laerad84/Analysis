@@ -22,7 +22,6 @@ class E14WaveFitter : public E14WaveFitterMinimum {
   int      m_PeakFlag;  
   TF1*     m_linfunc;
 
-
   double   m_PedLimitHigh;
   double   m_PedLimitLow;
   double   m_HighestPoint;
@@ -33,9 +32,12 @@ class E14WaveFitter : public E14WaveFitterMinimum {
   double   m_FitLimitLow;
   double   m_FitLimitHigh;
 
+  TF1*     m_PeakFunc;
+  TGraph*  m_PeakGr;
+
  public:
 
-  E14WaveFitter(int SelectFunction = 0,int nPedestal = 7);
+  E14WaveFitter(int SelectFunction = 0,int nPedestal = 7, int nPoints = 48);
   virtual ~E14WaveFitter( void );
 
   virtual  void     SetParameter( Int_t parNum, Double_t value );
@@ -51,19 +53,23 @@ class E14WaveFitter : public E14WaveFitterMinimum {
   virtual  bool     Fit               ( TGraph* gr ,double minX = 0, double maxX = 48*8);  
   virtual  bool     FitTime           ( TGraph* gr );
   virtual  bool     Approx            ( TGraph* gr );
+
   virtual  Double_t GetADC            ( TGraph* gr );
   virtual  Double_t GetADCPeak        ( TGraph* gr );
   virtual  Double_t GetFuncADC        ( TGraph* gr );
   virtual  Double_t GetFuncADCPeak    ( TGraph* gr );
+
   virtual  Double_t GetFitResultAspect( TGraph* gr );
   virtual  bool     ClearFunction     ( TGraph* gr );
-
+  virtual  Double_t Pol2Function( Double_t *x, Double_t *par);
  private:
   virtual  bool     GetLimits   ( TGraph* gr );
   virtual  bool     GetPeakPoint( TGraph* gr ,Double_t MinimumLimit = 0., Double_t MaximumLimit  = 384. );
   virtual  bool     GetPedestal ( TGraph* gr );
   virtual  bool     GetHeight   ( TGraph* gr );  
 };
+
+
 
 
 #endif

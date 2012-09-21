@@ -7,96 +7,55 @@ history :
    v0.0.1a   development version
    
 ********************************************************** */
+/***********************************************************
+ JWLee : Divide to Waveform.h and Waveform.cc
+ Arrange Parameter
+ [0] : pedestal
+ [1] : height
+ [2] : mean
+ ***********************************************************/
 
-#ifndef Waveform_h
-#define Waveform_h
+#include "WaveformFitter.h"
 
-#define WAVEFORM_VERSION "WAVEFORM v0.0.1a_20081012"
-
-#include <iostream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <cstdlib>
-
-#include <TF1.h>
-#include <TGraph.h>
-#include <TMath.h>
-#include <TFile.h>
-#include <TH1D.h>
-
-const double f_sigma=1.2;
-//const double f_sigma=2.;
-
-double AsymmetricGaussian(double* x, double* par);
-double ScintiFunction(double* x, double* par);
-double TypicalFunction(double* x, double* par);
-double LnsFunction(double* x, double* par);
-
-static TH1D* m_typShape[5][12][12];
-static TF1* m_tf;
-
-class WaveformFitter{
-public:
-	WaveformFitter(int Nsamples=64, bool fixed=false, int PedSmpl=8);
-	WaveformFitter(int Nsamples, bool fixed, int PedSmpl, int fitType);
-	virtual ~WaveformFitter(void);
-  
-	TF1* GetFunction(void){ return m_fitfunc; }
-	void SetParameters(double p0, double p1, double p2=0., double p3=0., double p4=0.){ m_fitPar[0]=p0; m_fitPar[1]=p1; m_fitPar[2]=p2; m_fitPar[3]=p3; m_fitPar[4]=p4; }
-	bool Approx(TGraph* gr);
-	bool Fit(TGraph* gr);
-  
-protected:
-	int m_Nsamples;
-	bool m_fixed;
-	TF1* m_fitfunc;
-	int m_pedsmpl;
-	
-	double m_fitPar[5];
-	int m_fitType;
-	TFile* m_f;
-	
-	//ClassDef(WaveformFitter,1)
-};
-
-WaveformFitter::WaveformFitter(int Nsamples, bool fixed, int PedSmpl):m_Nsamples(Nsamples),m_fixed(fixed),m_pedsmpl(PedSmpl),m_fitType(0){
+WaveformFitter::WaveformFitter(int Nsamples, bool fixed, int PedSmpl)
+  :m_Nsamples(Nsamples),m_fixed(fixed),m_pedsmpl(PedSmpl),m_fitType(0){
   m_fitfunc=new TF1("m_fitfunc",AsymmetricGaussian,16.,500.,8);
   //m_fitfunc=new TF1("m_fitfunc",ScintiFunction,16.,500.,8);
   //m_fitfunc=new TF1("m_fitfunc",LnsFunction,16.,500.,6);
 }
 
-WaveformFitter::WaveformFitter(int Nsamples, bool fixed, int PedSmpl, int fitType):m_Nsamples(Nsamples),m_fixed(fixed),m_pedsmpl(PedSmpl){
-	m_fitType=fitType;
-	switch(m_fitType){
-	case 0:{
-		m_fitfunc=new TF1("m_fitfunc1",AsymmetricGaussian,16.,500.,8);
-		break;
+WaveformFitter::WaveformFitter(int Nsamples, bool fixed, int PedSmpl, int fitType)
+ :m_Nsamples(Nsamples),m_fixed(fixed),m_pedsmpl(PedSmpl){
+  m_fitType=fitType;
+  switch(m_fitType){
+  case 0:{
+    m_fitfunc=new TF1("m_fitfunc1",AsymmetricGaussian,16.,500.,8);
+    break;
+  }
+  case 1:{
+    m_fitfunc=new TF1("m_fitfunc2",ScintiFunction,16.,500.,5);
+    break;
+  }
+  case 2:{
+    m_fitfunc=new TF1(Form("m_fitfunc3_%d",m_fixed),TypicalFunction,16.,500.,6);
+    
+    m_f=new TFile("combined.root");
+    int t_nSeg=(m_fixed)? 4 : 0;
+    for ( int i=t_nSeg;i<5;i++ ){
+      for ( int y=0;y<12;y++ ){
+	for ( int x=0;x<12;x++ ){
+	  m_typShape[i][y][x]=(TH1D*)m_f->Get(Form("typShape%d_%d_%d_pfx_px",x,y,i));
 	}
-	case 1:{
-		m_fitfunc=new TF1("m_fitfunc2",ScintiFunction,16.,500.,5);
-		break;
-	}
-	case 2:{
-		m_fitfunc=new TF1(Form("m_fitfunc3_%d",m_fixed),TypicalFunction,16.,500.,6);
-		
-		m_f=new TFile("combined.root");
-		int t_nSeg=(m_fixed)? 4 : 0;
-		for ( int i=t_nSeg;i<5;i++ ){
-			for ( int y=0;y<12;y++ ){
-				for ( int x=0;x<12;x++ ){
-					m_typShape[i][y][x]=(TH1D*)m_f->Get(Form("typShape%d_%d_%d_pfx_px",x,y,i));
-				}
-			}
-		}
-		
-		m_tf=new TF1("m_tf","pol2",0.,500.);
-	}
-	}
+      }
+    }
+    
+    m_tf=new TF1("m_tf","pol2",0.,500.);
+  }
+  }
 }
 
 WaveformFitter::~WaveformFitter(void){
-	delete m_fitfunc;
+  delete m_fitfunc;
 }
 
 bool WaveformFitter::Approx(TGraph* gr){
@@ -127,31 +86,31 @@ bool WaveformFitter::Approx(TGraph* gr){
   TGraph tgr(m_pedsmpl-1,tx,ty);
   gnd=tgr.GetMean(2);
   height-=gnd;
-	
-	if ( m_fitType==0 && m_fixed ){
-		if ( m_fitPar[0]<35 ){
-			m_fitfunc->SetRange(mean-30*5.,mean+30.*f_sigma); // 09/09/2010
-		}else{
-			m_fitfunc->SetRange(mean-40*5.,mean+50.*f_sigma); // 09/09/2010
-		}
-	}else{
-		 m_fitfunc->SetRange(mean-30*5.,mean+30.*f_sigma); // 09/09/2010
-	}
-	
-  m_fitfunc->SetParLimits(0,0.5*height,1.5*height);
-  m_fitfunc->SetParLimits(1,mean-32.,mean+32.);
-  m_fitfunc->FixParameter(2,gnd);
   
-  m_fitfunc->SetParameters(height,mean,gnd);
+  if ( m_fitType==0 && m_fixed ){
+    if ( m_fitPar[0]<35 ){
+      m_fitfunc->SetRange(mean-30*5.,mean+30.*f_sigma); // 09/09/2010
+    }else{
+      m_fitfunc->SetRange(mean-40*5.,mean+50.*f_sigma); // 09/09/2010
+    }
+  }else{
+    m_fitfunc->SetRange(mean-30*5.,mean+30.*f_sigma); // 09/09/2010
+  }
+  
+  m_fitfunc->FixParameter(0,gnd);
+  m_fitfunc->SetParLimits(1,0.5*height,1.5*height);
+  m_fitfunc->SetParLimits(2,mean-32.,mean+32.);
+  
+  m_fitfunc->SetParameters(gnd,height,mean);
   if ( height>=0 ){
     switch(m_fitType){
     case 0:{ // asymmetric gaussian
       if ( m_fixed ){
 	for ( int i=0;i<5;i++ ){ m_fitfunc->FixParameter(3+i,m_fitPar[i]); }
       }else{
-				m_fitfunc->FixParameter(5,0.);
-				m_fitfunc->FixParameter(6,0.);
-				m_fitfunc->FixParameter(7,0.);
+	m_fitfunc->FixParameter(5,0.);
+	m_fitfunc->FixParameter(6,0.);
+	m_fitfunc->FixParameter(7,0.);
 	m_fitfunc->SetParLimits(3,10.,70.);
 	m_fitfunc->SetParLimits(4,-0.5,1.);
       }
@@ -194,12 +153,12 @@ bool WaveformFitter::Approx(TGraph* gr){
 
 bool WaveformFitter::Fit(TGraph* gr){
   if ( !Approx(gr) ){ return kFALSE; }
-  
+
   if ( m_fitType==2 ){ // typical function
     double height=0., mean=0., sigma=0.;
-    double gnd=m_fitfunc->GetParameter(2);
-    double t_h=m_fitfunc->GetParameter(0);
-    double t_t=m_fitfunc->GetParameter(1);
+    double gnd=m_fitfunc->GetParameter(0);
+    double t_h=m_fitfunc->GetParameter(1);
+    double t_t=m_fitfunc->GetParameter(2);
     
     height=t_h;
     mean=t_t;
@@ -266,7 +225,7 @@ bool WaveformFitter::Fit(TGraph* gr){
       
       mean=-0.5*b/a;
       height=c-0.25*b*b/a;
-
+      
       if ( a>=0. || TMath::Abs(mean-t_t)>12. ||
       TMath::Abs(height/t_h-1)>0.2 || height<10 || mean<0 || mean>1000 ){
       std::cerr << t_h << "\t" << t_t << std::endl;
@@ -296,7 +255,7 @@ bool WaveformFitter::Fit(TGraph* gr){
 	  gr->GetPoint(ttx[3]+step*(j-1),x[j],y[j]);
 	  y[j]-=gnd;
 	}
-      
+	
 	// gaussian correction
 	double pars[2][3];
 	for ( int j=0;j<3;j++ ){
@@ -317,7 +276,7 @@ bool WaveformFitter::Fit(TGraph* gr){
 	  if ( 0.5*pars[0][0]/(height-pars[0][1])<0 ){ continue; }
 	  sigma=TMath::Sqrt(0.5*pars[0][0]/(height-pars[0][1]));
 	  height=TMath::Exp(height);
-	
+	  
 	  // correction, when step=4
 	  mean-=0.6;
 	}
@@ -340,12 +299,12 @@ bool WaveformFitter::Fit(TGraph* gr){
       }
     }
     
-    m_fitfunc->SetParameter(0,height);
+    m_fitfunc->SetParameter(1,height);
     //m_fitfunc->SetParameter(1,mean);
-    m_fitfunc->SetParameter(1,mean-20.5);
+    m_fitfunc->SetParameter(2,mean-20.5);
     if ( height>100 ){ m_fitfunc->SetParLimits(0,0.5*height,1.5*height); }
     else{ m_fitfunc->SetParLimits(0,2.,5.*height); }
-    m_fitfunc->SetParLimits(1,mean-32.,mean+32.);
+    m_fitfunc->SetParLimits(2,mean-32.,mean+32.);
     m_fitfunc->SetRange(mean-30.*5,mean+30.*f_sigma);
   }
   
@@ -358,16 +317,17 @@ bool WaveformFitter::Fit(TGraph* gr){
 }
 
 double AsymmetricGaussian(double* x, double* par){
-  double t=x[0];
-  double height=par[0];
-  double mean=par[1];
-  double ped=par[2];
-    
+
+  double t      = x[0];
+  double ped    = par[0];
+  double height = par[1];
+  double mean   = par[2];
+  
   double t_par[5];
   for ( int i=0;i<5;i++ ){
     t_par[i]=par[3+i];
   }
-	
+  
   // asynmetric gaussian
   double sigma=0.;
   for ( int i=0;i<5;i++ ){
@@ -379,25 +339,25 @@ double AsymmetricGaussian(double* x, double* par){
 }
 
 double ScintiFunction(double* x, double* par){
-  double t=x[0];
-  double height=par[0];
-  double mean=par[1];
-  double ped=par[2];
-  double tauR=par[3];
-  double tau=par[4];
-	
+  double t      = x[0];
+  double ped    = par[0];
+  double height = par[1];
+  double mean   = par[2];
+  double tauR   = par[3];
+  double tau    = par[4];
+  
   return 2*height*TMath::Freq((t-mean)/tauR)*TMath::Exp(-(t-mean)/tau)+ped;
 }
 
 double TypicalFunction(double* x, double* par){
-  double t=x[0];
-  double height=par[0];
-  double mean=par[1];
-  double ped=par[2];
-  int tx=(int)par[3];
-  int ty=(int)par[4];
-  int idx=(int)par[5];
-	
+  double t     = x[0];
+  double ped   = par[0];
+  double height= par[1];
+  double mean  = par[2];
+  int tx       = (int)par[3];
+  int ty       = (int)par[4];
+  int idx      = (int)par[5];
+  
   double p[3], q[3];
   double tt=t+(140.-mean);
   int t_mid=(int)(tt+1);
@@ -406,15 +366,15 @@ double TypicalFunction(double* x, double* par){
     int i=1;
     while ( 1 ){
       if ( m_typShape[idx][ty][tx]->GetBinContent(t_mid-TMath::Power(-1,i)*i)!=0. ){
-				t_mid-=(TMath::Power(-1,i)*i);
-				break;
+	t_mid-=(TMath::Power(-1,i)*i);
+	break;
       }
       ++i;
     }
   }
   p[1]=m_typShape[idx][ty][tx]->GetBinCenter(t_mid);
   q[1]=m_typShape[idx][ty][tx]->GetBinContent(t_mid);
-	
+  
   int i=1;
   while ( 1 ){
     if ( m_typShape[idx][ty][tx]->GetBinContent(t_mid+i)!=0. ){ break; }
@@ -422,7 +382,7 @@ double TypicalFunction(double* x, double* par){
   }
   p[2]=m_typShape[idx][ty][tx]->GetBinCenter(t_mid+i);
   q[2]=m_typShape[idx][ty][tx]->GetBinContent(t_mid+i);
-	
+  
   i=1;
   while ( 1 ){
     if ( m_typShape[idx][ty][tx]->GetBinContent(t_mid-i)!=0. ){ break; }
@@ -430,33 +390,32 @@ double TypicalFunction(double* x, double* par){
   }
   p[0]=m_typShape[idx][ty][tx]->GetBinCenter(t_mid-i);
   q[0]=m_typShape[idx][ty][tx]->GetBinContent(t_mid-i);
-	
+  
   double tmp=q[0]*(p[2]-p[0])-q[1]*(p[2]-p[1]);
   tmp/=(p[1]-p[0]);
   tmp+=(q[2]-q[1]-q[0]);
   tmp/=(p[2]*(p[2]-p[1]-p[0])+p[0]*p[1]);
   m_tf->SetParameter(2,tmp);
-	
+  
   tmp=(q[0]-q[1])/(p[0]-p[1])-m_tf->GetParameter(2)*(p[0]+p[1]);
   m_tf->SetParameter(1,tmp);
-	
+  
   tmp=(q[0]*p[1]-q[1]*p[0])/(p[1]-p[0])+m_tf->GetParameter(2)*p[0]*p[1];
   m_tf->SetParameter(0,tmp);
-    
+  
   //std::cerr << t << ", " << par[0] << ", " << par[1] << ", " << height*m_tf->Eval(tt)+ped << std::endl;
-    
+  
   return height*m_tf->Eval(tt)+ped;
 }
 
 double LnsFunction(double* x, double* par){
-  double t=x[0];
-  double height=par[0];
-  double mean=par[1];
-  double TauR=par[2];
-  double Tau=par[3];
-  double ped=par[4];
-	
-  double tmp=(1-TMath::Exp(-(t-mean)/TauR))*TMath::Exp(-(t-mean)/Tau);
+  double t     = x[0];
+  double ped   = par[0];
+  double height= par[1];
+  double mean  = par[2];
+  double TauR  = par[3];
+  double Tau   = par[4];  
+  double tmp   = (1-TMath::Exp(-(t-mean)/TauR))*TMath::Exp(-(t-mean)/Tau);
   if ( tmp<0 ){
     return ped;
   }else{

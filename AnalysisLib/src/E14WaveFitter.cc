@@ -5,6 +5,10 @@ E14WaveFitter::E14WaveFitter(int SelectFunction, int nPedestal){
   m_FuncFlag = SelectFunction;
   m_pedsmpl = nPedestal;
   MakeFunction();
+
+  m_PeakFunc = new TF1("m_PeakFunc",Pol2Function, 0, 500., 3);
+  m_PeakGr   = new TGraph();
+
 }
 E14WaveFitter::~E14WaveFitter(){
   ;
@@ -87,11 +91,9 @@ int  E14WaveFitter::CheckWaveform( TGraph* gr ){
   if( m_peakpoint < 8 ){ 
     m_PeakFlag |= 1;
   }
-  /*
-  if( m_gndrms >= 3. ){
+  if( m_gndrms >= 5. ){
     m_PeakFlag |= 2;
   }
-  */
   if(m_height <= 10. ){
     m_PeakFlag |= 4;
   }
@@ -101,8 +103,8 @@ int  E14WaveFitter::CheckWaveform( TGraph* gr ){
 
 bool E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
   //if( !Approx( gr ) ){ return false; }
-#ifdef ALALYSIS_DEBUG
-  //std::cout<< __PRETTY_FUNCTION__ << std::endl;
+#ifdef DEBUG
+  std::cout<< __PRETTY_FUNCTION__ << std::endl;
 #endif
   if( CheckWaveform( gr ) != 0  ){ return false; }  
 
@@ -188,7 +190,7 @@ bool E14WaveFitter::GetPeakPoint( TGraph* gr ,Double_t MinimumLimit, Double_t Ma
   **************************************************************************************/
   /// Maximum in 3point method (./.) ///
   //**************************************************************************************//
-
+  /*
   double sum3heightest       = 0;
   double sum3heightestpoint  = 0;
   double sum3                = 0;
@@ -217,9 +219,75 @@ bool E14WaveFitter::GetPeakPoint( TGraph* gr ,Double_t MinimumLimit, Double_t Ma
       m_tempheight       = gr->GetY()[ipoint];
     }    
   }
+  */
+
+  const int nSumPoint   = 6; 
+  int    PeakFrontPoint = 0;
+  double HighestSum     = 0.;
+  double HighestPoint   = 0.;
+  double Sum            = 0.;
+  double SumPoint       = 0.;
+  
+  for( int ipoint = 0; ipoint < gr->GetN() - (nSumPoint-1) ; ipoint++){
+    if( gr->GetX()[ipoint]  < MinimumLimit || gr->GetX()[ipoint] > MaximumLimit ){
+      continue; 
+    }
+    Sum      = 0.;
+    SumPoint = 0.;    
+    for( int isubPoint = 0; isubPoint < nSumPoint -1 ; isubPoint++){
+      Sum     += gr->GetY()[ipoint + isubPoint];
+      SumPoint+= gr->GetY()[ipoint + isubPoint]*gr->GetX()[ipoint + isubPoint];
+    }
+    SumPoint  = SumPoint / Sum; 
+    int PeakPoint  = 0; 
+    if( nSumPoint%2 == 0){
+      PeakPoint = ipoint + nSumPoint/2 -1;
+    }else{
+      PeakPoint = ipoint + nSumPoint/2;
+    }
+    if( gr->GetY()[ ipoint ] > gr->GetY()[ PeakPoint ]){ // front peak exception // 
+      Sum      = 0.;
+      SumPoint = 0.;
+      continue; 
+    }
+
+    if( Sum > HighestSum ){
+      PeakFrontPoint = ipoint;
+      HeighestSum    = Sum;
+      HeighestPoint  = SumPoint;
+      //Test version of peak search // 
+      /*************************************************************************/
+      if( (nSumPoint % 2) == 0 ){ 
+	m_peakpoint  = (ipoint + nSumPoint/2 + 0.5);
+	if( gr->GetY()[ipoint+nSumPoint/2] > gr->GetY()[ipoint+nSumPoint/2 +1]){
+	  m_tempheight = gr->GetY()[ipoint+nSumPoint/2];
+	}else{
+	  m_tempheight = gr->GetY()[ipoint+nSumPoint/2+1];
+	}
+      }else{
+	m_peakpoint = ( ipoint + nSumPoint/2 ); 
+	m_tempheight = gr->GetY()[ipoint+nSumPoint/2];
+      } 
+      /*************************************************************************/      
+    }    
+  }
+  m_peakTime = m_peakpoint*8;
+
+  if( Sum < 1 ){    
+    m_peakTime = m_peakpoint*8;
+    return false;
+  }
+
+  m_PeakGr->Set(0);
+  for( int ipoint  = PeakFrontPoint; ipoint < PeakFrontPoint+ nSumPoint; ipoint++){
+    m_PeakGr->SetPoint( ipoint-PeakFrontPoint,
+			gr->GetX()[ipoint],
+			TMath::Log( gr->GetY()[ipoint] ));
+  }
+  m_PeakGr->Fit( m_PeakFunc, "Q", "", HeightestPoint*8-nSumPoint*4, HeightestPoint*8+nSumPoint*4);
+  m_peakTime = m_PeakFunc->GetParameter(2);
 
   //**************************************************************************************//
-  m_peakTime = m_peakpoint*8;
   return true;
 }
      
@@ -386,4 +454,12 @@ Double_t E14WaveFitter::GetFitResultAspect( TGraph* gr){
 bool E14WaveFitter::ClearFunction( TGraph* gr ){
   gr->GetListOfFunctions()->Delete();
   return true;
+}
+
+Double_t Pol2Function( Double_t *x, Double_t *par ){
+  Double_t xpos  = x[0];
+  Double_t Sigma = par[1];
+  Double_t Mean  = par[2];
+  Double_t rtn   = par[0] -1*(x[0]-par[2])*(x[0]-par[2])/(2*par[1]*par[1]);
+  return rtn; 
 }
