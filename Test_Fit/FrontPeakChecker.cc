@@ -30,10 +30,10 @@ int main( int argc ,char** argv ){
   Int_t RunNumber  = atoi(argv[1]);
   std::string ROOTFILEWAV= std::getenv("ROOTFILE_WAV");
   std::string Filename   = Form("%s/TEMPLATE_FIT_RESULT_DUMP_%d.root",ROOTFILEWAV.c_str(),RunNumber);
-
+  
   TFile* tf = new TFile(Filename.c_str());
   TTree* tr = (TTree*)tf->Get("Waveform");
-
+  
   Int_t    EventNumber;
   Int_t    ModuleNumber;
   Double_t Waveform[48];
@@ -43,7 +43,7 @@ int main( int argc ,char** argv ){
   Double_t HHTime;
   Double_t Height;
   Double_t Pedestal;
-
+  
   tr->SetBranchAddress("EventNumber",&EventNumber);
   tr->SetBranchAddress("ModuleNumber",&ModuleNumber);
   tr->SetBranchAddress("Waveform",Waveform);
@@ -52,7 +52,7 @@ int main( int argc ,char** argv ){
   tr->SetBranchAddress("HHTime",&HHTime);
   tr->SetBranchAddress("Height",&Height);
   tr->SetBranchAddress("Pedestal",&Pedestal);
-
+  
   TFile* tfOut           = new TFile(Form("OutputDistrib_%d.root",RunNumber),"RECREATE");
   TH2D*  hisDelta        = new TH2D("DeltaHis"    ,"",1600,0,16000,100,-50,50);
   TH2D*  hisMinMax       = new TH2D("hisMinMax"   ,"hisMinMax;Minimum;Maximum",48,0,48,48,0,48);
@@ -78,8 +78,8 @@ int main( int argc ,char** argv ){
 	fMean - Minimum  > -5 &&
 	MaxPoint - MinPoint >= 5 &&
 	MaxPoint            < 30 ){
-
-
+      
+      
       hisDelta   ->Fill( Maximum - Minimum , fMean - Minimum );
       hisMinMax  ->Fill( MinPoint, MaxPoint);
       hisMaxPoint->Fill( MaxPoint, Maximum - Minimum);
@@ -88,7 +88,7 @@ int main( int argc ,char** argv ){
       Bool_t RstWidth = CheckWidth(Waveform, LowBoundary, HighBoundary);
       hisWaveWidth->Fill( HighBoundary - LowBoundary,Maximum - Minimum);     
       hisWaveWidthLow->Fill( HighBoundary - LowBoundary,Maximum - Minimum);
-
+      
       if( HighBoundary - LowBoundary < 100 &&
 	  HighBoundary - LowBoundary > 10  &&
 	  Maximum - Minimum          > 300 ){
@@ -97,11 +97,11 @@ int main( int argc ,char** argv ){
 	  hisWaveform->Fill(TimeInfo[i] - PeakTime, (Waveform[i]-Pedestal)/Height );
 	}
       }
-
+      
       if( HighBoundary - LowBoundary > 48*8 ){
 	std::cout<< HighBoundary << "\t" << LowBoundary <<  "\t" << HighBoundary- LowBoundary << std::endl;
       }
-
+      
     }
 #ifdef DEBUG
     std::cout << "--------------------------------------------------------\n"
@@ -161,7 +161,7 @@ Bool_t  GetMinimum_FrontPeak( Double_t *Wave ,
 Bool_t CheckWidth( Double_t* Wave,
 		   Double_t& LowBoundary,
 		   Double_t& HighBoundary){
-
+  
   Int_t    MaxPoint;
   Int_t    MinPoint;
   Double_t Maximum;
@@ -182,7 +182,7 @@ Bool_t CheckWidth( Double_t* Wave,
       LowBoundary = ipoint*8;
       break;
     }
-}
+  }
   
   // Find HighBoundary // 
   for( int ipoint = MaxPoint; ipoint < 48; ipoint++){
@@ -192,17 +192,17 @@ Bool_t CheckWidth( Double_t* Wave,
       
       break;
       
-	}else if (( (Wave[ipoint] - Minimum) == (Maximum - Minimum )/2 )){
+    }else if (( (Wave[ipoint] - Minimum) == (Maximum - Minimum )/2 )){
       HighBoundary = ipoint*8;
       break;
     }
   }
-    
+  
   if( LowBoundary == 0 || HighBoundary == 48*8 ){
     return false;
   }else{
     return true;
   }
 }
-  
-			      
+
+
