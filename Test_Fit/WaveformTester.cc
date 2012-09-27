@@ -26,10 +26,11 @@ int main( int argc ,char** argv ){
   std::string ROOTFILEWAV= std::getenv("ROOTFILE_WAV");
   std::string Filename   = Form("%s/TEMPLATE_FIT_RESULT_DUMP_%d.root",ROOTFILEWAV.c_str(),RunNumber);
 
+#ifdef DEBUG
   std::cout<< __LINE__ << std::endl;
-  
+#endif  
   TApplication* app = new TApplication( "app" , &argc , argv );
-  TCanvas* can = new TCanvas("can","",800,400);
+  TCanvas* can = new TCanvas("can","",800,800);
   
   
 #ifdef DEBUG
@@ -44,53 +45,121 @@ int main( int argc ,char** argv ){
   Int_t    ModuleNumber;
   Double_t Waveform[48];
   Short_t  TimeInfo[48];
+  /*
   Double_t ChisqNDF;
   Double_t PeakTime;
   Double_t HHTime;
   Double_t Height;
   Double_t Pedestal;
-  
+  */
+  {
+    tr->SetBranchAddress("EventNumber",&EventNumber);
+    tr->SetBranchAddress("ModuleNumber",&ModuleNumber);
+    tr->SetBranchAddress("Waveform",Waveform);
+    tr->SetBranchAddress("TimeInfo",TimeInfo);
+    /*
+    tr->SetBranchAddress("PeakTime",&PeakTime);
+    tr->SetBranchAddress("HHTime",&HHTime);
+    tr->SetBranchAddress("Height",&Height);
+    tr->SetBranchAddress("Pedestal",&Pedestal);
+    */
+  }
 
-  tr->SetBranchAddress("EventNumber",&EventNumber);
-  tr->SetBranchAddress("ModuleNumber",&ModuleNumber);
-  tr->SetBranchAddress("Waveform",Waveform);
-  tr->SetBranchAddress("TimeInfo",TimeInfo);
-  tr->SetBranchAddress("PeakTime",&PeakTime);
-  tr->SetBranchAddress("HHTime",&HHTime);
-  tr->SetBranchAddress("Height",&Height);
-  tr->SetBranchAddress("Pedestal",&Pedestal);
-  
+  #ifdef DEBUG
   std::cout<< __LINE__ << std::endl;
-
+  #endif
   TFile* tfOut           = new TFile(Form("OutputDistrib_Tester_%d.root",RunNumber),"RECREATE");
-  std::cout<< __LINE__ << std::endl;
   E14WaveformAnalyzer*  WaveAnalyzer = new E14WaveformAnalyzer(48);
-  std::cout<< __LINE__ << std::endl;
 
   Int_t TotalEvent = tr->GetEntries(); 
   TGraph* grWave = new TGraph();
+  
+  TTree* trWaveAna = new TTree("WaveAna","");
+  Double_t Height;
+  Double_t PeakTime;
+  Double_t MinTime;
+  Double_t Maximum;
+  Double_t Minimum;
 
-  can->Divide( 2,1);
-  for( int ievent  =0 ; ievent < TotalEvent ; ievent++){
-  //for( int ievent  =0 ; ievent < 100 ; ievent++){
+  Double_t Pedestal;
+  Double_t PedestalSigma;
+  Double_t HeadMean;
+  Double_t TailMean;
+  Double_t HeadSigma;
+  Double_t TailSigma;
+  Double_t BoundaryHead;
+  Double_t BoundaryTail;
+  Double_t Width;
+  Double_t ADC;
+  Double_t SlopeDelta;
+  Int_t    StartPoint; 
+
+  trWaveAna->Branch("RunNumber"    ,&RunNumber    , "RunNumber/I"    );
+  trWaveAna->Branch("EventNumber"  ,&EventNumber  , "EventNumber/I"  );
+  trWaveAna->Branch("ModuleNumber" ,&ModuleNumber , "ModuleNumber/I" );
+  trWaveAna->Branch("Height"       ,&Height       , "Height/D"       );
+  trWaveAna->Branch("PeakTime"     ,&PeakTime     , "PeakTime/D"     );
+  trWaveAna->Branch("Maximum"      ,&Maximum      , "Maximum/D"      );
+  trWaveAna->Branch("Minimum"      ,&Minimum      , "Minimum/D"      );
+  trWaveAna->Branch("Pedestal"     ,&Pedestal     , "Pedestal/D"     );
+  trWaveAna->Branch("PedestalSigma",&PedestalSigma, "PedestalSigma/D");
+  trWaveAna->Branch("HeadMean"     ,&HeadMean     , "HeadMean/D"     );
+  trWaveAna->Branch("HeadSigma"    ,&HeadSigma    , "HeadSigma/D"    );
+  trWaveAna->Branch("TailMean"     ,&TailMean     , "TailMean/D"     );
+  trWaveAna->Branch("TailSigma"    ,&TailSigma    , "TailSigma/D"    );
+  trWaveAna->Branch("BoundaryHead" ,&BoundaryHead , "BoundaryHead/D" );
+  trWaveAna->Branch("BoundaryTail" ,&BoundaryTail , "BoundaryTail/D" );
+  trWaveAna->Branch("Width"        ,&Width        , "Width/D"        );
+  trWaveAna->Branch("ADC"          ,&ADC          , "ADC/D"          );
+  trWaveAna->Branch("SlopeDelta"   ,&SlopeDelta   , "SlopeDelta/D"   );
+  trWaveAna->Branch("StartPoint"   ,&StartPoint   , "StartPoint/I"   );
+
+  can->Divide( 2, 2);
+  for( int ievent  =0 ; ievent < TotalEvent; ievent++){
+  //for( int ievent  =0 ; ievent < 2716*20 ; ievent++){
     tr->GetEntry(ievent);    
     grWave->Set(0);
-    std::cout<< __LINE__ << std::endl;
-    can->cd(1);
-    WaveAnalyzer->_Draw( Waveform );
-    can->cd(2);
-    WaveAnalyzer->m_peakGraph->SetMarkerStyle(6);
-    WaveAnalyzer->m_peakGraph->Draw("AP");
-    WaveAnalyzer->m_peakFunc->Draw("same");
-    std::cout<< __LINE__ << std::endl;
-    can->Update();
-    can->Modified();
-    getchar();
+    WaveAnalyzer->_GetMeanHead( Waveform, HeadMean    , HeadSigma     );
+    WaveAnalyzer->_GetMeanTail( Waveform, TailMean    , TailSigma     );
+    WaveAnalyzer->_GetMaximum ( Waveform, Maximum     , PeakTime      );
+    WaveAnalyzer->_GetMinimum ( Waveform, Minimum     , MinTime       );
+    WaveAnalyzer->_GetPedestal( Waveform, Pedestal    , PedestalSigma );
+    WaveAnalyzer->_GetWidth   ( Waveform, BoundaryHead, BoundaryTail  );
+    WaveAnalyzer->_GetSumSlope( Waveform, StartPoint  , SlopeDelta    );
+    Width  = BoundaryTail - BoundaryHead;
+    Height = Maximum      - Pedestal;
+    WaveAnalyzer->_GetADC( Waveform , ADC);
+    Double_t SumUp = 0;
+    TGraph* grWaveSum = new TGraph();
+    for( int ipoint  = 0; ipoint < 48; ipoint++){
+      SumUp += Waveform[ ipoint ] - Pedestal; 
+      grWaveSum->SetPoint( ipoint , ipoint*8, SumUp);
+    }
+    
+    /*
+    if( Height >5 &&  SlopeDelta > 50 ){
+      can->cd(1);
+      WaveAnalyzer->_Draw( Waveform );
+      can->cd(2);
+      WaveAnalyzer->m_peakGraph->SetMarkerStyle(6);
+      WaveAnalyzer->m_peakGraph->Draw("AP");
+      WaveAnalyzer->m_peakFunc->Draw("same");
+      can->cd(3);
+      grWaveSum->SetMarkerStyle(6);
+      grWaveSum->Draw("AP");
+      can->Update();
+      can->Modified();
+      getchar();
+      getchar();
+    }
+    */
+    trWaveAna->Fill();
     WaveAnalyzer->_Clear();
-  }
 
+  }
+  trWaveAna->Write();
   tfOut->Close();
-  app->Run();
+  //app->Run();
   return 0;
 }
 

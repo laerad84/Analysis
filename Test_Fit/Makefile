@@ -91,7 +91,7 @@ bin/%: tmp/%.o $(CXX_OBJECTS)
 	@ echo "##########################################################"	
 	@ echo COMPILE $(@F)		
 	@ echo "##########################################################"
-	$(CXX) -o $@ $^ $(filter-out -fPIC,$(CXXFLAGS)) $(CXX_DICTSRC) $(INCLUDES) $(LIBS)
+	$(CXX) -o $@ $^ $(filter-out -fPIC,$(CXXFLAGS)) $(CXX_DICTSRC) $(INCLUDES) $(LIBS) $(ARG)
 	@ echo "##########################################################"
 
 tmp/%.o: src/%.c

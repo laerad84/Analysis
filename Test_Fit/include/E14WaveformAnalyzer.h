@@ -23,6 +23,7 @@ class E14WaveformAnalyzer {
   Bool_t m_fmTail; 
   Bool_t m_fBoundary;
   Bool_t m_fADC; 
+  Bool_t m_fSlope;
 
   Double_t m_MeanHead;
   Double_t m_MeanTail;
@@ -39,6 +40,9 @@ class E14WaveformAnalyzer {
   Double_t m_BoundaryTail;
   Double_t m_Width; 
   Double_t m_ADC;
+
+  Int_t    m_SlopeStart; 
+  Double_t m_SlopeDelta;
 
  public:
   TF1*     m_peakFunc;
@@ -62,10 +66,14 @@ class E14WaveformAnalyzer {
   virtual Bool_t _GetMinimum ( Double_t* Waveform , Double_t& PeakMinimum   , Double_t& TimeMinimum   );
 
   virtual Bool_t _GetPedestal( Double_t* Waveform , Double_t& Pedestal      , Double_t& PedestalSigma );
-  virtual Bool_t _GetWidth   ( Double_t* Waveform , Double_t& Width);
+  virtual Bool_t _GetWidth   ( Double_t* Waveform , Double_t& BoundaryHead, Double_t& BoundaryTail);
 
   virtual Bool_t _GetADC     ( Double_t* Waveform , Double_t& ADC      , Int_t StartTime = 0, Int_t EndTime = 48);
 
+  virtual Bool_t _GetSumSlope( Double_t* Waveform );
+  virtual Bool_t _GetSumSlope( Double_t* Waveform , Int_t& StartPoint , Double_t& DeltaMaximum);
+
+  virtual Double_t _GetSlopeDelta( Double_t* Waveform, Int_t StartPoint ); 
   virtual void   _Clear();
   virtual void   _Draw(Double_t* Waveform);
   
