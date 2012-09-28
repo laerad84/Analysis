@@ -33,6 +33,14 @@ class E14WaveformAnalyzer {
   Double_t m_PedestalSigma;
   Double_t m_Height;
   Double_t m_PeakMaximum;
+  Double_t m_PeakPointMaximum;
+  Double_t m_PeakPointMinimum;
+  Double_t m_AllPointMaximum;
+  Double_t m_AllPointMinimum;
+
+  Int_t    m_AllPointMin;
+  Int_t    m_AllPointMax;
+
   Double_t m_PeakMinimum;
   Double_t m_TimeMaximum;
   Double_t m_TimeMinimum;
@@ -76,6 +84,14 @@ class E14WaveformAnalyzer {
   virtual Double_t _GetSlopeDelta( Double_t* Waveform, Int_t StartPoint ); 
   virtual void   _Clear();
   virtual void   _Draw(Double_t* Waveform);
+  /*
+  virtual Double_t   GetPeakPointMaximum const () { return m_PeakPointMaximum;}
+  virtual Double_t   GetMeanHead const () { return m_MeanHead; }  
+  virtual Double_t   GetMeanTail const () { return m_MeanTail; }
+  virtual Double_t   GetPedestal const () { return m_Pedestal; }
+  virtual Double_t   GetWidth    const () { return m_BoundaryTail-m_BoundaryHead; }
+  virtual Double_t   GetADC      const () { return m_ADC; }
+  */
   
 };
 #endif 

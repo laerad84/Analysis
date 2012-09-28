@@ -282,7 +282,7 @@ int  main(int argc,char** argv)
 	std::cout<< "Fit Graph" << std::endl;	
 #endif 
 
-	bool fit = wavFitter->Fit( gr ); 
+	bool fit     = wavFitter->Fit( gr ); 
 	int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
 	if( fit ){ 
 
@@ -310,13 +310,10 @@ int  main(int argc,char** argv)
 #ifdef DEBUG
 	  std::cout<< "Get halfFitTiming" << std::endl;
 #endif 
-
 	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
-
 #ifdef DEBUG
 	  std::cout<< "SetData " << std::endl; 
 #endif
-
 	  wConv->mod[iMod]->m_FitHeight[chIndex] = 1;
 	  wConv->mod[iMod]->m_ID[chIndex]        = iSubMod;
 	  wConv->mod[iMod]->m_Pedestal[chIndex]  = fitFunc->GetParameter(4);
@@ -327,11 +324,13 @@ int  main(int argc,char** argv)
 	  wConv->mod[iMod]->m_ParB[chIndex]      = fitFunc->GetParameter(2);
 	  wConv->mod[iMod]->m_FitTime[chIndex]   = halfFitTiming;
 	  wConv->mod[iMod]->m_nDigi++;	      	    	  	      
+
 	  //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 	      
 	  //gr->Draw("AP");
 	  //can->Update();
 	  //can->Modified();
 	  //getchar();	  
+
 	  gr->GetListOfFunctions()->Delete();
 	  delete linearFunction;
 	  wavFitter->Clear();
@@ -408,7 +407,7 @@ int  main(int argc,char** argv)
 	    wConv->mod[CsiModuleID]->m_Signal[idigi]  >= MaxHeight ){
 	  continue;
 	}
-	if( wConv->mod[CsiModuleID]->m_Chisq[idigi]/wConv->mod[CsiModuleID]->m_NDF[idigi] > 250 ){
+	if( wConv->mod[CsiModuleID]->m_Chisq[idigi]/wConv->mod[CsiModuleID]->m_NDF[idigi] > 100 ){
 	  // 250 is just set value ...
 	  continue;
 	}

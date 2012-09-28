@@ -80,7 +80,8 @@ int main( int argc ,char** argv ){
   Double_t MinTime;
   Double_t Maximum;
   Double_t Minimum;
-
+  Double_t PeakPointMaximum;
+  
   Double_t Pedestal;
   Double_t PedestalSigma;
   Double_t HeadMean;
@@ -93,6 +94,8 @@ int main( int argc ,char** argv ){
   Double_t ADC;
   Double_t SlopeDelta;
   Int_t    StartPoint; 
+
+  
 
   trWaveAna->Branch("RunNumber"    ,&RunNumber    , "RunNumber/I"    );
   trWaveAna->Branch("EventNumber"  ,&EventNumber  , "EventNumber/I"  );
@@ -113,10 +116,11 @@ int main( int argc ,char** argv ){
   trWaveAna->Branch("ADC"          ,&ADC          , "ADC/D"          );
   trWaveAna->Branch("SlopeDelta"   ,&SlopeDelta   , "SlopeDelta/D"   );
   trWaveAna->Branch("StartPoint"   ,&StartPoint   , "StartPoint/I"   );
+  trWaveAna->Branch("PeakPointMaximum",&PeakPointMaximum , "PeakPointMaximum/D");
 
   can->Divide( 2, 2);
-  for( int ievent  =0 ; ievent < TotalEvent; ievent++){
-  //for( int ievent  =0 ; ievent < 2716*20 ; ievent++){
+  //for( int ievent  =0 ; ievent < TotalEvent; ievent++){
+  for( int ievent  =0 ; ievent < 2716*1000 ; ievent++){
     tr->GetEntry(ievent);    
     grWave->Set(0);
     WaveAnalyzer->_GetMeanHead( Waveform, HeadMean    , HeadSigma     );

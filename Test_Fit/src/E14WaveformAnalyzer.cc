@@ -104,17 +104,39 @@ Bool_t E14WaveformAnalyzer::_GetMeanTail( Double_t* Waveform, Double_t& MeanTail
 }
 Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
   // Taking 4point Mean maximum //
-  m_PeakMaximum = 0;
+  m_PeakMaximum = -1*0xFFFF;
   m_TimeMaximum = 0; 
-  Double_t localMaximum;
-  Double_t localMaxTime;    
+  Double_t localMaximum = 0;
+  Double_t localMaxTime = 0;
+  Double_t localPointMaximum = 0;
   Int_t    MaxPoint; 
+  m_AllPointMaximum  = 0;
+  m_AllPointMinimum  = 0; 
+  m_AllPointMax      = 0;
+  m_AllPointMin      = 0xFFFF;
+  m_PeakPointMaximum = 0;
+
+  for( int ipoint = 0; ipoint < m_nPoint;  ipoint++){
+    if( m_AllPointMaximum < Waveform[ ipoint ] ){
+      m_AllPointMaximum  = Waveform[ ipoint ];
+      m_AllPointMax = ipoint;
+    }
+    if( m_AllPointMinimum > Waveform[ ipoint ] ){
+      m_AllPointMinimum = Waveform[ ipoint ];
+      m_AllPointMin = ipoint;
+    }
+  }  
+
   for( int ipoint = m_CnHead+4; ipoint < m_nPoint - m_CnTail - 8 ; ipoint++ ){
-    localMaximum = 0; 
-    localMaxTime = 0;
-    for( int iSubPoint  =0; iSubPoint <4; iSubPoint++){
+    localPointMaximum  = 0;
+    localMaximum       = 0; 
+    localMaxTime       = 0;
+    for( int iSubPoint = 0; iSubPoint <4; iSubPoint++){
       localMaximum += Waveform[ipoint+iSubPoint]; 
       localMaxTime += Waveform[ipoint+iSubPoint]*ipoint;       
+      if( Waveform[ ipoint +iSubPoint ] > localPointMaximum ){
+	localPointMaximum = Waveform[ ipoint + iSubPoint ];
+      }
     }
     localMaximum = localMaximum / 4;
     localMaxTime = localMaxTime / 4 / localMaximum; 
@@ -122,34 +144,30 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
       MaxPoint      = ipoint;
       m_PeakMaximum = (Waveform[MaxPoint+1] +Waveform[MaxPoint+2])/2;
       m_TimeMaximum = localMaxTime*m_TimeWidth; 
+      m_PeakPointMaximum = localPointMaximum;
     }
   }
+  m_PeakMaximum = m_PeakPointMaximum; 
 
-  // Fit with pol2 
+  /* 
+  // Fit with pol2 -> Abandon
   m_peakGraph->Set(0);
   // Check Local Maximum
-  // if Maximum point exists on edge Fitting became craze... //
-  
-
+  // if Maximum point exists on edge Fitting became craze... //  
   for( int ipoint = MaxPoint-2; ipoint < MaxPoint + 4 + 3 ; ipoint++){ 
     m_peakGraph->SetPoint( m_peakGraph->GetN(), ipoint*8, Waveform[ipoint]);
   }
-
   m_peakFunc->SetParameter(0, (2*m_PeakMaximum - (Waveform[MaxPoint-4]+Waveform[MaxPoint+4])/1024));
   m_peakFunc->SetParameter(1, m_TimeMaximum);
   m_peakFunc->SetParameter(2, m_PeakMaximum);
   m_peakFunc->SetParLimits(0, 0.001, 4);
   m_peakFunc->SetParLimits(1, m_TimeMaximum - 16, m_TimeMaximum + 16);
-  m_peakFunc->SetParLimits(2, m_PeakMaximum*0.8, m_PeakMaximum*1.2);
-  
+  m_peakFunc->SetParLimits(2, m_PeakMaximum*0.8 , m_PeakMaximum*1.2 );  
   m_peakGraph->Fit(m_peakFunc,"Q","",( MaxPoint-2)*8, (MaxPoint+4+2)*8);  
-#ifdef DEBUG
-  std::cout << "PeakMaximum:" << m_PeakMaximum << std::endl;
-  std::cout << "FitPar2:" <<  m_peakFunc->GetParameter(2) << std::endl;
-  std::cout << "FitPar1:" <<  m_peakFunc->GetParameter(1) << std::endl;
-#endif
   m_PeakMaximum = m_peakFunc->GetParameter(2);
   m_TimeMaximum = m_peakFunc->GetParameter(1);
+  */
+
   return m_fMaximum; 
 
 }
@@ -173,7 +191,7 @@ Bool_t E14WaveformAnalyzer::_GetMinimum     ( Double_t* Waveform ){
   if( !m_fMaximum ){
     _GetMaximum( Waveform );
   }
-  for( int ipoint = 0; (ipoint+3)*8 < m_TimeMaximum ; ipoint++){
+  for( int ipoint = 0; ipoint*8 < m_TimeMaximum ; ipoint++){
     localMinimum = 0;
     localMinTime = 0;
     for( int iSubPoint = 0; iSubPoint < 4; iSubPoint++){
@@ -230,10 +248,10 @@ Bool_t E14WaveformAnalyzer::_GetPedestal( Double_t* Waveform ){
     nPedPoint++;
   }
 
-  if( nPedPoint ==0 ){
-    m_Pedestal =  m_PeakMinimum;
+  if( nPedPoint ==0 || m_Pedestal < m_PeakMinimum ){
+    m_Pedestal      =  m_PeakMinimum;
     m_PedestalSigma = 0xFFFF;
-    m_fPedestal = true;
+    m_fPedestal     = true;
   }else{
     m_Pedestal /= nPedPoint;
     m_PedestalSigma = TMath::Sqrt( m_PedestalSigma/nPedPoint - m_Pedestal*m_Pedestal );
@@ -431,6 +449,7 @@ Bool_t E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform ){
       StartPoint   = i;
     }
   }
+
   m_SlopeStart = StartPoint;
   m_SlopeDelta = DeltaMaximum;
   m_fSlope = true; 
@@ -466,8 +485,8 @@ Double_t E14WaveformAnalyzer::_GetSlopeDelta( Double_t* Waveform , Int_t StartPo
   Double_t HeadSumMean = 0;
   Double_t TailSumMean = 0;
   for( int iSubPoint  = 0; iSubPoint < 4; iSubPoint++ ){
-    HeadSumMean += ( Sum[ i + iSubPoint ]      /4.);    
-    TailSumMean += ( Sum[ i + iSubPoint + 12 ] /4.);
+    HeadSumMean += ( Sum[ StartPoint + iSubPoint ]      /4.);    
+    TailSumMean += ( Sum[ StartPoint + iSubPoint + 12 ] /4.);
   }
   
   return TailSumMean - HeadSumMean ;
