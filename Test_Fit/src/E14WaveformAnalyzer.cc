@@ -127,27 +127,37 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
     }
   }  
 
-  for( int ipoint = m_CnHead+4; ipoint < m_nPoint - m_CnTail - 8 ; ipoint++ ){
+  for( int ipoint = m_CnHead+4; ipoint < m_nPoint - m_CnTail - 4 ; ipoint++ ){
     localPointMaximum  = 0;
     localMaximum       = 0; 
-    localMaxTime       = 0;
+
     for( int iSubPoint = 0; iSubPoint <4; iSubPoint++){
       localMaximum += Waveform[ipoint+iSubPoint]; 
-      localMaxTime += Waveform[ipoint+iSubPoint]*ipoint;       
+      localMaxTime += Waveform[ipoint+iSubPoint]*(ipoint+iSubPoint);       
       if( Waveform[ ipoint +iSubPoint ] > localPointMaximum ){
 	localPointMaximum = Waveform[ ipoint + iSubPoint ];
       }
     }
+
+    localMaxTime = ((Double_t)ipoint+1.5)*m_TimeWidth;
     localMaximum = localMaximum / 4;
-    localMaxTime = localMaxTime / 4 / localMaximum; 
+    if( localMaximum > m_PeakMaximum ){
+      m_PeakMaximum = localMaximum;
+      m_TimeMaximum = localMaxTime;
+      m_PeakPointMaximum = localPointMaximum;
+    }
+    
+    /*
     if( localMaximum > m_PeakMaximum ){
       MaxPoint      = ipoint;
-      m_PeakMaximum = (Waveform[MaxPoint+1] +Waveform[MaxPoint+2])/2;
+      m_PeakMaximum = (Waveform[MaxPoint+1] + Waveform[MaxPoint+2])/2;
       m_TimeMaximum = localMaxTime*m_TimeWidth; 
       m_PeakPointMaximum = localPointMaximum;
     }
+    */
   }
-  m_PeakMaximum = m_PeakPointMaximum; 
+
+  //m_PeakMaximum = m_PeakPointMaximum; 
 
   /* 
   // Fit with pol2 -> Abandon
@@ -196,11 +206,11 @@ Bool_t E14WaveformAnalyzer::_GetMinimum     ( Double_t* Waveform ){
     localMinTime = 0;
     for( int iSubPoint = 0; iSubPoint < 4; iSubPoint++){
       localMinimum += Waveform[ ipoint + iSubPoint];
-      localMinTime += Waveform[ ipoint + iSubPoint]*(ipoint + iSubPoint);
+      //localMinTime += Waveform[ ipoint + iSubPoint]*(ipoint + iSubPoint);
     }
     localMinimum = localMinimum / 4.;   
-    localMinTime = localMinTime / 4. / localMinimum;
-
+    //localMinTime = localMinTime / 4. / localMinimum;
+    localMinTime = ((Double_t)ipoint +1.5)*8;
     if( localMinTime >=m_TimeMaximum ){
       break;
     }
@@ -248,7 +258,10 @@ Bool_t E14WaveformAnalyzer::_GetPedestal( Double_t* Waveform ){
     nPedPoint++;
   }
 
-  if( nPedPoint ==0 || m_Pedestal < m_PeakMinimum ){
+  if( nPedPoint     ==  0               ||
+      m_Pedestal    < m_PeakMinimum     ||
+      m_Pedestal    - m_PeakMinimum > 8 ||
+      m_TimeMaximum < 40*m_Width        ){
     m_Pedestal      =  m_PeakMinimum;
     m_PedestalSigma = 0xFFFF;
     m_fPedestal     = true;
@@ -396,13 +409,15 @@ void E14WaveformAnalyzer::_Draw( Double_t* Waveform ){
 	    << "MeanTail     :" << m_MeanTail      << "\n"
 	    << "Maximum      :" << m_PeakMaximum   << "\n"
 	    << "Minimum      :" << m_PeakMinimum   << "\n"
+	    << "PeakTime     :" << m_TimeMaximum   << "\n"
+	    << "PedTime      :" << m_TimeMinimum   << "\n"
 	    << "Pedestal     :" << m_Pedestal      << "\n"
 	    << "PedestalSigma:" << m_PedestalSigma << "\n" 
 	    << "Height       :" << m_Height        << "\n"
 	    << "BoundaryHead :" << m_BoundaryHead  << "\n"
 	    << "BoundaryTail :" << m_BoundaryTail  << "\n"
 	    << "Slope Start  :" << m_SlopeStart    << "\n"
-	    << "Slope Delta  :" << m_SlopeDelta    << "\n"
+	    << "Slope Delta  :" << m_SlopeDelta    << "\n"    
 	    << std::endl; 
 }
 

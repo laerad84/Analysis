@@ -30,7 +30,7 @@ int main( int argc ,char** argv ){
   std::cout<< __LINE__ << std::endl;
 #endif  
   TApplication* app = new TApplication( "app" , &argc , argv );
-  TCanvas* can = new TCanvas("can","",800,800);
+  TCanvas* can = new TCanvas("can","",500,1000);
   
   
 #ifdef DEBUG
@@ -118,7 +118,7 @@ int main( int argc ,char** argv ){
   trWaveAna->Branch("StartPoint"   ,&StartPoint   , "StartPoint/I"   );
   trWaveAna->Branch("PeakPointMaximum",&PeakPointMaximum , "PeakPointMaximum/D");
 
-  can->Divide( 2, 2);
+  can->Divide( 1, 2);
   //for( int ievent  =0 ; ievent < TotalEvent; ievent++){
   for( int ievent  =0 ; ievent < 2716*1000 ; ievent++){
     tr->GetEntry(ievent);    
@@ -140,15 +140,26 @@ int main( int argc ,char** argv ){
       grWaveSum->SetPoint( ipoint , ipoint*8, SumUp);
     }
     
+
+    //if( Height  < 10 && SlopeDelta > 100&& SlopeDelta/Height>16 && PeakTime>(StartPoint+4)*8 && PeakTime< (StartPoint+12)*8 ){
     /*
-    if( Height >5 &&  SlopeDelta > 50 ){
+    if(PeakTime>(StartPoint+4)*8&&
+       PeakTime<(StartPoint+12)*8&&
+       Height<1000&&
+       SlopeDelta<8000&&
+       BoundaryHead>0&&
+       BoundaryTail<384&&
+       PeakTime<250&&
+       Height>200 &&
+       EventNumber == 3417
+       ){
       can->cd(1);
+      gPad->SetGridx();
+      gPad->SetGridy();
       WaveAnalyzer->_Draw( Waveform );
       can->cd(2);
-      WaveAnalyzer->m_peakGraph->SetMarkerStyle(6);
-      WaveAnalyzer->m_peakGraph->Draw("AP");
-      WaveAnalyzer->m_peakFunc->Draw("same");
-      can->cd(3);
+      gPad->SetGridx();
+      gPad->SetGridy();
       grWaveSum->SetMarkerStyle(6);
       grWaveSum->Draw("AP");
       can->Update();

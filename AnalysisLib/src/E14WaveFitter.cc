@@ -1,6 +1,6 @@
 #include "E14WaveFitter.h"
 
-E14WaveFitter::E14WaveFitter(int SelectFunction, int nPedestal){
+E14WaveFitter::E14WaveFitter(int SelectFunction, int nPedestal, int nPoints){
   //std::cout<< __FUNCTION__ << std::endl; 
   m_FuncFlag = SelectFunction;
   m_pedsmpl = nPedestal;
