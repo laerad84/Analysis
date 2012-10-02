@@ -27,16 +27,20 @@ void   E14WaveformAnalyzer::_Clear(){
     }
   }
 
-  m_fPedestal = false;
-  m_fHeight   = false;  
-  m_fMaximum  = false;
-  m_fMinimum  = false;
-  m_fWidth    = false;
-  m_fmHead    = false;
-  m_fmTail    = false;
-  m_fBoundary = false;
-  m_fADC      = false;
-  m_fSlope    = false;
+  m_fPedestal  = false;
+  m_fHeight    = false;  
+  m_fMaximum   = false;
+  m_fMinimum   = false;
+  m_fWidth     = false;
+  m_fmHead     = false;
+  m_fmTail     = false;
+  m_fBoundary  = false;
+  m_fADC       = false;
+  m_fSlope     = false;
+  m_fOverflow  = false;
+  m_fUnderflow = false;
+  m_fWaveformAnalyzed = false;
+  m_WaveformState = 0;
 
   m_MeanHead      = 0;
   m_MeanTail      = 0;
@@ -109,13 +113,14 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
   Double_t localMaximum = 0;
   Double_t localMaxTime = 0;
   Double_t localPointMaximum = 0;
-  Int_t    MaxPoint; 
+
   m_AllPointMaximum  = 0;
   m_AllPointMinimum  = 0; 
   m_AllPointMax      = 0;
   m_AllPointMin      = 0xFFFF;
   m_PeakPointMaximum = 0;
 
+  // Check Underflow && Overflow 
   for( int ipoint = 0; ipoint < m_nPoint;  ipoint++){
     if( m_AllPointMaximum < Waveform[ ipoint ] ){
       m_AllPointMaximum  = Waveform[ ipoint ];
@@ -125,7 +130,9 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
       m_AllPointMinimum = Waveform[ ipoint ];
       m_AllPointMin = ipoint;
     }
-  }  
+  } 
+  if( m_AllPointMaximum > 16000 ){ m_fOverflow = true; }
+  if( m_AllPointMinimum < 1     ){ m_fUnderflow = true; }
 
   for( int ipoint = m_CnHead+4; ipoint < m_nPoint - m_CnTail - 4 ; ipoint++ ){
     localPointMaximum  = 0;
@@ -181,7 +188,6 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
   return m_fMaximum; 
 
 }
-
 Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform , Double_t& PeakMaximum, Double_t& TimeMaximum){
   // Taking 4point Mean maximum //
   if( !m_fMaximum ){
@@ -192,7 +198,6 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform , Double_t& PeakMax
   TimeMaximum = m_TimeMaximum; 
   return m_fMaximum; 
 }
-
 Bool_t E14WaveformAnalyzer::_GetMinimum     ( Double_t* Waveform ){
   m_PeakMinimum = 0xFFFF;
   m_TimeMinimum = 0;
@@ -261,7 +266,7 @@ Bool_t E14WaveformAnalyzer::_GetPedestal( Double_t* Waveform ){
   if( nPedPoint     ==  0               ||
       m_Pedestal    < m_PeakMinimum     ||
       m_Pedestal    - m_PeakMinimum > 8 ||
-      m_TimeMaximum < 40*m_Width        ){
+      m_TimeMaximum < 40*m_TimeWidth    ){
     m_Pedestal      =  m_PeakMinimum;
     m_PedestalSigma = 0xFFFF;
     m_fPedestal     = true;
@@ -291,9 +296,20 @@ Bool_t E14WaveformAnalyzer::_GetWidth   ( Double_t* Waveform ){
   m_Height = m_PeakMaximum - m_Pedestal;
   m_BoundaryHead = 0;
   m_BoundaryTail = m_nPoint*8;
+
+  if( m_Height < 0 ){
+    m_BoundaryTail = m_nPoint*8;
+    m_BoundaryHead = 0;
+    m_fBoundary = false;
+    return m_fBoundary;
+  }
+
   Int_t MaxPoint = (int)(m_TimeMaximum/8);
-  Int_t MinPoint = (int)(m_TimeMinimum/8);
-  for( int ipoint = MaxPoint; ipoint > MinPoint; ipoint-- ){
+  Int_t MinPoint = (int)(m_TimeMinimum/8);  
+  Int_t MaxHeadPoint = (int)(m_TimeMaximum/8 - 1.5);
+  Int_t MinHeadPoint = (int)(m_TimeMinimum/8 - 1.5);
+
+  for( int ipoint = MaxHeadPoint+3; ipoint > MinPoint; ipoint-- ){
     if( Waveform[ ipoint - 1 ] - m_Pedestal  < m_Height / 2 &&
 	Waveform[ ipoint ]     - m_Pedestal  > m_Height / 2 ){
       m_BoundaryHead = 8*(ipoint - 1) + 8*( m_Height/2 - (Waveform[ipoint -1] - m_Pedestal ))/(Waveform[ipoint] -Waveform[ipoint -1]);
@@ -303,7 +319,8 @@ Bool_t E14WaveformAnalyzer::_GetWidth   ( Double_t* Waveform ){
       break;
     }
   }
-  for( int ipoint = MaxPoint; ipoint < m_nPoint - m_CnTail; ipoint++){
+
+  for( int ipoint = MaxHeadPoint; ipoint < m_nPoint - m_CnTail; ipoint++){
     if( Waveform[ ipoint +1 ] - m_Pedestal < m_Height / 2 &&
 	Waveform[ ipoint ]    - m_Pedestal > m_Height / 2 ){
       m_BoundaryTail = 8*(ipoint + 1) - 8*( m_Height/2 - (Waveform[ipoint + 1] -m_Pedestal ))/(Waveform[ipoint] -Waveform[ipoint +1]);
@@ -323,6 +340,7 @@ Bool_t E14WaveformAnalyzer::_GetWidth   ( Double_t* Waveform ){
   }
   return m_fBoundary; 				     
 }
+
 Bool_t E14WaveformAnalyzer::_GetWidth   ( Double_t* Waveform ,Double_t& BoundaryHead,Double_t& BoundaryTail){  
   if( !m_fBoundary ){
     _GetWidth( Waveform );
@@ -352,15 +370,137 @@ Bool_t E14WaveformAnalyzer::_GetADC( Double_t* Waveform , Double_t& ADC, Int_t S
   return m_fADC;
 }
 
-void E14WaveformAnalyzer::_Draw( Double_t* Waveform ){
-  if( !m_fmHead ) _GetMeanHead( Waveform );
-  if( !m_fmTail ) _GetMeanTail( Waveform );
-  if( !m_fMaximum ) _GetMaximum( Waveform );
-  if( !m_fMinimum ) _GetMinimum( Waveform );
+
+
+Bool_t   E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform ){
+  if( m_nPoint > 1024){
+    std::cerr << "FX TOO LONG" << std::endl;    
+    m_fSlope = false; 
+    return m_fSlope;
+  }
+  if( !m_fPedestal ){
+    _GetPedestal( Waveform );
+  }
+
+  Double_t Sum[1024] = {0}; // Size is Must bigger than m_nPoints // 
+  for( int i = 0; i < m_nPoint; i++){
+    if( i == 0 ){
+      Sum[i] = Waveform[i] - m_Pedestal;
+    }else{
+      Sum[i] = Sum[i-1] + Waveform[i] - m_Pedestal;
+    }
+  }
+
+  Double_t DeltaMaximum  = -1*0xFFFF;
+  Int_t    StartPoint    = 0;   
+
+  // 4 front , 8 middle, 4 tail compare // 
+  for( int i = 0; i < m_nPoint - 15; i++){
+    Double_t HeadSumMean   = 0;
+    Double_t TailSumMean   = 0;
+    Double_t MiddleSumMean = 0; 
+    Double_t RegionDelta   = 0;
+    for( int isubpoint  = 0; isubpoint < 4; isubpoint++){
+      HeadSumMean   += ( Sum[ i + isubpoint ] / 4.) ;      
+    }
+    for( int isubpoint =  4; isubpoint < 12; isubpoint++){
+      MiddleSumMean += ( Sum[ i + isubpoint ] / 12 );
+    }
+    for( int isubpoint =  12; isubpoint < 16; isubpoint++){
+      TailSumMean   += ( Sum[ i + isubpoint ] / 4.);
+    }
+    RegionDelta  = TailSumMean - HeadSumMean;
+    if( RegionDelta  >  DeltaMaximum ){
+      DeltaMaximum = RegionDelta;
+      StartPoint   = i;
+    }
+  }
+
+  m_SlopeStart = StartPoint;
+  m_SlopeDelta = DeltaMaximum;
+  m_fSlope = true; 
+  return m_fSlope; 
+}
+Bool_t   E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform , Int_t& StartPoint, Double_t& DeltaMaximum ){
+  if( !m_fSlope ){
+    _GetSumSlope( Waveform );    
+  }
+  StartPoint = m_SlopeStart;
+  DeltaMaximum = m_SlopeDelta;
+  return m_fSlope;
+}
+
+Double_t E14WaveformAnalyzer::GetSlopeDelta( Double_t* Waveform , Int_t StartPoint){
+  if(  (StartPoint + 16) - m_nPoint <= 0 || m_nPoint > 1024 ){
+    return -1*0xFFFF;
+  } 
+  if( !m_fPedestal ){
+    _GetPedestal( Waveform );
+  }
+  
+  Double_t Sum[1024];
+  for( int i = 0; i< m_nPoint; i++){
+    if( i ==0 ){
+      Sum[i] = Waveform[i] - m_Pedestal ;
+    }else{
+      Sum[i] = Sum[i-1] + Waveform[i] - m_Pedestal; 
+    }
+  }
+  
+  Double_t HeadSumMean = 0;
+  Double_t TailSumMean = 0;
+  for( int iSubPoint  = 0; iSubPoint < 4; iSubPoint++ ){
+    HeadSumMean += ( Sum[ StartPoint + iSubPoint ]      /4.);    
+    TailSumMean += ( Sum[ StartPoint + iSubPoint + 12 ] /4.);
+  }
+  
+  return TailSumMean - HeadSumMean ;
+}
+Int_t    E14WaveformAnalyzer::AnalyzeWaveform( Double_t *Waveform ){
+  _Clear();
+  m_fWaveformAnalyzed = false;
+  m_WaveformState = 0;
+  _GetMeanHead( Waveform );
+  _GetMeanTail( Waveform );
+  _GetMaximum ( Waveform );
+  _GetMinimum ( Waveform );
+  _GetPedestal( Waveform );
+  _GetWidth   ( Waveform );
+  _GetSumSlope( Waveform );  
+  m_fWaveformAnalyzed = true;
+  if( m_PeakMaximum > 16000)                { m_WaveformState |= 1;  }
+  if( m_PeakMinimum < 1    )                { m_WaveformState |= 2;  }
+  if( m_MeanHead - m_Pedestal > 10 )          { m_WaveformState |= 4;  }
+  if( m_MeanTail - m_Pedestal > 10 )          { m_WaveformState |= 8;  }
+  if( m_TimeMaximum > (m_nPoint-15)*m_TimeWidth){ m_WaveformState |= 16; }
+  return m_WaveformState; 
+}
+Bool_t   E14WaveformAnalyzer::GetParameters( Double_t& Pedestal, Double_t& Height, Double_t& PeakTime) const {
+  if( !m_fWaveformAnalyzed ) { 
+    std::cerr << "Please Analyze Waveform beform GetParameter" << std::endl;
+    Pedestal = 0;
+    Height   = 0;
+    PeakTime = 0;
+    return false;
+  }
+  Pedestal = m_Pedestal; 
+  Height   = m_PeakMaximum - m_Pedestal;
+  PeakTime = m_TimeMaximum;
+  return true;
+}
+void     E14WaveformAnalyzer::Draw( Double_t* Waveform ){
+  /*
+  if( !m_fmHead    ) _GetMeanHead( Waveform );
+  if( !m_fmTail    ) _GetMeanTail( Waveform );
+  if( !m_fMaximum  ) _GetMaximum( Waveform );
+  if( !m_fMinimum  ) _GetMinimum( Waveform );
   if( !m_fPedestal ) _GetPedestal( Waveform );
-  if( !m_fWidth ) _GetWidth( Waveform );
-  if( !m_fADC ) _GetADC( Waveform );
-  if( !m_fSlope ) _GetSumSlope( Waveform );
+  if( !m_fWidth    ) _GetWidth( Waveform );
+  if( !m_fADC      ) _GetADC( Waveform );
+  if( !m_fSlope    ) _GetSumSlope( Waveform );
+  */
+
+  if( !m_fWaveformAnalyzed ){ AnalyzeWaveform( Waveform );}
   TGraph* grWave    = new TGraph();
   for( int ipoint  =0 ; ipoint < m_nPoint; ipoint++){
     grWave->SetPoint( ipoint, ipoint*8, Waveform[ipoint]);
@@ -419,90 +559,4 @@ void E14WaveformAnalyzer::_Draw( Double_t* Waveform ){
 	    << "Slope Start  :" << m_SlopeStart    << "\n"
 	    << "Slope Delta  :" << m_SlopeDelta    << "\n"    
 	    << std::endl; 
-}
-
-Bool_t E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform ){
-  if( m_nPoint > 1024){
-    std::cerr << "FX TOO LONG" << std::endl;    
-    m_fSlope = false; 
-    return m_fSlope;
-  }
-  if( !m_fPedestal ){
-    _GetPedestal( Waveform );
-  }
-
-  Double_t Sum[1024] = {0}; // Size is Must bigger than m_nPoints // 
-  for( int i = 0; i < m_nPoint; i++){
-    if( i == 0 ){
-      Sum[i] = Waveform[i] - m_Pedestal;
-    }else{
-      Sum[i] = Sum[i-1] + Waveform[i] - m_Pedestal;
-    }
-  }
-
-  Double_t DeltaMaximum  = -1*0xFFFF;
-  Int_t    StartPoint    = 0;   
-
-  // 4 front , 8 middle, 4 tail compare // 
-  for( int i = 0; i < m_nPoint - 15; i++){
-    Double_t HeadSumMean   = 0;
-    Double_t TailSumMean   = 0;
-    Double_t MiddleSumMean = 0; 
-    Double_t RegionDelta   = 0;
-    for( int isubpoint  = 0; isubpoint < 4; isubpoint++){
-      HeadSumMean   += ( Sum[ i + isubpoint ] / 4.) ;      
-    }
-    for( int isubpoint =  4; isubpoint < 12; isubpoint++){
-      MiddleSumMean += ( Sum[ i + isubpoint ] / 12 );
-    }
-    for( int isubpoint =  12; isubpoint < 16; isubpoint++){
-      TailSumMean   += ( Sum[ i + isubpoint ] / 4.);
-    }
-    RegionDelta  = TailSumMean - HeadSumMean;
-    if( RegionDelta  >  DeltaMaximum ){
-      DeltaMaximum = RegionDelta;
-      StartPoint   = i;
-    }
-  }
-
-  m_SlopeStart = StartPoint;
-  m_SlopeDelta = DeltaMaximum;
-  m_fSlope = true; 
-  return m_fSlope; 
-}
-
-Bool_t E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform , Int_t& StartPoint, Double_t& DeltaMaximum ){
-  if( !m_fSlope ){
-    _GetSumSlope( Waveform );    
-  }
-  StartPoint = m_SlopeStart;
-  DeltaMaximum = m_SlopeDelta;
-  return m_fSlope;
-}
-
-Double_t E14WaveformAnalyzer::_GetSlopeDelta( Double_t* Waveform , Int_t StartPoint){
-  if(  (StartPoint + 16) - m_nPoint < 0 || m_nPoint < 1024 ){
-    return -1*0xFFFF;
-  } 
-  if( !m_fPedestal ){
-    _GetPedestal( Waveform );
-  }
-  
-  Double_t Sum[1024];
-  for( int i = 0; i< m_nPoint; i++){
-    if( i ==0 ){
-      Sum[i] = Waveform[i] - m_Pedestal ;
-    }else{
-      Sum[i] = Sum[i-1] + Waveform[i] - m_Pedestal; 
-    }
-  }
-  
-  Double_t HeadSumMean = 0;
-  Double_t TailSumMean = 0;
-  for( int iSubPoint  = 0; iSubPoint < 4; iSubPoint++ ){
-    HeadSumMean += ( Sum[ StartPoint + iSubPoint ]      /4.);    
-    TailSumMean += ( Sum[ StartPoint + iSubPoint + 12 ] /4.);
-  }
-  
-  return TailSumMean - HeadSumMean ;
 }

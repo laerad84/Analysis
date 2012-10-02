@@ -24,6 +24,17 @@ class E14WaveformAnalyzer {
   Bool_t m_fBoundary;
   Bool_t m_fADC; 
   Bool_t m_fSlope;
+  Bool_t m_fOverflow;
+  Bool_t m_fUnderflow;
+  Bool_t m_fWaveformAnalyzed;
+  //// Bit Information
+  //// Underflow     = 0; less than 1
+  //// Overflow      = 1; bigger than 16000
+  //// Peak in Head  = 2; MeanHead - Pedestal > 10;
+  //// Peak in Tail  = 3; MeanTail - Pedestal > 10;
+  //// Width         = 4; Width > 100; 
+  //// Peak Position = 5; Peak Position > 250;
+  Int_t  m_WaveformState;
 
   Double_t m_MeanHead;
   Double_t m_MeanTail;
@@ -80,10 +91,13 @@ class E14WaveformAnalyzer {
 
   virtual Bool_t _GetSumSlope( Double_t* Waveform );
   virtual Bool_t _GetSumSlope( Double_t* Waveform , Int_t& StartPoint , Double_t& DeltaMaximum);
-
-  virtual Double_t _GetSlopeDelta( Double_t* Waveform, Int_t StartPoint ); 
   virtual void   _Clear();
-  virtual void   _Draw(Double_t* Waveform);
+
+  virtual void     Draw(Double_t* Waveform);  
+  virtual Double_t GetSlopeDelta( Double_t* Waveform, Int_t StartPoint ); 
+  virtual Int_t    AnalyzeWaveform( Double_t* Waveform );
+  virtual Bool_t   IsAnalyzed() const { return m_fWaveformAnalyzed; }
+  virtual Bool_t   GetParameters( Double_t& Pedestal, Double_t& Height, Double_t& PeakTime ) const;
   /*
   virtual Double_t   GetPeakPointMaximum const () { return m_PeakPointMaximum;}
   virtual Double_t   GetMeanHead const () { return m_MeanHead; }  

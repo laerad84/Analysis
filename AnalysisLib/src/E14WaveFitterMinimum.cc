@@ -1,7 +1,7 @@
 #include "E14WaveFitterMinimum.h"
 TSpline3* E14WaveFitterMinimum::m_spl = new TSpline3();
-E14WaveFitterMinimum::E14WaveFitterMinimum(int SelectFunction){
-  m_FuncFlag = SelectFunction;
+E14WaveFitterMinimum::E14WaveFitterMinimum(){
+  //m_FuncFlag = SelectFunction;
   MakeFunction();
 }
 
@@ -10,14 +10,9 @@ E14WaveFitterMinimum::~E14WaveFitterMinimum(){
 }
 
 int E14WaveFitterMinimum::MakeFunction(){
-  if(m_FuncFlag == 0){
-    m_FitFunc = new TF1("fitFuncTemplete",fTemplateFunction,
+  m_FitFunc = new TF1("fitFuncTemplete",fTemplateFunction,
 			0., 500., 3);
-  }else{
-    m_FitFunc = new TF1("fitFuncAsymmetric",fAsymmetricGaussian,
-			0., 500., 5);
-  }
-  return m_FuncFlag;
+  return 1;
 }    
 
 int E14WaveFitterMinimum::Fit( TGraph* gr , char* goption, char* foption,
@@ -57,11 +52,7 @@ double E14WaveFitterMinimum::fAsymmetricGaussian(double* x, double* par){
 }
 
 bool E14WaveFitterMinimum::Clear(){
-  if( m_FuncFlag == 0){
-    m_FitFunc->SetParameters(0,0,0);
-  }else{
-    m_FitFunc->SetParameters(0,0,0,0,0);
-  }
+  m_FitFunc->SetParameters(0,0,0);
   return true;
 }
 		    

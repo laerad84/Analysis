@@ -18,8 +18,8 @@ class E14WaveFitterMinimum {
   static double fTemplateFunction( double* x, double* par );
   static double fAsymmetricGaussian( double* x, double* par );
   TF1* m_FitFunc;
-  int  m_FuncFlag;
-  E14WaveFitterMinimum(int SelectFunction = 0);
+  //int  m_FuncFlag;
+  E14WaveFitterMinimum();
   virtual ~E14WaveFitterMinimum();
 
   virtual int   MakeFunction();
