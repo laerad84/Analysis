@@ -52,6 +52,7 @@ void     E14WaveFitter::InitPar(){
   m_gnd        = 0.;
 
 }  
+
 bool     E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
   //if( !Approx( gr ) ){ return false; }
 #ifdef DEBUG
@@ -101,6 +102,7 @@ bool     E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
     }
   }  
 }
+
 bool     E14WaveFitter::FitTime( TGraph* gr){
   m_splTime = m_FitFunc->GetX( m_FitFunc->GetParameter(0)*0.5 + m_FitFunc->GetParameter(2),
 			       m_FitFunc->GetParameter(1)-60,   m_FitFunc->GetParameter(1));

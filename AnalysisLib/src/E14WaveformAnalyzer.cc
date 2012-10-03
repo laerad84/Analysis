@@ -48,6 +48,7 @@ void   E14WaveformAnalyzer::_Clear(){
   m_SigmaTail     = 0;
   m_Pedestal      = 0; 
   m_PedestalSigma = 0; 
+  m_MinimumSigma  = 0;
   m_Height        = 0;
   m_PeakMaximum   = 0;
   m_PeakMinimum   = 0; 
@@ -201,6 +202,7 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform , Double_t& PeakMax
 Bool_t E14WaveformAnalyzer::_GetMinimum     ( Double_t* Waveform ){
   m_PeakMinimum = 0xFFFF;
   m_TimeMinimum = 0;
+  Double_t localMinSigma;
   Double_t localMinimum;
   Double_t localMinTime;
   if( !m_fMaximum ){
@@ -210,18 +212,21 @@ Bool_t E14WaveformAnalyzer::_GetMinimum     ( Double_t* Waveform ){
     localMinimum = 0;
     localMinTime = 0;
     for( int iSubPoint = 0; iSubPoint < 4; iSubPoint++){
-      localMinimum += Waveform[ ipoint + iSubPoint];
+      localMinimum  += Waveform[ ipoint + iSubPoint ];
+      localMinSigma += Waveform[ ipoint + iSubPoint ]*Waveform[ ipoint + iSubPoint ];
       //localMinTime += Waveform[ ipoint + iSubPoint]*(ipoint + iSubPoint);
     }
-    localMinimum = localMinimum / 4.;   
+    localMinimum  = localMinimum / 4.;   
+    localMinSigma = TMath::Sqrt(localMinSigma/4 - localMinimum*localMinimum);
     //localMinTime = localMinTime / 4. / localMinimum;
     localMinTime = ((Double_t)ipoint +1.5)*8;
     if( localMinTime >=m_TimeMaximum ){
       break;
     }
     if( localMinimum < m_PeakMinimum ){
-      m_PeakMinimum = localMinimum;
-      m_TimeMinimum = localMinTime;
+      m_PeakMinimum  = localMinimum;
+      m_TimeMinimum  = localMinTime;
+      m_MinimumSigma = localMinSigma;
     }
   } 
   m_fMinimum = true;
@@ -263,12 +268,12 @@ Bool_t E14WaveformAnalyzer::_GetPedestal( Double_t* Waveform ){
     nPedPoint++;
   }
 
-  if( nPedPoint     ==  0               ||
-      m_Pedestal    < m_PeakMinimum     ||
-      m_Pedestal    - m_PeakMinimum > 8 ||
-      m_TimeMaximum < 40*m_TimeWidth    ){
-    m_Pedestal      =  m_PeakMinimum;
-    m_PedestalSigma = 0xFFFF;
+  if( nPedPoint                     < 4                 ||
+      m_Pedestal                    < m_PeakMinimum     ||
+      m_Pedestal    - m_PeakMinimum > m_MinimumSigma*3  ||
+      m_TimeMaximum - m_TimeMinimum < 12*m_TimeWidth    ){
+    m_Pedestal      = m_PeakMinimum;
+    m_PedestalSigma = m_MinimumSigma;
     m_fPedestal     = true;
   }else{
     m_Pedestal /= nPedPoint;
