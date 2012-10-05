@@ -141,9 +141,7 @@ bool     E14WaveFitter::Draw(TGraph* gr){
   std::cout << "PeakTime   :" << m_FitFunc->GetParameter(1) << "\n";
   std::cout << "Pedestal   :" << m_FitFunc->GetParameter(2) << "\n"; 
   std::cout << "FitResult  :" << GetFitResult() << "\n";
-
-  
-
-  
   return true;
 }
+
+

@@ -10,8 +10,10 @@ E14WaveFitterMinimum::~E14WaveFitterMinimum(){
 }
 
 int E14WaveFitterMinimum::MakeFunction(){
-  m_FitFunc = new TF1("fitFuncTemplete",fTemplateFunction,
-			0., 500., 3);
+  m_FitFunc = new TF1("fitFuncTemplate",fTemplateFunction,
+		      0., 500., 3);
+  m_FitFuncDoublePeak = new TF1("fitFucTemplate",fTemplateFunctionDoublePeak,
+				0., 500., 5);
   return 1;
 }    
 
@@ -34,6 +36,27 @@ double E14WaveFitterMinimum::fTemplateFunction( double* x ,double* par){
   if( t == 1./0 ){ return ped; }
   t_fcn         = height*E14WaveFitterMinimum::m_spl->Eval(t - mean) + ped;
   return t_fcn;
+}
+double E14WaveFitterMinimum::fTemplateFunctionDoublePeak( double* x, double* par ){
+  double t       = x[0];
+  double height1 = par[0];
+  double mean1   = par[1];
+  double ped     = par[2];
+  double height2 = par[3];
+  double mean2   = par[4];
+  double t_fcn = 0;  
+  if( mean1 < mean2 ){
+    if( t - mean1 < -150 || t - mean2 >= 300 ){ return ped; }
+  }else{
+    if( t - mean2 < -150 || t - mean1 >= 300 ){ return ped; }
+  }
+  if( t == 1./0){ return ped ;}
+    t_fcn 
+      = height1*E14WaveFitterMinimum::m_spl->Eval(t-mean1)
+      + height2*E14WaveFitterMinimum::m_spl->Eval(t-mean2)
+      + ped;
+    
+    return t_fcn;
 }
 
 double E14WaveFitterMinimum::fAsymmetricGaussian(double* x, double* par){  
