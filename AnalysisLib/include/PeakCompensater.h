@@ -20,9 +20,9 @@ class PeakCompensater
 
   PeakCompensater();
   ~PeakCompensater();
-  double Compensate( int, double );
-  void Draw(int ,char*);
+  virtual double Compensate( int, double );
+  virtual void   Draw(int ,char*);
  private:
-    bool Init();
+  virtual bool Init();
 };
 #endif //PEAKCOMPENSATER__H__

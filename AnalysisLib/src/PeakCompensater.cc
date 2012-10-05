@@ -8,6 +8,7 @@ PeakCompensater::PeakCompensater(){
     std::cerr << " File is not exist" << std::endl;
   }
 }
+
 PeakCompensater::~PeakCompensater(){
   ;
 }
@@ -36,6 +37,7 @@ bool PeakCompensater::Init(){
   ifs.close();
   return true;
 }
+
 double PeakCompensater::Compensate(int id , double Peak ){
   int splID=-1;
   double CompensateOut=0;
