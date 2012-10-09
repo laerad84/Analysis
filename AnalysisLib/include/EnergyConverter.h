@@ -23,12 +23,13 @@ class EnergyConverter {
  public:
   PeakCompensater* m_Compensater;  
   EnergyConverter();
-  EnergyConverter( const char* CalFilename, int nChannel = 2716 ); 
+  EnergyConverter( const char* DetectorName, int nChannel = 2716 ); 
   ~EnergyConverter();  
-  virtual bool   ReadCalibrationFile( const char* );
-  virtual double GetCalibrationConstant( int )  const ;
-  virtual double ConvertToEnergy( int, double ) const ; 
-  virtual bool   IsGoodChannel( int )           const ;
+  virtual bool   ReadCalibrationTextFile( const char* );
+  virtual bool   ReadCalibrationRootFile( const char* );
+  virtual bool   IsGoodChannel         ( int )         const ;
+  virtual double GetCalibrationConstant( int )         const ;
+  virtual double ConvertToEnergy       ( int, double ) const ; 
   
  private:
   virtual void Init();

@@ -1,4 +1,5 @@
 #include "E14WaveformAnalyzer.h"
+#include "TSpline.h"
 
 Double_t pol2func( Double_t* x, Double_t* par){
   Double_t p0 = par[0];
@@ -107,19 +108,14 @@ Bool_t E14WaveformAnalyzer::_GetMeanTail( Double_t* Waveform, Double_t& MeanTail
   m_fmTail    = true;
   return      m_fmTail; 
 }
-Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
-  // Taking 4point Mean maximum //
-  m_PeakMaximum = -1*0xFFFF;
-  m_TimeMaximum = 0; 
-  Double_t localMaximum = 0;
-  Double_t localMaxTime = 0;
-  Double_t localPointMaximum = 0;
-
+Bool_t E14WaveformAnalyzer::_CheckOVF( Double_t* Waveform ){
   m_AllPointMaximum  = 0;
   m_AllPointMinimum  = 0; 
   m_AllPointMax      = 0;
   m_AllPointMin      = 0xFFFF;
   m_PeakPointMaximum = 0;
+  m_fOverflow  = false;
+  m_fUnderflow = false; 
 
   // Check Underflow && Overflow 
   for( int ipoint = 0; ipoint < m_nPoint;  ipoint++){
@@ -134,13 +130,83 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
   } 
   if( m_AllPointMaximum > 16000 ){ m_fOverflow = true; }
   if( m_AllPointMinimum < 1     ){ m_fUnderflow = true; }
+  if( m_fOverflow || m_fUnderflow ){ return true; }
+  else { return true; }
+}  
+Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
+  // Taking 4point Mean maximum //
+  m_PeakMaximum = -1*0xFFFF;
+  m_TimeMaximum = 0; 
+  Double_t localMaximum = 0.;
+  Double_t localMaxTime = 0.;
+  Double_t localPointMaximum = 0.;
+  Int_t    localMaxPoint = 0;
+  
+  Double_t l_4point_MaximumHeight = 0.;
+  Double_t l_4point_MaximumTime   = 0.; 
+  Int_t    l_4point_MaximumPoint  = 0;
+  Double_t l_2point_MaximumHeight = 0.;
+  Double_t l_2point_MaximumTime   = 0.; 
+  Int_t    l_2point_MaximumPoint  = 0;
+  _CheckOVF( Waveform );
+  // Search 4 point Maximum region // 
+  const int Range = 4; 
+  for( int ipoint  = 0 ; ipoint <  m_nPoint - Range ; ipoint++){
+    l_4point_MaximumTime = 0.;
+    l_4point_MaximumHeight = 0.;
+    l_2point_MaximumTime = 0.;
+    l_2point_MaximumHeight = 0.;
+    for( int iSubPoint = 0; iSubPoint < Range ; iSubPoint++){
+      l_4point_MaximumHeight += Waveform[ ipoint+ iSubPoint ];
+    }
+    
+    l_4point_MaximumHeight /= Range;
+    l_4point_MaximumTime    = ((double)(ipoint + Range/2) - 0.5 )*8;
+    l_4point_MaximumPoint   = ipoint; 	 
+    
+    if( l_4point_MaximumHeight > localMaximum ){
+      localMaximum  = l_4point_MaximumHeight;
+      localMaxTime  = l_4point_MaximumTime;
+      localMaxPoint = l_4point_MaximumPoint;
+    }
+  }
+  // Search 2 point Maximum region from 4 point Maximum region // 
+  localMaximum = 0;
+  for( int ipoint = localMaxPoint; ipoint < localMaxPoint + Range; ipoint++){
+    l_2point_MaximumHeight = 0.;
+    for( int iSubPoint = 0; iSubPoint < 2; iSubPoint++ ){
+      l_2point_MaximumHeight += Waveform[ ipoint + iSubPoint ];
+    }
+    l_2point_MaximumHeight /= 2;
+    l_2point_MaximumPoint = ipoint;
+    if( l_2point_MaximumHeight > localMaximum ){
+      localMaximum  = l_2point_MaximumHeight;
+      localMaxPoint = ipoint;
+    }
+  }
+  // Search Maximum point from 2 point Maximum region //
+  localMaximum = 0; 
+  if( Waveform[ localMaxPoint ] > Waveform[ localMaxPoint+1 ] ){
+    localMaximum = Waveform[ localMaxPoint ];
+  }else{
+    localMaximum = Waveform[ localMaxPoint + 1 ];
+  }
+  localMaxTime       = ((Double_t)localMaxPoint+0.5)*8;
+  
+  m_PeakMaximum      = localMaximum;
+  m_TimeMaximum      = localMaxTime;
+  m_PeakPointMaximum = localMaximum;
+  
 
-  for( int ipoint = m_CnHead+4; ipoint < m_nPoint - m_CnTail - 4 ; ipoint++ ){
+  //////////////////////////////////////////////////////////////////////////////
+  // 4 Point Maximum Old Version
+  /*
+    for( int ipoint = m_CnHead+4; ipoint < m_nPoint - m_CnTail - 4 ; ipoint++ ){
     localPointMaximum  = 0;
     localMaximum       = 0; 
-
+    
     for( int iSubPoint = 0; iSubPoint <4; iSubPoint++){
-      localMaximum += Waveform[ipoint+iSubPoint]; 
+    localMaximum += Waveform[ipoint+iSubPoint]; 
       localMaxTime += Waveform[ipoint+iSubPoint]*(ipoint+iSubPoint);       
       if( Waveform[ ipoint +iSubPoint ] > localPointMaximum ){
 	localPointMaximum = Waveform[ ipoint + iSubPoint ];
@@ -154,7 +220,9 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
       m_TimeMaximum = localMaxTime;
       m_PeakPointMaximum = localPointMaximum;
     }
-    
+    }
+  */
+
     /*
     if( localMaximum > m_PeakMaximum ){
       MaxPoint      = ipoint;
@@ -163,7 +231,7 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
       m_PeakPointMaximum = localPointMaximum;
     }
     */
-  }
+  /////////////////////////////////////////////////////////////////////////////////
 
   //m_PeakMaximum = m_PeakPointMaximum; 
 
@@ -199,7 +267,7 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform , Double_t& PeakMax
   TimeMaximum = m_TimeMaximum; 
   return m_fMaximum; 
 }
-Bool_t E14WaveformAnalyzer::_GetMinimum     ( Double_t* Waveform ){
+Bool_t E14WaveformAnalyzer::_GetMinimum ( Double_t* Waveform ){
   m_PeakMinimum = 0xFFFF;
   m_TimeMinimum = 0;
   Double_t localMinSigma;
@@ -232,7 +300,7 @@ Bool_t E14WaveformAnalyzer::_GetMinimum     ( Double_t* Waveform ){
   m_fMinimum = true;
   return m_fMinimum;
 }
-Bool_t E14WaveformAnalyzer::_GetMinimum     ( Double_t* Waveform , Double_t& PeakMinimum, Double_t& TimeMinimum ){
+Bool_t E14WaveformAnalyzer::_GetMinimum ( Double_t* Waveform , Double_t& PeakMinimum, Double_t& TimeMinimum ){
   if( !m_fMinimum ){
     _GetMinimum( Waveform );
   }
@@ -241,6 +309,75 @@ Bool_t E14WaveformAnalyzer::_GetMinimum     ( Double_t* Waveform , Double_t& Pea
   m_fMinimum = true;
   return m_fMinimum;
 }
+Bool_t E14WaveformAnalyzer::_GetMaximumWithRange( Double_t* Waveform , Double_t& Maximum, Double_t& MaxTime, Int_t Init_Point, Int_t End_Point ){
+  // Taking 4point Mean maximum //
+  Maximum = 0.;
+  MaxTime = 0.;
+
+  Double_t localMaximum = 0.;
+  Double_t localMaxTime = 0.;
+  Double_t localPointMaximum = 0.;
+  Int_t    localMaxPoint = 0;
+  
+  Double_t l_4point_MaximumHeight = 0.;
+  Double_t l_4point_MaximumTime   = 0.; 
+  Int_t    l_4point_MaximumPoint  = 0;
+  Double_t l_2point_MaximumHeight = 0.;
+  Double_t l_2point_MaximumTime   = 0.; 
+  Int_t    l_2point_MaximumPoint  = 0;
+  
+  if( End_Point - Init_Point < 4 ){ return  false; }
+  if( Init_Point >= m_nPoint || End_Point >= m_nPoint ){ return false; }
+
+  // Search 4 point Maximum region // 
+  const int Range = 4; 
+  for( int ipoint  = Init_Point ; ipoint <  End_Point - Range ; ipoint++){
+    l_4point_MaximumTime   = 0.;
+    l_4point_MaximumHeight = 0.;
+    l_2point_MaximumTime   = 0.;
+    l_2point_MaximumHeight = 0.;
+    for( int iSubPoint = 0; iSubPoint < Range ; iSubPoint++){
+      l_4point_MaximumHeight += Waveform[ ipoint+ iSubPoint ];
+    }
+    
+    l_4point_MaximumHeight /= Range;
+    l_4point_MaximumTime    = ((double)(ipoint + Range/2) - 0.5 )*8;
+    l_4point_MaximumPoint   = ipoint; 	 
+    
+    if( l_4point_MaximumHeight > localMaximum ){
+      localMaximum  = l_4point_MaximumHeight;
+      localMaxTime  = l_4point_MaximumTime;
+      localMaxPoint = l_4point_MaximumPoint;
+    }
+  }
+  // Search 2 point Maximum region from 4 point Maximum region // 
+  localMaximum = 0;
+  for( int ipoint = localMaxPoint; ipoint < localMaxPoint + Range; ipoint++){
+    l_2point_MaximumHeight = 0.;
+    for( int iSubPoint = 0; iSubPoint < 2; iSubPoint++ ){
+      l_2point_MaximumHeight += Waveform[ ipoint + iSubPoint ];
+    }
+    l_2point_MaximumHeight /= 2;
+    l_2point_MaximumPoint = ipoint;
+    if( l_2point_MaximumHeight > localMaximum ){
+      localMaximum  = l_2point_MaximumHeight;
+      localMaxPoint = ipoint;
+    }
+  }
+  // Search Maximum point from 2 point Maximum region //
+  localMaximum = 0; 
+  if( Waveform[ localMaxPoint ] > Waveform[ localMaxPoint+1 ] ){
+    localMaximum = Waveform[ localMaxPoint ];
+  }else{
+    localMaximum = Waveform[ localMaxPoint + 1 ];
+  }
+  localMaxTime       = ((Double_t)localMaxPoint+0.5)*8;
+
+  MaxTime = localMaxTime;
+  Maximum = localMaximum;
+  return true;
+}
+
 Bool_t E14WaveformAnalyzer::_GetPedestal( Double_t* Waveform ){
   if( !m_fMaximum ){
     _GetMaximum( Waveform ); 
@@ -354,8 +491,7 @@ Bool_t E14WaveformAnalyzer::_GetWidth   ( Double_t* Waveform ,Double_t& Boundary
   BoundaryTail = m_BoundaryTail;    
   return m_fBoundary; 				     
 }
-
-Bool_t E14WaveformAnalyzer::_GetADC( Double_t* Waveform , Int_t StartTime, Int_t EndTime ){
+Bool_t E14WaveformAnalyzer::_GetADC     ( Double_t* Waveform , Int_t StartTime, Int_t EndTime ){
   if( !m_fPedestal ){
     _GetPedestal( Waveform );
   }
@@ -366,18 +502,14 @@ Bool_t E14WaveformAnalyzer::_GetADC( Double_t* Waveform , Int_t StartTime, Int_t
   m_fADC = true; 
   return m_fADC;
 }
-
-Bool_t E14WaveformAnalyzer::_GetADC( Double_t* Waveform , Double_t& ADC, Int_t StartTime , Int_t EndTime ){
+Bool_t E14WaveformAnalyzer::_GetADC     ( Double_t* Waveform , Double_t& ADC, Int_t StartTime , Int_t EndTime ){
   if( !m_fADC ){
     _GetADC( Waveform, StartTime, EndTime );
   }
   ADC = m_ADC;
   return m_fADC;
 }
-
-
-
-Bool_t   E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform ){
+Bool_t E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform ){
   if( m_nPoint > 1024){
     std::cerr << "FX TOO LONG" << std::endl;    
     m_fSlope = false; 
@@ -426,7 +558,7 @@ Bool_t   E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform ){
   m_fSlope = true; 
   return m_fSlope; 
 }
-Bool_t   E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform , Int_t& StartPoint, Double_t& DeltaMaximum ){
+Bool_t E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform , Int_t& StartPoint, Double_t& DeltaMaximum ){
   if( !m_fSlope ){
     _GetSumSlope( Waveform );    
   }
@@ -434,7 +566,6 @@ Bool_t   E14WaveformAnalyzer::_GetSumSlope( Double_t* Waveform , Int_t& StartPoi
   DeltaMaximum = m_SlopeDelta;
   return m_fSlope;
 }
-
 Double_t E14WaveformAnalyzer::GetSlopeDelta( Double_t* Waveform , Int_t StartPoint){
   if(  (StartPoint + 16) - m_nPoint <= 0 || m_nPoint > 1024 ){
     return -1*0xFFFF;
@@ -565,3 +696,4 @@ void     E14WaveformAnalyzer::Draw( Double_t* Waveform ){
 	    << "Slope Delta  :" << m_SlopeDelta    << "\n"    
 	    << std::endl; 
 }
+
