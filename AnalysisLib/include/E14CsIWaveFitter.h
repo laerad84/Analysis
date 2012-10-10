@@ -1,5 +1,5 @@
-#ifndef E14WAVEFITTER__H__
-#define E14WAVEFITTER__H__
+#ifndef E14CSIWAVEFITTER__H__
+#define E14CSIWAVEFITTER__H__
 #include <iostream>
 #include <vector>
 #include <string>
@@ -21,7 +21,7 @@ class E14WaveFitter {
   double   m_HHTime;
   double   m_splTime;
 
-  Double_t TempleteFunction( double *x, double *par );
+  Double_t TemplateFunction( double *x, double *par );
   Double_t AsymmericGaussian( double *x, double *par );
 
  public:

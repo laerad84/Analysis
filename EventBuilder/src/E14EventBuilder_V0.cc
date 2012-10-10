@@ -1,98 +1,11 @@
-#ifndef E14EVENTBUILDER__H__
-#define E14EVENTBUILDER__H__
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <cstdio>
-
-#include "E14ConvReader.h"
-#include "E14ConvWriter.h"
-#include "E14IDHandler.h"
-#include "E14WaveFitter.h"
-#include "IDHandler.h"
-#include "E14WaveformAnalyzer.h"
-#include "WaveformFitter.h"
-
-#include "GeneralTypes.h"
-#include "GeneralMacros.h"
-#include "Structs.h"
-
-#include "TH1.h"
-#include "TH2.h"
-#include "TProfile.h"
-#include "TGraph.h"
-#include "TText.h"
-#include "TROOT.h"
-#include "TApplication.h"
-#include "TPostScript.h"
-#include "TCanvas.h"
-#include "TFile.h"
-#include "TTree.h"
-
-static const int nCrateFeb  = 11; 
-static const int nCVModule     = 10;
-static const int nCosmicModule = 20; 
-static const int CosmicArr[20] = {4 ,5 ,2 ,3 ,6 ,7 ,0 ,1 ,12,13,10,11,14,15,8 ,9 ,16,17,18,19};
-  
-
-class E14EventBuilder_V0 {
- public:
-  E14EventBuilder_V0(TTree* trout);
-  ~E14EventBuilder_V0();
-  void Init();
-  bool InitEnvironment();
-  bool InitIOFile();
-  bool InitTemplate();
-  bool InitTimeOffset();
-  bool InitTrigger();
-
-  int  TriggerDicision();
-  int  AnalyzeCsIData();
-  void Clear();
-  void DrawEvent(TCanvas* canvas);
-  void DrawResult(TCanvas* canvas);
-  int  EventProcess(int ievent);
-  int  LoopAll();
-  
-  // Utility Classes // 
-  WaveFitter*          wavFitter; //for Trigger waveform Fitting
-  E14WaveFitter*       Fitter;    //for CsI  waveform Fitting 
-  E14WaveformAnalyzer* wavAnalyzer;
-  EnergyConverter*     Converter;
-
-  // IO // 
-  E14ConvReader* conv[nCrateFeb];
-  TFile*         tf[nCrateFeb];
-
-  // Template // 
-  TGraph*       tempGr[2716];
-  TSpline3*     tempSpl[2716]; 
-
- private:
-  std::string ANALIBDIR;
-  std::string CONVFILEDIR;
-  std::string WAVEFILEDIR;
-  std::string SUMFILEDIR;
-
-  double TimeOffset[2716];
-
-  /// Trigger;
-  double CosmicSignal[20];
-  double CosmicTime[20];
-  double CVSignal[10];
-  double CVTime[10];
-  int    LaserCFC[3];
-  int    CVCFC[10][3];  
-  int    CosmicCFC[20][3];
-
-};
-
-#endif 
+#include "E14EventBuilder_V0.h"
 
 E14EventBuilder_V0::E14EventBuilder_V0(TTree* trout, Int_t RunNumber){
+  m_trOut     = trout;
+  m_RunNumber = RunNumber;
   Init();
 }
-E14EventBuilder_V0::E14EventBuilder_V0(){
+E14EventBuilder_V0::~E14EventBuilder_V0(){
   ;
 }
 bool E14EventBuilder_V0::Init(){
@@ -101,6 +14,9 @@ bool E14EventBuilder_V0::Init(){
   InitTemplate();
   InitTimeOffset();
   InitTrigger();
+  for( int i = 0; i< 20 ;i++){
+    COSMIC_THRESHOLD[i] = 1000;
+  }
   return true;
 }
 bool E14EventBuilder_V0::InitEnvironment(){
@@ -108,23 +24,69 @@ bool E14EventBuilder_V0::InitEnvironment(){
   CONVFILEDIR = std::getenv("ROOTFILE_CONV");
   WAVEFILEDIR = std::getenv("ROOTFILE_WAV" );
   SUMFILEDIR  = std::getenv("ROOTFILE_SUMUP");
-  WaveFitter = new WaveformFitter( 48, kFALSE );
-  Fitter     = new E14WaveFitter();
-  wavAnalyzer= new E14WaveformAnalyzer();
-  Converter  = new EnergyConverter();
+  wavFitter   = new WaveformFitter( 48, kFALSE );
+  Fitter      = new E14WaveFitter();
+  wavAnalyzer = new E14WaveformAnalyzer();
+  Converter   = new EnergyConverter();
+  idHandler   = new IDHandler();
   Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",
-					  ANALIBDIR.c_str));
+					  ANALIBDIR.c_str()));
   return true;     
 }
 bool E14EventBuilder_V0::InitIOFile(){
   // Init IO File // 
+  int nFilesOpened = 0;
   for( int icrate = 0; icrate < nCrateFeb; icrate++){
-    std::cout << Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, RunNumber) << std::endl;
-    tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, RunNumber)); 
+    tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, m_RunNumber)); 
     conv[icrate] = new E14ConvReader((TTree*)tf[icrate]->Get("EventTree"));
+    if( !tf[icrate]->IsOpen() ){
+      std::cout << "//////////////////////////////////////////////////\n";
+      std::cout << "//////////////////////////////////////////////////\n";
+      std::cout << "Warning\n";
+      std::cout << "File is not exist : "<< tf[icrate]->GetName() << "\n";
+      std::cout << "//////////////////////////////////////////////////\n";
+      std::cout << "//////////////////////////////////////////////////\n";
+    }else{
+      nFilesOpened++;
+    }      
+  }
+  std::cout << Form("%s/Sum%d.root",SUMFILEDIR.c_str(),m_RunNumber) << std::endl;  
+  E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),m_RunNumber),
+					    m_trOut);
+  std::cout<< "Setting Map" << std::endl;
+  {
+    wConv->AddModule("Csi");
+    wConv->AddModule("CC03");
+    wConv->AddModule("OEV");
+    wConv->AddModule("CV");
+    wConv->AddModule("Cosmic");
+    wConv->AddModule("Laser");
+    wConv->AddModule("Etc");
+    CsiModuleID    = 0;    
+    CC03ModuleID   = 1;
+    OEVModuleID    = 2;
+    CVModuleID     = 3;
+    CosmicModuleID = 4;
+    LaserModuleID  = 5;
+    wConv->Set();
+    wConv->SetMap();
+    wConv->Branch();
+    int nentries = conv[0]->GetEntries();  
+    for( int icrate = 1; icrate < nCrateFeb; icrate++){
+      if( nentries != conv[icrate]->GetEntries() ){
+	std::cout << "Entries is Different" << std::endl;
+      }
+    }
+  }
+  m_Entries = conv[0]->GetEntries();
+  grCsI = new TGraph();
+  if( nFilesOpened == nCrateFeb && m_trOut != NULL){
+    return true;
+  }else{
+    return false;
   }
 }
-bool E14EventBuilder_V0::InitTemplate(){    
+bool E14EventBuilder_V0::InitTemplate(){
   // Set Template 
   
   TFile* tfTemplate = new TFile("TEMPLATE_SPLINE_250_500.root");
@@ -143,10 +105,11 @@ bool E14EventBuilder_V0::InitTemplate(){
   }
   tfTemplate->Close();
   return true;
- }
+}
 bool E14EventBuilder_V0::InitTimeOffset(){
-  std::ifstream  ifsTimeOffset("testNewWORKCompileOffset.txt");
-  for( int i = 0; i< 2716; i++){
+  std::string    TimeOffsetFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALIBDIR.c_str());
+  std::ifstream  ifsTimeOffset(TimeOffsetFile.c_str());
+  for( int i = 0; i < 2716; i++ ){
     TimeOffset[i] = 0.;
   }
   
@@ -159,6 +122,8 @@ bool E14EventBuilder_V0::InitTimeOffset(){
   return true;
 }
 bool E14EventBuilder_V0::InitTrigger(){
+  grTrigger = new TGraph();
+  // Init
   for( int i  = 0 ; i< 3 ; i++ ){
     LaserCFC[i] = 9999;
     for( int j = 0 ; j < 10 ; j++ ){
@@ -168,7 +133,7 @@ bool E14EventBuilder_V0::InitTrigger(){
       CosmicCFC[j][i] = 9999;
     }
   }
-
+  
   if((wConv->ModMap[CVModuleID]).nMod     != 10)
     { 
       std::cout<< "CV nModule is not equal"     << std::endl;
@@ -177,7 +142,7 @@ bool E14EventBuilder_V0::InitTrigger(){
     { 
       std::cout<< "Cosmic nModule is not equal" << std::endl;
     }
-  
+  // Set 
   for( int subID = 0; subID < 3; subID++ ){    
     LaserCFC[subID] = (wConv->ModMap[LaserModuleID]).Map[0][subID];
   }
@@ -193,21 +158,21 @@ bool E14EventBuilder_V0::InitTrigger(){
   }
   return true;
 }
+int  E14EventBuilder_V0::TriggerDicision(){
 
-int E14EventBuilder_V0::TriggerDicision(){
-  TotalTriggerFlag  =0;
+  TotalTriggerFlag  = 0;
   for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){            
     //std::cout << iMod << std::endl;
     if( iMod == wConv->GetModuleID("Csi") ){ continue; }
     int nSubModule = wConv->GetNsubmodule( iMod );
     if( nSubModule <= 0 ){ continue ;}      
     for( int iSubMod = 0; iSubMod < nSubModule; iSubMod++){	
-      if( wConv->SetGraph( iMod, iSubMod ,conv , gr ) == 0 ){ continue; }	       
-      
-      bool fit = wavFitter->Fit( gr ); 
+      grTrigger->Set(0);
+      if( wConv->SetGraph( iMod, iSubMod ,conv , grTrigger ) == 0 ){ continue; }	             
+      bool fit = wavFitter->Fit( grTrigger ); 
       int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
-      if( fit ){ 
-	TF1* fitFunc      = wavFitter->GetFunction();	    
+      if( fit ){
+	TF1*   fitFunc    = wavFitter->GetFunction();	    
 	double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
 	double halfTiming = fitFunc->GetX( halfHeight,
 					   fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
@@ -222,12 +187,13 @@ int E14EventBuilder_V0::TriggerDicision(){
 	wConv->mod[iMod]->m_nDigi++;	      	    
 	
 	TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
-	gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
+	grTrigger->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
 	double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
 	wConv->mod[iMod]->m_FitTime[chIndex]= halfFitTiming;
 	delete linearFunction;
-	wavFitter->Clear();	  
+	wavFitter->Clear();
       }
+      grTrigger->GetListOfFunctions()->Delete();
     }	
     
     if( iMod == LaserModuleID ){
@@ -283,9 +249,12 @@ int E14EventBuilder_V0::TriggerDicision(){
   }  
   return TotalTriggerFlag;
 }
-int E14EventBuilder_V0::AnalyzeCsIData(){
+int  E14EventBuilder_V0::AnalyzeCsIData(){
+
+  int nSubCsiModule = wConv->GetNsubmodule( CsiModuleID );
   for( int iSubMod = 0; iSubMod < nSubCsiModule; iSubMod++){	
-    if( wConv->SetGraph( iCsiMod, iSubMod ,conv , gr ) == 0 ){ continue; }		
+    grCsI->Set(0);
+    if( wConv->SetGraph( CsiModuleID, iSubMod ,conv , grCsI ) == 0 ){ continue; }		
     //////////////////////////////////////////////////////
     //// Different Analysis for each Different Module //// 
     //// For CsI Using Templete Fitting               //// 
@@ -293,51 +262,49 @@ int E14EventBuilder_V0::AnalyzeCsIData(){
     //////////////////////////////////////////////////////
     if( tempSpl[iSubMod] == NULL ){ 
       std::cout<< "Spline Pointer is NULL. Channel: "<< iSubMod  << std::endl;
-      }else{
+    }else{
       Fitter->SetWaveform(tempSpl[iSubMod]);
       Fitter->InitPar();
       //std::cout<< "Fit" << std::endl;
-      bool fit = Fitter->Fit(gr);
-      int chIndex = (wConv->mod[iCsiMod])->m_nDigi;
+      bool fit = Fitter->Fit(grCsI);
+      int chIndex = (wConv->mod[CsiModuleID])->m_nDigi;
       if( fit ){ 
 	if( Fitter->GetParameter(0) < 5 ){ continue ; }
-	for( int ipoint = 0; ipoint < gr->GetN(); ipoint++){
-	Double_t x,y;
-	idHandler->GetMetricPosition( iSubMod , x, y ); 
-
-	CsIOut->Fill( iSubMod, Fitter->GetParameter(0));
-	CsITime->Fill( iSubMod, Fitter->GetParameter(1) - TimeOffset[iSubMod] );
-	
-	std::cout<< "Fit Result : " << Fitter->GetFitResult() << std::endl;
-	
-	wConv->mod[iCsiMod]->m_FitHeight[wConv->mod[iCsiMod]->m_nDigi]= 1;
-	wConv->mod[iCsiMod]->m_ID[wConv->mod[iCsiMod]->m_nDigi]       = iSubMod;
-	wConv->mod[iCsiMod]->m_Signal[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetParameter(0);
-	wConv->mod[iCsiMod]->m_Time[wConv->mod[iCsiMod]->m_nDigi]     = Fitter->GetParameter(1);
-	wConv->mod[iCsiMod]->m_Pedestal[wConv->mod[iCsiMod]->m_nDigi] = Fitter->GetParameter(2);
-	wConv->mod[iCsiMod]->m_HHTime[wConv->mod[iCsiMod]->m_nDigi]   = Fitter->GetConstantFraction();
-	wConv->mod[iCsiMod]->m_Chisq[wConv->mod[iCsiMod]->m_nDigi]    = Fitter->GetChisquare();
-	wConv->mod[iCsiMod]->m_NDF[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetNDF();
-	wConv->mod[iCsiMod]->m_ADC[wConv->mod[iCsiMod]->m_nDigi]      = Fitter->GetADC(gr);
-	wConv->mod[iCsiMod]->m_nDigi++;	    
-	
+	for( int ipoint = 0; ipoint < grCsI->GetN(); ipoint++){
+	  Double_t x,y;
+	  idHandler->GetMetricPosition( iSubMod , x, y ); 		
+	  std::cout<< "Fit Result : " << Fitter->GetFitResult() << std::endl;
+	  
+	  wConv->mod[CsiModuleID]->m_FitHeight[wConv->mod[CsiModuleID]->m_nDigi]= 1;
+	  wConv->mod[CsiModuleID]->m_ID[wConv->mod[CsiModuleID]->m_nDigi]       = iSubMod;
+	  wConv->mod[CsiModuleID]->m_Signal[wConv->mod[CsiModuleID]->m_nDigi]   = Fitter->GetParameter(0);
+	  wConv->mod[CsiModuleID]->m_Time[wConv->mod[CsiModuleID]->m_nDigi]     = Fitter->GetParameter(1);
+	  wConv->mod[CsiModuleID]->m_Pedestal[wConv->mod[CsiModuleID]->m_nDigi] = Fitter->GetParameter(2);
+	  wConv->mod[CsiModuleID]->m_HHTime[wConv->mod[CsiModuleID]->m_nDigi]   = Fitter->GetConstantFraction();
+	  wConv->mod[CsiModuleID]->m_Chisq[wConv->mod[CsiModuleID]->m_nDigi]    = Fitter->GetChisquare();
+	  wConv->mod[CsiModuleID]->m_NDF[wConv->mod[CsiModuleID]->m_nDigi]      = Fitter->GetNDF();
+	  //wConv->mod[CsiModuleID]->m_ADC[wConv->mod[CsiModuleID]->m_nDigi]      = Fitter->GetADC(gr);
+	  wConv->mod[CsiModuleID]->m_nDigi++;	    
+	}
       }else{
 	;
       }
       Fitter->Clear();	
+      //std::cout << wConv->mod[CsiModuleID]->m_nDigi << std::endl;
     }
-    //std::cout << wConv->mod[iCsiMod]->m_nDigi << std::endl;
   }
-  return wConv->mod[iCsiMod]->m_nDigi;
+  return wConv->mod[CsiModuleID]->m_nDigi;
 }
-
-int E14EventBuilder_V0::EventProcess(int ievent){
+int  E14EventBuilder_V0::EventProcess(int ievent){
+  m_EventNumber = ievent;
+  for( int icrate = 0; icrate < nCrateFeb; icrate++){
+    conv[icrate]->GetEntry(ievent);
+  }
   TriggerDicision();
   Int_t nChannel = AnalyzeCsIData();
   return nChannel;
 }
-
-int E14EventBuilder_V0::LoopAll(){
+int  E14EventBuilder_V0::LoopAll(){
   for( int ievent  = 0; ievent < m_Entries; ievent++){
     if( (ievent % 100)  == 0 && ievent ){
       std::cout<< "Process:" << ievent << " / " << m_Entries << "\n";
@@ -345,5 +312,6 @@ int E14EventBuilder_V0::LoopAll(){
     EventProcess( ievent );    
   }
 }
-
-
+void E14EventBuilder_V0::Clear(){
+  TotalTriggerFlag = 0;
+}

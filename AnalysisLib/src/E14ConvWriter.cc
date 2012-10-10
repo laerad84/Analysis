@@ -76,29 +76,17 @@ bool E14ConvWriter::Branch(){
 }
 bool E14ConvWriter::SetBranchAddress(){
   std::cout<< "SetBranchAddress" << std::endl;
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("RunNo"           ,&(this->m_RunNo));
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("EventNo"         ,&m_EventNo);
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("TrigFlag"        ,&m_TrigFlag);
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("CosmicTrig"      ,&m_CosmicTrig);
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("LaserTrig"       ,&m_LaserTrig);
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("CVTrig"          ,&m_CVTrig);
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("CosmicTrigFlagUp",&m_CosmicTrigFlagUp);
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("CosmicTrigFlagDn",&m_CosmicTrigFlagDn);
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("CVTrigFlag"      ,&m_CVTrigFlag);
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("LaserTrigFlag"   ,&m_LaserTrigFlag);
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("TimePeak"        ,&m_TimePeak);
-  std::cout<<__LINE__ << std::endl;
   m_tr->SetBranchAddress("TimeSigma"       ,&m_TimeSigma);
 
   for( int i = 0; i< m_nModule; i++){
@@ -187,11 +175,9 @@ int E14ConvWriter::SetGraph( int ModID, int SubModID, E14ConvReader* conv[], TGr
   int npoint  = 0;
   if( GetCFC( ModID, SubModID, m_tempCrateID, m_tempFADCID, m_tempChannelID) ){
     for( int ipoint = 0; ipoint < 48; ipoint++){
-      if( conv[ m_tempCrateID ]->Data[ m_tempFADCID ][ m_tempChannelID ][ ipoint ]< 16000){
-	gr->SetPoint( gr->GetN(), ipoint*8, 
-		      conv[ m_tempCrateID ]->Data[ m_tempFADCID ][ m_tempChannelID ][ ipoint ] );
-	npoint++;
-      }
+      gr->SetPoint( gr->GetN(), ipoint*8, 
+		    conv[ m_tempCrateID ]->Data[ m_tempFADCID ][ m_tempChannelID ][ ipoint ] );
+      npoint++;
     }
     return npoint;
   }else{
