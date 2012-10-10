@@ -40,6 +40,7 @@
 #include "E14ConvWriter.h"
 #include "TH2.h"
 #include "TH1.h"
+#include "TSpline.h"
 #include "TProfile.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
@@ -67,8 +68,9 @@
 
 
 
-const int nCrate = 11;
 
+const int nCrate  = 11;
+const int nPoints = 48; 
 const Double_t COSMIC_THRESHOLD[20] = {100,100,100,100,100,
 				       100,100,100,100,100,
 				       100,100,100,100,100,
@@ -77,6 +79,7 @@ const Double_t COSMIC_THRESHOLD[20] = {100,100,100,100,100,
 
 int  main(int argc,char** argv)
 {
+  
   if( argc !=2  && argc != 3  ){
     std::cerr << "Please Input RunNumber " << std::endl;
     return -1; 
@@ -99,33 +102,47 @@ int  main(int argc,char** argv)
   std::cout << WAVEFILEDIR << std::endl;
   std::cout << SUMFILEDIR  << std::endl;
   std::cout << COSMICFILEDIR << std::endl;
+
   // Setting  Classes //
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
   E14WaveFitter* Fitter     = new E14WaveFitter();
-  TApplication* app = new TApplication("app", &argc , argv );  
+  TApplication* app         = new TApplication("app", &argc , argv );  
   
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  //  Setting Template 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  std::string TemplateRootFile = Form("%s/Data/Template/TEMPLATE_COMPLETE_GRAPH_3pi0RunList_200_400.root",
+				      ANALIBDIR.c_str());
+  TFile* tfTemplate = new TFile( TemplateRootFile.c_str());
+  TGraph*   grTemplate[2716];
+  TSpline3* splTemplate[2716];
+  for( int i = 0; i< 2716; i++){
+    grTemplate[i] = NULL; 
+    grTemplate[i] = (TGraph*)tfTemplate->Get(Form("Template_%d", i )); 
+    if( grTemplate[i] != NULL ){
+      splTemplate[i] = new TSpline3(Form("Spl_Template_%d",i), grTemplate[i] );
+    }else{
+      splTemplate[i] = NULL;
+    }
+  }
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   //  Setting Calibration Factor
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
-  Double_t CosmicPeak[3000]={0};  
-  Double_t CosmicCalibrationFactor[3000]={0};
-  Double_t CosmicOut;
-  Int_t    CosmicID;
-  TFile*   tfCosmic = new TFile(Form("%s/CosmicResult_20120209.root",COSMICFILEDIR.c_str()));
-  TTree*   trCosmic = (TTree*)tfCosmic->Get("GainFitPar");
-  trCosmic->SetBranchAddress("ID",&CosmicID);
-  trCosmic->SetBranchAddress("Peak",&CosmicOut);
-  for( int i = 0; i< trCosmic->GetEntries(); i++ ){
-    trCosmic->GetEntry(i);    
-    CosmicPeak[CosmicID] = CosmicOut;
-    if(CosmicOut != 0){
-      CosmicCalibrationFactor[CosmicID] = 14.014/CosmicOut;
-    }else{
-      CosmicCalibrationFactor[CosmicID] = 0;
-    }
-  }
+
+  std::string CalibrationRootFile = Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",
+					 ANALIBDIR.c_str());
+  EnergyConverter* EConverter = new EnergyConverter();
+  EConverter->ReadCalibrationRootFile( CalibrationRootFile.c_str() );
+
+  std::cout<< "//////////////////////////" << std::endl;
+  std::cout<< "calibration File loaded."   << std::endl;
+  std::cout<< "//////////////////////////" << std::endl;
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   // Read TimeOffset // 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,6 +156,10 @@ int  main(int argc,char** argv)
     TimeOffset[tempID] = tempOffset;
   }
 
+  std::cout<< "/////////////////////////////\n";
+  std::cout<< "Time Offset loaded.\n";           
+  std::cout<< "/////////////////////////////\n";
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   // Read ID map // 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,22 +168,20 @@ int  main(int argc,char** argv)
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Set input / output File 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
+  std::cout << "/////////////////////////////////////////////\n";
+  std::cout << "Set I/O File" <<std::endl;  
+  std::cout << "/////////////////////////////////////////////\n";
 
-  std::cout<< "Set I/O File" <<std::endl;  
-
-  TFile* tfin;
-  if( argc == 2){
-    tfin = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVEFILEDIR.c_str(),RunNumber));
-  }else if( argc == 3){
-    tfin = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d_%d.root",WAVEFILEDIR.c_str(),RunNumber,iDiv));
+  TFile* tfConv[nCrate];
+  E14ConvReader* conv[nCrate];
+  for( int icrate = 0; icrate < nCrate; icrate++){
+    tf[icrate] = new TFile( Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, RunNumber ));
+    conv[icrate] = new E14ConvReader((TTree*)tfConv[icrate]->Get("EventTree"));
   }
-
-  TTree* trin  = (TTree*)tfin->Get("WFTree");
-
-  std::cout << Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber) << std::endl;  
+  TFile* tfout = new TFile(Form("%s/run_Wave_Analyzed_%d.root",WAVEFILEDIR.c_str(), RunNumber));
+  TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");
   E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
-					    trin);
-
+					    trout);
   std::cout<< "Setting Map" << std::endl;
   {
     wConv->AddModule("Csi");
@@ -174,28 +193,22 @@ int  main(int argc,char** argv)
     wConv->AddModule("Etc");
     wConv->Set();
     wConv->SetMap();
-    wConv->SetBranchAddress();
+    wConv->Branch();
   }
+  const int iCsiMod    = 0; 
+  const int iCC03Mod   = 1;
+  const int iOEVMod    = 2;
+  const int iCVMod     = 3;
+  const int iCosmicMod = 4; 
+  const int iLaserMod  = 5;
+  const int iEtcMod    = 6;
+
   std::cout<< " Prepare OutputFile " << std::endl;
-
-  TFile* tfout;
-  if( argc == 2){
-    tfout = new TFile(Form("%s/RECONSTRUCT_RESULT_%d.root",SUMFILEDIR.c_str(),RunNumber),"recreate");
-  }else if( argc == 3){
-    tfout = new TFile(Form("%s/RECONSTRUCT_RESULT_%d_%d.root",SUMFILEDIR.c_str(),RunNumber,iDiv),"recreate");
-  }
-  TTree* trout  =new TTree("Tree","Reconstruct CsiEvent");
-  double timePeak;
-  double timeSigma;
-  trout->Branch("TimePeak",&timePeak,"TimePeak/D");
-  trout->Branch("TimeSigma",&timeSigma,"TimeSigma/D");
-  
-  std::cout << "Setting IO File End" << std::endl;
-
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Set I/O Class 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
   E14GNAnaDataContainer data;
   data.branchOfClusterList( trout );
   data.branchOfDigi( trout );
@@ -214,8 +227,114 @@ int  main(int argc,char** argv)
   
   std::cout<< "Pi0 Calibration" << std::endl;
   // loop analysis
-  int nloop = trin->GetEntries();
-  int iCsiMod = 0;
+  int nloop = conv->GetEntries();
+  Double_t TimeLimit[2]={0};
+  Double_t TimeDistrib[nPoints]; // nPoints = 48 for this program 
+  Double_t TimeWeightDistrib[ nPoints ];
+  
+  for( int ievet = 0 ; ievet < nloop; ievt++){
+    wConv->InitData();
+    for( int icrate  =0; icrate < nCrate; icrate++){
+      conv->GetEntry( ievent );
+    }
+    if( ievent %100 == 0 && ievent ){ std::cout << ievent << "/" << nloop << "\n"; }
+    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){            
+      //std::cout << iMod << std::endl;
+      if( iMod == wConv->GetModuleID("Csi") ){ continue; }
+      int nSubModule = wConv->GetNsubmodule( iMod );
+      if( nSubModule <= 0 ){ continue ;}      
+      for( int iSubMod = 0; iSubMod < nSubModule; iSubMod++){	
+	if( wConv->SetGraph( iMod, iSubMod ,conv , gr ) == 0 ){ continue; }	       
+	
+	bool fit = wavFitter->Fit( gr ); 
+	int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
+	if( fit ){ 
+	  TF1* fitFunc      = wavFitter->GetFunction();	    
+	  double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
+	  double halfTiming = fitFunc->GetX( halfHeight,
+					     fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
+	  wConv->mod[iMod]->m_FitHeight[chIndex]= 1;
+	  wConv->mod[iMod]->m_ID[chIndex]       = iSubMod;
+	  wConv->mod[iMod]->m_Pedestal[chIndex] = fitFunc->GetParameter(4);
+	  wConv->mod[iMod]->m_Signal[chIndex]   = fitFunc->GetParameter(0);
+	  wConv->mod[iMod]->m_Time[chIndex]     = fitFunc->GetParameter(1);
+	  wConv->mod[iMod]->m_HHTime[chIndex]   = halfTiming;
+	  wConv->mod[iMod]->m_ParA[chIndex]     = fitFunc->GetParameter(3);
+	  wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
+	  wConv->mod[iMod]->m_nDigi++;	      	    
+	  
+	  TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
+	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
+	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
+	  wConv->mod[iMod]->m_FitTime[chIndex]= halfFitTiming;
+	  delete linearFunction;
+	  wavFitter->Clear();	  
+	}
+      }	
+      
+      if( iMod == LaserModuleID ){
+	if( wConv->mod[iMod]->m_nDigi > 0){
+	  if( wConv->mod[iMod]->m_Signal[0] > 100 ){
+	    wConv->m_LaserTrig = 1;
+	    wConv->m_TrigFlag |= 1;
+	    TotalTriggerFlag  |= 1;
+	  }
+	}
+      }else if( iMod == CosmicModuleID ){
+	//int nSubMod = (wConv->ModMap[iMod]).nMod;
+	int nSubMod = wConv->mod[iMod]->m_nDigi;
+	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
+	  CosmicSignal[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]] = wConv->mod[iMod]->m_Signal[iSubMod];
+	  CosmicTime[CosmicArr[wConv->mod[iMod]->m_ID[iSubMod]]]   = wConv->mod[iMod]->m_Time[iSubMod];
+	}
+	//std::cout<< __LINE__ << std::endl;
+	for( int iCosmic = 0; iCosmic < 5; iCosmic++){
+	  if( CosmicSignal[ iCosmic    ] > COSMIC_THRESHOLD[ iCosmic     ] ||
+	      CosmicSignal[ iCosmic+10 ] > COSMIC_THRESHOLD[ iCosmic +10 ]){
+	    wConv->m_CosmicTrigFlagUp |= 1 << iCosmic;
+	  }
+	  if( CosmicSignal[ iCosmic+5  ] > COSMIC_THRESHOLD[ iCosmic +5  ] ||
+	      CosmicSignal[ iCosmic+15 ] > COSMIC_THRESHOLD[ iCosmic +15 ]){
+	    wConv->m_CosmicTrigFlagDn |= 1 << iCosmic;
+	  }	  
+	}
+	//std::cout<< __LINE__ << std::endl;
+	if( wConv->m_CosmicTrigFlagUp && 
+	    wConv->m_CosmicTrigFlagDn ){
+	  wConv->m_CosmicTrig = 1; 
+	  wConv->m_TrigFlag  |= 2;
+	  TotalTriggerFlag   |= 2;
+	}
+      }else if( iMod == CVModuleID ){
+	//int nSubMod = (wConv->ModMap[iMod]).nMod;
+	int nSubMod = wConv->mod[iMod]->m_nDigi;
+	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
+	  CVSignal[wConv->mod[iMod]->m_ID[iSubMod]] = wConv->mod[iMod]->m_Signal[iSubMod];
+	  CVTime[wConv->mod[iMod]->m_ID[iSubMod]]   = wConv->mod[iMod]->m_Time[iSubMod];
+	}
+	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++){
+	  if( wConv->mod[iMod]->m_Signal[iSubMod] > 500 ){
+	    wConv->m_CVTrig    = 1;
+	    wConv->m_TrigFlag |= 4; 
+	    TotalTriggerFlag  |= 4;
+	  }
+	}
+      }else{
+	continue;
+      } 
+    }
+    std::cout<< "End Trigger Dicision " << std::endl;
+
+
+
+
+
+
+
+  }
+
+
+
   TH1D* hist = new TH1D("his","",1000,0,2000);  
   std::cout<<"start loop analysis"<<std::endl;
   std::cout<<"# of entry : "<<nloop<<std::endl;
@@ -235,7 +354,7 @@ int  main(int argc,char** argv)
     nCSIDigi = 0;
     for( int ich = 0; ich < wConv->mod[iCsiMod]->m_nDigi;ich++){
       int CsiChannelID = wConv->mod[iCsiMod]->m_ID[ich];
-      double Energy  = wConv->mod[iCsiMod]->m_Signal[ich] * CosmicCalibrationFactor[CsiChannelID];
+      double Energy  = EConverter->ConvertToEnergy( CsiChannelID, wConv->mod[iCsiMod]->m_Signal[ich]);
       double TimeData= wConv->mod[iCsiMod]->m_Time[ich]-TimeOffset[ich];
       
       if( Energy > 3 ){

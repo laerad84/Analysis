@@ -20,6 +20,16 @@ class E14WaveFitter : public E14WaveFitterMinimum {
   double   m_HeightLimitLow;
   double   m_HeightLimitHigh;
 
+  double   m_ChisqNDF_Pedestal;
+  double   m_ChisqNDF_Head;
+  double   m_ChisqNDF_Tail;
+  
+  bool     m_fFit;
+
+  double  m_dheight[2];
+  double  m_dpeakTime[2];
+  double  m_dHHTime[2];
+  double  m_dgnd;
 
  public:
   TF1*     m_linfunc;
@@ -34,13 +44,17 @@ class E14WaveFitter : public E14WaveFitterMinimum {
   virtual  Double_t GetConstantFraction();
   virtual  Double_t GetFitResult( );
   virtual  Double_t GetChisquare();
+  virtual  Double_t GetChisqNDF( Double_t& chisqPed, Double_t& chisqHead, Double_t& chisqTail );
   virtual  Int_t    GetNDF();
 
   virtual  void     InitPar();
   virtual  bool     Fit               ( TGraph* gr ,double minX = 0, double maxX = 48*8);  
+  //virtual  bool     FitDoublePeak     ( TGraph* gr ,double minX = 0, double maxX = 48*8);
+  virtual  bool     CalChisqNDF       ( TGraph* gr );
   virtual  bool     FitTime           ( TGraph* gr );
   virtual  bool     ClearFunction     ( TGraph* gr );
-  virtual  bool     Draw( TGraph* gr );
+  virtual  TGraph*  GetDeltaFit       ( TGraph* gr );
+  virtual  bool     Draw              ( TGraph* gr );
 };
 
 

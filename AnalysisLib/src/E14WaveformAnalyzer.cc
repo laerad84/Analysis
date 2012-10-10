@@ -113,7 +113,6 @@ Bool_t E14WaveformAnalyzer::_CheckOVF( Double_t* Waveform ){
   m_AllPointMinimum  = 0; 
   m_AllPointMax      = 0;
   m_AllPointMin      = 0xFFFF;
-  m_PeakPointMaximum = 0;
   m_fOverflow  = false;
   m_fUnderflow = false; 
 
@@ -139,7 +138,6 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
   m_TimeMaximum = 0; 
   Double_t localMaximum = 0.;
   Double_t localMaxTime = 0.;
-  Double_t localPointMaximum = 0.;
   Int_t    localMaxPoint = 0;
   
   Double_t l_4point_MaximumHeight = 0.;
@@ -195,7 +193,6 @@ Bool_t E14WaveformAnalyzer::_GetMaximum ( Double_t* Waveform ){
   
   m_PeakMaximum      = localMaximum;
   m_TimeMaximum      = localMaxTime;
-  m_PeakPointMaximum = localMaximum;
   
 
   //////////////////////////////////////////////////////////////////////////////
@@ -276,6 +273,7 @@ Bool_t E14WaveformAnalyzer::_GetMinimum ( Double_t* Waveform ){
   if( !m_fMaximum ){
     _GetMaximum( Waveform );
   }
+  // Get 4point Minimum 
   for( int ipoint = 0; ipoint*8 < m_TimeMaximum ; ipoint++){
     localMinimum = 0;
     localMinTime = 0;
@@ -428,13 +426,13 @@ Bool_t E14WaveformAnalyzer::_GetPedestal( Double_t* Waveform , Double_t& Pedesta
   return m_fPedestal; 
 }
 Bool_t E14WaveformAnalyzer::_GetWidth   ( Double_t* Waveform ){  
+  if( !m_fMaximum ){
+    _GetMaximum( Waveform );
+  }  
   if( !m_fPedestal ){
     _GetPedestal( Waveform );
   }
-  if( !m_fMaximum ){
-    _GetMaximum( Waveform );
-  }
-  
+
   m_Height = m_PeakMaximum - m_Pedestal;
   m_BoundaryHead = 0;
   m_BoundaryTail = m_nPoint*8;

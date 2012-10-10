@@ -120,6 +120,7 @@ int main( int argc ,char** argv ){
   Double_t ChisqNDF;
   Double_t FitResult;
   Int_t    EntryNumber;
+  Double_t FitResultPed,FitResultFront, FitResultRear;
   trWaveAna->Branch("EntryNumber"  ,&EntryNumber  , "EntryNumber/I"  );
   trWaveAna->Branch("RunNumber"    ,&RunNumber    , "RunNumber/I"    );
   trWaveAna->Branch("EventNumber"  ,&EventNumber  , "EventNumber/I"  );
@@ -145,7 +146,9 @@ int main( int argc ,char** argv ){
   trWaveAna->Branch("FitPedestal"  ,&FitPedestal  , "FitPedestal/D");
   trWaveAna->Branch("FitHeight"    ,&FitHeight    , "FitHeight/D");
   trWaveAna->Branch("FitResult"    ,&FitResult    , "FitResult/D");
-		    
+  trWaveAna->Branch("FitResultPed" ,&FitResultPed , "FitResultPed/D");
+  trWaveAna->Branch("FitResultFront",&FitResultFront, "FitResultFront/D");
+  trWaveAna->Branch("FitResultRear" ,&FitResultRear , "FitResultRear/D" );
 
 
   can->Divide( 1, 2);
@@ -192,7 +195,8 @@ int main( int argc ,char** argv ){
 	FitHeight   = WaveFitter->GetParameter(0);
 	FitTime     = WaveFitter->GetParameter(1);
 	FitPedestal = WaveFitter->GetParameter(2);
-	FitResult   = WaveFitter->GetFitResult();
+	FitResult   = WaveFitter->GetChisqNDF(FitResultPed, FitResultFront,FitResultRear);
+
       }else{
 	Fitrst = false; 
       }

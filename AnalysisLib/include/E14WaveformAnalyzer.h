@@ -45,8 +45,6 @@ class E14WaveformAnalyzer {
   Double_t m_Height;
   Double_t m_PeakMaximum;
   Double_t m_MinimumSigma;
-  Double_t m_PeakPointMaximum;
-  Double_t m_PeakPointMinimum;
 
   Double_t m_AllPointMaximum;
   Double_t m_AllPointMinimum;

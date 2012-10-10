@@ -37,6 +37,7 @@ double E14WaveFitterMinimum::fTemplateFunction( double* x ,double* par){
   t_fcn         = height*E14WaveFitterMinimum::m_spl->Eval(t - mean) + ped;
   return t_fcn;
 }
+
 double E14WaveFitterMinimum::fTemplateFunctionDoublePeak( double* x, double* par ){
   double t       = x[0];
   double height1 = par[0];
