@@ -70,7 +70,7 @@ bool     E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
 #ifdef DEBUG
   std::cout<< __PRETTY_FUNCTION__ << std::endl;
 #endif
-  
+
   m_fFit = true;
 
   if( m_height*0.1 < 4 ){
@@ -192,8 +192,20 @@ bool     E14WaveFitter::CalChisqNDF( TGraph* gr ){
 
 bool     E14WaveFitter::FitTime( TGraph* gr){
   m_splTime = m_FitFunc->GetX( m_FitFunc->GetParameter(0)*0.5 + m_FitFunc->GetParameter(2),
-			       m_FitFunc->GetParameter(1)-60,   m_FitFunc->GetParameter(1));
+			       m_FitFunc->GetParameter(1)-80,   m_FitFunc->GetParameter(1));
   //std::cout<< m_splTime << std::endl; 
+  //std::cout<< "Fit" << std::endl;
+  if( m_splTime - 16 < 0 ){ 
+    m_slope  = 0;
+    m_HHTime = 0;
+    return false;
+  }
+  
+  if( m_splTime + 16 > gr->GetX()[gr->GetN()-1]){
+    m_slope = 0;
+    m_HHTime = 9999;
+    return false;
+  }
   gr->Fit( "pol1","Q","",m_splTime - 16, m_splTime + 16 );
   m_linfunc = gr->GetFunction("pol1");
   double slope  = m_linfunc->GetParameter(1);

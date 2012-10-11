@@ -51,7 +51,7 @@ bool E14EventBuilder_V0::InitIOFile(){
     }      
   }
   std::cout << Form("%s/Sum%d.root",SUMFILEDIR.c_str(),m_RunNumber) << std::endl;  
-  E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),m_RunNumber),
+  wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),m_RunNumber),
 					    m_trOut);
   std::cout<< "Setting Map" << std::endl;
   {
@@ -78,6 +78,7 @@ bool E14EventBuilder_V0::InitIOFile(){
       }
     }
   }
+  std::cout<< "Number of Module " << wConv->GetNmodule() << std::endl;
   m_Entries = conv[0]->GetEntries();
   grCsI = new TGraph();
   if( nFilesOpened == nCrateFeb && m_trOut != NULL){
@@ -88,17 +89,15 @@ bool E14EventBuilder_V0::InitIOFile(){
 }
 bool E14EventBuilder_V0::InitTemplate(){
   // Set Template 
-  
-  TFile* tfTemplate = new TFile("TEMPLATE_SPLINE_250_500.root");
+  std::cout<< __PRETTY_FUNCTION__ << std::endl;
+  TFile* tfTemplate = new TFile(Form("%s/Data/Template/TEMPLATE_COMPLETE_GRAPH_3pi0RunList_200_400.root",ANALIBDIR.c_str()));
   for( int ispline = 0; ispline< 2716; ispline++){
-    std::cout<< ispline << std::endl;
     tempGr[ispline]  = NULL;
     tempSpl[ispline] = NULL;
     //tempGr[ispline]  = (TGraphErrors*)tfTemplate->Get(Form("Waveform_Height_%d_0",ispline));
-    tempGr[ispline]  = (TGraph*)tfTemplate->Get(Form("Template_graph_%d",ispline));
-    std::cout<< ispline << std::endl;
+    tempGr[ispline]  = (TGraph*)tfTemplate->Get(Form("Template_%d",ispline));
     if( tempGr[ispline]->GetN()!= 0){
-      tempSpl[ispline] = new TSpline3(Form("waveformSpl_%d",ispline),tempGr[ispline]);
+      tempSpl[ispline] = new TSpline3(Form("splTemplate_%d",ispline),tempGr[ispline]);
     }else{
       std::cout<< "Non Exist channel:" << ispline << std::endl;
     }
@@ -107,6 +106,7 @@ bool E14EventBuilder_V0::InitTemplate(){
   return true;
 }
 bool E14EventBuilder_V0::InitTimeOffset(){
+  std::cout<< __PRETTY_FUNCTION__ << std::endl;
   std::string    TimeOffsetFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALIBDIR.c_str());
   std::ifstream  ifsTimeOffset(TimeOffsetFile.c_str());
   for( int i = 0; i < 2716; i++ ){
@@ -122,6 +122,7 @@ bool E14EventBuilder_V0::InitTimeOffset(){
   return true;
 }
 bool E14EventBuilder_V0::InitTrigger(){
+  std::cout<< __PRETTY_FUNCTION__ << std::endl;
   grTrigger = new TGraph();
   // Init
   for( int i  = 0 ; i< 3 ; i++ ){
@@ -133,14 +134,13 @@ bool E14EventBuilder_V0::InitTrigger(){
       CosmicCFC[j][i] = 9999;
     }
   }
-  
-  if((wConv->ModMap[CVModuleID]).nMod     != 10)
-    { 
-      std::cout<< "CV nModule is not equal"     << std::endl;
-    }
   if((wConv->ModMap[CosmicModuleID]).nMod != 20)
     { 
       std::cout<< "Cosmic nModule is not equal" << std::endl;
+    }
+  if((wConv->ModMap[CVModuleID]).nMod     != 10)
+    { 
+      std::cout<< "CV nModule is not equal"     << std::endl;
     }
   // Set 
   for( int subID = 0; subID < 3; subID++ ){    
@@ -159,7 +159,9 @@ bool E14EventBuilder_V0::InitTrigger(){
   return true;
 }
 int  E14EventBuilder_V0::TriggerDicision(){
-
+#ifdef DEBUG
+  std::cout<< __PRETTY_FUNCTION__ << std::endl;
+#endif
   TotalTriggerFlag  = 0;
   for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){            
     //std::cout << iMod << std::endl;
@@ -186,11 +188,15 @@ int  E14EventBuilder_V0::TriggerDicision(){
 	wConv->mod[iMod]->m_ParB[chIndex]     = fitFunc->GetParameter(2);
 	wConv->mod[iMod]->m_nDigi++;	      	    
 	
-	TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
-	grTrigger->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
-	double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
-	wConv->mod[iMod]->m_FitTime[chIndex]= halfFitTiming;
-	delete linearFunction;
+	if( halfTiming - 12 > 0 && halfTiming +12 < grTrigger->GetX()[grTrigger->GetN()-1] ){
+	  TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
+	  grTrigger->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
+	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
+	  wConv->mod[iMod]->m_FitTime[chIndex]= halfFitTiming;
+	  delete linearFunction;
+	}else{
+	  wConv->mod[iMod]->m_FitTime[chIndex] = 0;
+	}
 	wavFitter->Clear();
       }
       grTrigger->GetListOfFunctions()->Delete();
@@ -250,9 +256,20 @@ int  E14EventBuilder_V0::TriggerDicision(){
   return TotalTriggerFlag;
 }
 int  E14EventBuilder_V0::AnalyzeCsIData(){
-
+#ifdef DEBUG
+  std::cout<< __PRETTY_FUNCTION__ << std::endl;
+#endif
   int nSubCsiModule = wConv->GetNsubmodule( CsiModuleID );
   for( int iSubMod = 0; iSubMod < nSubCsiModule; iSubMod++){	
+    int iCrate = 9999;
+    int iSlot  = 9999;
+    int iCh    = 9999;
+    iCrate = (wConv->ModMap[CsiModuleID]).Map[iSubMod][0];
+    iSlot  = (wConv->ModMap[CsiModuleID]).Map[iSubMod][1];
+    iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];
+    
+    // Ignore unmapped channel // 
+    if( iCrate == 9999 || iSlot == 9999 || iCh == 9999 ) continue;       
     grCsI->Set(0);
     if( wConv->SetGraph( CsiModuleID, iSubMod ,conv , grCsI ) == 0 ){ continue; }		
     //////////////////////////////////////////////////////
@@ -265,27 +282,29 @@ int  E14EventBuilder_V0::AnalyzeCsIData(){
     }else{
       Fitter->SetWaveform(tempSpl[iSubMod]);
       Fitter->InitPar();
-      //std::cout<< "Fit" << std::endl;
-      bool fit = Fitter->Fit(grCsI);
+
+      wavAnalyzer->AnalyzeWaveform( grCsI->GetY() );
+      Fitter->SetParameter( wavAnalyzer );
+      bool fit = Fitter->Fit(grCsI);      
       int chIndex = (wConv->mod[CsiModuleID])->m_nDigi;
       if( fit ){ 
 	if( Fitter->GetParameter(0) < 5 ){ continue ; }
-	for( int ipoint = 0; ipoint < grCsI->GetN(); ipoint++){
-	  Double_t x,y;
-	  idHandler->GetMetricPosition( iSubMod , x, y ); 		
-	  std::cout<< "Fit Result : " << Fitter->GetFitResult() << std::endl;
-	  
-	  wConv->mod[CsiModuleID]->m_FitHeight[wConv->mod[CsiModuleID]->m_nDigi]= 1;
-	  wConv->mod[CsiModuleID]->m_ID[wConv->mod[CsiModuleID]->m_nDigi]       = iSubMod;
-	  wConv->mod[CsiModuleID]->m_Signal[wConv->mod[CsiModuleID]->m_nDigi]   = Fitter->GetParameter(0);
-	  wConv->mod[CsiModuleID]->m_Time[wConv->mod[CsiModuleID]->m_nDigi]     = Fitter->GetParameter(1);
-	  wConv->mod[CsiModuleID]->m_Pedestal[wConv->mod[CsiModuleID]->m_nDigi] = Fitter->GetParameter(2);
-	  wConv->mod[CsiModuleID]->m_HHTime[wConv->mod[CsiModuleID]->m_nDigi]   = Fitter->GetConstantFraction();
-	  wConv->mod[CsiModuleID]->m_Chisq[wConv->mod[CsiModuleID]->m_nDigi]    = Fitter->GetChisquare();
-	  wConv->mod[CsiModuleID]->m_NDF[wConv->mod[CsiModuleID]->m_nDigi]      = Fitter->GetNDF();
-	  //wConv->mod[CsiModuleID]->m_ADC[wConv->mod[CsiModuleID]->m_nDigi]      = Fitter->GetADC(gr);
-	  wConv->mod[CsiModuleID]->m_nDigi++;	    
-	}
+	Double_t x,y;
+	idHandler->GetMetricPosition( iSubMod , x, y ); 		
+	int moduleIndex = wConv->mod[CsiModuleID]->m_nDigi;
+	
+	wConv->mod[CsiModuleID]->m_FitHeight[moduleIndex]= 1;
+	wConv->mod[CsiModuleID]->m_ID[moduleIndex]       = iSubMod;
+	wConv->mod[CsiModuleID]->m_Signal[moduleIndex]   = Fitter->GetParameter(0);
+	wConv->mod[CsiModuleID]->m_Time[moduleIndex]     = Fitter->GetParameter(1);
+	wConv->mod[CsiModuleID]->m_Pedestal[moduleIndex] = Fitter->GetParameter(2);
+	wConv->mod[CsiModuleID]->m_HHTime[moduleIndex]   = Fitter->GetConstantFraction();
+	wConv->mod[CsiModuleID]->m_Chisq[moduleIndex]    = Fitter->GetChisquare();
+	wConv->mod[CsiModuleID]->m_NDF[moduleIndex]      = Fitter->GetNDF();
+	  //wConv->mod[CsiModuleID]->m_ADC[moduleIndex]      = Fitter->GetADC(gr);
+	wConv->mod[CsiModuleID]->m_Energy[moduleIndex]   = Converter->ConvertToEnergy(iSubMod,Fitter->GetParameter(0));
+	wConv->mod[CsiModuleID]->m_nDigi++;	    
+      
       }else{
 	;
       }
@@ -293,19 +312,37 @@ int  E14EventBuilder_V0::AnalyzeCsIData(){
       //std::cout << wConv->mod[CsiModuleID]->m_nDigi << std::endl;
     }
   }
-  return wConv->mod[CsiModuleID]->m_nDigi;
+  return (wConv->mod[CsiModuleID])->m_nDigi;
 }
 int  E14EventBuilder_V0::EventProcess(int ievent){
   m_EventNumber = ievent;
+  wConv->InitData();
+  for( int icosmic = 0; icosmic < 20; icosmic++){
+    CosmicSignal[icosmic] = 0;
+    CosmicTime[icosmic]   = 0;    
+  }
+  for( int icv = 0; icv < 10; icv++){
+    CVSignal[icv] = 0;
+    CVTime[icv]   = 0;
+  }
+
+  wConv->m_RunNo = m_RunNumber;
+  wConv->m_EventNo = ievent;
+
+  if( ievent % 100 == 0 && ievent ){ std::cerr << ievent << "/" << conv[0]->GetEntries() << "\n";  }
+
   for( int icrate = 0; icrate < nCrateFeb; icrate++){
     conv[icrate]->GetEntry(ievent);
   }
-  TriggerDicision();
+  Int_t Trigger  = TriggerDicision();
   Int_t nChannel = AnalyzeCsIData();
+  std::cout << "TRIGGER:" << Trigger << "\tnChannel" << nChannel << std::endl;
+  m_trOut->Fill();
   return nChannel;
 }
 int  E14EventBuilder_V0::LoopAll(){
   for( int ievent  = 0; ievent < m_Entries; ievent++){
+  //for( int ievent  = 0; ievent < 1000; ievent++){
     if( (ievent % 100)  == 0 && ievent ){
       std::cout<< "Process:" << ievent << " / " << m_Entries << "\n";
     } 
@@ -314,4 +351,30 @@ int  E14EventBuilder_V0::LoopAll(){
 }
 void E14EventBuilder_V0::Clear(){
   TotalTriggerFlag = 0;
+}
+void E14EventBuilder_V0::DrawEvent(TCanvas* can){
+  CsI_Module* csiEnergy = new CsI_Module("Energy");
+  CsI_Module* csiTime   = new CsI_Module("Energy");
+  TH1D* hisTimeDistrib  = new TH1D("hisTimeDistrib","hisTimeDistrib",64,0,8*64);
+  TH2D* hisEnergyTimeDistrib = new TH2D("hisEnergyTimeDistrib","EnergyTimeDistrib",64,0,8*64,160,0,1000);
+  for( int ich = 0; ich < wConv->mod[CsiModuleID]->m_nDigi; ich++){
+    if( wConv->mod[CsiModuleID]->m_Energy[ich] > 1 ){
+      csiEnergy->Fill( wConv->mod[CsiModuleID]->m_ID[ich], wConv->mod[CsiModuleID]->m_Energy[ich]);
+      csiTime  ->Fill( wConv->mod[CsiModuleID]->m_ID[ich], wConv->mod[CsiModuleID]->m_Time[ich]);
+      if( wConv->mod[CsiModuleID]->m_Signal[ich] > 100 ){
+	hisTimeDistrib->Fill(wConv->mod[CsiModuleID]->m_Time[ich] - TimeOffset[wConv->mod[CsiModuleID]->m_ID[ich]]);
+      }
+      hisEnergyTimeDistrib->Fill(wConv->mod[CsiModuleID]->m_Time[ich],wConv->mod[CsiModuleID]->m_Energy[ich]);
+    }
+  }
+  can->Divide( 2,2 );
+  can->cd(1);
+  gPad->SetLogz();
+  csiEnergy->Draw("colz");
+  can->cd(2);
+  csiTime->Draw("colz");
+  can->cd(3);
+  hisTimeDistrib->Draw();
+  can->cd(4);
+  hisEnergyTimeDistrib->Draw("col");
 }

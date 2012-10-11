@@ -48,8 +48,8 @@ INCLUDEDIR  += $(E14_TOP_DIR)/include
 
 INCLUDES     = $(INCLUDEDIR:%=-I%)
 
-COMPILE_CC  := $(CC)  -c $(DEFS) $(INCLUDES) $(CFLAGS)
-COMPILE_CXX := $(CXX) -c $(DEFS) $(INCLUDES) $(CXXFLAGS)  
+COMPILE_CC  := $(CC)  -c $(DEFS) $(INCLUDES) $(CFLAGS) $(ARG)
+COMPILE_CXX := $(CXX) -c $(DEFS) $(INCLUDES) $(CXXFLAGS) $(ARG)
 DEPEND_CC   := $(CC) -MM $(DEFS) $(INCLUDES) $(filter-out -fPIC, $(CFLAGS))
 DEPEND_CXX  := $(CC) -MM $(DEFS) $(INCLUDES) $(filter-out -fPIC, $(CXXFLAGS))
 LINK_CC     := $(CC)
@@ -68,7 +68,7 @@ makelib: $(CXX_OBJECTS)
 	@ echo $(ROOTSYS)
 	@ echo $(CXX_OBJECTS)	
 	@[ -d ./lib ] || mkdir -p ./lib
-	$(CXX) $(SOFLAGS) -o lib/lib$(PACKAGE)$(LIB_EXT) $(CXX_OBJECTS) $(CXX_DICTSRC) $(CXXFLAGS) $(INCLUDES) $(LIBS)
+	$(CXX) $(SOFLAGS) -o lib/lib$(PACKAGE)$(LIB_EXT) $(CXX_OBJECTS) $(CXX_DICTSRC) $(CXXFLAGS) $(INCLUDES) $(LIBS) $(ARG)
 ifeq "$(LIB_EXT)" ".dylib"
 	rm -f $(PWD)/lib/*.so	
 	ln -s $(PWD)/lib/libConvLIB.dylib $(PWD)/lib/libConvLIB.so

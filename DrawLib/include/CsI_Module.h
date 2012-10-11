@@ -11,9 +11,9 @@
 
 class CsI_Module : public TObject {
  public:
-  static const int numberOfCsI = 2716;
+  static const int numberOfCsI      = 2716;
   static const int numberOfSmallCsI = 2240;
-  static const int numberOfLargeCsI = 576;
+  static const int numberOfLargeCsI = 476;
 
   CsI_Module(const char*);
   virtual ~CsI_Module();

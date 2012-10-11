@@ -24,6 +24,7 @@ class E14ConvWriterModule {
   double m_Signal[4096];
   double m_Time[4096];
   double m_HHTime[4096];
+  double m_Energy[4096];
 
   double m_ParA[4096];
   double m_ParB[4096];

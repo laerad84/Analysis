@@ -8,7 +8,7 @@ E14ConvWriterModule::E14ConvWriterModule( TTree* tr, char* name ){
 }
 
 E14ConvWriterModule::~E14ConvWriterModule(){
-  ;  
+  ;
 }
 
 bool E14ConvWriterModule::InitData(){
@@ -19,10 +19,12 @@ bool E14ConvWriterModule::InitData(){
     m_Time[i]          = -9999;
     m_FitTime[i]       = -9999;    
     m_HHTime[i]        = -9999;
+    m_Energy[i]        = 0.;
     
     m_ParA[i]          = -9999;
     m_ParB[i]          = -9999;
     
+
     m_FitTime[i]       = -9999;
     m_FitShape[i]      = 0.;
     m_DeltaDiff[i]     = 0.;    
@@ -43,6 +45,7 @@ bool E14ConvWriterModule::SetBranchAddress(){
   m_Tree->SetBranchAddress(Form("%sSignal"   ,m_DetectorName),m_Signal);
   m_Tree->SetBranchAddress(Form("%sTime"     ,m_DetectorName),m_Time);
   m_Tree->SetBranchAddress(Form("%sHHTime"   ,m_DetectorName),m_HHTime);
+  m_Tree->SetBranchAddress(Form("%sEne"      ,m_DetectorName),m_Energy);
   m_Tree->SetBranchAddress(Form("%sParA"     ,m_DetectorName),m_ParA);
   m_Tree->SetBranchAddress(Form("%sParB"     ,m_DetectorName),m_ParB);
   m_Tree->SetBranchAddress(Form("%sADC"      ,m_DetectorName),m_ADC);
@@ -63,7 +66,6 @@ bool E14ConvWriterModule::Branch(){
 		 Form("%sNumber/I"             ,m_DetectorName));
   m_Tree->Branch(Form("%sID"      ,m_DetectorName) ,m_ID      ,
 		 Form("%sID[%sNumber]/S"       ,m_DetectorName,m_DetectorName));//m_nDigi
-
   ///// Branches of Fit Quality /////
   m_Tree->Branch(Form("%sFitHeight",m_DetectorName),m_FitHeight,
 		 Form("%sFitHeight[%sNumber]/S",m_DetectorName,m_DetectorName));//m_nDigi
@@ -82,6 +84,8 @@ bool E14ConvWriterModule::Branch(){
 		 Form("%sPed[%sNumber]/D"      ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sSignal"  ,m_DetectorName) ,m_Signal  ,
 		 Form("%sSignal[%sNumber]/D"   ,m_DetectorName,m_DetectorName));//m_nDigi
+  m_Tree->Branch(Form("%sEne"  ,m_DetectorName)    ,m_Energy  ,
+		 Form("%sEne[%sNumber]/D"      ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sTime"  ,m_DetectorName) ,m_Time  ,
 		 Form("%sTime[%sNumber]/D"   ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sHHTime",m_DetectorName) ,m_HHTime,

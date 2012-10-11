@@ -1,6 +1,5 @@
 #include "E14ConvWriter.h"
 
-
 E14ConvWriter::E14ConvWriter( char* mapFilename, TTree* tr){  
   std::string SUMUPFILEDIR = std::getenv("ROOTFILE_SUMUP");
   std::string CONVFILEDIR  = std::getenv("ROOTFILE_CONV");
@@ -128,11 +127,11 @@ bool E14ConvWriter::ScanMod(char* modName){
   return false;
 }
 
-int  E14ConvWriter::GetNmodule(){
+int  E14ConvWriter::GetNmodule() const {
   return m_nModule;
 }
 
-int  E14ConvWriter::GetNsubmodule(int ModID){
+int  E14ConvWriter::GetNsubmodule(int ModID) const {
   if( ModID >= m_nModule ){ return -1;}
   return (this->ModMap[ModID]).nMod;
 }

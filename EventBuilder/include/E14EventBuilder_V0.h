@@ -30,6 +30,8 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#include "CsI_Module.h"
+
 static const int nCrateFeb     = 11; 
 static const int nCVModule     = 10;
 static const int nCosmicModule = 20; 
@@ -45,7 +47,7 @@ class E14EventBuilder_V0 {
   bool InitIOFile();      //Written
   bool InitTemplate();    //Written
   bool InitTimeOffset();  //Written
-  bool InitTrigger();
+  bool InitTrigger();     //Written
 
   int  TriggerDicision();
   int  AnalyzeCsIData();

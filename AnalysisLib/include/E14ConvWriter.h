@@ -61,15 +61,15 @@ class E14ConvWriter {
   bool  InitTriggerFlag();
   bool  TrigJudgement();
   bool  ScanMod(char*);
-  int   GetNmodule();
-  int   GetNsubmodule(int);
+  int   GetNmodule() const ;
+  int   GetNsubmodule(int) const ;
   int   GetModuleID( char* );  
   int   Fit( int );
   int   FitAll( );
   bool  InitData();
   bool  GetCFC( int , int , int&, int& , int&);
-  int   SetGraph( int, int,E14ConvReader* [], TGraph* );
-  bool  SetData( int , int, E14ConvReader* [], Double_t []);
+  int   SetGraph( int , int , E14ConvReader* [], TGraph*    );
+  bool  SetData ( int , int , E14ConvReader* [], Double_t []);
 };
 
 #endif
