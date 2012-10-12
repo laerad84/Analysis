@@ -13,6 +13,7 @@ class E14WaveformAnalyzer {
   static const Int_t    m_CnHead    = 4;
   static const Int_t    m_CnTail    = 6; 
   static const Double_t m_TimeWidth = 8.;
+
   Int_t  m_nPoint;
   Bool_t m_fPedestal;
   Bool_t m_fHeight;
@@ -27,6 +28,7 @@ class E14WaveformAnalyzer {
   Bool_t m_fOverflow;
   Bool_t m_fUnderflow;
   Bool_t m_fWaveformAnalyzed;
+
   //// Bit Information
   //// Underflow     = 0; less than 1
   //// Overflow      = 1; bigger than 16000
@@ -34,6 +36,7 @@ class E14WaveformAnalyzer {
   //// Peak in Tail  = 3; MeanTail - Pedestal > 10;
   //// Width         = 4; Width > 100; 
   //// Peak Position = 5; Peak Position > 250;
+
   Int_t  m_WaveformState;
 
   Double_t m_MeanHead;
@@ -67,7 +70,9 @@ class E14WaveformAnalyzer {
   Double_t m_PedestalRear;
   Double_t m_ChisqNDFPedestalFront;
   Double_t m_ChisqNDFPedestalRear;
-  
+  Double_t m_ChisqNDF_FrontPeak;
+  Double_t m_ChisqNDF_RearPeak;
+
  public:
   TF1*     m_peakFunc;
   TGraph*  m_peakGraph;
@@ -100,6 +105,9 @@ class E14WaveformAnalyzer {
   virtual Int_t    AnalyzeWaveform( Double_t* Waveform );
   virtual Bool_t   IsAnalyzed() const { return m_fWaveformAnalyzed; }
   virtual Bool_t   GetParameters( Double_t& Pedestal, Double_t& Height, Double_t& PeakTime ) const;
+  
+
+
   /*
   virtual Double_t   GetPeakPointMaximum const () { return m_PeakPointMaximum;}
   virtual Double_t   GetMeanHead const () { return m_MeanHead; }  

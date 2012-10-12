@@ -29,7 +29,6 @@ CXXFLAGS     = -fPIC -Wall
 CXXFLAGS    += $(shell $(ROOTSYS)/bin/root-config --cflags)
 CXXFLAGS    += -O2 -g -fmessage-length=0
 
-
 LIBS        += -L$(BOOSTDIR)/lib
 LIBS        += -L$(CLHEP_BASE_DIR)/lib -lCLHEP
 LIBS        += -L$(G4INSTALL)/lib 
@@ -71,7 +70,7 @@ makelib: $(CXX_OBJECTS)
 	$(CXX) $(SOFLAGS) -o lib/lib$(PACKAGE)$(LIB_EXT) $(CXX_OBJECTS) $(CXX_DICTSRC) $(CXXFLAGS) $(INCLUDES) $(LIBS) $(ARG)
 ifeq "$(LIB_EXT)" ".dylib"
 	rm -f $(PWD)/lib/*.so	
-	ln -s $(PWD)/lib/libConvLIB.dylib $(PWD)/lib/libConvLIB.so
+	ln -s $(PWD)/lib/lib$(PACKAGE).dylib $(PWD)/lib/lib$(PACKAGE).so
 endif
 
 rootDict:
