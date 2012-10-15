@@ -280,29 +280,78 @@ int  E14EventBuilder_V0::AnalyzeCsIData(){
     if( tempSpl[iSubMod] == NULL ){ 
       std::cout<< "Spline Pointer is NULL. Channel: "<< iSubMod  << std::endl;
     }else{
-      Fitter->SetWaveform(tempSpl[iSubMod]);
+      // Init Waveform Analyzer // 
+      wavAnalyzer->_Clear();
       Fitter->InitPar();
 
-      wavAnalyzer->AnalyzeWaveform( grCsI->GetY() );
+      int WavAnaRst = wavAnalyzer->AnalyzeWaveform( grCsI->GetY() );
+
+      const double heightThreshold = 50;
+      if( wavAnalyzer->m_Height < 5 ){
+	// Abort too low signal // 
+	continue; 
+      }else if( wavAnalyzer->m_Height > heightThreshold ){
+	// Selection for high signals 
+	if( wavAnalyzer->m_Width < 25. ){// case of spike data  || Tail/Head Peak Data// 
+	  continue;
+	}
+      }else {
+	// Selection for low signals 
+	// Abort data too small in ADC 
+	if( wavAnalyzer->m_SlopeDelta < 50 ){ continue; }
+	// Abort data peak is not in Maximum SlopeRegion
+	if(( wavAnalyzer->m_TimeMaximum < (wavAnalyzer->m_SlopeStart+3)*8 ) ||
+	   ( wavAnalyzer->m_TimeMaximum > (wavAnalyzer->m_SlopeStart+11)*8) ){
+	  continue;
+	}
+      }
+
+      Fitter->SetWaveform(tempSpl[iSubMod]);
       Fitter->SetParameter( wavAnalyzer );
       bool fit = Fitter->Fit(grCsI);      
       int chIndex = (wConv->mod[CsiModuleID])->m_nDigi;
+      
       if( fit ){ 
-	if( Fitter->GetParameter(0) < 5 ){ continue ; }
+	Double_t ResultHeight = Fitter->GetParameter(0);
+	Double_t ResultEnergy = Converter->ConvertToEnergy( iSubMod , ResultHeight );
+	//Abort small signal && Small Energy event 
+	if( ResultHeight  < 5. || ResultEnergy < 1. ){ continue; }
+
 	Double_t x,y;
 	idHandler->GetMetricPosition( iSubMod , x, y ); 		
-	int moduleIndex = wConv->mod[CsiModuleID]->m_nDigi;
-	
-	wConv->mod[CsiModuleID]->m_FitHeight[moduleIndex]= 1;
-	wConv->mod[CsiModuleID]->m_ID[moduleIndex]       = iSubMod;
-	wConv->mod[CsiModuleID]->m_Signal[moduleIndex]   = Fitter->GetParameter(0);
-	wConv->mod[CsiModuleID]->m_Time[moduleIndex]     = Fitter->GetParameter(1);
-	wConv->mod[CsiModuleID]->m_Pedestal[moduleIndex] = Fitter->GetParameter(2);
-	wConv->mod[CsiModuleID]->m_HHTime[moduleIndex]   = Fitter->GetConstantFraction();
-	wConv->mod[CsiModuleID]->m_Chisq[moduleIndex]    = Fitter->GetChisquare();
-	wConv->mod[CsiModuleID]->m_NDF[moduleIndex]      = Fitter->GetNDF();
-	  //wConv->mod[CsiModuleID]->m_ADC[moduleIndex]      = Fitter->GetADC(gr);
+	int moduleIndex = wConv->mod[CsiModuleID]->m_nDigi;	
+
+	wConv->mod[CsiModuleID]->m_FitHeight[moduleIndex]  = 1;
+	wConv->mod[CsiModuleID]->m_ID[moduleIndex]         = iSubMod;
+	wConv->mod[CsiModuleID]->m_Signal[moduleIndex]     = Fitter->GetParameter(0);
+	wConv->mod[CsiModuleID]->m_Time[moduleIndex]       = Fitter->GetParameter(1);
+	wConv->mod[CsiModuleID]->m_Pedestal[moduleIndex]   = Fitter->GetParameter(2);
+	wConv->mod[CsiModuleID]->m_HHTime[moduleIndex]     = Fitter->GetConstantFraction();
+	wConv->mod[CsiModuleID]->m_Chisq[moduleIndex]      = Fitter->GetChisquare();
+	wConv->mod[CsiModuleID]->m_NDF[moduleIndex]        = Fitter->GetNDF();
+	  //wConv->mod[CsiModuleID]->m_ADC[moduleIndex]    = Fitter->GetADC(gr);
 	wConv->mod[CsiModuleID]->m_Energy[moduleIndex]   = Converter->ConvertToEnergy(iSubMod,Fitter->GetParameter(0));
+
+	wConv->mod[CsiModuleID]->m_wav_SlopeDelta[moduleIndex]   = wavAnalyzer->m_SlopeDelta;
+	wConv->mod[CsiModuleID]->m_wav_PeakTime[moduleIndex]     = wavAnalyzer->m_TimeMaximum;
+	wConv->mod[CsiModuleID]->m_wav_Width[moduleIndex]        = wavAnalyzer->m_Width;
+	wConv->mod[CsiModuleID]->m_wav_Height[moduleIndex]       = wavAnalyzer->m_Height;
+	wConv->mod[CsiModuleID]->m_wav_FrontHalfTime[moduleIndex]= wavAnalyzer->m_BoundaryHead;
+	wConv->mod[CsiModuleID]->m_wav_RearHalfTime[moduleIndex] = wavAnalyzer->m_BoundaryTail;
+	wConv->mod[CsiModuleID]->m_wav_Pedestal[moduleIndex]     = wavAnalyzer->m_Pedestal;
+
+	wConv->mod[CsiModuleID]->m_Fit_Pedestal[moduleIndex]     = Fitter->GetParameter(1);
+	wConv->mod[CsiModuleID]->m_Fit_Height[moduleIndex]       = Fitter->GetParameter(0);
+	wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex]         = Fitter->GetParameter(2);
+	wConv->mod[CsiModuleID]->m_Fit_HHTime[moduleIndex]       = Fitter->GetConstantFraction();
+	wConv->mod[CsiModuleID]->m_Fit_ChisqNDF[moduleIndex]     
+	  = Fitter->GetChisqNDF(wConv->mod[CsiModuleID]->m_Fit_ChisqPed[moduleIndex],
+				wConv->mod[CsiModuleID]->m_Fit_ChisqFront[moduleIndex],				
+				wConv->mod[CsiModuleID]->m_Fit_ChisqRear[moduleIndex],
+				wConv->mod[CsiModuleID]->m_Fit_ChisqTail[moduleIndex]);
+	wConv->mod[CsiModuleID]->m_Conv_Energy[moduleIndex]      = ResultEnergy;
+	wConv->mod[CsiModuleID]->m_Conv_Time[moduleIndex]        = Fitter->GetParameter(2);// Must change // 
+
 	wConv->mod[CsiModuleID]->m_nDigi++;	    
       
       }else{

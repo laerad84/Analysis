@@ -29,6 +29,7 @@ class E14WaveformAnalyzer {
   Bool_t m_fUnderflow;
   Bool_t m_fWaveformAnalyzed;
 
+ public:
   //// Bit Information
   //// Underflow     = 0; less than 1
   //// Overflow      = 1; bigger than 16000
@@ -73,7 +74,7 @@ class E14WaveformAnalyzer {
   Double_t m_ChisqNDF_FrontPeak;
   Double_t m_ChisqNDF_RearPeak;
 
- public:
+
   TF1*     m_peakFunc;
   TGraph*  m_peakGraph;
   
@@ -105,8 +106,6 @@ class E14WaveformAnalyzer {
   virtual Int_t    AnalyzeWaveform( Double_t* Waveform );
   virtual Bool_t   IsAnalyzed() const { return m_fWaveformAnalyzed; }
   virtual Bool_t   GetParameters( Double_t& Pedestal, Double_t& Height, Double_t& PeakTime ) const;
-  
-
 
   /*
   virtual Double_t   GetPeakPointMaximum const () { return m_PeakPointMaximum;}

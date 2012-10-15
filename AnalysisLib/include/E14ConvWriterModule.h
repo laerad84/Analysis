@@ -20,9 +20,15 @@ class E14ConvWriterModule {
   //////////////////////////////////////////////////////
   // Channel Information 
   /////////////////////////////////////////////////////
+  double m_TotalEnergy;
+  int    m_nTimeCluster;
+  int    m_nChannelInTimeCluster[32];
+  double m_TimeClusterHead[32];
+  double m_TimeClusterTail[32];
 
-  int    m_nDigi;
-  short  m_ID[2716];
+  int    m_nDigi;  
+  short  m_ID[2716];  
+  int    m_TimeClusterID[2716];
   short  m_FitHeight[2716];
   short  m_FitTime[2716];
   double m_FitShape[2716];

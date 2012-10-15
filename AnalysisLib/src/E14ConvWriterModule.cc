@@ -12,13 +12,22 @@ E14ConvWriterModule::~E14ConvWriterModule(){
 }
 
 bool E14ConvWriterModule::InitData(){
-  m_nOverFlow = 0;
-  m_nUnderFlow = 0;
+  m_nTimeCluster = 0;
+  for( int i  =0; i< 32 ; i++){
+    m_TimeClusterHead[i] = 0.;
+    m_TimeClusterTail[i] = 0.;
+    m_nChannelInTimeCluster[i] = 0;
+  }
+
+  m_TotalEnergy = 0.;
+  m_nOverFlow   = 0;
+  m_nUnderFlow  = 0;  
   for( int i = 0; i< 2716; i++){
     m_IDOverFlow[i]  = 0;
     m_IDUnderFlow[i] = 0;
 
     m_ID[i]            = -1;
+    m_TimeClusterID[i] = 0;
     m_Pedestal[i]      = 0.;
     m_Signal[i]        = 0.;
     m_Time[i]          = 0.;
@@ -63,8 +72,22 @@ bool E14ConvWriterModule::InitData(){
 
 bool E14ConvWriterModule::SetBranchAddress(){
 
+  m_Tree->SetBranchAddress(Form("%snTimeCluster",m_DetectorName),&m_nTimeCluster);
+  m_Tree->SetBranchAddress(Form("%sTimeClusterHead",m_DetectorName),m_TimeClusterHead);
+  m_Tree->SetBranchAddress(Form("%sTimeClusterTail",m_DetectorName),m_TimeClusterTail);
+  m_Tree->SetBranchAddress(Form("%snChannelInTimeCluster",m_DetectorName),m_nChannelInTimeCluster);
+
+  m_Tree->SetBranchAddress(Form("%sTotalEnergy",m_DetectorName),&m_TotalEnergy);
+  // Under/OverFlow 
+  m_Tree->SetBranchAddress(Form("%snOverFlow",m_DetectorName),&m_nOverFlow);
+  m_Tree->SetBranchAddress(Form("%snUnderFlow",m_DetectorName),&m_nUnderFlow);
+  m_Tree->SetBranchAddress(Form("%sIDOverFlow",m_DetectorName),m_IDOverFlow);
+  m_Tree->SetBranchAddress(Form("%sIDUnderFlow",m_DetectorName),m_IDUnderFlow);			   
+
+  // Values of waveform // 
   m_Tree->SetBranchAddress(Form("%sNumber"   ,m_DetectorName),&m_nDigi);
   m_Tree->SetBranchAddress(Form("%sID"       ,m_DetectorName),m_ID);
+  m_Tree->SetBranchAddress(Form("%sTimeClusterID",m_DetectorName),m_TimeClusterID);
 
   m_Tree->SetBranchAddress(Form("%sPedestal" ,m_DetectorName),m_Pedestal);
   m_Tree->SetBranchAddress(Form("%sSignal"   ,m_DetectorName),m_Signal);
@@ -82,7 +105,7 @@ bool E14ConvWriterModule::SetBranchAddress(){
   
   m_Tree->SetBranchAddress(Form("%sChisq"    ,m_DetectorName),m_Chisq);
   m_Tree->SetBranchAddress(Form("%sNDF"      ,m_DetectorName),m_NDF);
-
+ 
   m_Tree->SetBranchAddress(Form("%swav_SlopeDelta"   ,m_DetectorName),m_wav_SlopeDelta);
   m_Tree->SetBranchAddress(Form("%swav_Height"       ,m_DetectorName),m_wav_Height);
   m_Tree->SetBranchAddress(Form("%swav_PeakTime"     ,m_DetectorName),m_wav_PeakTime);
@@ -104,14 +127,38 @@ bool E14ConvWriterModule::SetBranchAddress(){
   m_Tree->SetBranchAddress(Form("%sConv_Energy",m_DetectorName),m_Conv_Energy);
   m_Tree->SetBranchAddress(Form("%sConv_Time"  ,m_DetectorName),m_Conv_Time);
 
+
   return kTRUE;  
 }
 
 bool E14ConvWriterModule::Branch(){
+  m_Tree->Branch(Form("%snTimeCluster"  ,m_DetectorName),&m_nTimeCluster,
+		 Form("%snTimeCluster/I",m_DetectorName));
+  m_Tree->Branch(Form("%sTimeClusterHead"                        ,m_DetectorName),m_TimeClusterHead,
+		 Form("%sTimeClusterHead[%sTimeCluster]/D"       ,m_DetectorName,m_DetectorName));
+  m_Tree->Branch(Form("%sTimeClusterTail"                        ,m_DetectorName),m_TimeClusterTail,
+		 Form("%sTimeClusterTail[%sTimeClusterTail]/D"   ,m_DetectorName,m_DetectorName));
+  m_Tree->Branch(Form("%snChannelInTimeCluster"                  ,m_DetectorName),m_nChannelInTimeCluster,
+		 Form("%snChannelInTimeCluster[%snTimeCluster]/I",m_DetectorName,m_DetectorName));
+
+  m_Tree->Branch(Form("%sTotalEnergy",m_DetectorName),&m_TotalEnergy,
+		 Form("%sTotalEnergy/D",m_DetectorName));
+
+  m_Tree->Branch(Form("%snOverFlow"                    ,m_DetectorName),&m_nOverFlow,
+		 Form("%snOverFlow/I"                  ,m_DetectorName));
+  m_Tree->Branch(Form("%sIDOverFlow"                   ,m_DetectorName),m_IDOverFlow,
+		 Form("%sIDOverFlow[%snOverFlow]/I"    ,m_DetectorName,m_DetectorName));//m_nOverFlow
+  m_Tree->Branch(Form("%snUnderFlow"                   ,m_DetectorName),&m_nUnderFlow,
+		 Form("%snUnderFlow/I"                 ,m_DetectorName));
+  m_Tree->Branch(Form("%sIDUnderFlow"                  ,m_DetectorName),m_IDUnderFlow,
+		 Form("%sIDUnderFlow[%snUnderFlow]/I"  ,m_DetectorName,m_DetectorName));//m_nUnderFlow
+
   m_Tree->Branch(Form("%sNumber"                       ,m_DetectorName),&m_nDigi,
 		 Form("%sNumber/I"                     ,m_DetectorName));
   m_Tree->Branch(Form("%sID"                           ,m_DetectorName),m_ID,
 		 Form("%sID[%sNumber]/S"               ,m_DetectorName,m_DetectorName));//m_nDigi
+  m_Tree->Branch(Form("%sTimeClusterID"                ,m_DetectorName),m_TimeClusterID,
+		 Form("%sTimeClusterID[%sNumber]/I"    ,m_DetectorName,m_DetectorName));//m_nDigi
   ///// Branches of Fit Quality /////
   m_Tree->Branch(Form("%sFitHeight"                    ,m_DetectorName),m_FitHeight,
 		 Form("%sFitHeight[%sNumber]/S"        ,m_DetectorName,m_DetectorName));//m_nDigi
@@ -127,7 +174,7 @@ bool E14ConvWriterModule::Branch(){
 		 Form("%sDeltaDiff[%sNumber]/D"        ,m_DetectorName,m_DetectorName));//m_nDigi
   ///// Raw Fit Result /////
   m_Tree->Branch(Form("%sPedestal"                     ,m_DetectorName) ,m_Pedestal,
-		 Form("%sPed[%sNumber]/D"              ,m_DetectorName,m_DetectorName));//m_nDigi
+		 Form("%sPedestal[%sNumber]/D"         ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sSignal"                       ,m_DetectorName) ,m_Signal,
 		 Form("%sSignal[%sNumber]/D"           ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sEne"                          ,m_DetectorName)    ,m_Energy,
@@ -146,7 +193,7 @@ bool E14ConvWriterModule::Branch(){
 		 Form("%sFitADC[%sNumber]/D"           ,m_DetectorName,m_DetectorName));//m_nDigi
 
   m_Tree->Branch(Form("%swav_SlopeDelta"               ,m_DetectorName),m_wav_SlopeDelta,
-		 Form("%s[%sNumber]/D"                 ,m_DetectorName,m_DetectorName));//m_nDigi
+		 Form("%swav_SlopeDelta[%sNumber]/D"   ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%swav_Height"                   ,m_DetectorName),m_wav_Height,
 		 Form("%swav_Height[%sNumber]/D"       ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%swav_PeakTime"                 ,m_DetectorName),m_wav_PeakTime,

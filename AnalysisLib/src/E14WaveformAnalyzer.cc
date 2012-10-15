@@ -60,8 +60,7 @@ void   E14WaveformAnalyzer::_Clear(){
   m_Width         = 0;
   m_ADC           = 0; 
   m_SlopeStart    = 0;
-  m_SlopeDelta    = -1*0xFFFF;
-  
+  m_SlopeDelta    = -1*0xFFFF;  
 }
 Bool_t E14WaveformAnalyzer::_GetMeanHead( Double_t* Waveform ){
   // GetMean 4points of Waveform head // 
@@ -602,10 +601,10 @@ Int_t    E14WaveformAnalyzer::AnalyzeWaveform( Double_t *Waveform ){
   _GetWidth   ( Waveform );
   _GetSumSlope( Waveform );  
   m_fWaveformAnalyzed = true;
-  if( m_PeakMaximum > 16000)                { m_WaveformState |= 1;  }
-  if( m_PeakMinimum < 1    )                { m_WaveformState |= 2;  }
-  if( m_MeanHead - m_Pedestal > 10 )          { m_WaveformState |= 4;  }
-  if( m_MeanTail - m_Pedestal > 10 )          { m_WaveformState |= 8;  }
+  if( m_PeakMaximum > 16000)                    { m_WaveformState |= 1;  }
+  if( m_PeakMinimum < 1    )                    { m_WaveformState |= 2;  }
+  if( TMath::Abs(m_MeanHead - m_Pedestal) > 10 ){ m_WaveformState |= 4;  }
+  if( TMath::Abs(m_MeanTail - m_Pedestal) > 10 ){ m_WaveformState |= 8;  }
   if( m_TimeMaximum > (m_nPoint-15)*m_TimeWidth){ m_WaveformState |= 16; }
   return m_WaveformState; 
 }
@@ -653,7 +652,6 @@ void     E14WaveformAnalyzer::Draw( Double_t* Waveform ){
   TLine* LPeakTime     = new TLine();
   TLine* LSumTimeHead  = new TLine();
   TLine* LSumTimeTail  = new TLine();
-
 
   LPedestal    ->SetLineColor(1);
   LHeight      ->SetLineColor(2);

@@ -35,13 +35,14 @@ Double_t E14WaveFitter::GetChisquare(){
   Double_t chisq = m_FitFunc->GetChisquare();
   return chisq;
 }
-Double_t E14WaveFitter::GetChisqNDF( double& chisqPed, double& chisqHead, double& chisqTail){
+Double_t E14WaveFitter::GetChisqNDF( double& chisqPed, double& chisqFront, double& chisqRear, double& chisqTail){
   
   Double_t chisq = m_FitFunc->GetChisquare() / m_FitFunc->GetNDF();
-  chisqPed = m_ChisqNDF_Pedestal;
-  chisqHead = m_ChisqNDF_Head;
-  chisqTail = m_ChisqNDF_Tail;
-
+  chisqPed       = m_ChisqNDF_Pedestal;
+  chisqFront     = m_ChisqNDF_Front;
+  chisqRear      = m_ChisqNDF_Rear;
+  chisqTail      = m_ChisqNDF_Tail;
+  
   return chisq;
 }
 Int_t    E14WaveFitter::GetNDF(){
@@ -60,7 +61,8 @@ void     E14WaveFitter::InitPar(){
   
   m_fFit       = false;
   m_ChisqNDF_Pedestal = (double)0xFFFF;
-  m_ChisqNDF_Head     = (double)0xFFFF;
+  m_ChisqNDF_Front    = (double)0xFFFF;
+  m_ChisqNDF_Rear     = (double)0xFFFF;
   m_ChisqNDF_Tail     = (double)0xFFFF;
 
 }  
@@ -121,18 +123,23 @@ bool     E14WaveFitter::Fit( TGraph* gr , double minX, double maxX ){
 bool     E14WaveFitter::CalChisqNDF( TGraph* gr ){
   if( !m_fFit ){ 
     m_ChisqNDF_Pedestal = (double)0xFFFF;
-    m_ChisqNDF_Head     = (double)0xFFFF;
+    m_ChisqNDF_Front    = (double)0xFFFF;
+    m_ChisqNDF_Rear     = (double)0xFFFF;
     m_ChisqNDF_Tail     = (double)0xFFFF;
     return false;
   }
   m_ChisqNDF_Pedestal = 0;
-  m_ChisqNDF_Head     = 0;
+  m_ChisqNDF_Front    = 0;
+  m_ChisqNDF_Rear     = 0;
   m_ChisqNDF_Tail     = 0;
   int nPointsPedestal = 0;
-  int nPointsHead     = 0;
+  int nPointsFront    = 0;
+  int nPointsRear     = 0;
   int nPointsTail     = 0;
+
   double ChisqPedestal = 0.;
-  double ChisqHead     = 0.;
+  double ChisqFront    = 0.;
+  double ChisqRear     = 0.;
   double ChisqTail     = 0.;
 
   double x;
@@ -148,13 +155,17 @@ bool     E14WaveFitter::CalChisqNDF( TGraph* gr ){
       nPointsPedestal++; 
     }else if( x > peakX - 96 &&
 	      x <= peakX     ){
-      ChisqHead     += (m_FitFunc->Eval(x)-y)*(m_FitFunc->Eval(x) -y);
-      nPointsHead++; 
+      ChisqFront     += (m_FitFunc->Eval(x)-y)*(m_FitFunc->Eval(x) -y);
+      nPointsFront++; 
     }else if( x > peakX       &&
 	      x <= peakX + 96 ){
-      ChisqTail     += (m_FitFunc->Eval(x)-y)*(m_FitFunc->Eval(x) - y );
+      ChisqRear     += (m_FitFunc->Eval(x)-y)*(m_FitFunc->Eval(x) - y );
+      nPointsRear++;
+    }else if( x > peakX + 96 && 
+	      x <= peakX+150 ){
+      ChisqTail     += (m_FitFunc->Eval(x)-y)*(m_FitFunc->Eval(x) - y);
       nPointsTail++;
-    }else{ 
+    }else{
       continue; 
     }
   }
@@ -165,30 +176,38 @@ bool     E14WaveFitter::CalChisqNDF( TGraph* gr ){
     ChisqPedestal = ChisqPedestal/nPointsPedestal;
   }
 
-  if( peakX < 0 && nPointsHead == 0 ){
-    ChisqHead = ( double )0xFFFF;
+  if( peakX < 0 || nPointsFront == 0 ){
+    ChisqFront = ( double )0xFFFF;
   }else{ 
-    ChisqHead = ChisqHead / nPointsHead;
+    ChisqFront = ChisqFront / nPointsFront;
   }
 
-  if( peakX > gr->GetN()*8 || nPointsTail ==0 ){
+  if( peakX > gr->GetN()*8 || nPointsRear ==0 ){
+    ChisqRear = ( double )0xFFFF;
+  }else{
+    ChisqRear = ChisqRear / nPointsRear;
+  }
+
+  if( peakX + 96 > gr->GetN()*8 || nPointsTail ==0 ){
     ChisqTail = ( double )0xFFFF;
   }else{
     ChisqTail = ChisqTail / nPointsTail;
   }
 
+
   m_ChisqNDF_Pedestal = ChisqPedestal;
-  m_ChisqNDF_Head     = ChisqHead;
+  m_ChisqNDF_Front     = ChisqFront;
   m_ChisqNDF_Tail     = ChisqTail;
+  m_ChisqNDF_Rear     = ChisqRear;
   if( m_ChisqNDF_Pedestal >= 0xFFFF ||
-      m_ChisqNDF_Head     >= 0xFFFF ||
+      m_ChisqNDF_Front    >= 0xFFFF ||
+      m_ChisqNDF_Rear     >= 0xFFFF ||
       m_ChisqNDF_Tail     >= 0xFFFF ){
     return false;
   }else{
     return true;
   }
 }
-
 
 bool     E14WaveFitter::FitTime( TGraph* gr){
   m_splTime = m_FitFunc->GetX( m_FitFunc->GetParameter(0)*0.5 + m_FitFunc->GetParameter(2),
@@ -242,7 +261,8 @@ bool     E14WaveFitter::Draw(TGraph* gr){
   std::cout << "FitResult  :" << GetFitResult() << "\n";
   std::cout << "FitChisq   :" 
 	    << m_ChisqNDF_Pedestal << "\t" 
-	    << m_ChisqNDF_Head     << "\t" 
+	    << m_ChisqNDF_Front    << "\t" 
+	    << m_ChisqNDF_Rear     << "\t" 
 	    << m_ChisqNDF_Tail     << "\n";
   return true;
 }
@@ -263,3 +283,4 @@ TGraph* E14WaveFitter::GetDeltaFit( TGraph* gr ){
   }
   return grTemp;
 }
+

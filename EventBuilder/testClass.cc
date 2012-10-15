@@ -19,18 +19,19 @@ main( int argc, char** argv ){
   TCanvas* can  = new TCanvas("can","",800,800);
   E14EventBuilder_V0* test = new E14EventBuilder_V0(trOut,RunNumber);
   tfOut->cd();
-  test->LoopAll();
+  //test->LoopAll();
 
-  //test->EventProcess(EventNumber);
-  //test->DrawEvent(can);
-  //can->Update();
-  //can->Modified();
+  test->EventProcess(EventNumber);
+  test->DrawEvent(can);
+  can->Update();
+  can->Modified();
 
+  /*
   trOut->Write();
   tfOut->Close();
+  */
 
-
-  //app->Run();
+  app->Run();
 
 
 }

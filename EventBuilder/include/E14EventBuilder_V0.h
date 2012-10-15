@@ -72,7 +72,7 @@ class E14EventBuilder_V0 {
   TSpline3*     tempSpl[2716]; 
   
   TTree* m_trOut;
-  long m_Entries;
+  long   m_Entries;
 
  private:
   int m_RunNumber;
