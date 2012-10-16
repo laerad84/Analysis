@@ -3,6 +3,7 @@
 E14EventBuilder_V0::E14EventBuilder_V0(TTree* trout, Int_t RunNumber){
   m_trOut     = trout;
   m_RunNumber = RunNumber;
+  m_TimeClusterHist = new TH1D("TimeClusterHist","TimeClusterHist",32, 0, 64*8);
   Init();
 }
 E14EventBuilder_V0::~E14EventBuilder_V0(){
@@ -259,6 +260,7 @@ int  E14EventBuilder_V0::AnalyzeCsIData(){
 #ifdef DEBUG
   std::cout<< __PRETTY_FUNCTION__ << std::endl;
 #endif
+  m_TimeClusterHist->Reset();
   int nSubCsiModule = wConv->GetNsubmodule( CsiModuleID );
   for( int iSubMod = 0; iSubMod < nSubCsiModule; iSubMod++){	
     int iCrate = 9999;
@@ -286,21 +288,24 @@ int  E14EventBuilder_V0::AnalyzeCsIData(){
 
       int WavAnaRst = wavAnalyzer->AnalyzeWaveform( grCsI->GetY() );
 
-      const double heightThreshold = 50;
-      if( wavAnalyzer->m_Height < 5 ){
+      const double heightThreshold   = 30.;// Approx 3MeV // 
+      const double widthThreshold    = 32.;// At least 3 point in peak 
+      const double heightMinimum     = 5.;
+      const double slopeDeltaMinimum = 50;
+      if( wavAnalyzer->m_Height < heightMinimum ){
 	// Abort too low signal // 
 	continue; 
       }else if( wavAnalyzer->m_Height > heightThreshold ){
 	// Selection for high signals 
-	if( wavAnalyzer->m_Width < 25. ){// case of spike data  || Tail/Head Peak Data// 
+	if( wavAnalyzer->m_Width < widthThreshold ){// case of spike data  || Tail/Head Peak Data// 
 	  continue;
 	}
       }else {
 	// Selection for low signals 
 	// Abort data too small in ADC 
-	if( wavAnalyzer->m_SlopeDelta < 50 ){ continue; }
+	if( wavAnalyzer->m_SlopeDelta < slopeDeltaMinimum ){ continue; }
 	// Abort data peak is not in Maximum SlopeRegion
-	if(( wavAnalyzer->m_TimeMaximum < (wavAnalyzer->m_SlopeStart+3)*8 ) ||
+	if(( wavAnalyzer->m_TimeMaximum < (wavAnalyzer->m_SlopeStart+3 )*8) ||
 	   ( wavAnalyzer->m_TimeMaximum > (wavAnalyzer->m_SlopeStart+11)*8) ){
 	  continue;
 	}
@@ -340,9 +345,9 @@ int  E14EventBuilder_V0::AnalyzeCsIData(){
 	wConv->mod[CsiModuleID]->m_wav_RearHalfTime[moduleIndex] = wavAnalyzer->m_BoundaryTail;
 	wConv->mod[CsiModuleID]->m_wav_Pedestal[moduleIndex]     = wavAnalyzer->m_Pedestal;
 
-	wConv->mod[CsiModuleID]->m_Fit_Pedestal[moduleIndex]     = Fitter->GetParameter(1);
+	wConv->mod[CsiModuleID]->m_Fit_Pedestal[moduleIndex]     = Fitter->GetParameter(2);
 	wConv->mod[CsiModuleID]->m_Fit_Height[moduleIndex]       = Fitter->GetParameter(0);
-	wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex]         = Fitter->GetParameter(2);
+	wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex]         = Fitter->GetParameter(1);
 	wConv->mod[CsiModuleID]->m_Fit_HHTime[moduleIndex]       = Fitter->GetConstantFraction();
 	wConv->mod[CsiModuleID]->m_Fit_ChisqNDF[moduleIndex]     
 	  = Fitter->GetChisqNDF(wConv->mod[CsiModuleID]->m_Fit_ChisqPed[moduleIndex],
@@ -350,15 +355,72 @@ int  E14EventBuilder_V0::AnalyzeCsIData(){
 				wConv->mod[CsiModuleID]->m_Fit_ChisqRear[moduleIndex],
 				wConv->mod[CsiModuleID]->m_Fit_ChisqTail[moduleIndex]);
 	wConv->mod[CsiModuleID]->m_Conv_Energy[moduleIndex]      = ResultEnergy;
-	wConv->mod[CsiModuleID]->m_Conv_Time[moduleIndex]        = Fitter->GetParameter(2);// Must change // 
+	wConv->mod[CsiModuleID]->m_Conv_Time[moduleIndex]        = Fitter->GetParameter(1);// Must change // 
 
+	// Must Edit after // 
+	// Large PMT signal delay ~ 16 ns than Small PMT
+	if( wConv->mod[CsiModuleID]->m_Conv_Energy[moduleIndex] > 10 ){
+	  if( wConv->mod[CsiModuleID]->m_ID[moduleIndex] <  2240 ){
+	    m_TimeClusterHist->Fill( wConv->mod[CsiModuleID]->m_Conv_Time[ moduleIndex ]      ,
+				     wConv->mod[CsiModuleID]->m_Conv_Energy[ moduleIndex ]);
+	  }else{
+	    m_TimeClusterHist->Fill( wConv->mod[CsiModuleID]->m_Conv_Time[ moduleIndex ] - 16 , 
+				     wConv->mod[CsiModuleID]->m_Conv_Energy[ moduleIndex ]);
+	  }
+	}
 	wConv->mod[CsiModuleID]->m_nDigi++;	    
-      
+	
+	
       }else{
 	;
       }
       Fitter->Clear();	
       //std::cout << wConv->mod[CsiModuleID]->m_nDigi << std::endl;
+    }
+  }
+  
+  // Clustering with Time // 
+  wConv->mod[CsiModuleID]->m_nTimeCluster = 0;
+  for( int i = 0; i< 32; i++){    
+    wConv->mod[CsiModuleID]->m_TotalEnergyInTimeCluster[i] = 0;
+    wConv->mod[CsiModuleID]->m_TimeClusterHead[i]       = -1;
+    wConv->mod[CsiModuleID]->m_TimeClusterTail[i]       = -1;
+  }
+  for( int ibin = 0; ibin <= m_TimeClusterHist->GetNbinsX(); ibin++ ){
+    // Set Total Energy of Time Cluster 
+    if( m_TimeClusterHist->GetBinContent(ibin) != 0){
+      wConv->mod[CsiModuleID]->m_TotalEnergyInTimeCluster[wConv->mod[CsiModuleID]->m_nTimeCluster] += m_TimeClusterHist->GetBinContent(ibin);      
+    }
+    // Set Cluster Start
+    if( m_TimeClusterHist->GetBinContent( ibin -1 ) == 0 &&
+	m_TimeClusterHist->GetBinContent( ibin    ) != 0 ){
+      wConv->mod[CsiModuleID]->m_TimeClusterHead[ wConv->mod[CsiModuleID]->m_nTimeCluster ] = m_TimeClusterHist->GetBinLowEdge(ibin);
+    }
+    // Set Cluster End 
+    if( m_TimeClusterHist->GetBinContent( ibin ) != 0 &&
+	m_TimeClusterHist->GetBinContent( ibin + 1 ) == 0 ){
+      wConv->mod[CsiModuleID]->m_TimeClusterTail[ wConv->mod[CsiModuleID]->m_nTimeCluster ] = m_TimeClusterHist->GetBinLowEdge(ibin) + m_TimeClusterHist->GetBinWidth( ibin );
+      wConv->mod[CsiModuleID]->m_nTimeCluster++;
+    }
+  }
+  for( int moduleIndex  = 0; moduleIndex < wConv->mod[CsiModuleID]->m_nDigi; moduleIndex++){
+    wConv->mod[CsiModuleID]->m_TimeClusterID[moduleIndex] = -1;
+    if( wConv->mod[CsiModuleID]->m_ID[moduleIndex] < 2240){
+      for( int timeClusterIndex = 0; timeClusterIndex < wConv->mod[CsiModuleID]->m_nTimeCluster; timeClusterIndex++){
+	if( wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] > wConv->mod[CsiModuleID]->m_TimeClusterHead[timeClusterIndex]-8&&
+	    wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] < wConv->mod[CsiModuleID]->m_TimeClusterTail[timeClusterIndex]+8){
+	  wConv->mod[CsiModuleID]->m_TimeClusterID[moduleIndex] = timeClusterIndex;
+	  break;
+	}
+      }
+    }else{
+      for( int timeClusterIndex = 0; timeClusterIndex < wConv->mod[CsiModuleID]->m_nTimeCluster; timeClusterIndex++){
+	if( wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] > wConv->mod[CsiModuleID]->m_TimeClusterHead[timeClusterIndex]-8 + 16&&
+	    wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] < wConv->mod[CsiModuleID]->m_TimeClusterTail[timeClusterIndex]+8 + 16){
+	  wConv->mod[CsiModuleID]->m_TimeClusterID[moduleIndex] = timeClusterIndex;
+	  break;
+	}
+      }
     }
   }
   return (wConv->mod[CsiModuleID])->m_nDigi;
@@ -397,33 +459,79 @@ int  E14EventBuilder_V0::LoopAll(){
     } 
     EventProcess( ievent );    
   }
+  return m_Entries; 
 }
 void E14EventBuilder_V0::Clear(){
   TotalTriggerFlag = 0;
 }
 void E14EventBuilder_V0::DrawEvent(TCanvas* can){
   CsI_Module* csiEnergy = new CsI_Module("Energy");
-  CsI_Module* csiTime   = new CsI_Module("Energy");
-  TH1D* hisTimeDistrib  = new TH1D("hisTimeDistrib","hisTimeDistrib",64,0,8*64);
+  CsI_Module* csiTime   = new CsI_Module("Time");
+  CsI_Module* csiEnergyCluster[2];
+  for( int i  =0; i< 2; i++){
+    csiEnergyCluster[i] = new CsI_Module(Form("Cluster%d",i));
+  }
+
+  //TH1D* hisTimeDistrib  = new TH1D("hisTimeDistrib","hisTimeDistrib",64,0,8*64);
+  
   TH2D* hisEnergyTimeDistrib = new TH2D("hisEnergyTimeDistrib","EnergyTimeDistrib",64,0,8*64,160,0,1000);
+  Int_t BigEnergyClusterID[2] = {-1};
+  Double_t BigEnergyCluster[2] = {0};
+  for( int iCluster  =0; iCluster < wConv->mod[CsiModuleID]->m_nTimeCluster; iCluster++){
+    if( wConv->mod[CsiModuleID]->m_TotalEnergyInTimeCluster[ iCluster ] > BigEnergyCluster[0] ){
+      BigEnergyCluster[0]   = wConv->mod[CsiModuleID]->m_TotalEnergyInTimeCluster[ iCluster ];
+      BigEnergyClusterID[0] = iCluster;
+    }else{
+      if( wConv->mod[CsiModuleID]->m_TotalEnergyInTimeCluster[ iCluster ] > BigEnergyCluster[1] ){
+	BigEnergyCluster[1]   = wConv->mod[CsiModuleID]->m_TotalEnergyInTimeCluster[ iCluster ];
+	BigEnergyClusterID[1] = iCluster;
+      }
+    }
+  }
+  std::cout << BigEnergyClusterID[0] << "\t" << BigEnergyClusterID[1] << std::endl;
   for( int ich = 0; ich < wConv->mod[CsiModuleID]->m_nDigi; ich++){
     if( wConv->mod[CsiModuleID]->m_Energy[ich] > 1 ){
+      /*
+    std::cout << wConv->mod[CsiModuleID]->m_ID[ich] << "\t"
+		<< wConv->mod[CsiModuleID]->m_TimeClusterID[ ich ] << "\t"
+		<< wConv->mod[CsiModuleID]->m_Time[ich] << "\t" 
+		<< wConv->mod[CsiModuleID]->m_Signal[ich] << "\t"
+		<< wConv->mod[CsiModuleID]->m_Energy[ich] << "\n";
+      */
       csiEnergy->Fill( wConv->mod[CsiModuleID]->m_ID[ich], wConv->mod[CsiModuleID]->m_Energy[ich]);
       csiTime  ->Fill( wConv->mod[CsiModuleID]->m_ID[ich], wConv->mod[CsiModuleID]->m_Time[ich]);
-      if( wConv->mod[CsiModuleID]->m_Signal[ich] > 100 ){
-	hisTimeDistrib->Fill(wConv->mod[CsiModuleID]->m_Time[ich] - TimeOffset[wConv->mod[CsiModuleID]->m_ID[ich]]);
+
+      if( wConv->mod[CsiModuleID]->m_TimeClusterID[ich] == BigEnergyClusterID[0] ){
+	csiEnergyCluster[0]->Fill( wConv->mod[CsiModuleID]->m_ID[ich], wConv->mod[CsiModuleID]->m_Energy[ich]);
+      }else if( wConv->mod[CsiModuleID]->m_TimeClusterID[ich] == BigEnergyClusterID[1] ){
+	csiEnergyCluster[1]->Fill( wConv->mod[CsiModuleID]->m_ID[ich], wConv->mod[CsiModuleID]->m_Energy[ich]);
       }
+      //if( wConv->mod[CsiModuleID]->m_Signal[ich] > 100 ){
+      //hisTimeDistrib->Fill(wConv->mod[CsiModuleID]->m_Time[ich] - TimeOffset[wConv->mod[CsiModuleID]->m_ID[ich]]);
+      //}
       hisEnergyTimeDistrib->Fill(wConv->mod[CsiModuleID]->m_Time[ich],wConv->mod[CsiModuleID]->m_Energy[ich]);
     }
   }
-  can->Divide( 2,2 );
+  can->Divide(2,3);
   can->cd(1);
   gPad->SetLogz();
   csiEnergy->Draw("colz");
   can->cd(2);
   csiTime->Draw("colz");
   can->cd(3);
-  hisTimeDistrib->Draw();
+  m_TimeClusterHist->Draw();
+  //hisTimeDistrib->Draw();
   can->cd(4);
   hisEnergyTimeDistrib->Draw("col");
+  can->cd(5);
+  gPad->SetLogz();
+  csiEnergyCluster[0]->Draw("colz");
+  std::cout<< wConv->mod[CsiModuleID]->m_TimeClusterHead[BigEnergyClusterID[0]] << "\t"
+	   << wConv->mod[CsiModuleID]->m_TimeClusterTail[BigEnergyClusterID[0]] << "\n";
+  can->cd(6);
+  gPad->SetLogz();
+  csiEnergyCluster[1]->Draw("colz");
+  std::cout<< wConv->mod[CsiModuleID]->m_TimeClusterHead[BigEnergyClusterID[1]] << "\t"
+	   << wConv->mod[CsiModuleID]->m_TimeClusterTail[BigEnergyClusterID[1]] << "\n";
+  
 }

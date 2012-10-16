@@ -22,7 +22,7 @@ class E14ConvWriterModule {
   /////////////////////////////////////////////////////
   double m_TotalEnergy;
   int    m_nTimeCluster;
-  int    m_nChannelInTimeCluster[32];
+  int    m_TotalEnergyInTimeCluster[32];
   double m_TimeClusterHead[32];
   double m_TimeClusterTail[32];
 
