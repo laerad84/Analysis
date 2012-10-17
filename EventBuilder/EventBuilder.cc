@@ -10,7 +10,7 @@ main( int argc, char** argv ){
   
   int RunNumber;
   RunNumber = atoi( argv[1] );
-  std::string SUMUPFILEDIR = std::getenv("ROOTFILE_SUMUP");
+  std::string SUMUPFILEDIR = std::getenv("ROOTFILE_WAV");
   
   TFile* tfOut = new TFile(Form("%s/run_wav_%d.root",SUMUPFILEDIR.c_str(),RunNumber),"RECREATE");
   TTree* trOut = new TTree("Tree","");
