@@ -4,6 +4,7 @@ E14EventBuilder_V0::E14EventBuilder_V0(TTree* trout, Int_t RunNumber){
   m_trOut     = trout;
   m_RunNumber = RunNumber;
   m_TimeClusterHist = new TH1D("TimeClusterHist","TimeClusterHist",32, 0, 64*8);
+  m_EnergyTimeDistrib = new TH2D("EnergyTimeDistrib","EnergyTimeDistrib",64,0,64*8,160,0,16000);
   Init();
 }
 E14EventBuilder_V0::~E14EventBuilder_V0(){
@@ -447,7 +448,7 @@ int  E14EventBuilder_V0::EventProcess(int ievent){
   }
   Int_t Trigger  = TriggerDicision();
   Int_t nChannel = AnalyzeCsIData();
-  std::cout << "TRIGGER:" << Trigger << "\tnChannel" << nChannel << std::endl;
+  //std::cout << "TRIGGER:" << Trigger << "\tnChannel" << nChannel << std::endl;
   m_trOut->Fill();
   return nChannel;
 }
@@ -472,9 +473,7 @@ void E14EventBuilder_V0::DrawEvent(TCanvas* can){
     csiEnergyCluster[i] = new CsI_Module(Form("Cluster%d",i));
   }
 
-  //TH1D* hisTimeDistrib  = new TH1D("hisTimeDistrib","hisTimeDistrib",64,0,8*64);
-  
-  TH2D* hisEnergyTimeDistrib = new TH2D("hisEnergyTimeDistrib","EnergyTimeDistrib",64,0,8*64,160,0,1000);
+  m_EnergyTimeDistrib->Reset();
   Int_t BigEnergyClusterID[2] = {-1};
   Double_t BigEnergyCluster[2] = {0};
   for( int iCluster  =0; iCluster < wConv->mod[CsiModuleID]->m_nTimeCluster; iCluster++){
@@ -509,7 +508,7 @@ void E14EventBuilder_V0::DrawEvent(TCanvas* can){
       //if( wConv->mod[CsiModuleID]->m_Signal[ich] > 100 ){
       //hisTimeDistrib->Fill(wConv->mod[CsiModuleID]->m_Time[ich] - TimeOffset[wConv->mod[CsiModuleID]->m_ID[ich]]);
       //}
-      hisEnergyTimeDistrib->Fill(wConv->mod[CsiModuleID]->m_Time[ich],wConv->mod[CsiModuleID]->m_Energy[ich]);
+      m_EnergyTimeDistrib->Fill(wConv->mod[CsiModuleID]->m_Time[ich],wConv->mod[CsiModuleID]->m_Energy[ich]);
     }
   }
   can->Divide(2,3);
@@ -520,9 +519,8 @@ void E14EventBuilder_V0::DrawEvent(TCanvas* can){
   csiTime->Draw("colz");
   can->cd(3);
   m_TimeClusterHist->Draw();
-  //hisTimeDistrib->Draw();
   can->cd(4);
-  hisEnergyTimeDistrib->Draw("col");
+  m_EnergyTimeDistrib->Draw("col");
   can->cd(5);
   gPad->SetLogz();
   csiEnergyCluster[0]->Draw("colz");

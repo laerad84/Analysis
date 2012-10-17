@@ -74,8 +74,8 @@ class E14EventBuilder_V0 {
   TTree* m_trOut;
   long   m_Entries;
   TH1D*  m_TimeClusterHist;
+  TH2D*  m_EnergyTimeDistrib;
 
- private:
   int m_RunNumber;
   int m_EventNumber;
 
