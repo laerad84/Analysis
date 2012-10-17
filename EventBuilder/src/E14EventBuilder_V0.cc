@@ -407,16 +407,16 @@ int  E14EventBuilder_V0::AnalyzeCsIData(){
     wConv->mod[CsiModuleID]->m_TimeClusterID[moduleIndex] = -1;
     if( wConv->mod[CsiModuleID]->m_ID[moduleIndex] < 2240){
       for( int timeClusterIndex = 0; timeClusterIndex < wConv->mod[CsiModuleID]->m_nTimeCluster; timeClusterIndex++){
-	if( wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] > wConv->mod[CsiModuleID]->m_TimeClusterHead[timeClusterIndex]-8&&
-	    wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] < wConv->mod[CsiModuleID]->m_TimeClusterTail[timeClusterIndex]+8){
+	if( wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] > wConv->mod[CsiModuleID]->m_TimeClusterHead[timeClusterIndex]-m_TimeClusterHist->GetBinWidth(1)/2 &&
+	    wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] < wConv->mod[CsiModuleID]->m_TimeClusterTail[timeClusterIndex]+m_TimeClusterHist->GetBinWidth(1)/2 ){
 	  wConv->mod[CsiModuleID]->m_TimeClusterID[moduleIndex] = timeClusterIndex;
 	  break;
 	}
       }
     }else{
       for( int timeClusterIndex = 0; timeClusterIndex < wConv->mod[CsiModuleID]->m_nTimeCluster; timeClusterIndex++){
-	if( wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] > wConv->mod[CsiModuleID]->m_TimeClusterHead[timeClusterIndex]-8 + 16&&
-	    wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] < wConv->mod[CsiModuleID]->m_TimeClusterTail[timeClusterIndex]+8 + 16){
+	if( wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] > wConv->mod[CsiModuleID]->m_TimeClusterHead[timeClusterIndex]-8 + m_TimeClusterHist->GetBinWidth(1)/2 &&
+	    wConv->mod[CsiModuleID]->m_Fit_Time[moduleIndex] < wConv->mod[CsiModuleID]->m_TimeClusterTail[timeClusterIndex]+8 + m_TimeClusterHist->GetBinWidth(1)/2 ){
 	  wConv->mod[CsiModuleID]->m_TimeClusterID[moduleIndex] = timeClusterIndex;
 	  break;
 	}
