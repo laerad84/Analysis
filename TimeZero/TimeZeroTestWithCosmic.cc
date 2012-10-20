@@ -23,28 +23,69 @@
 #include "EnergyConverter.h"
 
 #include "ClusterFinder_EDIT.h"
+#include "IDHandler.h"
+#include "CsIImage.h"
 
+#include "TApplication.h"
+#include "TCanvas.h"
+#include "TStyle.h"
 int
 main( int argc ,char ** argv ){
-  
+  gStyle->SetOptFit(111111111);
+
   //int RunNumber = atoi( argv[1]);
+  TApplication* app = new TApplication("App",&argc, argv );
+
   std::string WAVFILE   = std::getenv("ROOTFILE_WAV");
   std::string ANALIBDIR = std::getenv("ANALYSISLIB");
   EnergyConverter *Converter = new EnergyConverter();  
   Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",
 					  ANALIBDIR.c_str()));
-  //TFile* tfin = new TFile(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVFILE.c_str(),RunNumber));
+  
+  TFile* tfin = new TFile(Form("%s/run_wav_4501.root",WAVFILE.c_str()));  
+  TTree* trin = (TTree*)tfin->Get("Tree");
+
+  IDHandler* handler        = new IDHandler();
+  TH2D* TriggerMap          = new TH2D("Trigger","Trigger",5,0,5,5,0,5);
+  CsIImage* TimeMap         = new CsIImage( handler );
+  CsIImage* EnergyMap       = new CsIImage( handler );
+  TGraph* grHeightTimeNoADJ = new TGraph();
+  TGraph* grHeightTimePi0   = new TGraph();
+  TGraph* grHeightTimeADJ   = new TGraph();
+  grHeightTimeNoADJ->SetMarkerStyle( 6 );
+  grHeightTimePi0->SetMarkerStyle( 6 );
+  grHeightTimeADJ->SetMarkerStyle( 6 );
+
   /*
-  TTree* trin = (TTree*)tfin->Get("WFTree");
-  TFile* tfout = new TFile( Form("%s/TEMPLATE_FIT_RESULT_1_%d_TIME.root",WAVFILE.c_str(), RunNumber),"RECREATE");
-  */
-  TChain* trin = new TChain("Tree");
+  TChain* trin = new TChain("WFTree");
   for( int i = 0; i< 22; i++){
-    //trin->Add(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVFILE.c_str(),4503+i));
-    trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),4503+i));
+    trin->Add(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVFILE.c_str(),4503+i));
+  }
+  */
+  Double_t TimeOffset[2716]={500};
+  Double_t TimeOffsetSigma[ 2716 ] = {0};
+  Double_t TimeOffsetCrystalPosition[2716] = {0};
+
+  std::ifstream ifs("Pi0Peak.dat");
+  Int_t tID;
+  Double_t tOffset;
+  Double_t tOffsetSigma;
+
+  while( ifs >> tID >> tOffset >> tOffsetSigma ){
+    TimeOffsetSigma[ tID ] = tOffsetSigma;
+    if( tOffsetSigma > 0 ){
+      TimeOffset[ tID ] = tOffset;      
+    }else{
+      TimeOffset[ tID ] = -384 ;
+    }
+  }
+  for( int i = 0; i< 2716; i++){
+    double x,y; 
+    handler->GetMetricPosition( i, x, y );
+    TimeOffsetCrystalPosition[i] = (TMath::Sqrt( 2624*2624 + x*x +y*y ) - 2624 )/ 299.7 ; // ns 
   }
 
-  TFile* tfout = new TFile("Pi0Out.root","RECREATE");
+  TFile* tfout = new TFile("Cosmic0Out.root","RECREATE");
   TH2D* hisTimeDelta = new TH2D("hisTimeDelta","hisTimeDelta",2716, 0, 2716,
 				400, -100, 100 );  
   TH2D* hisEnergyTimeDelta[2716];
@@ -97,13 +138,28 @@ main( int argc ,char ** argv ){
   ClusterFinder_EDIT clusterFinder;
   GammaFinder gFinder;
 
+  TCanvas* can = new TCanvas("can","can",1200,800);
+  can->Divide( 3,2 );
+  for( int i = 0; i< 6; i++){
+    can->cd( i +1 ); 
+    gPad->SetGridx();
+    gPad->SetGridy();
+  }
+
 
   TH1D* stepHist = new TH1D("hisStep","Step;Step;Survived Event",20,0,20);
   for( int ievent  = 0; ievent < entries ; ievent++){
     //std::cout << ievent << "/" << entries << std::endl;
     reader->GetEntry( ievent  );
+    TimeMap->Reset();
+    EnergyMap->Reset();
+    TriggerMap->Reset();
+    grHeightTimeNoADJ->Set(0);
+    grHeightTimePi0->Set(0);
+    grHeightTimeADJ->Set(0);
+
     ScintiTime = -500;
-    ScintiHHTime = -500.;
+   ScintiHHTime = -500.;
     nCSIDigi = 0;
 
     for( Int_t iCSI = 0; iCSI < nCSI; iCSI++ ){
@@ -117,75 +173,73 @@ main( int argc ,char ** argv ){
     //std::cout<< "Scinti" << std::endl;
     RunNumber = reader->RunNo;
     EventNumber = reader->EventNo;
-    Int_t    ScintiID;
-    Bool_t   ScintiOn = false;
-    for( int i = 0; i< reader->EtcNumber ; i++){    
-      if( reader->EtcID[i] == 1 ){
-	ScintiID     = reader->EtcID[i]; 
-	ScintiHHTime = reader->EtcHHTime[i];
-	ScintiTime   = reader->EtcTime[i];
-	ScintiSignal = reader->EtcSignal[i];
-	ScintiOn     = true;
-	break;
+    if( reader->CosmicTrigFlagUp == 0 && 
+	reader->CosmicTrigFlagDn == 0 ){
+      continue;
+    }
+
+    for( int i = 0; i< 5; i++){
+      Int_t TrigFlag = 1 << i ;
+      if( (TrigFlag & reader->CosmicTrigFlagUp ) != 0){
+	TriggerMap->Fill( i, 4 );
+      }
+      if( (TrigFlag & reader->CosmicTrigFlagDn ) != 0){
+	TriggerMap->Fill( i, 0 );
       }
     }
-    if( !ScintiOn || reader->EtcSignal[ScintiID] < 50 ){ continue; }
+	
+      
+
     stepHist->Fill(1);
     //std::cout << "CsI" << std::endl;
 
     for( int ich  = 0; ich < reader->CsiNumber; ich++){
-      
       if( reader->CsiSignal[ich] < 5 ){ 
 	continue;
       }
+      Double_t x,y;
+      handler->GetMetricPosition( reader->CsiID[ich] , x, y );
 
       //std::cout << "Converter " << std::endl;
       if( Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] ) > 1.5){
 	CSIDigiID[nCSIDigi]     = reader->CsiID[ich];
 	CSIDigiTime[nCSIDigi]   = reader->CsiTime[ich];
 	CSIDigiHHTime[nCSIDigi] = reader->CsiHHTime[ich];
-	CSIDigiSignal[nCSIDigi]     = reader->CsiSignal[ich];
+	CSIDigiSignal[nCSIDigi] = reader->CsiSignal[ich];
 	CSIDigiE[nCSIDigi]      = Converter->ConvertToEnergy( reader->CsiID[ich] ,reader->CsiSignal[ich] );
 	hisTimeDelta->Fill( CSIDigiID[nCSIDigi], CSIDigiHHTime[nCSIDigi] - ScintiHHTime );
 	hisEnergyTimeDelta[CSIDigiID[nCSIDigi]]->Fill( CSIDigiSignal[nCSIDigi], CSIDigiHHTime[nCSIDigi]- ScintiHHTime );
+	if( TimeOffsetSigma > 0  && Converter->ConvertToEnergy( reader->CsiID[ich] ,reader->CsiSignal[ich] ) > 3 ){
+	  TimeMap->Fill( reader->CsiID[ ich ]   , reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
+	  EnergyMap->Fill( reader->CsiID[ ich ] , Converter->ConvertToEnergy( reader->CsiID[ ich ] , reader->CsiSignal[ ich ] ));
+	  grHeightTimeNoADJ->SetPoint( grHeightTimeNoADJ->GetN(), y, reader->CsiHHTime[ ich ] );
+	  grHeightTimePi0  ->SetPoint( grHeightTimePi0->GetN(), y, reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
+	  grHeightTimeADJ  ->SetPoint( grHeightTimeADJ->GetN(), y, reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] + TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ]);
+	}
 	nCSIDigi++;
       }
     }
     
-    //std::cout<< "Clustering" << std::endl;
-    //std::cout << nCSIDigi << std::endl;
-    std::list<Cluster> clist;
-    std::list<Gamma>   glist;
-    clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE, CSIDigiHHTime);
-    gFinder.findGamma( clist , glist );
+    can->cd(1);
+    TimeMap->Draw("colz");
+    can->cd(2);
+    EnergyMap->Draw("colz");
+    can->cd(3);
+    TriggerMap->Draw("col");
+    can->cd(4);
+    grHeightTimeNoADJ->Draw("AP");
+    grHeightTimeNoADJ->Fit("pol1","","",-600,600);
+    can->cd(5);
+    grHeightTimePi0->Draw("AP");
+    grHeightTimePi0->Fit("pol1","","",-600,600);
+    can->cd(6);
+    grHeightTimeADJ->Draw("AP");
+    grHeightTimeADJ->Fit("pol1","","",-600,600);
+    can->Update();
+    can->Modified();
 
-    if( glist.size() != 2 ) continue;
-    stepHist->Fill(2);
-    //std::cout <<"Pi0 Reconstruction" << std::endl;
-    std::list<Pi0> piList; 
-    double mass =0;
-    double position = 3526;
-    if( !user_rec(glist,piList,mass,position )) continue; 
-    stepHist->Fill(3);
-    Gamma g1 = glist.front();
-    Gamma g2 = glist.back();
-    /*
-    g1.clusterIdVec();
-    g1.clusterEVec();
-    g1.clusterTimeVec();
-    */
-    for( std::list<Gamma>::iterator it = glist.begin(); it != glist.end(); it++ ){ 
-      for( int icluster = 0; icluster < (*it).clusterIdVec().size(); icluster++ ){
-	if( (*it).clusterEVec()[icluster] > 30 ){
-	  hisTimeDeltaCH[ (*it).clusterIdVec()[icluster] ]->Fill( (*it).clusterTimeVec()[icluster] - ScintiHHTime );
-	}
-      }
-    }
+    getchar();
 
-
-
-    //std::cout<< mass <<std::endl; 
-    data.setData( piList );
     trout->Fill();
   }
 
@@ -198,5 +252,6 @@ main( int argc ,char ** argv ){
   stepHist->Write();
   hisTimeDelta->Write();
   tfout->Close();
+  app->Run();
   return 0;
 }
