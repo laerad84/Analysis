@@ -465,16 +465,19 @@ void CsIImage::Reset( void ){
     GetBin( crystalID, xbin, ybin );
     smallHist->SetBinContent( xbin, ybin, 0 );
   }
+  smallHist->Reset();
   for( ; crystalID<numberOfCrystals; crystalID++ ){
     GetBin( crystalID, xbin, ybin );
     largeHist->SetBinContent( xbin, ybin, 0 );
   }
-
+  largeHist->Reset();
   for( crystalID=3000; crystalID<3000+numberOfCC03; crystalID++){
     GetBin( crystalID, xbin, ybin );
     CC03Hist[(crystalID-3000)/8]->SetBinContent( xbin, ybin, 0 );
   }
-
+  for( int i = 0; i< 4; i++){
+    CC03Hist[i]->Reset();
+  }
 }
 
 

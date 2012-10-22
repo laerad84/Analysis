@@ -10,6 +10,7 @@
 #include "TGraph.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TF1.h"
 #include "E14WavReader.h"
 #include <cstring>
 #include <string>
@@ -29,6 +30,11 @@
 #include "TApplication.h"
 #include "TCanvas.h"
 #include "TStyle.h"
+
+#include "HoughCsI.h"
+#include "Chisq_cosmic.h"
+#include "E14CosmicAnalyzer.h"
+
 int
 main( int argc ,char ** argv ){
   gStyle->SetOptFit(111111111);
@@ -49,9 +55,11 @@ main( int argc ,char ** argv ){
   TH2D* TriggerMap          = new TH2D("Trigger","Trigger",5,0,5,5,0,5);
   CsIImage* TimeMap         = new CsIImage( handler );
   CsIImage* EnergyMap       = new CsIImage( handler );
+  E14CosmicAnalyzer* cosmicAnalyzer = new E14CosmicAnalyzer();
   TGraph* grHeightTimeNoADJ = new TGraph();
   TGraph* grHeightTimePi0   = new TGraph();
   TGraph* grHeightTimeADJ   = new TGraph();
+  TGraph* grTrack           = new TGraph();
   grHeightTimeNoADJ->SetMarkerStyle( 6 );
   grHeightTimePi0->SetMarkerStyle( 6 );
   grHeightTimeADJ->SetMarkerStyle( 6 );
@@ -117,19 +125,38 @@ main( int argc ,char ** argv ){
   Double_t CSIDigiHHTime[nCSI];
   Int_t    CSIDigiID[nCSI];
   Double_t CSIDigiSignal[nCSI];
+  Double_t FitP0[2];
+  Double_t FitP1[2];
+  Double_t FitChisq[2];
+  Double_t CSIDigiDeltaT0[nCSI];
+  Double_t CSIDigiDeltaT1[nCSI];
+  Int_t    CosmicTrigUp;
+  Int_t    CosmicTrigDn;
+  Double_t Roh;
+  Double_t Theta;
 
-  trout->Branch( "RunNumber"     , &RunNumber     , "RunNumber/I");
-  trout->Branch( "EventNumber"   , &EventNumber   , "EventNumber/I");
-  trout->Branch( "ScintiSignal"  , &ScintiSignal  , "ScintiSignal/D");
-  trout->Branch( "ScintiHHTimne" , &ScintiHHTime  , "ScintiHHTime/D");
-  trout->Branch( "ScintiTime"    , &ScintiTime    , "ScintiTime/D");
-  trout->Branch( "nCSIDigi"      , &nCSIDigi     , "nCSIDigi/I" );
-  trout->Branch( "CSIDigiE"      , CSIDigiE      , "CSIDidgiE[nCSIDigi]/D");//nCSIDigi
-  trout->Branch( "CSIDigiTime"   , CSIDigiTime   , "CSIDigiTime[nCSIDigi]/D");//nCSIDigi
-  trout->Branch( "CSIDigiHHTime" , CSIDigiHHTime , "CSIDigiHHTime[nCSIDigi]/D");//nCSIDigi
-  trout->Branch( "CSIDigiID"     , CSIDigiID     , "CSIDigiID[nCSIDigi]/I");//nCSIDigi
-  trout->Branch( "CSIDigiSignal" , CSIDigiSignal , "CSIDigiSignal[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "RunNumber"     , &RunNumber      , "RunNumber/I");
+  trout->Branch( "EventNumber"   , &EventNumber    , "EventNumber/I");
+  trout->Branch( "ScintiSignal"  , &ScintiSignal   , "ScintiSignal/D");
+  trout->Branch( "ScintiHHTimne" , &ScintiHHTime   , "ScintiHHTime/D");
+  trout->Branch( "ScintiTime"    , &ScintiTime     , "ScintiTime/D");
+  trout->Branch( "nCSIDigi"      , &nCSIDigi       , "nCSIDigi/I" );
+  trout->Branch( "CSIDigiE"      , CSIDigiE        , "CSIDidgiE[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "CSIDigiTime"   , CSIDigiTime     , "CSIDigiTime[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "CSIDigiHHTime" , CSIDigiHHTime   , "CSIDigiHHTime[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "CSIDigiID"     , CSIDigiID       , "CSIDigiID[nCSIDigi]/I");//nCSIDigi
+  trout->Branch( "CSIDigiSignal" , CSIDigiSignal   , "CSIDigiSignal[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "CSIDigiDeltaT0" , CSIDigiDeltaT0 , "CSIDigiDeltaT0[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "CSIDigiDeltaT1" , CSIDigiDeltaT1 , "CSIDigiDeltaT1[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "FitP0"         , FitP0           , "FitP0[2]/D" );
+  trout->Branch( "FitP1"         , FitP1           , "FitP1[2]/D" );
+  trout->Branch( "FitChisq"      , FitChisq        , "FitChisq[2]/D" );
+  trout->Branch( "CosmicTrigUp"  , &CosmicTrigUp   , "CosmicTrigUp/I");
+  trout->Branch( "CosmicTrigDn"  , &CosmicTrigDn   , "CosmicTrigDn/I");
+  trout->Branch( "Roh"           , &Roh            , "Roh/D");
+  trout->Branch( "Theta"         , &Theta          , "Theta/D");
 
+  /*
   E14GNAnaDataContainer data;
   data.branchOfClusterList( trout );
   data.branchOfDigi( trout );
@@ -137,6 +164,7 @@ main( int argc ,char ** argv ){
   
   ClusterFinder_EDIT clusterFinder;
   GammaFinder gFinder;
+  */
 
   TCanvas* can = new TCanvas("can","can",1200,800);
   can->Divide( 3,2 );
@@ -149,7 +177,7 @@ main( int argc ,char ** argv ){
 
   TH1D* stepHist = new TH1D("hisStep","Step;Step;Survived Event",20,0,20);
   for( int ievent  = 0; ievent < entries ; ievent++){
-    //std::cout << ievent << "/" << entries << std::endl;
+    if( ievent % 100 == 0){std::cout << ievent << "/" << entries << std::endl;}
     reader->GetEntry( ievent  );
     TimeMap->Reset();
     EnergyMap->Reset();
@@ -157,10 +185,14 @@ main( int argc ,char ** argv ){
     grHeightTimeNoADJ->Set(0);
     grHeightTimePi0->Set(0);
     grHeightTimeADJ->Set(0);
+    grTrack->Set(0);
+    cosmicAnalyzer->Reset();
 
     ScintiTime = -500;
-   ScintiHHTime = -500.;
+    ScintiHHTime = -500.;
     nCSIDigi = 0;
+    CosmicTrigUp = -1;
+    CosmicTrigDn = -1;
 
     for( Int_t iCSI = 0; iCSI < nCSI; iCSI++ ){
       CSIDigiE[iCSI]      = 0;
@@ -168,6 +200,11 @@ main( int argc ,char ** argv ){
       CSIDigiHHTime[iCSI] = 0;
       CSIDigiID[iCSI]     = -1;
     }
+    for( int i = 0; i< 2; i++){
+      FitP0[i] = 0xFFFF;
+      FitP1[i] = 0xFFFF;
+      FitChisq[i] = 0xFFFF;
+    }    
 
     stepHist->Fill(0);   
     //std::cout<< "Scinti" << std::endl;
@@ -177,15 +214,27 @@ main( int argc ,char ** argv ){
 	reader->CosmicTrigFlagDn == 0 ){
       continue;
     }
+    if( reader->TrigFlag != 2 ){
+      continue;
+    }
+    int nTrigUp = 0;
+    int nTrigDn = 0;
 
     for( int i = 0; i< 5; i++){
       Int_t TrigFlag = 1 << i ;
       if( (TrigFlag & reader->CosmicTrigFlagUp ) != 0){
+	nTrigUp++;
 	TriggerMap->Fill( i, 4 );
+	CosmicTrigUp = i;
       }
       if( (TrigFlag & reader->CosmicTrigFlagDn ) != 0){
+	nTrigDn++;
 	TriggerMap->Fill( i, 0 );
+	CosmicTrigDn = i;
       }
+    }
+    if( nTrigUp != 1  || nTrigDn != 1 ){
+      continue;
     }
 	
       
@@ -201,7 +250,7 @@ main( int argc ,char ** argv ){
       handler->GetMetricPosition( reader->CsiID[ich] , x, y );
 
       //std::cout << "Converter " << std::endl;
-      if( Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] ) > 7){
+      if( Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] ) > 3){
 	CSIDigiID[nCSIDigi]     = reader->CsiID[ich];
 	CSIDigiTime[nCSIDigi]   = reader->CsiTime[ich];
 	CSIDigiHHTime[nCSIDigi] = reader->CsiHHTime[ich];
@@ -212,14 +261,47 @@ main( int argc ,char ** argv ){
 	if( TimeOffsetSigma > 0  && Converter->ConvertToEnergy( reader->CsiID[ich] ,reader->CsiSignal[ich] ) > 3 ){
 	  TimeMap->Fill( reader->CsiID[ ich ]   , reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
 	  EnergyMap->Fill( reader->CsiID[ ich ] , Converter->ConvertToEnergy( reader->CsiID[ ich ] , reader->CsiSignal[ ich ] ));
-	  grHeightTimeNoADJ->SetPoint( grHeightTimeNoADJ->GetN(), y, reader->CsiHHTime[ ich ] );
-	  grHeightTimePi0  ->SetPoint( grHeightTimePi0->GetN(), y, reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
-	  grHeightTimeADJ  ->SetPoint( grHeightTimeADJ->GetN(), y, reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] + TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ]);
+	  grHeightTimeNoADJ->SetPoint( grHeightTimeNoADJ->GetN(),
+				       y,
+				       reader->CsiHHTime[ ich ] );
+	  grHeightTimePi0  ->SetPoint( grHeightTimePi0->GetN(),
+				       y,
+				       reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
+	  grHeightTimeADJ  ->SetPoint( grHeightTimeADJ->GetN(), 
+				       y,
+				       reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] + TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ]);
+	  grTrack->SetPoint( grTrack->GetN(),x,y);
 	}
 	nCSIDigi++;
       }
     }
-    
+
+    if( nCSIDigi < 10 ){ continue; }
+
+    cosmicAnalyzer->GetResult( grTrack, Roh, Theta );
+
+    grHeightTimePi0->Fit( "pol1", "Q","", -1000, 1000);
+    TF1* funcTime0 = grHeightTimePi0->GetFunction("pol1");
+
+    grHeightTimeADJ->Fit( "pol1", "Q","", -1000,1000);
+    TF1* funcTime1 = grHeightTimeADJ->GetFunction("pol1");
+
+    FitP0[0] = funcTime0->GetParameter(0);
+    FitP0[1] = funcTime1->GetParameter(0);
+    FitP1[0] = funcTime0->GetParameter(1);
+    FitP1[1] = funcTime1->GetParameter(1);
+    FitChisq[0] = funcTime0->GetChisquare() / funcTime0->GetNDF();
+    FitChisq[1] = funcTime1->GetChisquare() / funcTime1->GetNDF();
+    for( int idigi = 0; idigi < nCSIDigi; idigi++){
+      Double_t x,y;
+      handler->GetMetricPosition( CSIDigiID[ idigi ] , x, y);
+      CSIDigiDeltaT0[idigi] = CSIDigiHHTime[idigi] - funcTime1->Eval( y) -TimeOffset[CSIDigiID[idigi]];
+      CSIDigiDeltaT1[idigi] = CSIDigiHHTime[idigi] - funcTime1->Eval( y) -TimeOffset[CSIDigiID[idigi]] + TimeOffsetCrystalPosition[ CSIDigiID[idigi] ];
+    }
+    grHeightTimePi0->GetListOfFunctions()->Delete();
+    grHeightTimeADJ->GetListOfFunctions()->Delete();
+
+    /*
     can->cd(1);
     TimeMap->Draw("colz");
     can->cd(2);
@@ -239,10 +321,11 @@ main( int argc ,char ** argv ){
     can->Modified();
 
     getchar();
+    */
 
     trout->Fill();
   }
-
+  
   for( int i = 0; i< 2716; i++){
     hisEnergyTimeDelta[i]->Write();
     hisTimeDeltaCH[i]->Write();
@@ -252,6 +335,6 @@ main( int argc ,char ** argv ){
   stepHist->Write();
   hisTimeDelta->Write();
   tfout->Close();
-  app->Run();
+  //app->Run();
   return 0;
 }
