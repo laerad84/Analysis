@@ -31,7 +31,7 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TGraphErrors.h"
-
+#include "TChain.h"
 
 #include "HoughCsI.h"
 #include "Chisq_cosmic.h"
@@ -40,25 +40,50 @@
 int
 main( int argc ,char ** argv ){
   gStyle->SetOptFit(111111111);
+  
 
   //int RunNumber = atoi( argv[1]);
-  TApplication* app = new TApplication("App",&argc, argv );
 
   std::string WAVFILE   = std::getenv("ROOTFILE_WAV");
   std::string ANALIBDIR = std::getenv("ANALYSISLIB");
   EnergyConverter *Converter = new EnergyConverter();  
   Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",
 					  ANALIBDIR.c_str()));
+
+  TChain* trin = new TChain("Tree");
+  if( argc == 2 ){
+    int iRunNumber = atoi( argv[1] );
+    trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(), iRunNumber ));
+  }else if( argc == 3 ){
+    Int_t StartRunNumber = atoi( argv[1] );
+    Int_t EndRunNumber   = atoi( argv[2] );
+    for( int iRunNumber = StartRunNumber; iRunNumber <= EndRunNumber; iRunNumber++ ){
+      trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(), iRunNumber ));
+    }
+  }else{
+    std::cerr << "Need 2 or 3 argument" << std::endl;
+    std::cerr << argv[0] << "\t [StartRunNumber] :[EndRunNumber]:" << std::endl;
+    return -1; 
+  }
+
+  /*
+  TFile* tfin = new TFile(Form("%s/run_wav_4501.root",WAVFILE.c_str()));  
+  TTree* trin = (TTree*)tfin->Get("Tree");
+  */
+   
+  TApplication* app = new TApplication("App",&argc, argv );
   std::ifstream ifst("TimeResolutionCosmic.dat");
-  double Resolution[2716];
+  double Delta[2716]      = {0xFFFF};
+  double Resolution[2716] = {0xFFFF};
+
   int tmpID;
+  double tmpDelta;
   double tmpResolution;
-  while( ifst >> tmpID >> tmpResolution ){
+  while( ifst >> tmpID >> tmpDelta >> tmpResolution ){
+    Delta[tmpID]      = tmpDelta;
     Resolution[tmpID] = tmpResolution; 
   }
   
-  TFile* tfin = new TFile(Form("%s/run_wav_4501.root",WAVFILE.c_str()));  
-  TTree* trin = (TTree*)tfin->Get("Tree");
 
   IDHandler* handler        = new IDHandler();
   TH2D* TriggerMap          = new TH2D("Trigger","Trigger",5,0,5,5,0,5);
@@ -79,7 +104,7 @@ main( int argc ,char ** argv ){
     trin->Add(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVFILE.c_str(),4503+i));
   }
   */
-  Double_t TimeOffset[2716]={500};
+  Double_t TimeOffset[2716]={0xFFFF};
   Double_t TimeOffsetSigma[ 2716 ] = {0};
   Double_t TimeOffsetCrystalPosition[2716] = {0};
 
@@ -102,7 +127,7 @@ main( int argc ,char ** argv ){
     TimeOffsetCrystalPosition[i] = (TMath::Sqrt( 2624*2624 + x*x +y*y ) - 2624 )/ 299.7 ; // ns 
   }
 
-  TFile* tfout = new TFile("Cosmic2Out.root","RECREATE");
+  TFile* tfout = new TFile("Cosmic3Out.root","RECREATE");
   TH2D* hisTimeDelta = new TH2D("hisTimeDelta","hisTimeDelta",2716, 0, 2716,
 				400, -100, 100 );  
   TH2D* hisEnergyTimeDelta[2716];
@@ -278,7 +303,7 @@ main( int argc ,char ** argv ){
 				       reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
 	  grHeightTimeADJ  ->SetPoint( grHeightTimeADJ->GetN(), 
 				       y,
-				       reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] + TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ]);
+				       reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] + TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ] - Delta[ reader->CsiID[ich]]);
 	  grTrack->SetPoint( grTrack->GetN(),x,y);
 	  grHeightTimeNoADJ->SetPointError( grHeightTimeNoADJ->GetN()-1,
 					    0,
@@ -314,7 +339,8 @@ main( int argc ,char ** argv ){
       Double_t x,y;
       handler->GetMetricPosition( CSIDigiID[ idigi ] , x, y);
       CSIDigiDeltaT0[idigi] = CSIDigiHHTime[idigi] - funcTime1->Eval( y) -TimeOffset[CSIDigiID[idigi]];
-      CSIDigiDeltaT1[idigi] = CSIDigiHHTime[idigi] - funcTime1->Eval( y) -TimeOffset[CSIDigiID[idigi]] + TimeOffsetCrystalPosition[ CSIDigiID[idigi] ];
+      CSIDigiDeltaT1[idigi] = CSIDigiHHTime[idigi] - funcTime1->Eval( y) -TimeOffset[CSIDigiID[idigi]]
+	+ TimeOffsetCrystalPosition[ CSIDigiID[idigi]] - Delta[ CSIDigiID[idigi] ];
     }
     grHeightTimePi0->GetListOfFunctions()->Delete();
     grHeightTimeADJ->GetListOfFunctions()->Delete();

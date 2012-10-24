@@ -1,3 +1,7 @@
+// TimeZeroTestWithCosmic_V1
+// Fit TimeData of Cosmic event and calcultate Delta of Fitted - Data 
+// 
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -35,22 +39,43 @@
 #include "Chisq_cosmic.h"
 #include "E14CosmicAnalyzer.h"
 
+#include "TChain.h"
+
 int
 main( int argc ,char ** argv ){
   gStyle->SetOptFit(111111111);
-
-  //int RunNumber = atoi( argv[1]);
-  TApplication* app = new TApplication("App",&argc, argv );
 
   std::string WAVFILE   = std::getenv("ROOTFILE_WAV");
   std::string ANALIBDIR = std::getenv("ANALYSISLIB");
   EnergyConverter *Converter = new EnergyConverter();  
   Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",
 					  ANALIBDIR.c_str()));
-  
+   
+  TChain* trin = new TChain("Tree");
+  if( argc == 2 ){
+    int iRunNumber = atoi( argv[1] );
+    trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),iRunNumber));
+  }else if( argc == 3 ){
+    Int_t StartRunNumber = atoi( argv[1] );
+    Int_t EndRunNumber   = atoi( argv[2] );
+    for( int iRunNumber  =  StartRunNumber; iRunNumber <= EndRunNumber; iRunNumber++){
+      trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),iRunNumber));
+    }
+  }
+  /*
   TFile* tfin = new TFile(Form("%s/run_wav_4501.root",WAVFILE.c_str()));  
   TTree* trin = (TTree*)tfin->Get("Tree");
+  */
+  /*
+  TChain* trin = new TChain("WFTree");
+  for( int i = 0; i< 22; i++){
+    trin->Add(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVFILE.c_str(),4503+i));
+  }
+  */
 
+  //int RunNumber = atoi( argv[1]);
+  TApplication* app = new TApplication("App",&argc, argv );
+  
   IDHandler* handler        = new IDHandler();
   TH2D* TriggerMap          = new TH2D("Trigger","Trigger",5,0,5,5,0,5);
   CsIImage* TimeMap         = new CsIImage( handler );
@@ -64,12 +89,6 @@ main( int argc ,char ** argv ){
   grHeightTimePi0->SetMarkerStyle( 6 );
   grHeightTimeADJ->SetMarkerStyle( 6 );
 
-  /*
-  TChain* trin = new TChain("WFTree");
-  for( int i = 0; i< 22; i++){
-    trin->Add(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVFILE.c_str(),4503+i));
-  }
-  */
   Double_t TimeOffset[2716]={500};
   Double_t TimeOffsetSigma[ 2716 ] = {0};
   Double_t TimeOffsetCrystalPosition[2716] = {0};
@@ -93,20 +112,7 @@ main( int argc ,char ** argv ){
     TimeOffsetCrystalPosition[i] = (TMath::Sqrt( 2624*2624 + x*x +y*y ) - 2624 )/ 299.7 ; // ns 
   }
 
-  TFile* tfout = new TFile("Cosmic0Out.root","RECREATE");
-  TH2D* hisTimeDelta = new TH2D("hisTimeDelta","hisTimeDelta",2716, 0, 2716,
-				400, -100, 100 );  
-  TH2D* hisEnergyTimeDelta[2716];
-  TH1D* hisTimeDeltaCH[2716];
-  for( int i = 0; i< 2716; i++){
-    hisTimeDeltaCH[i] = new TH1D(Form("hisTimeDelta%d",i),
-				 Form("hisTimeDelta%d",i),
-				 400,-100,100);
-    hisEnergyTimeDelta[i] = new TH2D(Form("hisEnergyTimeDelta%d",i),
-				     Form("hisEnergyTimeDelta%d",i),
-				     40,0,16000,
-				     400,-100,100);
-  }
+  TFile* tfout = new TFile("CosmicOut_V1.root","RECREATE");
 
   E14WavReader* reader = new E14WavReader(trin);
   Long_t entries =  reader->fChain->GetEntries();
@@ -116,20 +122,20 @@ main( int argc ,char ** argv ){
   const int nCSI = 2716;
   Int_t    RunNumber;
   Int_t    EventNumber;
-  Double_t ScintiSignal = 0;
-  Double_t ScintiHHTime = -500.;
-  Double_t ScintiTime   =-500.;
-  Int_t    nCSIDigi     = 0;
-  Double_t CSIDigiE[nCSI];
-  Double_t CSIDigiTime[nCSI];
-  Double_t CSIDigiHHTime[nCSI];
-  Int_t    CSIDigiID[nCSI];
-  Double_t CSIDigiSignal[nCSI];
+  Double_t ScintiSignal;
+  Double_t ScintiHHTime;
+  Double_t ScintiTime;
+  Int_t    nCSIDigi;
+  Double_t CSIDigiE[nCSI];//nCSIDigi
+  Double_t CSIDigiTime[nCSI];//nCSIDigi
+  Double_t CSIDigiHHTime[nCSI];//nCSIDigi
+  Int_t    CSIDigiID[nCSI];//nCSIDigi
+  Double_t CSIDigiSignal[nCSI];//nCSIDigi
   Double_t FitP0[2];
   Double_t FitP1[2];
   Double_t FitChisq[2];
-  Double_t CSIDigiDeltaT0[nCSI];
-  Double_t CSIDigiDeltaT1[nCSI];
+  Double_t CSIDigiDeltaT0[nCSI];//nCSIDigi
+  Double_t CSIDigiDeltaT1[nCSI];//nCSIDigi
   Int_t    CosmicTrigUp;
   Int_t    CosmicTrigDn;
   Double_t Roh;
@@ -146,8 +152,8 @@ main( int argc ,char ** argv ){
   trout->Branch( "CSIDigiHHTime" , CSIDigiHHTime   , "CSIDigiHHTime[nCSIDigi]/D");//nCSIDigi
   trout->Branch( "CSIDigiID"     , CSIDigiID       , "CSIDigiID[nCSIDigi]/I");//nCSIDigi
   trout->Branch( "CSIDigiSignal" , CSIDigiSignal   , "CSIDigiSignal[nCSIDigi]/D");//nCSIDigi
-  trout->Branch( "CSIDigiDeltaT0" , CSIDigiDeltaT0 , "CSIDigiDeltaT0[nCSIDigi]/D");//nCSIDigi
-  trout->Branch( "CSIDigiDeltaT1" , CSIDigiDeltaT1 , "CSIDigiDeltaT1[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "CSIDigiDeltaT0", CSIDigiDeltaT0  , "CSIDigiDeltaT0[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "CSIDigiDeltaT1", CSIDigiDeltaT1  , "CSIDigiDeltaT1[nCSIDigi]/D");//nCSIDigi
   trout->Branch( "FitP0"         , FitP0           , "FitP0[2]/D" );
   trout->Branch( "FitP1"         , FitP1           , "FitP1[2]/D" );
   trout->Branch( "FitChisq"      , FitChisq        , "FitChisq[2]/D" );
@@ -155,16 +161,6 @@ main( int argc ,char ** argv ){
   trout->Branch( "CosmicTrigDn"  , &CosmicTrigDn   , "CosmicTrigDn/I");
   trout->Branch( "Roh"           , &Roh            , "Roh/D");
   trout->Branch( "Theta"         , &Theta          , "Theta/D");
-
-  /*
-  E14GNAnaDataContainer data;
-  data.branchOfClusterList( trout );
-  data.branchOfDigi( trout );
-  data.branchOfPi0List( trout );
-  
-  ClusterFinder_EDIT clusterFinder;
-  GammaFinder gFinder;
-  */
 
   TCanvas* can = new TCanvas("can","can",1200,800);
   can->Divide( 3,2 );
@@ -176,8 +172,9 @@ main( int argc ,char ** argv ){
 
 
   TH1D* stepHist = new TH1D("hisStep","Step;Step;Survived Event",20,0,20);
-  for( int ievent  = 0; ievent < entries ; ievent++){
+  for( int ievent  = 0; ievent < entries ; ievent++ ){
     if( ievent % 100 == 0){std::cout << ievent << "/" << entries << std::endl;}
+
     reader->GetEntry( ievent  );
     TimeMap->Reset();
     EnergyMap->Reset();
@@ -242,6 +239,9 @@ main( int argc ,char ** argv ){
     stepHist->Fill(1);
     //std::cout << "CsI" << std::endl;
 
+    Double_t CosmicEventEnergyThreshold= 3.;
+    Double_t CosmicEnergyThreshold = 5.;
+
     for( int ich  = 0; ich < reader->CsiNumber; ich++){
       if( reader->CsiSignal[ich] < 5 ){ 
 	continue;
@@ -250,15 +250,14 @@ main( int argc ,char ** argv ){
       handler->GetMetricPosition( reader->CsiID[ich] , x, y );
 
       //std::cout << "Converter " << std::endl;
-      if( Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] ) > 3){
+      if( Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] ) > CosmicEventEnergyThreshold){
 	CSIDigiID[nCSIDigi]     = reader->CsiID[ich];
 	CSIDigiTime[nCSIDigi]   = reader->CsiTime[ich];
 	CSIDigiHHTime[nCSIDigi] = reader->CsiHHTime[ich];
 	CSIDigiSignal[nCSIDigi] = reader->CsiSignal[ich];
 	CSIDigiE[nCSIDigi]      = Converter->ConvertToEnergy( reader->CsiID[ich] ,reader->CsiSignal[ich] );
-	hisTimeDelta->Fill( CSIDigiID[nCSIDigi], CSIDigiHHTime[nCSIDigi] - ScintiHHTime );
-	hisEnergyTimeDelta[CSIDigiID[nCSIDigi]]->Fill( CSIDigiSignal[nCSIDigi], CSIDigiHHTime[nCSIDigi]- ScintiHHTime );
-	if( TimeOffsetSigma > 0  && Converter->ConvertToEnergy( reader->CsiID[ich] ,reader->CsiSignal[ich] ) > 3 ){
+	if( TimeOffsetSigma > 0  &&
+	    Converter->ConvertToEnergy( reader->CsiID[ich] ,reader->CsiSignal[ich] ) > CosmicEnergyThreshold ){
 	  TimeMap->Fill( reader->CsiID[ ich ]   , reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
 	  EnergyMap->Fill( reader->CsiID[ ich ] , Converter->ConvertToEnergy( reader->CsiID[ ich ] , reader->CsiSignal[ ich ] ));
 	  grHeightTimeNoADJ->SetPoint( grHeightTimeNoADJ->GetN(),
@@ -325,15 +324,9 @@ main( int argc ,char ** argv ){
 
     trout->Fill();
   }
-  
-  for( int i = 0; i< 2716; i++){
-    hisEnergyTimeDelta[i]->Write();
-    hisTimeDeltaCH[i]->Write();
-  }
 
   trout->Write();
   stepHist->Write();
-  hisTimeDelta->Write();
   tfout->Close();
   //app->Run();
   return 0;
