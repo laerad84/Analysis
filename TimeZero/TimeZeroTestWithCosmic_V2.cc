@@ -72,8 +72,8 @@ main( int argc ,char ** argv ){
   */
    
   TApplication* app = new TApplication("App",&argc, argv );
-  std::ifstream ifst("TimeResolutionCosmic.dat");
-  double Delta[2716]      = {0xFFFF};
+  std::ifstream ifst("CosmicOut_V1_TimeDeltaResolution.dat");
+  double Delta[2716]      = {0};
   double Resolution[2716] = {0xFFFF};
 
   int tmpID;
@@ -127,7 +127,7 @@ main( int argc ,char ** argv ){
     TimeOffsetCrystalPosition[i] = (TMath::Sqrt( 2624*2624 + x*x +y*y ) - 2624 )/ 299.7 ; // ns 
   }
 
-  TFile* tfout = new TFile("Cosmic3Out.root","RECREATE");
+  TFile* tfout = new TFile("CosmicOut_V2.root","RECREATE");
   TH2D* hisTimeDelta = new TH2D("hisTimeDelta","hisTimeDelta",2716, 0, 2716,
 				400, -100, 100 );  
   TH2D* hisEnergyTimeDelta[2716];

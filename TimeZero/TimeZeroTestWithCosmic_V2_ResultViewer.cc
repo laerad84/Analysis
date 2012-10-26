@@ -15,12 +15,13 @@
 #include "TF1.h"
 #include "TMath.h"
 #include "TStyle.h"
+
 int
 main( int argc, char** argv ){
+
   gStyle->SetOptFit(11111111);
   gStyle->SetOptStat(11111111);
-
-  TFile* tf = new TFile("CosmicOut_V1.root");
+  TFile* tf = new TFile("CosmicOut_V2.root");
   TTree* trin = (TTree*)tf->Get("trOut");
 
   const int nCSI = 2716;
@@ -66,7 +67,7 @@ main( int argc, char** argv ){
   trin->SetBranchAddress( "Roh"            , &Roh            );
   trin->SetBranchAddress( "Theta"          , &Theta          );
 
-  TFile* tfout = new TFile("CosmicOut_V1_hist.root", "recreate");
+  TFile* tfout = new TFile("CosmicOut_V2_hist.root", "recreate");
 
   TH2D* hisDeltaChannel = new TH2D("hisDeltaChannel","hisDeltaChannel",2716,0,2716,100,-10,10);
   TH1D* hisDelta[2716];
@@ -74,7 +75,7 @@ main( int argc, char** argv ){
   TGraphErrors* grRES   = new TGraphErrors(); 
   
 
-  TPostScript* ps  = new TPostScript("CosmicOut_V1_hist.ps",111);
+  TPostScript* ps  = new TPostScript("CosmicOut_V2_hist.ps",111);
   TCanvas *can = new TCanvas("can","",1000*TMath::Sqrt(0.5),1000);
   can->Divide(2,3);  
   for( int i  = 0; i< 6; i++){
@@ -128,7 +129,8 @@ main( int argc, char** argv ){
     
   }
 
-  std::ofstream ofs("CosmicOut_V1_TimeDeltaResolution.dat");
+  std::ifstream ifs("CosmicOut_V1_TimeDeltaResolution.dat");
+  std::ofstream ofs("CosmicOut_V2_TimeDeltaResolution.dat");
   int    ID[2716];
   double Delta[2716];
   double Resolution[2716];
@@ -136,8 +138,16 @@ main( int argc, char** argv ){
     Resolution[i] = 0xFFFF;
     Delta[i]      = 0xFFFF;
   }
+  int tmpID;
+  double tmpDelta;
+  double tmpResolution;
+  while ( ifs >> tmpID >> tmpDelta >> tmpResolution ){
+    Delta[ tmpID ] = tmpDelta;
+    Resolution[ tmpID ] = tmpResolution;
+  }
+  ifs.close();
   for( int i = 0; i< grRES->GetN(); i++){
-    Delta[(int)(grDelta->GetX()[i])] = grDelta->GetY()[i];
+    Delta[(int)(grDelta->GetX()[i])] += grDelta->GetY()[i];
     Resolution[(int)(grRES->GetX()[i])] = grRES->GetY()[i] ;
   }
   for( int i = 0; i< 2716; i++){
