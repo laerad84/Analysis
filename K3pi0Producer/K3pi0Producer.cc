@@ -34,9 +34,9 @@
 #include "TCanvas.h"
 #include "TROOT.h"
 
-#include "E14WavReader.h"
+//#include "E14WavReader.h"
 #include "E14WavReader_V1.h"
-#include "E14WaveReader_V2.h"
+//#include "E14WaveReader_V2.h"
 
 
 int
@@ -49,19 +49,29 @@ main( int argc ,char ** argv ){
   trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),RunNumber));
 
   TFile* tfout = new TFile(Form("%s/run_wav_%d_cl.root",WAVFILE.c_str(),RunNumber),"recreate");
-  TTree* trout = new TTree("TreeCalibration", "Output from Time zero" );
+  TTree* trout = new TTree("T", "Output from Time zero" );
+
+  int EventNumber;
   int nCSIDigi = 0;
   int CSIDigiID[2716]={-1};
   double CSIDigiE[2716] = {0.};
-  double CSIDigiTime[2716]  = {-1};
-  double CSIDigiHHTime[2716]= {-1};
-
+  double CSIDigiTime[2716] ;
+  double CSIDigiHHTime[2716];
+  trout->Branch("RunNumber",&RunNumber,"RunNumber/I");
+  trout->Branch("EventNumber",&EventNumber,"EventNumber/I");
   trout->Branch("CsiNumber",&nCSIDigi,"CsiNumber/I");
-  trout->Branch("CsiID",CSIDigiID,"CsiID[CsiNumber]/I");//nCSIDigi
-  trout->Branch("CsiEne" ,CSIDigiE,"CsiEne[CsiNumber]/D");//nCSIDigi
+  trout->Branch("CsiModID",CSIDigiID,"CSIDigiID[CsiNumber]/I");//nCSIDigi
+  trout->Branch("CsiEne",CSIDigiE,"CsiEne[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiTime",CSIDigiTime,"CsiTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiHHTime",CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
 
+  /*
+  trout->Branch("nCSIDigi",&nCSIDigi,"nCSIDigi/I");
+  trout->Branch("CSIDigiID",CSIDigiID,"CSIDigiID[nCSIDigi]/I");//nCSIDigi
+  trout->Branch("CSIDigiE" ,CSIDigiE,"CSIDigiE[nCSIDigi]/D");//nCSIDigi
+  trout->Branch("CSIDigiTime",CSIDigiTime,"CSIDigiTime[nCSIDigi]/D");//nCSIDigi
+  trout->Branch("CSIDigiHHTime",CSIDigiHHTime,"CSIDigiHHTime[nCSIDigi]/D");//nCSIDigi
+  */
 
   E14GNAnaDataContainer data; 
 
@@ -82,7 +92,7 @@ main( int argc ,char ** argv ){
     TimeDeltaSig[ tmpID ] = tmpDeltaSig; 
   }
 
-  E14WaveReader_V2* reader = new E14WaveReader_V2(trin);
+  E14WavReader_V1* reader = new E14WavReader_V1(trin);
   GammaFinder   gFinder;
   ClusterFinder_EDIT clusterFinder;
 
@@ -99,28 +109,28 @@ main( int argc ,char ** argv ){
   for( int ievent  = 0; ievent < entries ; ievent++){
     nCsI = 0;
     nCSIDigi = 0;
-    for( int ich = 0; ich < 3000; ich++){
+    for( int ich = 0; ich < 2716; ich++){
       CsIID[ich]     = -1; 
       CsIEnergy[ich] = 0.;
       CsITime[ich]   = -1;
       CsIHHTime[ich] = -1;
       CsISignal[ich] = 0.;
-      CSIDigiID[ich] = 0;
 
+      CSIDigiID[ich] = 0;
       CSIDigiE[ich] = 0;
       CSIDigiTime[ich]   = 0;
       CSIDigiHHTime[ich] = 0;
-
     }    
     if( (ievent%100) ==0 && ievent ){ std::cout<< ievent << std::endl;}
     reader->GetEntry( ievent  );
-
+    data.reset();
+    EventNumber = reader->EventNo;
     if(( reader->TrigFlag & 3 ) != 0 ){ continue; }
     if( reader->CsinTimeCluster == 0 ){ continue; }
     if( reader->CsinTimeCluster  > 2  ){ continue ;}    
     if( reader->CsinTimeCluster == 2 && reader->CsiTimeClusterHead[0] < 50 ){ continue; }
     //// assumption :: All REAL csi Event if TimeCluster #0 
-    std::cout<< "Analysis" << std::endl;
+    //    std::cout<< "Analysis" << std::endl;
 
     nCsI = 0;
     for( int ich  = 0; ich < reader->CsiNumber; ich++){      
@@ -154,11 +164,12 @@ main( int argc ,char ** argv ){
     
     if( nCSIDigi<5){ continue;}
 
+
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
     
-    
+    /*
     std::cout<< "Cluster" << std::endl;
     std::cout << nCSIDigi << std::endl;
     for( int i = 0; i< nCSIDigi; i++ ){
@@ -169,25 +180,21 @@ main( int argc ,char ** argv ){
 	       << CSIDigiE[i]  << " : "
 	       << CSIDigiTime[i] << std::endl;
     }
-
+    */
+    
     clist = clusterFinder.findCluster( nCSIDigi,CSIDigiID,CSIDigiE,CSIDigiTime);
-    std::cout<< "ClusterFinder" << std::endl;
-    /*
 
     gFinder.findGamma( clist, glist );
-    std::cout<< clist.size() << "\t" << glist.size() << std::endl;
     if( clist.size() < 6 ){ continue; }
     if( glist.size() !=6 ){ continue; }
     if( glist.size() == 6 ){
-
-      data.setData( clist );
-      data.setData( glist );
-      user_cut( data, klVec );
-      data.setData(klVec);
-
-    
+      if( user_rec(glist,klVec)){
+	data.setData( clist );
+	data.setData( glist );
+	user_cut( data, klVec );
+	data.setData(klVec);    
+      }
     }
-  */
     trout->Fill();
   }
   std::cout<< "End" << std::endl;

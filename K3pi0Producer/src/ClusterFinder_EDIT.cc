@@ -117,14 +117,18 @@ ClusterFinder_EDIT::findCluster(TClonesArray const *csiDigi )
 std::list<Cluster>& 
 ClusterFinder_EDIT::findCluster(int nDigi,int *ID,double *E,double *time )
 {
-  m_clusterList.clear();
-  
+
+  this->m_clusterList.clear();  
+
   std::list<int> templist;
+
   for(int i=0;i<nDigi;i++){
     if(E[i]>m_threshold){
+
       templist.push_back(i);
     }
   }
+
   double posx[3000]={0};
   double posy[3000]={0};
   double width[3000]={0};
@@ -184,6 +188,7 @@ ClusterFinder_EDIT::findCluster(int nDigi,int *ID,double *E,double *time )
         templist.erase(dj);
       }
     }
+
     clstr.setThreshold(m_threshold);
     clstr.setEnergy(sumEdep);
     //    clstr.setClusterIdList(indexList);
@@ -224,7 +229,6 @@ ClusterFinder_EDIT::findCluster(int nDigi,int *ID,double *E,double *time )
        clus!=m_clusterList.end(); clus++ ){
     clus->setId(id++);
   }
-
   return m_clusterList;
 }
 
