@@ -52,7 +52,7 @@ main( int argc ,char ** argv ){
   for( int i = 0; i< 2716; i++){
     hisTimeDeltaCH[i] = new TH1D(Form("hisTimeDelta%d",i),
 				 Form("hisTimeDelta%d",i),
-				 400,-100,100);
+				 40,-30,10);
     hisEnergyTimeDelta[i] = new TH2D(Form("hisEnergyTimeDelta%d",i),
 				     Form("hisEnergyTimeDelta%d",i),
 				     40,0,16000,
