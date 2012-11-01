@@ -36,6 +36,10 @@ int main( int argc , char** argv ){
 
   TChain* ch  = new TChain("T");
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
+
+  Double_t ZHead = atof( argv[1] );
+  Double_t ZTail = atof( argv[2] );
+
   //Int_t RunNumber =  atoi( argv[1] );
 
   TApplication* app = new TApplication("app",&argc, argv );
@@ -83,14 +87,18 @@ int main( int argc , char** argv ){
   TCanvas* can  = new TCanvas("can","",800,800);
   can->Divide(2,2);
 
-  TFile* tfout  = new TFile(Form("hist_time_output_4000.root"), "recreate");
+  TFile* tfout  = new TFile(Form("hist_time_output_%d_%d.root",(int)ZHead,(int)ZTail), "recreate");
   TH2D* hist_R_Theta_Time[10];
   TH2D* hist_D_Theta_Time[10];
+  TH2D* hist_L_Theta_Time[10];
+
   for( int i = 0; i< 10; i++){
     hist_R_Theta_Time[i] = new TH2D(Form("hist_R_Theta_Time_%d",i),Form("hist_R_Theta_Time_%d",i),
 				    40,-200,200,100,-5,5);
     hist_D_Theta_Time[i] = new TH2D(Form("hist_D_Theta_Time_%d",i),Form("hist_D_Theta_Time_%d",i),
-				    20,0,100,100,-5,5);
+				    20,0,200,100,-5,5);
+    hist_L_Theta_Time[i] = new TH2D(Form("hist_L_Theta_Time_%d",i),Form("hist_L_Theta_Time_%d",i),
+				    20,0,200,100,-5,5);
   }
  
   for( int ievent  = 0; ievent < ch->GetEntries(); ievent++){
@@ -104,7 +112,8 @@ int main( int argc , char** argv ){
     //std::cout<< clist.size() << " : " << glist.size() << " : " << klVec.size() << std::endl;
     if( klVec.size() ==  0){ continue; }
     if( clist.size() != 6 ){ continue; }    
-    if( klVec[0].p3()[2] >4000 || klVec[0].p3()[2] > 5500) {continue; }
+    if( klVec[0].m() > 505 || klVec[0].m() < 485 ){ continue; }
+    if( klVec[0].p3()[2] < ZHead || klVec[0].p3()[2] > ZTail) {continue; }
 
     for( std::list<Cluster>::iterator itCluster = clist.begin();
 	 itCluster !=clist.end();
@@ -122,7 +131,7 @@ int main( int argc , char** argv ){
 
       Double_t ClusterMeanTime=0;
       Int_t    nCrystalTime  = 0;
-      Int_t MaxCHID;
+      Int_t    MaxCHID;
       Double_t MaxCHTime;
       Double_t MaxEnergy = 0; 
       Double_t RadiusMax;
@@ -132,24 +141,44 @@ int main( int argc , char** argv ){
       imageEnergy->Reset();
 
 
+      Double_t weightX=0.;
+      Double_t weightY=0.;
+      Double_t TotalEInCluster=0.;
       for( int iCrystal = 0; iCrystal < (*itCluster).clusterIdVec().size(); iCrystal++){
 	Int_t    IDInCluster    = (*itCluster).clusterIdVec()[iCrystal]; 
 	Double_t TimeInCluster  = (*itCluster).clusterTimeVec()[iCrystal]; 
 	Double_t EnergyInCluster= (*itCluster).clusterEVec()[iCrystal];
+	handler->GetMetricPosition( (*itCluster).clusterIdVec()[iCrystal] , x, y);
 	//std::cout << (*itCluster).clusterIdVec()[iCrystal] << std::endl;
 	if( (*itCluster).clusterEVec()[iCrystal] > MaxEnergy ){
-	  handler->GetMetricPosition( (*itCluster).clusterIdVec()[iCrystal] , x, y);
 	  MaxEnergy = (*itCluster).clusterEVec()[iCrystal];
 	  MaxCHID   = (*itCluster).clusterIdVec()[iCrystal];
 	  MaxCHTime = (*itCluster).clusterTimeVec()[iCrystal]-Pi0Delta[(*itCluster).clusterIdVec()[iCrystal]];
 	  RadiusMax = TMath::Sqrt( x*x +y*y);
 	}
-	if( (*itCluster).clusterEVec()[iCrystal] > 30 && (*itCluster).clusterEVec()[iCrystal] < 500 ){
-	  ClusterMeanTime += (*itCluster).clusterTimeVec()[iCrystal]- Pi0Delta[ IDInCluster ]; 
-	  nCrystalTime++;
-	}
+	weightX  += x*EnergyInCluster;
+	weightY  += y*EnergyInCluster;
+	TotalEInCluster += EnergyInCluster;
       }
 
+      weightX = weightX / TotalEInCluster;
+      weightY = weightY / TotalEInCluster;
+      for( int iCrystal = 0; iCrystal < (*itCluster).clusterIdVec().size(); iCrystal++){
+	Int_t    IDInCluster    = (*itCluster).clusterIdVec()[iCrystal]; 
+	Double_t TimeInCluster  = (*itCluster).clusterTimeVec()[iCrystal]; 
+	Double_t EnergyInCluster= (*itCluster).clusterEVec()[iCrystal];
+	handler->GetMetricPosition( IDInCluster, x, y);
+	if( TMath::Sqrt( ( x-weightX )*( x-weightX ) + ( y - weightY )*( y-weightY ) ) < 25 ){
+	  if( EnergyInCluster > 30 && EnergyInCluster < 500 ){
+	    ClusterMeanTime += TimeInCluster - Pi0Delta[ IDInCluster ]; 
+	    nCrystalTime++;
+	  }	  
+	}
+      }      
+
+      if( nCrystalTime == 0){ continue; }
+      if( TotalEInCluster < 100 ){ continue; }
+      if( MaxEnergy  > 400 ){ continue ; }
       ClusterMeanTime /= nCrystalTime;
 
       for( int iCrystal = 0; iCrystal < (*itCluster).clusterIdVec().size(); iCrystal++){
@@ -161,21 +190,36 @@ int main( int argc , char** argv ){
 	Radius = TMath::Sqrt( x*x +y*y );
 	Double_t RInCluster = clex*(x-clusterPosX) + cley*(y-clusterPosY);
 	Double_t DInCluster = TMath::Abs(cley*(x-clusterPosX) - clex*(y-clusterPosY));
-	if( EnergyInCluster < 3 ) continue ;	
+	Double_t LInCluster = TMath::Abs(TMath::Sqrt((x-clusterPosX)*(x-clusterPosX) + (y-clusterPosY)*(y-clusterPosY)));
+	if( EnergyInCluster < 12 ) continue ;	
 	grTimeCluster->SetPoint( grTimeCluster->GetN(), 
 				 Radius-RadiusMax,
 				 TimeInCluster - Pi0Delta[IDInCluster]);
 	imageTime->Fill( IDInCluster , TimeInCluster- Pi0Delta[ IDInCluster ]);
 	imageEnergy->Fill( IDInCluster , EnergyInCluster );
 	
-	if( RInCluster < 50){
+	/*
+	if( TMath::Abs(RInCluster) < 50){
+	  hist_D_Theta_Time[Theta_Time_hist_ID]->Fill( DInCluster, TimeInCluster - MaxCHTime);
+	}
+
+	if( DInCluster < 50 ){
+	  hist_R_Theta_Time[Theta_Time_hist_ID]->Fill( RInCluster, TimeInCluster - MaxCHTime);
+	}
+	hist_L_Theta_Time[ Theta_Time_hist_ID]->Fill( LInCluster, TimeInCluster - MaxCHTime);
+	*/
+
+	if( TMath::Abs(RInCluster) < 50){
 	  hist_D_Theta_Time[Theta_Time_hist_ID]->Fill( DInCluster, TimeInCluster - Pi0Delta[ IDInCluster] - ClusterMeanTime);
 	}
 
 	if( DInCluster < 50 ){
 	  hist_R_Theta_Time[Theta_Time_hist_ID]->Fill( RInCluster, TimeInCluster - Pi0Delta[ IDInCluster] - ClusterMeanTime);
 	}
+	hist_L_Theta_Time[ Theta_Time_hist_ID]->Fill( LInCluster, TimeInCluster - Pi0Delta[ IDInCluster]- ClusterMeanTime );
+
       }
+
       /*
       can->cd(1);
       gPad->SetLogz();
@@ -194,6 +238,7 @@ int main( int argc , char** argv ){
   for( int i = 0; i< 10; i++){
     hist_D_Theta_Time[i]->Write();
     hist_R_Theta_Time[i]->Write();
+    hist_L_Theta_Time[i]->Write();
   }
   tfout->Close();
   
