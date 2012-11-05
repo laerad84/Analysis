@@ -173,7 +173,7 @@ main( int argc ,char** argv ){
   TCanvas* can = new TCanvas("can","",1200,800);  
   can->Divide( 3,2 );
   can->cd(1);
-  imageRes->Draw("colz");
+  imageRes->DrawWithRange("colz",0,4);
   can->cd(2);
   imageOut->Draw("colz");
   can->cd(3);

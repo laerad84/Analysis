@@ -144,7 +144,7 @@ main( int argc ,char ** argv ){
 	CSIDigiID[nCSIDigi]     = reader->CsiID[ich];
 	CSIDigiTime[nCSIDigi]   = reader->CsiTime[ich];
 	CSIDigiHHTime[nCSIDigi] = reader->CsiHHTime[ich];
-	CSIDigiSignal[nCSIDigi]     = reader->CsiSignal[ich];
+	CSIDigiSignal[nCSIDigi] = reader->CsiSignal[ich];
 	CSIDigiE[nCSIDigi]      = Converter->ConvertToEnergy( reader->CsiID[ich] ,reader->CsiSignal[ich] );
 	//hisTimeDelta->Fill( CSIDigiID[nCSIDigi], CSIDigiHHTime[nCSIDigi] - ScintiHHTime );
 	hisTimeDelta->Fill(CSIDigiID[nCSIDigi], CSIDigiTime[nCSIDigi] - ScintiHHTime );
@@ -177,7 +177,7 @@ main( int argc ,char ** argv ){
     */
     for( std::list<Gamma>::iterator it = glist.begin(); it != glist.end(); it++ ){ 
       for( int icluster = 0; icluster < (*it).clusterIdVec().size(); icluster++ ){
-	if( (*it).clusterEVec()[icluster] > 30 ){
+	if( (*it).clusterEVec()[icluster] > 30 && (*it).clusterEVec()[icluster] < 200){
 	  hisTimeDeltaCH[ (*it).clusterIdVec()[icluster] ]->Fill( (*it).clusterTimeVec()[icluster] - ScintiHHTime );
 	}
       }
