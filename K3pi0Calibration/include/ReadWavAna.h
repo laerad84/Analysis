@@ -21,26 +21,26 @@ public :
    Int_t           RunNumber;
    Int_t           EventNumber;
    Int_t           CsiNumber;
-   Int_t           CsiModID[280];   //[CsiNumber]
-   Double_t        CsiEne[280];   //[CsiNumber]
-   Double_t        CsiTime[280];   //[CsiNumber]
-   Double_t        CsiHHTime[280];   //[CsiNumber]
+   Int_t           CsiModID[2716];   //[CsiNumber]
+   Double_t        CsiEne[2716];   //[CsiNumber]
+   Double_t        CsiTime[2716];   //[CsiNumber]
+   Double_t        CsiHHTime[2716];   //[CsiNumber]
    Int_t           eventID;
    Int_t           OrigEventID;
    Int_t           CutCondition;
    Int_t           VetoCondition;
    Int_t           ClusterNumber;
-   Int_t           ClusterId[10];   //[ClusterNumber]
-   Int_t           ClusterStatus[10];   //[ClusterNumber]
-   Double_t        ClusterThreshold[10];   //[ClusterNumber]
-   Double_t        ClusterDepE[10];   //[ClusterNumber]
-   Double_t        ClusterCoePos[10][3];   //[ClusterNumber]
-   Double_t        ClusterTime[10];   //[ClusterNumber]
-   Double_t        ClusterRMS[10];   //[ClusterNumber]
-   Int_t           ClusterSize[10];   //[ClusterNumber]
-   Int_t           ClusterCsiId[10][120];   //[ClusterNumber]
-   Double_t        ClusterCsiE[10][120];   //[ClusterNumber]
-   Double_t        ClusterCsiTime[10][120];   //[ClusterNumber]
+   Int_t           ClusterId[60];   //[ClusterNumber]
+   Int_t           ClusterStatus[60];   //[ClusterNumber]
+   Double_t        ClusterThreshold[60];   //[ClusterNumber]
+   Double_t        ClusterDepE[60];   //[ClusterNumber]
+   Double_t        ClusterCoePos[60][3];   //[ClusterNumber]
+   Double_t        ClusterTime[60];   //[ClusterNumber]
+   Double_t        ClusterRMS[60];   //[ClusterNumber]
+   Int_t           ClusterSize[60];   //[ClusterNumber]
+   Int_t           ClusterCsiId[60][120];   //[ClusterNumber]
+   Double_t        ClusterCsiE[60][120];   //[ClusterNumber]
+   Double_t        ClusterCsiTime[60][120];   //[ClusterNumber]
    Int_t           GamClusNumber;
    Int_t           GamClusId[7];   //[GamClusNumber]
    Int_t           GamClusStatus[7];   //[GamClusNumber]

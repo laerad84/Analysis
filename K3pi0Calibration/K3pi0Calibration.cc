@@ -98,17 +98,38 @@ main(int argc,char** argv)
   }
   std::cout<< TempCorFactor << std::endl;
 
-
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // Input RootFile
   /////////////////////////////////////////////////////////////////////////////////////////////////
     
   //E14ReadSumFile* ReadSum = new  E14ReadSumFile();
+  TFile* tfinput = new TFile(inputFilename.c_str());
+  TTree* ch = (TTree*)tfinput->Get("T");
+
+  Int_t CsiNumber;
+  Double_t CsiEne[2716];//CsiNumber
+  Double_t CsiTime[2716];//CsiNumber
+  Int_t CsiModID[2716];//CsiNumber
+  ch->SetBranchAddress("CsiNumber", &CsiNumber );
+  ch->SetBranchAddress("CsiTime",CsiTime);//CsiNumber
+  ch->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
+  ch->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
+  
+
+  /*
+
   TChain* ch = new TChain("T");
   ch->Add( inputFilename.c_str());
 
-  ReadWavAna *ReadSum = new ReadWavAna(ch);
-  
+  */
+
+
+  //ReadWavAna *ReadSum = new ReadWavAna(ch);
+
+
+
+
+
   //ReadSum->Add(inputFilename.c_str());
 
   /*
@@ -216,7 +237,7 @@ main(int argc,char** argv)
   //loop analysis
   
   std::cout<< "Loop!!"<< std::endl;
-  int nentry = ReadSum->fChain->GetEntries();    
+  int nentry = ch->GetEntries();    
   int nKL    = 0; 
   std::cout<<"# of entry in input tree =="<<nentry<<std::endl;
   
@@ -225,22 +246,30 @@ main(int argc,char** argv)
   //nloop = 5000;
   
   for(int ievt=0;ievt<nloop;ievt++){
+    //std::cout << ievt << std::endl;
     if(nloop>100&&ievt%(nloop/100)==0)
       std::cout<<ievt/(nloop/100)<<"%"<<std::endl;
     
     //std::cout<< "ievt:"<< ievt << std::endl;
-    ReadSum->GetEntry(ievt);
+    ch->GetEntry(ievt);
     nCSIDigi = 0; 
     calibrator->InitValue();
     calData.InitValue();
-    for( int i = 0; i< ReadSum->CsiNumber; i++){
-      Double_t Energy = ReadSum->CsiEne[i]*CSICalFactor[ReadSum->CsiModID[i]]/TempCorFactor;      
+    //std::cout<< "loop" << std::endl;
+    for( int i = 0; i< CsiNumber; i++){
+      Double_t Energy = CsiEne[i]*CSICalFactor[ (CsiModID[i]) ]/TempCorFactor;      
       if( Energy > 3 ){
-	CSIDigiID[nCSIDigi]  = ReadSum->CsiModID[i];
+	CSIDigiID[nCSIDigi]  = CsiModID[i];
 	CSIDigiE[nCSIDigi]   = Energy;
-	CSIDigiTime[nCSIDigi]= ReadSum->CsiTime[i];
+	CSIDigiTime[nCSIDigi]= CsiTime[i];
 	nCSIDigi++;
       }
+      /*
+      std::cout << CsiNumber << " : " << i << " : " 
+		<< CsiModID[i] << " : "
+		<< CsiEne[i] << " : "
+		<< CsiTime[i] << std::endl;
+      */
     }
 
     /*   
@@ -257,7 +286,7 @@ main(int argc,char** argv)
       continue;
     }
     */    
-
+    //std::cout<< "Build" << std::endl;
     std::list<Cluster> clist;
     std::list<Gamma>   glist; 
     std::vector<Klong> klVec;
