@@ -55,9 +55,16 @@ main(int argc,char** argv)
   std::string TempCalibrationFilename;
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
+  std::string ROOTFILE_3PI0CALIBRATION = std::getenv( "ROOTFILE_3PI0CALIBRATION");
+
+  std::string path;
   if( argc == 3 ){
     runNumber = atoi(argv[1]);
     iterationNumber = atoi(argv[2]);
+  }else if(argc == 4 ){
+    runNumber = atoi(argv[1]);
+    iterationNumber = atoi(argv[2]);
+    path = argv[3];
   }else{
     std::cerr << "<<<>>>Arguement Error<<<>>>" <<"\n"
 	      << "Usage:: " << argv[0] 
@@ -66,12 +73,15 @@ main(int argc,char** argv)
   }
   
   inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
-  outputFilename      = Form("Calibration_Data/CalibrationADV_%04d_%d.root",
-			     runNumber,iterationNumber);
-  
-  calibrationFilename = Form("Calibration_Data/CalibrationFactorADV_%d.dat",
-			     iterationNumber);
-  
+
+  if( argc  == 3 ){
+    outputFilename      = Form("%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
+    calibrationFilename = Form("%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),iterationNumber);
+  }else if( argc == 4 ){
+    outputFilename      = Form("%s/%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
+    calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),iterationNumber);
+  }
+
   std::cout<<"input file: "        << inputFilename        << std::endl;
   std::cout<<"output file: "       << outputFilename       << std::endl;
   std::cout<<"Calibration Number: "<< calibrationFilename  << std::endl;
