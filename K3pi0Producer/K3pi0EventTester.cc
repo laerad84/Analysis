@@ -77,7 +77,6 @@ int main( int argc , char** argv ){
   IDHandler* handler = new IDHandler();
   CsIImage* imageTime = new CsIImage(handler);
   CsIImage* imageEnergy = new CsIImage( handler); 
-  
 
   double x,y;
   TGraph* grTimeCluster = new TGraph(); 
