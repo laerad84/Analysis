@@ -95,19 +95,22 @@ main( int argc ,char ** argv ){
   double tmpCalFactor; 
   std::string ANAFILEDIR = std::getenv("HOME");
   std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str()));
+  if( !ifs.is_open() ) { std::cerr <<"File does not exist."<< Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str())  << std::endl; return -1;}
+
   while( ifs >> tmpID >> tmpDelta >> tmpDeltaSig ){
     TimeDelta[ tmpID ]    = tmpDelta;
     TimeDeltaSig[ tmpID ] = tmpDeltaSig; 
   }
-  std::ifstream ifsCal(Form("%s/local/Analysis/K3pi0Producer/data/CalibrationFactorADV_15.dat",ANAFILEDIR.c_str()));
+  std::ifstream ifsCal(Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",ANAFILEDIR.c_str()));
+  if( !ifsCal.is_open() ){ std::cerr << "File does not exist." << Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",ANAFILEDIR.c_str()) << std::endl; return -1; }
   while( ifsCal >> tmpID >> tmpCalFactor ){
     CalibrationFactor[ tmpID ] = tmpCalFactor;
   }
   
   IDHandler* handler = new IDHandler();
   double x,y;
-  double AlzPosition = 2624;
-  double sol = 299.792458;//mm
+  double AlzPosition = 2624;//mm
+  double sol = 299.792458;//mm/ns
   for( int i = 0 ; i< 2716; i++){
     handler->GetMetricPosition( i, x, y );
     double length = TMath::Sqrt( AlzPosition*AlzPosition + x*x + y*y );
