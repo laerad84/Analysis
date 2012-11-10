@@ -57,13 +57,13 @@ main( int argc ,char ** argv ){
   double CSIDigiE[2716] = {0.};
   double CSIDigiTime[2716] ;
   double CSIDigiHHTime[2716];
-  trout->Branch("RunNumber",&RunNumber,"RunNumber/I");
-  trout->Branch("EventNumber",&EventNumber,"EventNumber/I");
-  trout->Branch("CsiNumber",&nCSIDigi,"CsiNumber/I");
-  trout->Branch("CsiModID",CSIDigiID,"CSIDigiID[CsiNumber]/I");//nCSIDigi
-  trout->Branch("CsiEne",CSIDigiE,"CsiEne[CsiNumber]/D");//nCSIDigi
-  trout->Branch("CsiTime",CSIDigiTime,"CsiTime[CsiNumber]/D");//nCSIDigi
-  trout->Branch("CsiHHTime",CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
+  trout->Branch("RunNumber"  ,&RunNumber   ,"RunNumber/I");
+  trout->Branch("EventNumber",&EventNumber ,"EventNumber/I");
+  trout->Branch("CsiNumber"  ,&nCSIDigi    ,"CsiNumber/I");
+  trout->Branch("CsiModID"   ,CSIDigiID    ,"CSIDigiID[CsiNumber]/I");//nCSIDigi
+  trout->Branch("CsiEne"     ,CSIDigiE     ,"CsiEne[CsiNumber]/D");//nCSIDigi
+  trout->Branch("CsiTime"    ,CSIDigiTime  ,"CsiTime[CsiNumber]/D");//nCSIDigi
+  trout->Branch("CsiHHTime"  ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
 
   /*
   trout->Branch("nCSIDigi",&nCSIDigi,"nCSIDigi/I");
@@ -81,12 +81,14 @@ main( int argc ,char ** argv ){
 
   double TimeDelta[2716];
   double TimeDeltaSig[2716];
-  int tmpID;
+  int    tmpID;
   double tmpDelta;
   double tmpDeltaSig;
   
   std::string ANAFILEDIR = std::getenv("HOME");
   std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str()));
+  //std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/ResultTimeDelta.dat",ANAFILEDIR.c_str()));
+
   while( ifs >> tmpID >> tmpDelta >> tmpDeltaSig ){
     TimeDelta[ tmpID ]    = tmpDelta;
     TimeDeltaSig[ tmpID ] = tmpDeltaSig; 

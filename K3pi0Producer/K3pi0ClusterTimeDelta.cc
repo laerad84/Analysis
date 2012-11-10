@@ -50,7 +50,7 @@ main( int argc ,char ** argv ){
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),RunNumber));
 
-  TFile* tfout = new TFile(Form("%s/run_wav_%d_Cal.root",WAVFILE.c_str(),RunNumber),"recreate");
+  TFile* tfout = new TFile(Form("%s/run_wav_%d_Cal_CosmicTime.root",WAVFILE.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("T", "Output from Time zero" );
 
   int EventNumber;
@@ -94,7 +94,8 @@ main( int argc ,char ** argv ){
   double tmpDeltaSig;
   double tmpCalFactor; 
   std::string ANAFILEDIR = std::getenv("HOME");
-  std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str()));
+  //std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str()));
+  std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/ResultTimeDelta.dat",ANAFILEDIR.c_str()));
   if( !ifs.is_open() ) { std::cerr <<"File does not exist."<< Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str())  << std::endl; return -1;}
 
   while( ifs >> tmpID >> tmpDelta >> tmpDeltaSig ){
