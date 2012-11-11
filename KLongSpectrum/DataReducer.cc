@@ -47,7 +47,7 @@ Int_t main( int argc , char** argv ){
   TChain* ch = new TChain("trCalibration");
   if( FileType == 0){
     for( int i = 0; i< 400; i++){
-      ch->Add(Form("%s/Calibration_%03d_15.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+      ch->Add(Form("%s/Calibration_%03d0_15.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
     }
   }else if( FileType == 1 ){
     std::string HOMEDIR = std::getenv("HOME");
@@ -113,7 +113,7 @@ Int_t main( int argc , char** argv ){
       GammaPos[GammaID][0] = (*itGamma).x();
       GammaPos[GammaID][1] = (*itGamma).y();
       GammaPos[GammaID][2] = (*itGamma).z();
-
+      
       if( GammaID >=  6 ){ break; }
     }
     
