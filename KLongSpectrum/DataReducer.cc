@@ -100,9 +100,9 @@ Int_t main( int argc , char** argv ){
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
-    data.SetData( clist );
-    data.SetData( glist );
-    data.SetData( klVec );
+    data.setData( clist );
+    data.setData( glist );
+    data.setData( klVec );
     
     if( klVec.size() == 0 ){ continue; }
     if( clist.size() != 0 ){ continue; }
@@ -126,6 +126,7 @@ Int_t main( int argc , char** argv ){
 
     trKL->Fill();
   }
+
   trKL->Write();
   tfout->Close();
   return 0; 
