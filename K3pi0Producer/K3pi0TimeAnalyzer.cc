@@ -43,12 +43,12 @@ int main( int argc , char** argv ){
   int tmpRunNumber; 
   int nFiles = 0;
   while(ifs >> tmpRunNumber ){
-    ch->Add(Form("%s/run_wav_%d_Cal.root",ROOTFILE_WAV.c_str(),tmpRunNumber));
+    ch->Add(Form("%s/run_wav_%d_Cal_CosmicTime.root",ROOTFILE_WAV.c_str(),tmpRunNumber));
     nFiles++; 
     //    if( nFiles > 10 ){ break; }
   }	    
 	
-  std::ifstream ifsPi0Peak("Data/Pi0Peak.dat");
+  std::ifstream ifsPi0Peak("Data/ResultTimeDelta.dat");
   int tmpID;
   double tmpDelta;
   double tmpResolution;
@@ -80,9 +80,11 @@ int main( int argc , char** argv ){
   TFile* tfout  = new TFile(Form("hist_KlongZ_TimeDelta.root"),"recreate");
   TH2D* hisKlongZTimeDelta    = new TH2D("hisKlongZTimeDelta","hisKlongZTimeDelta", 300,3000,6000,200,-5,5);
   TH2D* hisKlongZTimeDeltaCal = new TH2D("hisKlongZTimeDeltaCal","hisKlongZTimeDeltaCal", 300,3000,6000,200,-5,5);
+
   // Fill by 10Degrees // 
   TH2D* hisKlongZGammaInjectDirection[5] ;
   TH2D* hisKlongZGammaEnergy[5];
+  TH2D* hisKlongZGammaPosition[10];
   for( int i = 0; i< 5; i++){
     hisKlongZGammaInjectDirection[i] =  new TH2D(Form("hisKlongGammaInjectionDirection%d",i),
 						 Form("hisKlongGammaInjectionDirection%d",i),
@@ -91,7 +93,12 @@ int main( int argc , char** argv ){
 				       Form("hisKlongZGammaEnergy%d",i),
 				       300,3000,6000,200,-5,5);
   }
-  
+  for( int i = 0; i< 10; i++){
+    hisKlongZGammaPosition[i] = new TH2D(Form("hisKlongZGammaPosition%d",i),
+					 Form("hisKlongZGammaPosition%d",i),
+					 300,3000,6000,50,-5,5);
+  }
+
 
 
   for( int ievent  = 0; ievent < ch->GetEntries(); ievent++){
@@ -147,7 +154,7 @@ int main( int argc , char** argv ){
     }
     
     if( InnerR > 300 ){ continue; }
-    if( InnerR < 150 ){ continue; }
+    if( InnerR < 200 ){ continue; }
     if( OuterR < 300 ){ continue; }
 
     Double_t KlongZ = klVec[0].vz();
@@ -169,6 +176,7 @@ int main( int argc , char** argv ){
 
     hisKlongZTimeDelta->Fill( KlongZ, DeltaTime );
     hisKlongZTimeDeltaCal->Fill( KlongZ, DeltaTimeCal );
+
 
 
     // Search minimum/Maximum Radius Gamma    
@@ -193,12 +201,17 @@ int main( int argc , char** argv ){
       
       Int_t ThetaID = (int)(Theta/10);
       Int_t EnergyID = (int)(Energy/100);
+      Int_t RadiusID = (int)(tmpR/100);
       if( EnergyID < 5 ){
 	hisKlongZGammaEnergy[EnergyID]->Fill(KlongZ,GammaTime);
       }
       if( ThetaID < 5 ){
 	hisKlongZGammaInjectDirection[ ThetaID ]->Fill(KlongZ,GammaTime);
       }
+      if( RadiusID >= 0 && RadiusID < 10 ){
+	hisKlongZGammaPosition[ RadiusID ]->Fill( KlongZ, GammaTime );
+      }
+      
     }
 
     
@@ -246,6 +259,10 @@ int main( int argc , char** argv ){
     hisKlongZGammaEnergy[i]->Write();
     hisKlongZGammaInjectDirection[i]->Write();
   }
+  for( int i = 0; i< 10; i++){
+    hisKlongZGammaPosition[i]->Write();
+  }
+
   tfout->Close();
   
   //app->Run();

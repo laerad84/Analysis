@@ -23,15 +23,12 @@
 #include "Calibration.h"
 #include "CalibrationTree.h"
 
-#include <cstdlib>
-#include <cstdio>
-#include <list>
-
 #include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
 #include <cstdlib>
+#include <cstdio>
 #include <cmath>
 #include <vector>
 #include <list>
@@ -82,10 +79,9 @@ main(int argc,char** argv)
     calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),iterationNumber);
   }
 
-  std::cout<<"input file: "        << inputFilename        << std::endl;
-  std::cout<<"output file: "       << outputFilename       << std::endl;
+  std::cout<<"Input file        : "<< inputFilename        << std::endl;
+  std::cout<<"Output file       : "<< outputFilename       << std::endl;
   std::cout<<"Calibration Number: "<< calibrationFilename  << std::endl;
-
 
   TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());
   TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str());
