@@ -96,12 +96,13 @@ Int_t main( int argc , char** argv ){
 
   for( int ievent = 0; ievent < ch->GetEntries() ; ievent++){
     ch->GetEntry( ievent );
+    if(ievent > 1000){ break; }
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
-    data.getData( clist );
-    data.getData( glist );
-    data.getData( klVec );
+    data.SetData( clist );
+    data.SetData( glist );
+    data.SetData( klVec );
     
     if( klVec.size() == 0 ){ continue; }
     if( clist.size() != 0 ){ continue; }
