@@ -15,28 +15,27 @@
 #include "TMarker.h"
 #include "TProfile.h"
 #include "CsI_Module.h"
+#include "CsIPoly.h"
+#include "IDHandler.h"
+
 
 void RotationTheta( Double_t  Theta, Double_t  x, Double_t  y, Double_t & nx,Double_t & ny){
   nx = x*TMath::Cos( Theta ) - y*TMath::Sin( Theta );
   ny = x*TMath::Sin( Theta ) + y*TMath::Cos( Theta );
 } 
 
-void ConvertIndex( Int_t RTNIndex, Int_t& iBinsX, Int_t& iBinsY, Int_t NxBin, Int_t NyBin){
-  if( RTNIndex <= 0 ){
-    iBinsX = -1;
-    iBinsY = -1; 
-    return;
-  }
-  iBinsY = (int)(RTNIndex / (NxBin+2));
-  iBinsX = (int)(RTNIndex % (NyBin+2));  
+void ConvertPosition( Double_t Radius, Double_t Theta, Double_t x, Double_t y, Double_t& nx, Double_t& ny ){
+  nx = (x+Radius)*TMath::Cos( Theta ) - y*TMath::Sin( Theta );
+  ny = (x+Radius)*TMath::Sin( Theta ) - y*TMath::Cos( Theta );
 }
 
 int main( int argc , char** argv ){
 
   TApplication* app = new TApplication("app",&argc, argv);
 
-  CsI_Module* CsIEne = new CsI_Module("CsIEnergy");
-  CsI_Module* CsIPos = new CsIModule("CsIPosition");
+  CsIPoly* CsIEne = new CsIPoly("CsIEnergy","CsIEnergy");
+  CsIPoly* CsIPos = new CsIPoly("CsIPosition","CsIPosition");
+  CsIPoly* CsIEneT = new CsIPoly("CsIEnergyT","CsIEnergyT");
 
   TChain* chain = new TChain("eventTree00");
   chain->Add(Form("/Volume0/gamma/template_gamma_210MeV_10deg-1E5-0.root"));
@@ -58,13 +57,13 @@ int main( int argc , char** argv ){
     trin->GetEntry(ievent);
     hisEdep->Reset();
     hisEdepZ->Reset();
-
-    double TotalEnergy = 0;
     CsIEne->Reset();
+    CsIPos->Reset();
+    CsIEneT->Reset();
+    double TotalEnergy = 0;
     std::vector<int> CrystalIDVec;
     std::vector<double> CrystalEnergy;
     for( int ihit = 0; ihit < trin->CSI_hits_; ihit++){
-
 
       std::cout<< trin->CSI_hits_r_fX[ihit] <<  " : " 
 	       << trin->CSI_hits_r_fY[ihit] << std::endl;
@@ -74,27 +73,29 @@ int main( int argc , char** argv ){
       hisEdepZ->Fill( trin->CSI_hits_r_fX[ihit],
 		      trin->CSI_hits_r_fZ[ihit],
 		      trin->CSI_hits_edep[ihit]);
-      Int_t iBinsX;
-      Int_t iBinsY;
-      ConvertIndex( RTNIndex, iBinsX, iBinsY, 14,14);
-      TotalEnergy += trin->CSI_hits_edep[ihit];
-      DepEnergy[iBinsX][iBinsY] += trin->CSI_hits_edep[ihit];
-      MeanX += trin->CSI_hits_edep[ihit]*XArr[iBinsX-1];
-      MeanY += trin->CSI_hits_edep[ihit]*YArr[iBinsY-1];
 
+      TotalEnergy += trin->CSI_hits_edep[ihit];
+      Double_t Radius = 300;//mm
+      Double_t Theta  = 1./6*TMath::Pi();//rad
+      Double_t CsiPosX,CsiPosY;
+      ConvertPosition(Radius, Theta , trin->CSI_hits_r_fX[ihit], trin->CSI_hits_r_fY[ihit] ,CsiPosX, CsiPosY );
+      CsIEne->Fill( CsiPosX, CsiPosY, trin->CSI_hits_edep[ihit] );
     }
-    MeanX = MeanX/TotalEnergy;
-    MeanY = MeanY/TotalEnergy;
+    for( int ibin = 0; ibin < 2716; ibin++){
+      if( CsIEne->GetBinContent( ibin +1 ) > 0.5 ){
+	CsIEneT->Fill( ibin, (double)CsIEne->GetBinContent( ibin +1 ));
+      }
+    }
 
     can->cd(1);
     gPad->SetLogz();
     hisEdep->Draw("colz");
-    TMarker* mk = new TMarker( MeanX, MeanY,6);
-    mk->Draw();
     can->cd(2);
     gPad->SetLogz();
-    hisEdepZ->Draw("colz");
-    hisEdepZ->ProfileX()->Draw("same");
+    CsIEne->Draw("colz L");
+    can->cd(3);
+    gPad->SetLogz();
+    CsIEneT->Draw("colz L");
     can->Update();
     can->Modified();
     getchar();

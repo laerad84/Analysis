@@ -18,12 +18,15 @@ class CsIPoly : public TH2Poly {
   CsIPoly();
   CsIPoly( const char* name, const char* title );
   virtual ~CsIPoly();
+  virtual void  Reset(){
+    TH2Poly::Reset("");
+  }
   void Init();
   int Fill( int ibin );
   int Fill( int ibin, double w );
-  int Fill( double x, double y);
+  int Fill( double x, double y );
   int Fill( double x, double y, double w );
-
+  
  private:
   Double_t Dep[numberOfCsI];
   Double_t CsI_xx[numberOfCsI];
