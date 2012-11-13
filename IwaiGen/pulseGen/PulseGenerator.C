@@ -11,8 +11,8 @@
 
 const int nEvent=12;
 const int nSample=64;
-const double peMean=160.; // ns, peak of the pePDF
-
+//const double peMean=160.; // ns, peak of the pePDF
+const double peMean = 250;
 const int nnpe=8;
 const int npe[nnpe]={40,80,160,320,640,1200,2000,4000};
 
@@ -63,39 +63,44 @@ double pulseFunc(double* x, double* par){
   
     int t_npe=(int)par[0];
     for ( int i=0;i<t_npe;i++ ){
-		/*
-		pfPDF->SetParameter(1,(double)par[2*i+1]);
-		t_fcn+=par[2*i+2]*pfPDF->Eval(t);
-		*/
-		// to boost generation speed
-		int t_int=(int)(t+4*nSample-par[2*i+1])*fSeg;
-		if ( t_int>=0 && t_int<8*nSample*fSeg ){
-			t_fcn+=par[2*i+2]*pFuncArray[t_int];
-		}
+      /*
+	pfPDF->SetParameter(1,(double)par[2*i+1]);
+	t_fcn+=par[2*i+2]*pfPDF->Eval(t);
+      */
+      // to boost generation speed
+      int t_int=(int)(t+4*nSample-par[2*i+1])*fSeg;
+      if ( t_int>=0 && t_int<8*nSample*fSeg ){
+	t_fcn+=par[2*i+2]*pFuncArray[t_int];
+      }
     }
-  
+    
     return t_fcn;
 }
 
-void pulseGenMin(void){
+void PulseGenerator(void){
 	
   // single photoelectron's filter output shape
+  TCanvas* can = new TCanvas("can","",800,800);
+  can->Divide(2,2);
   pfPDF=new TF1("pfPDF",agaus,0.,8.*nSample,4);
-  pfPDF->SetParameters(normF,4.*nSample,0.04432,23.71);
-	
+  pfPDF->SetParameters(normF,4.*nSample+100,0.04432,23.71);
+  can->cd(1);
+  pfPDF->Draw("");
+
   // to boost generation speed
   for ( int i=0;i<fSeg*8*nSample;i++ ){
     pFuncArray[i]=pfPDF->Eval(1./fSeg*i);
   }
 	
-  TUtil* u=new TUtil;
 	
   TF1* pePDF=new TF1("pePDF",AsymmetricGaussian,0.,140+110.,8);
   pePDF->SetParameter(0,1.);
   pePDF->SetParameter(1,peMean);
-  pePDF->SetParameter(2,0.);
+  pePDF->SetParameter(2,0.);  
   for ( int i=0;i<5;i++ ){ pePDF->SetParameter(3+i,pdfPar[i]*(1+corPar[i])); }
-  
+  can->cd(2);
+  pePDF->Draw();
+
   TGraph* gr=new TGraph(nSample);
   for ( int i=0;i<nnpe;i++ ){
     for ( int j=0;j<nEvent;j++ ){
@@ -103,7 +108,7 @@ void pulseGenMin(void){
       double t_npe=0.;
       while ( t_npe==0. ){ t_npe=gRandom->Poisson(npe[i]); }
       
-      TF1* waveform=new TF1("waveform",pulseFunc,0.,8.*nSample,2*t_npe+1);
+      TF1* waveform=new TF1("waveform",pulseFunc,-120,8.*nSample,2*t_npe+1);
       waveform->SetParameter(0,t_npe);
       
       for ( int k=0;k<t_npe;k++ ){
@@ -113,11 +118,15 @@ void pulseGenMin(void){
       double offset=8*(gRandom->Rndm()-0.5);
       for ( int k=0;k<nSample;k++ ){
 	double d_tmp=waveform->Eval(k*8.-offset)+gRandom->Gaus(0.,gndSgm);
-	gr->SetPoint(k,k*8+250,d_tmp);
-      }      
-      if ( j<12 ){ u->Draw(gr,"AP"); }      
+	gr->SetPoint(k,k*8,d_tmp);
+      }
+      can->cd(3);
+      waveform->Draw();
+      if ( j<12 ){ gr->Draw("PL"); }      
+      can->Update();
+      can->Modified();
+      getchar();
       delete waveform;
     }
   }  
-  delete u;
 }

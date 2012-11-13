@@ -14,9 +14,24 @@
 #include "TCanvas.h"
 #include "TMarker.h"
 #include "TProfile.h"
+#include "TRandom.h"
+
 #include "CsI_Module.h"
 #include "CsIPoly.h"
 #include "IDHandler.h"
+
+#include "cluster/Cluster.h"
+#include "gamma/Gamma.h"
+#include "pi0/Pi0.h"
+#include "klong/Klong.h"
+
+#include "IDHandler.h"
+
+#include "cluster/ClusterFinder.h"
+#include "gnana/E14GNAnaDataContainer.h"
+#include "gnana/E14GNAnaFunction.h"
+#include "rec2g/Rec2g.h"
+
 
 
 void RotationTheta( Double_t  Theta, Double_t  x, Double_t  y, Double_t & nx,Double_t & ny){
@@ -26,7 +41,7 @@ void RotationTheta( Double_t  Theta, Double_t  x, Double_t  y, Double_t & nx,Dou
 
 void ConvertPosition( Double_t Radius, Double_t Theta, Double_t x, Double_t y, Double_t& nx, Double_t& ny ){
   nx = (x+Radius)*TMath::Cos( Theta ) - y*TMath::Sin( Theta );
-  ny = (x+Radius)*TMath::Sin( Theta ) - y*TMath::Cos( Theta );
+  ny = (x+Radius)*TMath::Sin( Theta ) + y*TMath::Cos( Theta );
 }
 
 int main( int argc , char** argv ){
@@ -63,10 +78,18 @@ int main( int argc , char** argv ){
     double TotalEnergy = 0;
     std::vector<int> CrystalIDVec;
     std::vector<double> CrystalEnergy;
+    std::vector<int>::iterator itIDVec;
+    std::vector<int> hitIDVec;
+    std::vector<double> hitZVec;
+    std::vector<double> hitEVec;
+
+    Int_t  CsIID = -1;
+
     for( int ihit = 0; ihit < trin->CSI_hits_; ihit++){
 
       std::cout<< trin->CSI_hits_r_fX[ihit] <<  " : " 
 	       << trin->CSI_hits_r_fY[ihit] << std::endl;
+      if( trin->CSI_hits_edep[ihit] == 0 ){ continue; }
       Int_t RTNIndex = hisEdep->Fill( trin->CSI_hits_r_fX[ihit],
 				      trin->CSI_hits_r_fY[ihit], 
 				      trin->CSI_hits_edep[ihit]);
@@ -76,13 +99,36 @@ int main( int argc , char** argv ){
 
       TotalEnergy += trin->CSI_hits_edep[ihit];
       Double_t Radius = 300;//mm
-      Double_t Theta  = 1./6*TMath::Pi();//rad
+      Double_t Theta  = 2./6*TMath::Pi();//rad
+      //Double_t Theta  = 0;
       Double_t CsiPosX,CsiPosY;
       ConvertPosition(Radius, Theta , trin->CSI_hits_r_fX[ihit], trin->CSI_hits_r_fY[ihit] ,CsiPosX, CsiPosY );
-      CsIEne->Fill( CsiPosX, CsiPosY, trin->CSI_hits_edep[ihit] );
+      CsIID  = CsIEne->Fill( CsiPosX, CsiPosY, trin->CSI_hits_edep[ihit] ) -1;      
+      if( CsIID <0 ){ continue; }
+      hitIDVec.push_back( CsIID );
+      hitZVec.push_back( trin->CSI_hits_r_fZ[ihit] );
+      hitEVec.push_back( trin->CSI_hits_edep[ihit] );
+      for( itIDVec = CrystalIDVec.begin(); itIDVec != CrystalIDVec.end(); itIDVec++){
+	if( (*itIDVec) == CsIID ){ break; }
+      }
+      if( itIDVec == CrystalIDVec.end() ){
+	CrystalIDVec.push_back( CsIID );
+      }
     }
+    
+    for( int index = 0; index < hitIDVec.size() ; index++){
+      std::cout<< hitIDVec[index] << " : " << hitZVec[index] << " : " << hitEVec[index] << std::endl;
+    }
+
+    /*
+    for( itIDVec = CrystalIDVec.begin(); itIDVec != CrystalIDVec.end() ; itIDVec++){
+      Double_t Energy = CsIEne->GetBinContent( *itIDVec );
+      CrystalEnergy.push_back(Energy);
+      std::cout<<  *itIDVec << " : " << Energy << " : " << TotalEnergy  << std::endl;
+    }
+    */
     for( int ibin = 0; ibin < 2716; ibin++){
-      if( CsIEne->GetBinContent( ibin +1 ) > 0.5 ){
+      if( CsIEne->GetBinContent( ibin +1 ) > 3 ){
 	CsIEneT->Fill( ibin, (double)CsIEne->GetBinContent( ibin +1 ));
       }
     }

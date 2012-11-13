@@ -104,10 +104,10 @@ void pulseGen(void){
   TH1F* bhist=new TH1F("bhist","",100,27.,29.);
 	
   TF1* pePDF=new TF1("pePDF",AsymmetricGaussian,0.,140+110.,8);
-	pePDF->SetParameter(0,1.);
-	pePDF->SetParameter(1,160.);
-	pePDF->SetParameter(2,0.);
-	for ( int i=0;i<5;i++ ){ pePDF->SetParameter(3+i,pdfPar[i]*(1+corPar[i])); }
+  pePDF->SetParameter(0,1.);
+  pePDF->SetParameter(1,160.);
+  pePDF->SetParameter(2,0.);
+  for ( int i=0;i<5;i++ ){ pePDF->SetParameter(3+i,pdfPar[i]*(1+corPar[i])); }
   TGraph* gr=new TGraph(nSample);
   for ( int i=0;i<nnpe;i++ ){
     for ( int j=0;j<nEvent*TMath::Sqrt(npe[nnpe-1]/npe[i]);j++ ){
@@ -115,42 +115,42 @@ void pulseGen(void){
       gr->Set(0);
       double t_npe=0.;
       while ( t_npe==0. ){ t_npe=gRandom->Poisson(npe[i]); }
-			
+      
       TF1* waveform=new TF1("waveform",pulseFunc,0.,8.*nSample,2*t_npe+1);
       waveform->SetParameter(0,t_npe);
-			
+      
       for ( int k=0;k<t_npe;k++ ){
-				waveform->SetParameter(2*k+2,gRandom->PoissonD(lambdaPMT)/lambdaPMT);
-				waveform->SetParameter(2*k+1,pePDF->GetRandom());
+	waveform->SetParameter(2*k+2,gRandom->PoissonD(lambdaPMT)/lambdaPMT);
+	waveform->SetParameter(2*k+1,pePDF->GetRandom());
       }
-			double offset=8*(gRandom->Rndm()-0.5);
-			double tsum=0.;
+      double offset=8*(gRandom->Rndm()-0.5);
+      double tsum=0.;
       for ( int k=0;k<nSample;k++ ){
-				double d_tmp=waveform->Eval(k*8.-offset)+gRandom->Gaus(0.,gndSgm);
-				gr->SetPoint(k,k*8,d_tmp);
-				tsum+=d_tmp;
+	double d_tmp=waveform->Eval(k*8.-offset)+gRandom->Gaus(0.,gndSgm);
+	gr->SetPoint(k,k*8,d_tmp);
+	tsum+=d_tmp;
       }
-			TList* tl=gr->GetListOfFunctions();
-			if ( tl->GetEntries() ){
-				for ( int k=tl->GetEntries()-1;k>=0;k-- ){ tl->At(k)->Delete(); }
-			}
-			wf->SetParameters(flt_b,flt_a);
+      TList* tl=gr->GetListOfFunctions();
+      if ( tl->GetEntries() ){
+	for ( int k=tl->GetEntries()-1;k>=0;k-- ){ tl->At(k)->Delete(); }
+      }
+      wf->SetParameters(flt_b,flt_a);
       if ( !wf->Fit(gr) ){ continue; }
       TF1* fitf=wf->GetFunction();
-			if ( npe[i]>=20 ){
-				f1->SetRange(fitf->GetParameter(1)-42.25,fitf->GetParameter(1)-18.25);
-				gr->Fit(f1,"QR+");
-			}
-			
+      if ( npe[i]>=20 ){
+	f1->SetRange(fitf->GetParameter(1)-42.25,fitf->GetParameter(1)-18.25);
+	gr->Fit(f1,"QR+");
+      }
+      
       if ( j<12 ){ u->Draw(gr,"AP"); }
       time[i]->Fill(fitf->GetParameter(1)-offset);
-			if ( npe[i]>=20 ){ time_cfm[i]->Fill(f1->GetX(fitf->GetParameter(2)+0.5*fitf->GetParameter(0),fitf->GetParameter(1)-70.,fitf->GetParameter(1))-offset+30); }
+      if ( npe[i]>=20 ){ time_cfm[i]->Fill(f1->GetX(fitf->GetParameter(2)+0.5*fitf->GetParameter(0),fitf->GetParameter(1)-70.,fitf->GetParameter(1))-offset+30); }
       energy[i]->Fill(fitf->GetParameter(0));
-			sum[i]->Fill(tsum);
+      sum[i]->Fill(tsum);
       //if ( i==nnpe-1 ){
       if ( i==2 ){
-				ahist->Fill(fitf->GetParameter(4));
-				bhist->Fill(fitf->GetParameter(3));
+	ahist->Fill(fitf->GetParameter(4));
+	bhist->Fill(fitf->GetParameter(3));
       }
 			
       //delete fitf;
