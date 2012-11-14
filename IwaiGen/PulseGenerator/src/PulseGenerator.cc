@@ -1,7 +1,10 @@
 #include "PulseGenerator.h"
+#if !defined(__CINT__)
+ClassImp(PulseGenerator)
+#endif
 
-const double PulseGenerator::pdfPar[5]={3.28113, 0.541526, -0.00582465, 4.53179e-05, -1.16776e-07};  
-const double PulseGenerator::corPar[5]={-0.197912, 0.0695365, 0.161864, 0.193783, 0.232639};
+//const double PulseGenerator::pdfPar[5]={3.28113, 0.541526, -0.00582465, 4.53179e-05, -1.16776e-07};  
+//const double PulseGenerator::corPar[5]={-0.197912, 0.0695365, 0.161864, 0.193783, 0.232639};
 
 PulseGenerator::PulseGenerator(){
   MakeFunction();
