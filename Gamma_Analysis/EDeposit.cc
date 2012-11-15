@@ -32,7 +32,8 @@
 #include "gnana/E14GNAnaFunction.h"
 #include "rec2g/Rec2g.h"
 
-
+#include "TApplication.h"
+#include "PulseGenerator.h"
 
 void RotationTheta( Double_t  Theta, Double_t  x, Double_t  y, Double_t & nx,Double_t & ny){
   nx = x*TMath::Cos( Theta ) - y*TMath::Sin( Theta );
@@ -51,11 +52,11 @@ int main( int argc , char** argv ){
   CsIPoly* CsIEne = new CsIPoly("CsIEnergy","CsIEnergy");
   CsIPoly* CsIPos = new CsIPoly("CsIPosition","CsIPosition");
   CsIPoly* CsIEneT = new CsIPoly("CsIEnergyT","CsIEnergyT");
-
+  PulseGenerator* gen = new PulseGenerator();
   TChain* chain = new TChain("eventTree00");
   chain->Add(Form("/Volume0/gamma/template_gamma_210MeV_10deg-1E5-0.root"));
   EventTree* trin = new EventTree( chain );
-
+  
   trin->Show(0);
   std::cout<<trin->fChain->GetEntries() << std::endl;
 
@@ -77,13 +78,16 @@ int main( int argc , char** argv ){
     CsIEneT->Reset();
     double TotalEnergy = 0;
     std::vector<int> CrystalIDVec;
-    std::vector<double> CrystalEnergy;
-    std::vector<int>::iterator itIDVec;
-    std::vector<int> hitIDVec;
+    std::vector<double> CrystalEVec;
+    std::vector<int>::iterator    itIDVec;
+    std::vector<double>::iterator itEVec;
+    std::vector<int>    hitIDVec;
     std::vector<double> hitZVec;
     std::vector<double> hitEVec;
+    std::vector<double> hitTVec;
 
     Int_t  CsIID = -1;
+    const double Speed_of_Signal = 100;
 
     for( int ihit = 0; ihit < trin->CSI_hits_; ihit++){
 
@@ -105,34 +109,64 @@ int main( int argc , char** argv ){
       ConvertPosition(Radius, Theta , trin->CSI_hits_r_fX[ihit], trin->CSI_hits_r_fY[ihit] ,CsiPosX, CsiPosY );
       CsIID  = CsIEne->Fill( CsiPosX, CsiPosY, trin->CSI_hits_edep[ihit] ) -1;      
       if( CsIID <0 ){ continue; }
+
       hitIDVec.push_back( CsIID );
       hitZVec.push_back( trin->CSI_hits_r_fZ[ihit] );
       hitEVec.push_back( trin->CSI_hits_edep[ihit] );
+      hitTVec.push_back( trin->CSI_hits_time[ihit] + (500 - trin->CSI_hits_r_fZ[ihit])/Speed_of_Signal );
+
       for( itIDVec = CrystalIDVec.begin(); itIDVec != CrystalIDVec.end(); itIDVec++){
 	if( (*itIDVec) == CsIID ){ break; }
       }
       if( itIDVec == CrystalIDVec.end() ){
 	CrystalIDVec.push_back( CsIID );
       }
-    }
-    
+    }    
     for( int index = 0; index < hitIDVec.size() ; index++){
       std::cout<< hitIDVec[index] << " : " << hitZVec[index] << " : " << hitEVec[index] << std::endl;
     }
 
-    /*
     for( itIDVec = CrystalIDVec.begin(); itIDVec != CrystalIDVec.end() ; itIDVec++){
-      Double_t Energy = CsIEne->GetBinContent( *itIDVec );
-      CrystalEnergy.push_back(Energy);
+      Double_t Energy = CsIEne->GetBinContent( (*itIDVec) + 1 );
+      CrystalEVec.push_back(Energy);
       std::cout<<  *itIDVec << " : " << Energy << " : " << TotalEnergy  << std::endl;
     }
-    */
+
+    itIDVec = CrystalIDVec.begin();
+    itEVec  = CrystalEVec.begin();
+
+    for(;itIDVec != CrystalIDVec.end() && itEVec != CrystalEVec.end() ; itIDVec++, itEVec++ ){
+      // Making Waveform // 
+
+      if( *itEVec < 3 ){ continue; }
+
+      std::vector<double> EVec;
+      std::vector<double> TVec;
+      for( int ihit = 0; ihit < hitZVec.size(); ihit++){
+	if( hitIDVec[ihit] == (*itIDVec)){
+	  EVec.push_back( hitEVec[ihit] );
+	  TVec.push_back( hitTVec[ihit] );
+	}
+	/// Get Waveform // 
+      }
+      std::cout<< *itEVec << " MeV" <<  std::endl;
+      TF1* func = gen->GetWaveform( EVec, TVec );
+      can->cd(1);
+      func->Draw();
+      can->Update();
+      can->Modified();
+      getchar();
+      delete func;
+    }
+    
+    
+
     for( int ibin = 0; ibin < 2716; ibin++){
       if( CsIEne->GetBinContent( ibin +1 ) > 3 ){
 	CsIEneT->Fill( ibin, (double)CsIEne->GetBinContent( ibin +1 ));
       }
     }
-
+    /*
     can->cd(1);
     gPad->SetLogz();
     hisEdep->Draw("colz");
@@ -145,7 +179,7 @@ int main( int argc , char** argv ){
     can->Update();
     can->Modified();
     getchar();
-
+    */
   }
   app->Run();
   app->Terminate();
