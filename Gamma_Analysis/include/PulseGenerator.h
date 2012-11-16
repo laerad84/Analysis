@@ -25,6 +25,10 @@ class PulseGenerator {
 
   const int peMean;
   double absLY;     
+  //[P.E.]/[MeV]
+  double absGain;
+  //[cnt]/[Mev]
+  double conversionConstant;
   double gndSgm;
   double normF;
   double lambdaPMT;
@@ -33,6 +37,7 @@ class PulseGenerator {
   //static const double corPar[5]={-0.197912, 0.0695365, 0.161864, 0.193783, 0.232639};
   double* pdfPar;
   double* corPar;
+
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Asymmetric Gaussian //   
@@ -47,9 +52,11 @@ class PulseGenerator {
   virtual ~PulseGenerator();
   
   void MakeFunction();
-  void SetLightYield( double E_to_PE );  
-  TF1* GetWaveform( double Energy, double SignalTime, double E_to_PE = 12.7);
-  TF1* GetWaveform( std::vector<double> EnergyArr, std::vector<double> SignalTimeArr, double E_to_PE= 12.7);
+  void SetLightYield( double E_to_CNT, double E_to_PE );  
+  TF1* GetWaveform( double Energy, double SignalTime, 
+		    double E_to_CNT = 17.52, double E_to_PE = 12.7);
+  TF1* GetWaveform( std::vector<double> EnergyArr, std::vector<double> SignalTimeArr, 
+		    double E_to_CNT = 17.52, double E_to_PE= 12.7);
   void Reset();
 
   static double agaus( double* x, double* par);

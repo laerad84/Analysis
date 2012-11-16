@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
+
 #include "EventTree.h"
 #include "TChain.h"
 #include "TFile.h"
@@ -19,21 +20,23 @@
 #include "CsI_Module.h"
 #include "CsIPoly.h"
 #include "IDHandler.h"
-
-#include "cluster/Cluster.h"
-#include "gamma/Gamma.h"
-#include "pi0/Pi0.h"
-#include "klong/Klong.h"
-
-#include "IDHandler.h"
-
-#include "cluster/ClusterFinder.h"
-#include "gnana/E14GNAnaDataContainer.h"
-#include "gnana/E14GNAnaFunction.h"
-#include "rec2g/Rec2g.h"
-
-#include "TApplication.h"
 #include "PulseGenerator.h"
+
+#include "gnana/DigiReader.h"
+#include "gnana/E14GNAnaFunction.h"
+#include "gnana/E14GNAnaDataContainer.h"
+#include "klong/Klong.h"
+#include "pi0/Pi0.h"
+#include "gamma/Gamma.h"
+#include "cluster/Cluster.h"
+
+#include "gamma/GammaFinder.h"
+#include "cluster/ClusterFinder.h"
+
+#include "rec2g/Rec2g.h"
+#include "CLHEP/Vector/ThreeVector.h"
+#include "User_Function.h"
+
 
 void RotationTheta( Double_t  Theta, Double_t  x, Double_t  y, Double_t & nx,Double_t & ny){
   nx = x*TMath::Cos( Theta ) - y*TMath::Sin( Theta );
@@ -69,6 +72,11 @@ int main( int argc , char** argv ){
   Double_t MeanX=0;
   Double_t MeanY=0;
   
+  Int_t nDigi;
+  Int_t ID[2716];
+  Double_t Energy[2716];
+  Double_t SignalTime[2716];
+
   for( int ievent  = 0; ievent < trin->fChain->GetEntries(); ievent++ ){
     trin->GetEntry(ievent);
     hisEdep->Reset();
@@ -122,18 +130,27 @@ int main( int argc , char** argv ){
 	CrystalIDVec.push_back( CsIID );
       }
     }    
+    /*
     for( int index = 0; index < hitIDVec.size() ; index++){
       std::cout<< hitIDVec[index] << " : " << hitZVec[index] << " : " << hitEVec[index] << std::endl;
     }
+    */
 
     for( itIDVec = CrystalIDVec.begin(); itIDVec != CrystalIDVec.end() ; itIDVec++){
       Double_t Energy = CsIEne->GetBinContent( (*itIDVec) + 1 );
       CrystalEVec.push_back(Energy);
-      std::cout<<  *itIDVec << " : " << Energy << " : " << TotalEnergy  << std::endl;
+      //std::cout<<  *itIDVec << " : " << Energy << " : " << TotalEnergy  << std::endl;
     }
 
     itIDVec = CrystalIDVec.begin();
     itEVec  = CrystalEVec.begin();
+
+    nDigi = 0;
+    for( int i = 0; i< 2716; i++){
+      ID[i] = -1;
+      Energy[i] = 0; 
+      SignalTime[i] = 0; 
+    }
 
     for(;itIDVec != CrystalIDVec.end() && itEVec != CrystalEVec.end() ; itIDVec++, itEVec++ ){
       // Making Waveform // 
@@ -149,23 +166,32 @@ int main( int argc , char** argv ){
 	}
 	/// Get Waveform // 
       }
-      std::cout<< *itEVec << " MeV" <<  std::endl;
-      TF1* func = gen->GetWaveform( EVec, TVec );
-      can->cd(1);
-      func->Draw();
-      can->Update();
-      can->Modified();
-      getchar();
+
+      TF1* func = gen->GetWaveform( EVec, TVec , 150./13.7);
+      //std::cout<< *itEVec << " MeV" << " : " <<  func->GetMaximum( 0, 500)/(150./13.7) <<  std::endl;
+      ID[nDigi]     = (*itIDVec);
+      Energy[nDigi] = func->GetMaximum( 0, 500 )/ ( 150./13.7);
+      SignalTime[nDigi] = func->GetMaximumX( 0, 500 );
+      nDigi++;
       delete func;
-    }
-    
+    }    
+
+    /// prepared to clustering /// 
     
 
+
+
+
+    
+    
     for( int ibin = 0; ibin < 2716; ibin++){
       if( CsIEne->GetBinContent( ibin +1 ) > 3 ){
 	CsIEneT->Fill( ibin, (double)CsIEne->GetBinContent( ibin +1 ));
       }
     }
+
+
+
     /*
     can->cd(1);
     gPad->SetLogz();

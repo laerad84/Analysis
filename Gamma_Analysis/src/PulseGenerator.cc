@@ -8,8 +8,10 @@ ClassImp(PulseGenerator)
 const int PulseGenerator::nSample = 64;
 const int PulseGenerator::fSeg    = 10;
 double* PulseGenerator::pFuncArray = new double[PulseGenerator::nSample*PulseGenerator::fSeg*8];
-PulseGenerator::PulseGenerator():  peMean(160), absLY(12.7), gndSgm( 2.4),normF(1.652),lambdaPMT(14.){
-
+PulseGenerator::PulseGenerator():
+  peMean(160) , absLY(12.7) , absGain(17.52), conversionConstant(1.2),
+  gndSgm( 2.4), normF(1.652), lambdaPMT(14.)
+{  
   pdfPar = new double[5];
   corPar = new double[5];
   pdfPar[0] = 3.28113;
@@ -36,11 +38,12 @@ PulseGenerator::~PulseGenerator(){
 }
 
 void PulseGenerator::MakeFunction(){
-  
+  normF = absGain/absLY*conversionConstant;
+
   pfPDF = new TF1("pfPDF", agaus, 0., 8.*nSample, 4 );
-  pfPDF->SetParameter( 0, 1.652);//height
+  pfPDF->SetParameter( 0, normF);//height
   // 1.652 = 240[cnt] / 13.7[MeV] / 12.7[P.E./MeV] * 16000[P.E] / 13360[cnt];
-  // E_to_PE = 12.7;//for iwai crystal;
+  // E_to_PE = 12.7;//for iwai crystal;  
   //pfPDF->SetParameter( 0, normF);     //height
   pfPDF->SetParameter( 1, 4.*nSample);//mean
   pfPDF->SetParameter( 2, 0.044321);   //a
@@ -59,17 +62,17 @@ void PulseGenerator::MakeFunction(){
   }
 }
 
-void PulseGenerator::SetLightYield( double E_to_PE ){
+void PulseGenerator::SetLightYield(  double E_to_CNT , double E_to_PE ){
   //std::cout<< __PRETTY_FUNCTION__ << std::endl;
-  double NormalizeFactor = E_to_PE/12.7*1.652;
-  pfPDF->SetParameter( 0, NormalizeFactor );
+  normF = E_to_CNT/E_to_PE*conversionConstant;
+  pfPDF->SetParameter( 0, normF);
   for( int pointIndex = 0; pointIndex < PulseGenerator::fSeg*8*PulseGenerator::nSample; pointIndex++){
     pFuncArray[pointIndex] = pfPDF->Eval(1./PulseGenerator::fSeg*pointIndex );
   }
 }
-TF1* PulseGenerator::GetWaveform( double Energy, double SignalTime, double E_to_PE){
+TF1* PulseGenerator::GetWaveform( double Energy, double SignalTime, double E_to_CNT, double E_to_PE){
   //std::cout<< __PRETTY_FUNCTION__ << std::endl;
-  SetLightYield( E_to_PE);
+  SetLightYield( E_to_CNT, E_to_PE);
   Double_t t_npe = 0;
   Int_t nPE = 0 ;
   while( nPE == 0){
@@ -92,9 +95,9 @@ void PulseGenerator::Reset(){
   if( Waveform != NULL ){ delete Waveform ; Waveform = NULL;}
 }
 
-TF1* PulseGenerator::GetWaveform( std::vector<double> EnergyArr, std::vector<double> SignalTimeArr , Double_t E_to_PE){
+TF1* PulseGenerator::GetWaveform( std::vector<double> EnergyArr, std::vector<double> SignalTimeArr , Double_t E_to_CNT, Double_t E_to_PE){
   //std::cout << __PRETTY_FUNCTION__ << std::endl;
-  SetLightYield( E_to_PE );
+  SetLightYield( E_to_CNT, E_to_PE );
   Double_t t_npe  = 0;
   //std::cout<< t_npe << std::endl;
   std::vector<double> nPEArrInt;
