@@ -192,7 +192,7 @@ int main( int argc , char** argv ){
 
 
 
-    /*
+   
     can->cd(1);
     gPad->SetLogz();
     hisEdep->Draw("colz");
@@ -205,7 +205,7 @@ int main( int argc , char** argv ){
     can->Update();
     can->Modified();
     getchar();
-    */
+    
   }
   app->Run();
   app->Terminate();
