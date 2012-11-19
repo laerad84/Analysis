@@ -4,8 +4,10 @@ void EDepositAnalysis::ConvertPosition(const  Double_t Radius,const  Double_t Th
   nx = (x+Radius)*TMath::Cos( Theta ) - y*TMath::Sin(Theta);
   ny = (x+Radius)*TMath::Sin( Theta ) - y*TMath::Cos(Theta);
 }
-const double EDepositAnalysis::Speed_of_Signal = 100.;//[mm/ns]
-EDepositAnalysis::EDepositAnalysis(){
+const double EDepositAnalysis::Speed_of_Signal = 80.;//[mm/ns]
+EDepositAnalysis::EDepositAnalysis( const char* InputFilename,const  char* OutputFilename){
+  m_InputFilename = InputFilename;
+  m_OutputFilename = OutputFilename;
   Init();
 }
 EDepositAnalysis::~EDepositAnalysis(){
@@ -27,11 +29,12 @@ int  EDepositAnalysis::ResetDump(){
 }
 
 void EDepositAnalysis::PrepareIO(){
-  chain = new TChain("eventTree00");
-  chain->Add(Form("/Volume0/gamma/template_gamma_210MeV_10deg-1E5-0.root"));
+
+  chain = new TChain("eventTree00");  
+  chain->Add(m_InputFilename.c_str());
   trin  = new EventTree( chain );
 
-  OutputFile = new TFile("Cluster_210MeV_10deg-0.root","recreate");
+  OutputFile = new TFile(m_OutputFilename.c_str(),"recreate");
   OutputTree = new TTree("T", "Clustered data" );
 
   OutputTree->Branch("nDigi"  ,&nDigi    ,"nDigi/I");

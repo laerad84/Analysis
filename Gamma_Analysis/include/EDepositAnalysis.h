@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
+#include <string>
 
 #include "EventTree.h"
 #include "TChain.h"
@@ -50,7 +51,12 @@ class EDepositAnalysis {
   EventTree*      trin;
   TFile*          OutputFile;
   TTree*          OutputTree;
-  EDepositAnalysis();
+  
+  std::string m_InputFilename;
+  std::string m_OutputFilename;
+
+
+  EDepositAnalysis(const  char* InputFilename,const  char* OutputFilename);
   virtual ~EDepositAnalysis();
   void Init();
   int  EventProcess(int ievent );
