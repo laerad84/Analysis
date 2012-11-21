@@ -149,9 +149,39 @@ class ClusterTimeAnalyzer {
   Double_t PhiInCsI;
 
   std::list<ClusterTime>& clusterTimeList() { return m_clusterTimeList; }
-  std::list<ClusterTime>& AnlyzeClusterTime(){ std::list<Cluster> clist }
+  std::list<ClusterTime>& AnlyzeClusterTime(){ std::list<ClusterTime> clist }
 
 };
+
+std::list<ClusterTime>& ClusterTimeAnalyzer::Convert(std::list<Cluster> clist)
+{
+  m_clusterTimeList.clear();
+  for( std::list<Cluster>::iterator itCluster;
+       itCluster != clist.end();
+       itCluster++){
+
+    ClusterTime clusTime;    
+    
+
+
+
+
+
+    m_clusterTimeList.push_back(clusTime);
+    
+  }
+  return m_clusterTimeList;
+}
+
+Cluster& ClusterTimeAnalyzer::Process( Cluster clus ){
+  
+
+}
+
+
+
+
+
 
 ClusterTimeAnalyzer::ClusterTimeAnalyzer: RadiusThreshold( 25.*5./6.*TMath::Sqrt(2)){
   Init();
