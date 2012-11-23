@@ -1,25 +1,32 @@
-#ifndef OEV_MODULE__H__
-#include "OEV_Module.h"
+#ifndef OEVPoly__H__
+#include "OEVPoly.h"
 #endif
 
 #include "TVector2.h"
 #include "TMath.h"
-
 #if !defined(__CINT__)
-ClassImp(OEV_Module)
+ClassImp(OEVPoly)
 #endif
 
 
-OEV_Module::OEV_Module(const char* name){
-  Init(name);
-  Reset();
+OEVPoly::OEVPoly( ){
+  Initialize( -1000,1000,-1000,1000,25,25);
+  SetName("NoName");
+  SetTitle("NoTitle");
+  SetFloat();
+  Init();
 }
-OEV_Module::~OEV_Module(){
-  //delete OEV;
+OEVPoly::OEVPoly( const char* name , const char* title ){
+  Initialize( -1000,1000,-1000,1000,25,25);
+  SetName( name );
+  SetTitle( title );
+  SetFloat( kFALSE );
+  Init();
 }
-
-void    OEV_Module::Init(const char* name ){
-  OEV = new TH2Poly(name, "" ,-1000,1000,-1000,1000);
+OEVPoly::~OEVPoly(){  
+  ;
+}
+void    OEVPoly::Init( ){
 
   std::vector<Double_t> OEVx[6];
   std::vector<Double_t> OEVy[6];
@@ -205,60 +212,15 @@ void    OEV_Module::Init(const char* name ){
       OEV_yy[i] = OEV_arr1[VectorIndex]*VectorpmySign;
     }
 
-    OEV->AddBin(OEVx[VectorIndex].size(),OEV_x[i],OEV_y[i]);
-    OEV_Poly[i] = new TPolyLine(OEVx[VectorIndex].size(),OEV_x[i],OEV_y[i]);
+    this->AddBin(OEVx[VectorIndex].size(),OEV_x[i],OEV_y[i]);
   }
-  OEV->SetLineColor(1);
-  for( int i = 0; i< numberOfOEV; i++){
-    Dep[numberOfOEV]=0;
-  }
+  this->SetLineColor(1);
 }
-
-int     OEV_Module::Fill(int ibin){
-  return OEV->Fill(OEV_xx[ibin],OEV_yy[ibin]);
+int     OEVPoly::Fill(int ibin, Double_t w){
+  return TH2Poly::Fill(OEV_xx[ibin],OEV_yy[ibin],w);
 }
-
-int     OEV_Module::Fill(int ibin, Double_t w){
-  return OEV->Fill(OEV_xx[ibin],OEV_yy[ibin],w);
-}
-int     OEV_Module::Fill(double x, double y, double w = 1){
-  return OEV->Fill(x,y,w);
-}
-void    OEV_Module::SetTitle(const char* title){
-  OEV->SetNameTitle(OEV->GetName(),title);
-}
-void    OEV_Module::Reset( void ){
-  ResetContent();
-  UpdateValue();
-  OEV->Reset("");
-}
-
-void    OEV_Module::ResetContent( void ){
-  for ( int i = 0; i< numberOfOEV; i++){
-    Dep[i] = 0; 
-  }
-}
-
-void    OEV_Module::UpdateValue( void ){
-  for( int i = 0; i<numberOfOEV; i++){
-    OEV->SetBinContent( i, Dep[i] );
-  }
-}
-
-void    OEV_Module::Draw(const char* option = "COLZ"){
-  OEV->Draw(option);
-  for( int i = 0; i< numberOfOEV; i++){
-    OEV_Poly[i]->Draw();
-  }
+int     OEVPoly::Fill(double x, double y, double w){
+  return TH2Poly::Fill(x,y,w);
 }
 
 
-void   OEV_Module::DrawWithRange( double minuser, double maxuser, const char* option = "colz"){
-  double maxValue = 0, minValue = 1000000000,content = 0;
-  OEV->SetMaximum( maxuser );
-  OEV->SetMinimum( minuser );
-  OEV->Draw(option);
-  for( int i = 0; i< numberOfOEV; i++){
-    OEV_Poly[i]->Draw();
-  }
-}

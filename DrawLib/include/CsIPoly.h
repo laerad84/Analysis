@@ -22,10 +22,8 @@ class CsIPoly : public TH2Poly {
     TH2Poly::Reset("");
   }
   void Init();
-  int Fill( int ibin );
-  int Fill( int ibin, double w );
-  int Fill( double x, double y );
-  int Fill( double x, double y, double w );
+  int Fill( int ibin, double w = 1 );
+  int Fill( double x, double y, double w = 1);
   
  private:
   Double_t Dep[numberOfCsI];

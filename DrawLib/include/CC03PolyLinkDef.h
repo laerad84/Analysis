@@ -2,6 +2,6 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
-#pragma link C++ class CC03_Module+;
+#pragma link C++ class CC03Poly+;
 
 #endif

@@ -23,6 +23,9 @@
 #include "TGraphErrors.h"
 #include "TCanvas.h"
 
+#include "csimap/CsiMap.h"
+#include "E14Fsim/E14FsimFunction.h"
+
 
 
 class ClusterTime{
@@ -31,17 +34,44 @@ class ClusterTime{
   ~ClusterTime();
   bool operator  < (const ClusterTime& ) const;
   bool operator == (const ClusterTime& ) const;
-  
-  int id() const {return m_id;}
-  int status() const {return m_status; }
-  double RThreshold()  const { return m_Rthreshold; }
-  double ClusterTime() const { returm m_MeanTime; }
+  std::ostream& operator << ( std::ostream& out , const Cluster& clus );
+  int Compare( const ClusterTime& clus) const;
 
-  const std::vector<int>& clusterIDVec()           const {return m_cidVec; }
-  const std::vector<double>& clusterTimeDeltaVec() const {return m_cTimeDeltaVec; }
-  const std::vector<double>& clusterPiVec()        const {return m_cPhiVec; }
-  const std::vector<double>& clusterRVec()         const {return m_cRVec; }
+  int id()               const { return m_id;}
+  int status()           const { return m_status; }
+  double RThreshold()    const { return m_Rthreshold; }
+
+  void  SetClusterMeanTime( double MeanTime ){ m_MeanTime = MenTime ; }
+  void  SetClusterR( double R ){ m_RCluster = R; }
+  void  SetClusterPhi( double Phi ){ m_PhiCluster = Phi; }
+  void  SetCrystalData( double cID, double cTime, double cR, double cPhi){
+    m_cidVec.push_back( cID );
+    m_cTimeDeltaVec.push_back( cTime );
+    m_cRVec.push_back( cR );
+    m_cPhiVec.push_back( cPhi );
+  }
+  void  Reset(){
+    m_id = -1;
+    m_status = -1; 
+    m_MeanTime = 0.;
+    m_RCluster = 0.;
+    m_PhiCluster = 0.;
+    
+    m_cidVec.clear();
+    m_cTimeDeltaVec.clear();
+    m_cRVec.clear();
+    m_cPhiVec.clear();
+  }
+
+  double GetClusterTime()   const { return m_MeanTime; }
+  double GetClusterR()   const { return m_RCluster; }
+  double GetClusterPhi() const { return m_PhiCluster; }
+  const std::vector<int>&    clusterIDVec()        const { return m_cidVec; }
+  const std::vector<double>& clusterTimeDeltaVec() const { return m_cTimeDeltaVec; }
+  const std::vector<double>& clusterPiVec()        const { return m_cPhiVec; }
+  const std::vector<double>& clusterRVec()         const { return m_cRVec; }
   
+
  private:
   int    m_id;
   int    m_status;
@@ -52,25 +82,28 @@ class ClusterTime{
 
   std::vector<double> m_cidVec;
   std::vector<double> m_cTimeDeltaVec;
-  std::vector<double> m_cRvec;
+  std::vector<double> m_cRVec;
   std::vector<double> m_cPhiVec;
 
 };
 
-ClusterTime::ClusterTime() 
-: m_id(-1),
+ClusterTime::ClusterTime() : m_id(-1),
   m_status = -1,
   m_Rthreshold = TMath::Sqrt(2)*5./6.*25.,
   m_MeanTime = 0,
   m_nMeanCrystal = 0 
 {
+  m_cidVec.reserve( 300 );
+  m_cTimeDeltaVec.reserve( 300 );
+  m_cRvec.reserve( 300 );
+  m_cPhiVec.reserve( 300 );
+
+}  
+  ClusterTime::~ClusterTime()
+{  
   ;
 }
-  ClusterTime::~ClusterTime()
-{
-    
-    ;
-  }
+
 bool ClusterTime::operator <  (const ClusterTime& clus ) const
 {
   if( compare( clus ) < 0){
@@ -87,13 +120,13 @@ bool ClusterTime::operator == (const ClusterTime& clus ) const
     return false;
   }
 }
-std::ostream& operator << ( std::ostream& out, const Cluster& clus )
+std::ostream& operator     << ( std::ostream& out, const Cluster& clus )
 {
   out << "ClusterTime"  << "\n"
-      << "id : " << clus.m_id << "\n"
-      << "status : " << clus.m_status << "\n"
+      << "id : "        << clus.m_id         << "\n"
+      << "status : "    << clus.m_status     << "\n"
       << "Rthreshold :" << clus.m_Rthreshold << "\n"
-      << "MeanTime: " << clus.m_MeanTime << "\n"
+      << "MeanTime: "   << clus.m_MeanTime   << "\n"
       << std::flush;
   out << "idVec : " ;
   for( int i = 0; i < clus.m_cidVec.size() ;i++){
@@ -112,7 +145,7 @@ std::ostream& operator << ( std::ostream& out, const Cluster& clus )
   out << "\n" << std::flush;
   return out; 
 }
-int ClusterTime::Compare( const ClusterTime& clust ) const 
+int ClusterTime::Compare( const ClusterTime& clus ) const 
 {
   if (m_MeanTime < clus.m_MeanTime ){
     return 1; 
@@ -122,126 +155,97 @@ int ClusterTime::Compare( const ClusterTime& clust ) const
   return 0; 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+
 class ClusterTimeAnalyzer {
 
   ClusterTimeAnalyzer();
-  virtual ~ClusterTimeAnalyzer();
-  
+  virtual ~ClusterTimeAnalyzer();  
   const Double_t RadiusThreshold;
-
-  void Init();
-  void Reset();
-  int  EventProcess ( int ievent );
-  long Loop();
-
-  Double_t clusterPosX;
-  Double_t clusterPosY;
-  Double_t clusterPosR;
-  Double_t clex;
-  Double_t cley;
-  Int_t    Theta_Index;
-  Double_t ClusterCenterEnergy;
-  Double_t ChannelTimeOffset[ 2716 ];
+  std::list<ClusterTime>& ClusterTimeAnalyzer::Convert( std::list<Cluster> clist );
+  Double_t GetMeanTime( Cluster clus );
+ private:
+  Double_t Posx[3000];
+  Double_t Posy[3000];
+  Double_t Width[3000];
   
-  Double_t RInCluster;
-  Double_t PhiInCluster;
-  Double_t RInCsI;
-  Double_t PhiInCsI;
-
-  std::list<ClusterTime>& clusterTimeList() { return m_clusterTimeList; }
-  std::list<ClusterTime>& AnlyzeClusterTime(){ std::list<ClusterTime> clist }
-
 };
 
+ClusterTimeAnalyzer::ClusterTimeAnalyzer() : RadiusThreshold( 25.*5./6.*TMath::Sqrt(2)){
+  // Copy X,Y positionArray //
+  Int_t IDArr[2716];
+  for( int IDIndex = 0; IDIndex < 2716; IDIndex++){
+    IDArr[IDIndex] = IDIndex; 
+  }
+  CsiMap::getCsiMap()->getXYWarray( 2716, IDArr, Posx, Posy, Width ); 
+}
+ClusterTimeAnalyzer::~ClusterTimeAnalyzer(){
+  ;
+}
 std::list<ClusterTime>& ClusterTimeAnalyzer::Convert(std::list<Cluster> clist)
 {
   m_clusterTimeList.clear();
   for( std::list<Cluster>::iterator itCluster;
        itCluster != clist.end();
        itCluster++){
-
-    ClusterTime clusTime;    
-    
-
-
-
-
-
-    m_clusterTimeList.push_back(clusTime);
-    
+    ClusterTime clusTime;        
+    ConvertData( clus, clusTime );
+    m_clusterTimeList.push_back(clusTime);    
   }
   return m_clusterTimeList;
 }
 
-Cluster& ClusterTimeAnalyzer::Process( Cluster clus ){
-  
+int  ClusterTimeAnalyzer::ConvertData( Cluster clus, ClusterTime& clustTime){
+  Double_t ClusterR   = 0.;
+  Double_t ClusterPhi = 0.;
+  Double_t coex = clus.x();
+  Double_t coey = clus.y();
+  std::vector<int>    IDVec = clus.clusterIdVec();
+  std::vector<double> EVec  = clus.clusterEVec();
+  std::vector<double> TVec  = clus.clusterTimeVec();
+  std::vector<double> RVec;
+  std::vector<double> PhiVec;
 
-}
+  Int_t    IDInCluster    = 0;
+  Double_t TInCluster  = 0.;
+  Double_t EInCluster  = 0.;
+  Double_t MeanTime    = 0.;
+  Int_t    nCenterCrystal = 0;
 
+  ClusterR = TMath::Sqrt( coex*coex + coey*coey );
+  ClusterPhi = TMath::ATan2( coey , coex );
 
-
-
-
-
-ClusterTimeAnalyzer::ClusterTimeAnalyzer: RadiusThreshold( 25.*5./6.*TMath::Sqrt(2)){
-  Init();
-}
-ClusterTimeAnalyzer::~ClusterTimeAnalyzer(){
-  ;
-}
-void ClusterTimeAnalyzer::Reset(){
-  clusterPosX = 0;
-  clusterPosY = 0;
-  clusterPosR = 0;
-  clex        = 0;
-  cley        = 0;
-  ClusterCenterEnergy = 0;
-  ClusterMeanTime = 0.;
-  nCrystalTime = 0;
-}
-void ClusterTimeAnalyzer::Init(){
-  for( int i = 0; i< 2716; i++){
-    ChannelTimeOffset[i] = 0; 
-  }
-  Reset();
-}
-int ClusterTimeAnalyzer::EventProcess( int ievent ){
-  ch->GetEntry( ievent );
-  std::list<Cluster> clist; 
-  data->GetData( clist );
-  Double_t x,y;  
-  for( std::list<Cluster>::iteartor itCluster = clist.begin();
-       itCluster != clist.end();
-       itCluster++ ){
-    Double_t weightX = 0; 
-    Double_t weightY = 0;
-    Double_t TotalEInCluster = 0;
-    
-    for( int iCrystal = 0; iCrystal < (*itCluster).clusterIdVec().size(); iCrystal++){
-      Int_t IDInCluster = (*ItCluster).clusterIdVec()[iCrystal];
-      Double_t TimeInCluster = (*itCluster).clusterTimeVec()[iCrystal];
-      Double_t EnergyInCluster = (*itCluster).clusterEVec()[iCrystal];
-      handler->GetMetricPosition( IDInCluster, x, y);
-      weightX += x*EnergyInCluster;
-      weightY += y*EnergyInCluster;
-      TotalEInCluster += EnergyInCluster;
-    }
-    RInCsI = TMath::Sqrt( weightX*weightX + weightY*weightY );
-    PhiInCsI = TMath::TMath::ATan2( weightY, weightX);    
-    for( int iCrystal = 0; iCrystal < (*itcluster).clusterIDVec().size(); iCrystal++){
-      Int_t IDInCluster = (*itCluster).clusterIdVec()[iCrystal];
-      Double_t TimeInCluster = (*itCluster).clusterTimeVec()[iCrystal];
-      Double_t EnergyInCluster = (*itCluster).clusterEVec()[iCrystal];
-      handler->GetMetricPosition( IDInCluster, x, y );
-      // Define ClusterMeanTime := Mean Time of near Energy Center Crystal( R <=25*(6./5.)*TMath::Sqrt(2) );
-      // Range set to statistically static condition nCrystalTime = 4-6;;
-      if( TMath::Sqrt( (x-weightX)*(x-weightX ) + (y-weightY)*(y-weightY)) <= RadiusThreshold ){
-	ClusterMeanTime += TimeInCluster - ChannelTimeOffSet[ IDInCluster ];
-	nCrystalTime++;
+  for( int vecIndex = 0; vecIndex < IDVec.size(); vecIndex++){
+    Double_t CrystalR   =  TMath::Sqrt(( Posx[ IDVec[vecIndex] ] - coex )*( Posx[ IDVec[vecIndex] ] - coex ) + ( Posy[ IDVec[vecIndex] ] - coey )*( Posy[ IDVec[vecIndex] ] ));
+    Double_t CrystalPhi =  TMath::ATan2( (Posy[ IDVec[vecIndex] ] - coey ) , (Posx[ IDVec[vecIndex] ] - coex ) );
+    Double_t CrystalDeltaPhi = 0.;
+    if( TMath::Abs( CrystalPhi - ClusterPhi ) > TMath::Pi() ){
+      if( CrystalPhi - ClusterPhi < 0 ){ 
+	CrystalDeltaPhi = 2*TMath::Pi() + ( CrystalPhi - ClusterPhi );
+      }else{ //CrystalPhi -Clusterphi  > 0
+	CrystalDeltaPhi = -2*TMath::Pi() + ( CrystalPhi - ClusterPhi );
       }
-    }     
-  }   
+    }
+    RVec.push_back( CrystalR );
+    PhiVec.push_back( CrystalDeltaPhi);    
+    if( DistanceFromCOE < RadiusThrehold ){
+      MeanTime += TVec[ vecIndex ] ;
+      nCenterCrystal++; 
+    } 
+  }
+  MeanTime = MeanTime/nCenterCrystal;
+
+  clusterTime.SetClusterMeanTime( MeanTime );
+  clusterTime.SetClusterR( ClusterR );
+  clusterTime.SetClusterPhi( ClusterPhi );
+  for( int vecIndex  =0; vecIndex < IDVec.size(); vecIndex ++){
+    clusterTime.SetCrystalData(  IDVec[vecIndex], TVec[vecIndex]-MeanTime, RVec[vecIndex], PhiVec[vecIndex]);
+  }
+  return IDVec.size();
 }
+
 
 
 

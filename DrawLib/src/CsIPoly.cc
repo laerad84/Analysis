@@ -15,7 +15,6 @@ CsIPoly::CsIPoly( ){
   SetFloat();
   Init();
 }
-
 CsIPoly::CsIPoly( const char* name , const char* title ){
   Initialize( -1000,1000,-1000,1000,25,25);
   SetName( name );
@@ -23,11 +22,9 @@ CsIPoly::CsIPoly( const char* name , const char* title ){
   SetFloat(kFALSE);
   Init();
 }
-
 CsIPoly::~CsIPoly(){
   ;
 }
-
 void    CsIPoly::Init(){
   //CsI = new TH2Poly(name, "" ,-1000,1000,-1000,1000);
 
@@ -284,23 +281,11 @@ void    CsIPoly::Init(){
     TH2Poly::AddBin(5,x,y);
   }
 }
-
-int CsIPoly::Fill( int ibin ){
-  if( ibin >= numberOfCsI || ibin < 0 ){ return -1; }
-  int binNumber = Fill( (CsI_xx[ibin]), (CsI_yy[ibin]) );
-  return binNumber;
-}
-int CsIPoly::Fill( int ibin , double w){
+int     CsIPoly::Fill( int ibin , double w){
   if( ibin >= numberOfCsI || ibin < 0){ return -1; }
   int binNumber = Fill( CsI_xx[ibin] , CsI_yy[ibin] , w);
   return binNumber;
 }
-
-int CsIPoly::Fill( double x, double y ){
-  return TH2Poly::Fill( x, y );
-}
-
-int CsIPoly::Fill( double x, double y, double w){
+int     CsIPoly::Fill( double x, double y, double w){
   return TH2Poly::Fill( x, y, w);
 }
-
