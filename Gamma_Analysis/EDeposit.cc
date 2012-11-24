@@ -17,7 +17,6 @@
 #include "TProfile.h"
 #include "TRandom.h"
 
-#include "CsI_Module.h"
 #include "CsIPoly.h"
 #include "IDHandler.h"
 #include "PulseGenerator.h"
@@ -36,7 +35,6 @@
 #include "rec2g/Rec2g.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "User_Function.h"
-
 
 void RotationTheta( Double_t  Theta, Double_t  x, Double_t  y, Double_t & nx,Double_t & ny){
   nx = x*TMath::Cos( Theta ) - y*TMath::Sin( Theta );

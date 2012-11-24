@@ -18,7 +18,6 @@
 #include "TProfile.h"
 #include "TRandom.h"
 
-#include "CsI_Module.h"
 #include "CsIPoly.h"
 #include "IDHandler.h"
 #include "PulseGenerator.h"
