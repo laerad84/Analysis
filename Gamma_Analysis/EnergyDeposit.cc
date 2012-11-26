@@ -7,13 +7,16 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
+#include <string>
 
 int main( int argc, char** argv){
   //TApplication* app = new TApplication("app",&argc, argv);
   //TCanvas* can =  new TCanvas("can","",800,800);
-
+  std::cout<< "Start" << std::endl;
   std::string ROOTFILE_GAMMAHIT = std::getenv("ROOTFILE_GAMMAHIT");
-  std::string ROOTFILE_GAMMACLUS= std::getenv("ROOTFILE_GAMMACLUE");
+  std::string ROOTFILE_GAMMACLUS= std::getenv("ROOTFILE_GAMMACLUS");
+  std::cout << ROOTFILE_GAMMAHIT << std::endl;
+  std::cout << ROOTFILE_GAMMACLUS << std::endl;
   Int_t Energy = atoi( argv[1] );
   Int_t Degree = atoi( argv[2] );
   Int_t Index  = atoi( argv[3] );
