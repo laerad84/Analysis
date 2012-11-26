@@ -46,11 +46,13 @@ int main( int argc, char** argv ){
   Int_t DataIndex   = atoi( argv[3] );
 
   std::cout<< __LINE__ <<std::endl;
+
+  std::string ROOTFILE_GAMMAHIT= std::getenv("ROOTFILE_GAMMAHIT");
   TChain* ch = new TChain("T");  
-  ch->Add(Form("/Volume0/gamma/Cluster_%dMeV_%ddeg-1E5-%d.root",GammaEnergy, Degree, DataIndex ));
+  ch->Add(Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMAHIT.c_str(),GammaEnergy, Degree, DataIndex ));
   std::cout<< "File is Opened" << std::endl;
 
-  TFile*  tfout = new TFile(Form("/Volume0/gamma/Cluster_Time_%dMeV_%ddeg-1E5-%d.root",GammaEnergy, Degree,DataIndex ),"RECREATE");
+  TFile*  tfout = new TFile(Form("%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMAHIT.c_str(),GammaEnergy, Degree,DataIndex ),"RECREATE");
   TTree* trout = new TTree("trCluster","");
   const int arrSize = 120;
   Int_t EventNumber;
@@ -110,10 +112,7 @@ int main( int argc, char** argv ){
     std::list<ClusterTime> ctlist;
     data.getData( clist );
     //std::cout<< "Number of Cluster:" <<  clist.size() << std::endl;
-
-
     clusterTimeAnalyzer->Convert( clist ,ctlist);
-    std::cout << clist.size() << " : " << ctlist.size() << std::endl;    
     if(( clist.size() != ctlist.size() ) ||
        ( clist.size() == 0 )             ||
        ( ctlist.size() == 0)             ){ continue; }
@@ -126,6 +125,7 @@ int main( int argc, char** argv ){
 	 itlist != ctlist.end();
 	 itlist++ ,itCl++ ,clIndex++ ){
       //std::cout<< (*itList).GetClusterTime() << " : " << (*itList).GetClusterR() << std::endl;
+      ClusterID[clIndex]    = (*itCl).id();
       ClusterT[clIndex]     = (*itlist).GetClusterTime();
       ClusterR[clIndex]     = (*itlist).GetClusterR();
       ClusterTheta[clIndex] = (*itlist).GetClusterPhi();
