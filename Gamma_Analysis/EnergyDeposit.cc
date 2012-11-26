@@ -13,7 +13,7 @@ int main( int argc, char** argv){
   //TCanvas* can =  new TCanvas("can","",800,800);
 
   std::string ROOTFILE_GAMMAHIT = std::getenv("ROOTFILE_GAMMAHIT");
-  std::string ROOTFILE_GAMMACLUE= std::getenv("ROOTFILE_GAMMACLUE");
+  std::string ROOTFILE_GAMMACLUS= std::getenv("ROOTFILE_GAMMACLUE");
   Int_t Energy = atoi( argv[1] );
   Int_t Degree = atoi( argv[2] );
   Int_t Index  = atoi( argv[3] );
