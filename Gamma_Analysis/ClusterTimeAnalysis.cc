@@ -47,12 +47,14 @@ int main( int argc, char** argv ){
 
   std::cout<< __LINE__ <<std::endl;
 
-  std::string ROOTFILE_GAMMAHIT= std::getenv("ROOTFILE_GAMMAHIT");
+  std::string ROOTFILE_GAMMAHIT  = std::getenv("ROOTFILE_GAMMAHIT");
+  std::string ROOTFILE_GAMMACLUST= std::getenv("ROOTFILE_GAMMAHIT");
+
   TChain* ch = new TChain("T");  
   ch->Add(Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMAHIT.c_str(),GammaEnergy, Degree, DataIndex ));
   std::cout<< "File is Opened" << std::endl;
 
-  TFile*  tfout = new TFile(Form("%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMAHIT.c_str(),GammaEnergy, Degree,DataIndex ),"RECREATE");
+  TFile*  tfout = new TFile(Form("%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree,DataIndex ),"RECREATE");
   TTree* trout = new TTree("trCluster","");
   const int arrSize = 120;
   Int_t EventNumber;
