@@ -13,7 +13,7 @@ int main( int argc, char** argv){
   //TCanvas* can =  new TCanvas("can","",800,800);
 
   std::string ROOTFILE_GAMMAHIT = std::getenv("ROOTFILE_GAMMAHIT");
-
+  std::string ROOTFILE_GAMMACLUE= std::getenv("ROOTFILE_GAMMACLUE");
   Int_t Energy = atoi( argv[1] );
   Int_t Degree = atoi( argv[2] );
   Int_t Index  = atoi( argv[3] );
@@ -21,7 +21,7 @@ int main( int argc, char** argv){
   std::string InputFilename = Form("%s/template_gamma_%dMeV_%ddeg-1E5-%d.root",
 				   ROOTFILE_GAMMAHIT.c_str(),Energy, Degree, Index);
   std::string OutputFilename = Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",
-				    ROOTFILE_GAMMAHIT.c_str(),Energy, Degree, Index);
+				    ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
   EDepositAnalysis* EDep = new EDepositAnalysis(InputFilename.c_str(),
 						OutputFilename.c_str());	
 
