@@ -82,7 +82,7 @@ int ClusterTimeAnalyzer::Convert(std::list<Cluster>& clist , std::list<ClusterTi
     ClusterPhi = TMath::ATan2( coey , coex );
     std::cout<< __LINE__ << std::endl; 
     for( int vecIndex = 0; vecIndex < IDVec.size(); vecIndex++){
-      Double_t CrystalR   =  TMath::Sqrt(( Posx[ IDVec[vecIndex] ] - coex )*( Posx[ IDVec[vecIndex] ] - coex ) + ( Posy[ IDVec[vecIndex] ] - coey )*( Posy[ IDVec[vecIndex] ] ));
+      Double_t CrystalR   =  TMath::Sqrt(( Posx[ IDVec[vecIndex] ] - coex )*( Posx[ IDVec[vecIndex] ] - coex ) + ( Posy[ IDVec[vecIndex] ] - coey )*( Posy[ IDVec[vecIndex] ] - coey ));
       Double_t CrystalPhi =  TMath::ATan2( (Posy[ IDVec[vecIndex] ] - coey ) , (Posx[ IDVec[vecIndex] ] - coex ) );
       Double_t CrystalDeltaPhi = 0.;
       if( TMath::Abs( CrystalPhi - ClusterPhi ) > TMath::Pi() ){
@@ -91,14 +91,19 @@ int ClusterTimeAnalyzer::Convert(std::list<Cluster>& clist , std::list<ClusterTi
 	}else{ //CrystalPhi -Clusterphi  > 0
 	  CrystalDeltaPhi = -2*TMath::Pi() + ( CrystalPhi - ClusterPhi );
 	}
+      }else{
+	CrystalDeltaPhi = CrystalPhi - ClusterPhi;
       }
       RVec.push_back( CrystalR );
       PhiVec.push_back( CrystalDeltaPhi);    
+      //std::cout<< " R: "<< CrystalR << " : " << RadiusThreshold << std::endl;
       if( CrystalR  < RadiusThreshold ){
 	MeanTime += TVec[ vecIndex ] ;
 	nCenterCrystal++; 
+
       } 
     }
+
     MeanTime = MeanTime/nCenterCrystal;
     
     clusTime.SetClusterMeanTime( MeanTime );

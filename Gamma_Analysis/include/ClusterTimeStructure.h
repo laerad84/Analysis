@@ -65,7 +65,7 @@ class ClusterTime{
   double GetClusterPhi() const { return m_PhiCluster; }
   const std::vector<double>& clusterIDVec()        const { return m_cidVec; }
   const std::vector<double>& clusterTimeDeltaVec() const { return m_cTimeDeltaVec; }
-  const std::vector<double>& clusterPiVec()        const { return m_cPhiVec; }
+  const std::vector<double>& clusterPhiVec()        const { return m_cPhiVec; }
   const std::vector<double>& clusterRVec()         const { return m_cRVec; }
   
 
