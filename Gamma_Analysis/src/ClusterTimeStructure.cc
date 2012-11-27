@@ -62,25 +62,25 @@ int ClusterTimeAnalyzer::Convert(std::list<Cluster>& clist , std::list<ClusterTi
     
     Double_t ClusterR   = 0.;
     Double_t ClusterPhi = 0.;
-    std::cout<< __LINE__ << std::endl; 
+    //std::cout<< __LINE__ << std::endl; 
     Double_t coex = (*itCluster).x();
     Double_t coey = (*itCluster).y();
-    std::cout<< __LINE__ << std::endl; 
+    //std::cout<< __LINE__ << std::endl; 
     std::vector<int>    IDVec = (*itCluster).clusterIdVec();
     std::vector<double> EVec  = (*itCluster).clusterEVec();
     std::vector<double> TVec  = (*itCluster).clusterTimeVec();
     std::vector<double> RVec;
     std::vector<double> PhiVec;
-    std::cout<< __LINE__ << std::endl; 
+    //std::cout<< __LINE__ << std::endl; 
     Int_t    IDInCluster = 0;
     Double_t TInCluster  = 0.;
     Double_t EInCluster  = 0.;
     Double_t MeanTime    = 0.;
     Int_t    nCenterCrystal = 0;
-    std::cout<< __LINE__ << std::endl; 
+    //std::cout<< __LINE__ << std::endl; 
     ClusterR = TMath::Sqrt( coex*coex + coey*coey );
     ClusterPhi = TMath::ATan2( coey , coex );
-    std::cout<< __LINE__ << std::endl; 
+    //std::cout<< __LINE__ << std::endl; 
     for( int vecIndex = 0; vecIndex < IDVec.size(); vecIndex++){
       Double_t CrystalR   =  TMath::Sqrt(( Posx[ IDVec[vecIndex] ] - coex )*( Posx[ IDVec[vecIndex] ] - coex ) + ( Posy[ IDVec[vecIndex] ] - coey )*( Posy[ IDVec[vecIndex] ] - coey ));
       Double_t CrystalPhi =  TMath::ATan2( (Posy[ IDVec[vecIndex] ] - coey ) , (Posx[ IDVec[vecIndex] ] - coex ) );
@@ -112,35 +112,35 @@ int ClusterTimeAnalyzer::Convert(std::list<Cluster>& clist , std::list<ClusterTi
     for( int vecIndex = 0; vecIndex < IDVec.size(); vecIndex++ ){
       clusTime.SetCrystalData(  IDVec[vecIndex], TVec[vecIndex]-MeanTime, RVec[vecIndex], PhiVec[vecIndex]);
     }
-    std::cout<< __LINE__ << std::endl;
+    //std::cout<< __LINE__ << std::endl;
     ctlist.push_back(clusTime);    
   }
-  std::cout<< __LINE__ << std::endl;
+  //std::cout<< __LINE__ << std::endl;
   return ctlist.size();
 }
 int  ClusterTimeAnalyzer::ConvertData( Cluster& clus, ClusterTime& clusterTime){
 
   Double_t ClusterR   = 0.;
   Double_t ClusterPhi = 0.;
-  std::cout<< __LINE__ << std::endl; 
+  //std::cout<< __LINE__ << std::endl; 
   Double_t coex = clus.x();
   Double_t coey = clus.y();
-  std::cout<< __LINE__ << std::endl; 
+  //std::cout<< __LINE__ << std::endl; 
   std::vector<int>    IDVec = clus.clusterIdVec();
   std::vector<double> EVec  = clus.clusterEVec();
   std::vector<double> TVec  = clus.clusterTimeVec();
   std::vector<double> RVec;
   std::vector<double> PhiVec;
-  std::cout<< __LINE__ << std::endl; 
+  //std::cout<< __LINE__ << std::endl; 
   Int_t    IDInCluster = 0;
   Double_t TInCluster  = 0.;
   Double_t EInCluster  = 0.;
   Double_t MeanTime    = 0.;
   Int_t    nCenterCrystal = 0;
-  std::cout<< __LINE__ << std::endl; 
+  //std::cout<< __LINE__ << std::endl; 
   ClusterR = TMath::Sqrt( coex*coex + coey*coey );
   ClusterPhi = TMath::ATan2( coey , coex );
-  std::cout<< __LINE__ << std::endl; 
+  //std::cout<< __LINE__ << std::endl; 
   for( int vecIndex = 0; vecIndex < IDVec.size(); vecIndex++){
     Double_t CrystalR   =  TMath::Sqrt(( Posx[ IDVec[vecIndex] ] - coex )*( Posx[ IDVec[vecIndex] ] - coex ) + ( Posy[ IDVec[vecIndex] ] - coey )*( Posy[ IDVec[vecIndex] ] ));
     Double_t CrystalPhi =  TMath::ATan2( (Posy[ IDVec[vecIndex] ] - coey ) , (Posx[ IDVec[vecIndex] ] - coex ) );
@@ -151,6 +151,8 @@ int  ClusterTimeAnalyzer::ConvertData( Cluster& clus, ClusterTime& clusterTime){
       }else{ //CrystalPhi -Clusterphi  > 0
 	CrystalDeltaPhi = -2*TMath::Pi() + ( CrystalPhi - ClusterPhi );
       }
+    }else{
+      CrystalDeltaPhi = CrystalPhi - ClusterPhi ; 
     }
     RVec.push_back( CrystalR );
     PhiVec.push_back( CrystalDeltaPhi);    
