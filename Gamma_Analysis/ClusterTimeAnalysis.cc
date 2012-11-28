@@ -65,12 +65,13 @@ int main( int argc, char** argv ){
   Double_t ClusterT[arrSize];//[nCluster] 
   Double_t ClusterR[arrSize];//[nCluster]
   Double_t ClusterEnergy[arrSize];//[nCluster]
+  Double_t ClusterPhi[arrSize];//[nCluster]
   Double_t ClusterTheta[arrSize];//[nCluster]
-
+  
   Double_t CrystalT[arrSize][arrSize]; 
   Double_t CrystalEnergy[arrSize][arrSize];
   Double_t CrystalR[arrSize][arrSize];
-  Double_t CrystalTheta[arrSize][arrSize];
+  Double_t CrystalPhi[arrSize][arrSize];
 
   trout->Branch("EventNumber"  ,&EventNumber ,"EventNumber/I");
   trout->Branch("nCluster"     ,&nCluster    ,"nCluster/I");
@@ -80,10 +81,11 @@ int main( int argc, char** argv ){
   trout->Branch("ClusterR"     ,ClusterR     ,"ClusterR[nCluster]/D");
   trout->Branch("ClusterT"     ,ClusterT     ,"ClusterT[nCluster]/D");
   trout->Branch("ClusterTheta" ,ClusterTheta ,"ClusterTheta[nCluster]/D");
+  trout->Branch("ClusterPhi"   ,ClusterPhi   ,"ClusterPhi[nCluster]/D");
   trout->Branch("CrystalT"     ,CrystalT     ,"CrystalT[nCluster][120]/D");
   trout->Branch("CrystalEnergy",CrystalEnergy,"CrystalEnergy[nCluster][120]/D");
   trout->Branch("CrystalR"     ,CrystalR     ,"CrystalR[nCluster][120]/D");
-  trout->Branch("CrystalTheta" ,CrystalTheta ,"CrystalTheta[nCluster][120]/D");
+  trout->Branch("CrystalPhi"   ,CrystalPhi   ,"CrystalPhi[nCluster][120]/D");
 
   E14GNAnaDataContainer data;
   ClusterTimeAnalyzer* clusterTimeAnalyzer = new ClusterTimeAnalyzer();
@@ -106,7 +108,7 @@ int main( int argc, char** argv ){
 	CrystalR[iarr][jarr] = 0;
 	CrystalT[iarr][jarr] = 0;
 	CrystalEnergy[iarr][jarr] = 0;
-	CrystalTheta[iarr][jarr] = 0;
+	CrystalPhi[iarr][jarr] = 0;
       }
     }
     
@@ -130,12 +132,13 @@ int main( int argc, char** argv ){
       ClusterID[clIndex]    = (*itCl).id();
       ClusterT[clIndex]     = (*itlist).GetClusterTime();
       ClusterR[clIndex]     = (*itlist).GetClusterR();
-      ClusterTheta[clIndex] = (*itlist).GetClusterPhi();
+      ClusterPhi[clIndex]   = (*itlist).GetClusterPhi();
+      ClusterTheta[clIndex] = (double)Degree;
       ClusterEnergy[clIndex]= (*itCl).e();
       nCrystal[clIndex]     = (*itCl).clusterIdVec().size();
       for( Int_t cryIndex = 0; cryIndex < nCrystal[clIndex] ; cryIndex++ ){
 	CrystalR[ clIndex ][ cryIndex ]     = (*itlist).clusterRVec()[cryIndex];
-	CrystalTheta[ clIndex ][ cryIndex]  = (*itlist).clusterPhiVec()[cryIndex];
+	CrystalPhi[ clIndex ][ cryIndex]    = (*itlist).clusterPhiVec()[cryIndex];
 	CrystalT[ clIndex ][ cryIndex ]     = (*itlist).clusterTimeDeltaVec()[cryIndex];
 	CrystalEnergy[ clIndex ][ cryIndex] = (*itCl).clusterEVec()[cryIndex];	
       }

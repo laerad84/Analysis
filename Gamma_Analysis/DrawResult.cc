@@ -123,9 +123,11 @@ int main( int argc, char** argv ){
       for( int crystalIndex  = 0; crystalIndex < reader->nCrystal[ clusterIndex ]; crystalIndex++){       
 	if( reader->CrystalEnergy[clusterIndex][crystalIndex] <= 3 ) { continue; }
 	if( reader->CrystalEnergy[clusterIndex][crystalIndex] >= 400){ continue; }
+
 	Double_t RinCluster = reader->CrystalR[ clusterIndex][crystalIndex]*TMath::Cos( reader->CrystalPhi[clusterIndex][crystalIndex]);
 	Double_t DinCluster = reader->CrystalR[ clusterIndex][crystalIndex]*TMath::Sin( reader->CrystalPhi[clusterIndex][crystalIndex]);
 	Double_t TinCluster = reader->CrystalT[ clusterIndex][crystalIndex];
+
 	hisPhiPhi[EnergyIndex][ThetaIndex]->Fill( reader->ClusterPhi[clusterIndex], reader->CrystalPhi[clusterIndex][crystalIndex]);
 	if( TMath::Abs(DinCluster) < 25*sqrt(2) ){
 	  hisRT[EnergyIndex][ThetaIndex]->Fill( RinCluster, TinCluster);
@@ -136,11 +138,11 @@ int main( int argc, char** argv ){
 	  }
 	}	
 	if( TMath::Abs(RinCluster) < 25*sqrt(2) ){
-	  hisDT[EnergyIndex][ThetaIndex]->Fill( RinCluster, TinCluster);
+	  hisDT[EnergyIndex][ThetaIndex]->Fill( DinCluster, TinCluster);
 	  if( !blr ){
-	    hisDT_l[EnergyIndex][ThetaIndex]->Fill( RinCluster,TinCluster);
+	    hisDT_l[EnergyIndex][ThetaIndex]->Fill( DinCluster,TinCluster);
 	  }else{
-	    hisDT_r[EnergyIndex][ThetaIndex]->Fill( RinCluster,TinCluster);
+	    hisDT_r[EnergyIndex][ThetaIndex]->Fill( DinCluster,TinCluster);
 	  }
 	}
       }

@@ -67,6 +67,7 @@ int main( int argc, char** argv ){
   Double_t ClusterEnergy[arrSize];//[nCluster]
   Double_t ClusterPhi[arrSize];//[nCluster]
 
+
   Double_t CrystalT[arrSize][arrSize]; 
   Double_t CrystalEnergy[arrSize][arrSize];
   Double_t CrystalR[arrSize][arrSize];
@@ -92,6 +93,7 @@ int main( int argc, char** argv ){
   data.setBranchAddress( ch );
   std::cout<< ch->GetEntries() << std::endl;
   for( Int_t eventIndex = 0; eventIndex < ch->GetEntries(); eventIndex++){
+    //if( eventIndex > 1E5 ){ break ; }
     ch->GetEntry( eventIndex );
     EventNumber = eventIndex ;
     nCluster = 0;
