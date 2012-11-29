@@ -23,7 +23,7 @@ int main( int argc, char** argv){
   std::cout<< Energy  << " : " << Degree << " : " << Index << std::endl;
   std::string InputFilename = Form("%s/template_gamma_%dMeV_%ddeg-1E5-%d.root",
 				   ROOTFILE_GAMMAHIT.c_str(),Energy, Degree, Index);
-  std::string OutputFilename = Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",
+  std::string OutputFilename = Form("%s/Cluster_Back_%dMeV_%ddeg-1E5-%d.root",
 				    ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
   EDepositAnalysis* EDep = new EDepositAnalysis(InputFilename.c_str(),
 						OutputFilename.c_str());	

@@ -86,8 +86,10 @@ int  EDepositAnalysis::EventProcess( int ievent ){
     hitIDVec.push_back( CsIID );
     hitZVec.push_back( trin->CSI_hits_r_fZ[ihit] );
     hitEVec.push_back( trin->CSI_hits_edep[ihit] );
-    hitTVec.push_back( trin->CSI_hits_time[ihit] + (500 - trin->CSI_hits_r_fZ[ihit])/Speed_of_Signal);
-    
+    // For injection from front// 
+    //hitTVec.push_back( trin->CSI_hits_time[ihit] + (500 - trin->CSI_hits_r_fZ[ihit])/Speed_of_Signal);
+    // For injection from back // 
+    hitTVec.push_back( trin->CSI_hits_time[ihit] + (trin->CSI_hits_r_fZ[ihit])/Speed_of_Signal);
     // Decision ID is new or already added // 
     for( itIDVec = CrystalIDVec.begin(); itIDVec != CrystalIDVec.end(); itIDVec++){
       if(( *itIDVec) == CsIID ){ break; }
