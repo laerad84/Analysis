@@ -48,7 +48,7 @@ int main( int argc, char** argv ){
   std::cout<< __LINE__ <<std::endl;
 
   std::string ROOTFILE_GAMMAHIT  = std::getenv("ROOTFILE_GAMMAHIT");
-  std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMAHIT");
+  std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
 
   TChain* ch = new TChain("T");  
   ch->Add(Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMAHIT.c_str(),GammaEnergy, Degree, DataIndex ));
