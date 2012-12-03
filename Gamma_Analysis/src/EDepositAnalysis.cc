@@ -2,7 +2,7 @@
 
 void EDepositAnalysis::ConvertPosition(const  Double_t Radius,const  Double_t Theta, const Double_t x, const  Double_t y, Double_t &nx, Double_t &ny ){
   nx = (x+Radius)*TMath::Cos( Theta ) - y*TMath::Sin(Theta);
-  ny = (x+Radius)*TMath::Sin( Theta ) - y*TMath::Cos(Theta);
+  ny = (x+Radius)*TMath::Sin( Theta ) + y*TMath::Cos(Theta);
 }
 const double EDepositAnalysis::Speed_of_Signal = 80.;//[mm/ns]
 EDepositAnalysis::EDepositAnalysis( const char* InputFilename,const  char* OutputFilename){
