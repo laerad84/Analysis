@@ -20,13 +20,20 @@ int main( int argc, char** argv){
   Int_t Energy = atoi( argv[1] );
   Int_t Degree = atoi( argv[2] );
   Int_t Index  = atoi( argv[3] );
+  Int_t Direction = atoi( argv[4] );
   std::cout<< Energy  << " : " << Degree << " : " << Index << std::endl;
   std::string InputFilename = Form("%s/template_gamma_%dMeV_%ddeg-1E5-%d.root",
 				   ROOTFILE_GAMMAHIT.c_str(),Energy, Degree, Index);
-  std::string OutputFilename = Form("%s/Cluster_Back_%dMeV_%ddeg-1E5-%d.root",
-				    ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
+  std::string OutputFilename;
+  if( Direction != 0 ){
+    OutputFilename = Form("%s/Cluster_Back_%dMeV_%ddeg-1E5-%d.root",
+			  ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
+  }else{
+    OutputFilename = Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",
+			  ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
+  }
   EDepositAnalysis* EDep = new EDepositAnalysis(InputFilename.c_str(),
-						OutputFilename.c_str(),1);	
+						OutputFilename.c_str(),Direction);	
 
   /*
   for( int i = 0; i< 100; i++){
