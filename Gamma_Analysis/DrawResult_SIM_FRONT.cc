@@ -101,8 +101,7 @@ int main( int argc, char** argv ){
       if( reader->ClusterR[clusterIndex] > 500 ){ continue; }
       if( reader->ClusterR[clusterIndex] < 250 ){ continue; }
       for( int crystalIndex  = 0; crystalIndex < reader->nCrystal[ clusterIndex ]; crystalIndex++){       
-	if( reader->CrystalEnergy[clusterIndex][crystalIndex] <= 3 ) { continue; }
-	if( reader->CrystalEnergy[clusterIndex][crystalIndex] >= 400){ continue; }
+	if( reader->CrystalEnergy[clusterIndex][crystalIndex] <= 3 ) { continue; }	
 	
 	Double_t RinCluster = reader->CrystalR[ clusterIndex][crystalIndex]*TMath::Cos( reader->CrystalPhi[clusterIndex][crystalIndex]);
 	Double_t DinCluster = reader->CrystalR[ clusterIndex][crystalIndex]*TMath::Sin( reader->CrystalPhi[clusterIndex][crystalIndex]);
