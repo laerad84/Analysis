@@ -1,12 +1,13 @@
-// The Propose of this program is making Templetes of Trigger Signal
-// For example, Cosmic, Laser and CV
-// Make CsI templete by 2%
-//
-//
-
-//#include "gnana/DigiReader.h"
-//#include "gnana/E14GNAnaDataContainer.h"
-#include "cluster/ClusterFinder.h"
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// MakeTemplate_Height - Making Template histogram with function-waveform-fitter                  //
+// ./MakeTemplate_Height [RunNumber] [MinimumHeight] [MaximumHeight]                              //
+// You must define environment arguement ...                                                      //
+// $ROOTFILE_CONV  : convfile( which has waveform data ) directory                                //
+// $ROOTFILE_WAV   : output folder                                                                //
+// $ROOTFILE_SUMUP : for read channel map                                                         //
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <cstdlib>
 #include <cstdio>
@@ -59,12 +60,17 @@ double PeakRegion_2pct[3][8]={{7947 ,9935 ,10919,11698,12329,12799,13171,14232},
 
 int  main(int argc,char** argv)
 {
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Preparation 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+
   if( argc !=4 ){
     std::cerr << "Please Input RunNumber and section Number" << std::endl;
     std::cerr << argv[0] << " [RunNumber] [MinimumHeight] [MaximumHeight] " << std::endl; 
     return -1; 
   }
-
   Int_t RunNumber = atoi( argv[1] );
   Int_t MinHeight = atoi( argv[2] );
   Int_t MaxHeight = atoi( argv[3] );
@@ -83,13 +89,15 @@ int  main(int argc,char** argv)
   std::cout << WAVEFILEDIR << std::endl;
   std::cout << SUMFILEDIR  << std::endl;
 
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Setting IO & Analysis Class 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+
   // Setting  Classes //
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Setting IO 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   TFile* tf[nCrate];
 
@@ -205,14 +213,10 @@ int  main(int argc,char** argv)
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // Loop Start  /// 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
+
   std::cout <<"Loop " <<std::endl;
   for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-  //for( int ievent  = 0; ievent < 10000; ievent++){
-    //std::cout<< ievent << std::endl;
-#ifdef DEBUG
-    std::cout<< __LINE__ << std::endl;
-#endif
-
+    
     wConv->InitData();
     for( int icosmic = 0; icosmic < 20; icosmic++){
       CosmicSignal[icosmic] = 0;
@@ -224,7 +228,6 @@ int  main(int argc,char** argv)
     }
       
     for( int icrate = 0; icrate < nCrate; icrate++){
-      //std::cout << icrate << std::endl;
       conv[icrate]->GetEntry(ievent);
     } 
 
@@ -233,87 +236,56 @@ int  main(int argc,char** argv)
 
     if( ievent %100 == 0 && ievent ){ std::cout<< ievent << "/" << conv[0]->GetEntries() << std::endl;} 
 
-    // Conversion Convfile to Wav File 
-    //for( int iMod = 1; iMod < 2; iMod++){
-    //std::cout<< "Event Processing " << std::endl ;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Fit waveform with function for all modules, all channels;
+    // loop for Modules( CsI, CC03, CV, .... )
+    // loop for channels;
+    // 1.Fitting waveform for all channels,
+    // 2.TriggerDicision ( check Laser event, cosmic event ),
+    // 3.No Laser && No Cosmic Event -> Maybe Gamma event,,,,-> Using in Template making..
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// 1.Fitting Wave form /// 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){
 #ifdef DEBUG
-    std::cout << "Event Processing " << std::endl;
-#endif
-
-    for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
-
-#ifdef DEBUG
-    std::cout<< __LINE__ << std::endl;
-    std::cout<< iMod << std::endl;
-#endif
-      
+      std::cout<< __LINE__ << std::endl;
+      std::cout<< iMod << std::endl;
+#endif      
       int nSubModule = (wConv->ModMap[iMod]).nMod;      
       for( int iSubMod = 0; iSubMod < nSubModule; iSubMod++){	
-
+	
+	// Channel Mapping
+	// Set C(rate), F(ADC), C(hannel) event
 	int iCrate = 9999;
 	int iSlot  = 9999;
-	int iCh    = 9999;
-	/*
-	iCrate = (wConv->ModMap[iMod]).Map[iSubMod][0];
-	iSlot  = (wConv->ModMap[iMod]).Map[iSubMod][1];
-	iCh    = (wConv->ModMap[iMod]).Map[iSubMod][2];
-	*/
-	wConv->GetCFC( iMod, iSubMod, iCrate, iSlot, iCh);
-	
-	  
+	int iCh    = 9999;	
+	wConv->GetCFC( iMod, iSubMod, iCrate, iSlot, iCh);	
 	// Ignore unmapped channel // 
 	if( iCrate == 9999 || iSlot == 9999 || iCh == 9999 ) continue;       
-#ifdef DEBUG
-	std::cout << "SetGraph" << std::endl;
-	std::cout << __LINE__   << std::endl;
-	std::cout << iSubMod    << std::endl;
-#endif	  
-	/*
-	gr->Set(0);
-	for( int ipoint = 0; ipoint< 48; ipoint++){
-	  if(conv[iCrate]->Data[iSlot][iCh][ipoint]>16000){ continue; }
-	  gr->SetPoint( gr->GetN(), ipoint*8, conv[iCrate]->Data[iSlot][iCh][ipoint]);
-	}
-	*/
+	
+	// SetData to Graph // 	
 	wConv->SetGraph( iMod, iSubMod, conv, gr);
-
-#ifdef DEBUG
-	std::cout<< "Fit Graph" << std::endl;	
-#endif 
-
+	
+	// Fit graph with waveform Fitter // 
 	bool fit     = wavFitter->Fit( gr ); 
 	int chIndex  = (wConv->mod[iMod])->m_nDigi;	 
 	if( fit ){ 
-
-#ifdef DEBUG
-	  std::cout<< "Fit successed " << std::endl; 
-#endif
 	  TF1* fitFunc      = wavFitter->GetFunction();	    
-
-#ifdef DEBUG
-	  std::cout<< "Fit function got " << std::endl; 
-#endif
-
 	  double halfHeight = fitFunc->GetParameter(0)/2 + fitFunc->GetParameter(4);
 	  double halfTiming = fitFunc->GetX( halfHeight,
 					     fitFunc->GetParameter(1)-48, fitFunc->GetParameter(1));
-#ifdef DEBUG
-	  std::cout<< "linearFunction " << std::endl; 
-#endif
 	  TF1* linearFunction = new TF1("func","pol1",halfTiming - 12, halfTiming + 12);
-
-#ifdef DEBUG
-	  std::cout<< "Fit with Linear Function " << std::endl; 
-#endif
 	  gr->Fit( linearFunction, "Q", "", halfTiming -12, halfTiming +12 );
-#ifdef DEBUG
-	  std::cout<< "Get halfFitTiming" << std::endl;
-#endif 
 	  double halfFitTiming = linearFunction->GetX( halfHeight, halfTiming -12, halfTiming +12);
-#ifdef DEBUG
-	  std::cout<< "SetData " << std::endl; 
-#endif
+	  
+	  /// Setting Data for write : in this program wConv->Write() had been comment out
 	  wConv->mod[iMod]->m_FitHeight[chIndex] = 1;
 	  wConv->mod[iMod]->m_ID[chIndex]        = iSubMod;
 	  wConv->mod[iMod]->m_Pedestal[chIndex]  = fitFunc->GetParameter(4);
@@ -324,7 +296,7 @@ int  main(int argc,char** argv)
 	  wConv->mod[iMod]->m_ParB[chIndex]      = fitFunc->GetParameter(2);
 	  wConv->mod[iMod]->m_FitTime[chIndex]   = halfFitTiming;
 	  wConv->mod[iMod]->m_nDigi++;	      	    	  	      
-
+	  
 	  //std::cout << iMod << ":" << iSubMod << ":" << gr->GetMean(0) << std::endl; 	      
 	  //gr->Draw("AP");
 	  //can->Update();
@@ -334,22 +306,26 @@ int  main(int argc,char** argv)
 	  gr->GetListOfFunctions()->Delete();
 	  delete linearFunction;
 	  wavFitter->Clear();
-#ifdef DEBUG
-	  std::cout<< "End Fit "<< std::endl;
-#endif
 	}else{
-#ifdef DEBUG
-	  std::cout<< "Fit Fail" << std::endl;
-#endif
+	  ;
 	}
       }      
     }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // End Waveform Fitting 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef DEBUG
     std::cout << "TriggerDicision" << std::endl;
 #endif    
-
-    /// Trigger dicision ///
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////    
+    /// 2Trigger dicision ///
+    /// You must rewrite for fit your setting //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////    
     //std::cout<< "Trigger Processing " << std::endl;
     for( int iMod = 0; iMod < wConv->GetNmodule(); iMod++ ){      
       if( iMod == LaserModuleID ){
@@ -391,27 +367,40 @@ int  main(int argc,char** argv)
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++){
 	  if( wConv->mod[iMod]->m_Signal[iSubMod] > 500 ){
 	    wConv->m_CVTrig    = 1;
-	    wConv->m_TrigFlag |= 4; 
+	    wConv->m_TrigFlag |= 4;
 	  }
 	}
       }else{
 	continue;
       } 
     }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // End trigger dicision 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    if( wConv->m_TrigFlag  == 1  || wConv->m_TrigFlag ==2 ){
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Fill data to Template histogram ///
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    if( (wConv->m_TrigFlag & 1)  != 0  || (wConv->m_TrigFlag & 2) !=0 ){
       continue;
-    }else{ //Other Beam Event// 
+    }else{ //Other Beam Event : GammaEvent// 
       for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
+	// Cut off range event // 
 	if( wConv->mod[CsiModuleID]->m_Signal[idigi]  <  MinHeight ||
 	    wConv->mod[CsiModuleID]->m_Signal[idigi]  >= MaxHeight ){
 	  continue;
 	}
 	if( wConv->mod[CsiModuleID]->m_Chisq[idigi]/wConv->mod[CsiModuleID]->m_NDF[idigi] > 100 ){
-	  // 250 is just set value ...
+	  // 100, 250 is just set value ...
 	  continue;
-	}
-	
+	}	
 	int iSubMod = wConv->mod[CsiModuleID]->m_ID[idigi]; 
 	int CompensateID;
 	if( iSubMod  < 2240 ){
@@ -423,14 +412,8 @@ int  main(int argc,char** argv)
 	int iSlot  = 9999;
 	int iCh    = 9999;
 	wConv->GetCFC( CsiModuleID, iSubMod, iCrate, iSlot, iCh );
-
-	/*
-	iCrate = (wConv->ModMap[CsiModuleID]).Map[iSubMod][0];
-	iSlot  = (wConv->ModMap[CsiModuleID]).Map[iSubMod][1];
-	iCh    = (wConv->ModMap[CsiModuleID]).Map[iSubMod][2];	
-	*/
-
 	hisTempCsI_Spectrum[iSubMod]->Fill( wConv->mod[CsiModuleID]->m_Signal[idigi] );
+	// Here!
 	for( int ipoint = 0; ipoint < 48; ipoint++){
 	  hisTempCsI_Height[iSubMod]->Fill( ipoint*8 - wConv->mod[CsiModuleID]->m_Time[idigi],
 					    (conv[iCrate]->Data[iSlot][iCh][ipoint]- wConv->mod[CsiModuleID]->m_Pedestal[idigi])/wConv->mod[CsiModuleID]->m_Signal[idigi]);
@@ -438,10 +421,10 @@ int  main(int argc,char** argv)
       }
     }
     
-    /// All Convert is done ///
-    /// Trigger Setting     ///
-    ////////////////////////////////
-
+    ///////////////////////////
+    /// Processed           ///
+    ///////////////////////////
+    // if you want fill function fit result, remove // //
     //trout->Fill();
 
   }
