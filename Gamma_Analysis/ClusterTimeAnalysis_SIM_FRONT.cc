@@ -51,7 +51,7 @@ int main( int argc, char** argv ){
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
 
   TChain* ch = new TChain("T");  
-  ch->Add(Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMAHIT.c_str(),GammaEnergy, Degree, DataIndex ));
+  ch->Add(Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree, DataIndex ));
   std::cout<< "File is Opened" << std::endl;
 
   TFile*  tfout = new TFile(Form("%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree,DataIndex ),"RECREATE");
