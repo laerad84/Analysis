@@ -55,7 +55,7 @@ class EDepositAnalysis {
   std::string m_OutputFilename;
 
 
-  EDepositAnalysis(const  char* InputFilename,const  char* OutputFilename);
+  EDepositAnalysis(const  char* InputFilename,const  char* OutputFilename, Int_t InjectionDirection = 0);
   virtual ~EDepositAnalysis();
   void Init();
   int  EventProcess(int ievent );
@@ -69,6 +69,7 @@ class EDepositAnalysis {
   ClusterFinder*         clusterFinder;
   void DrawEvent();
  private:
+  int  m_ZDirection;
   void PrepareIO();
   int  PrepareDump();
   int  ResetDump();

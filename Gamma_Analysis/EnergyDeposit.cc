@@ -26,7 +26,7 @@ int main( int argc, char** argv){
   std::string OutputFilename = Form("%s/Cluster_Back_%dMeV_%ddeg-1E5-%d.root",
 				    ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
   EDepositAnalysis* EDep = new EDepositAnalysis(InputFilename.c_str(),
-						OutputFilename.c_str());	
+						OutputFilename.c_str(),1);	
 
   /*
   for( int i = 0; i< 100; i++){
