@@ -20,10 +20,11 @@ int main( int argc, char** argv ){
   for( int iIndex =0; iIndex < 10; iIndex++){
     ch->Add(Form("%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),Energy,Theta,iIndex));
   }
-  
+  /*
   TFile* tf = new TFile(Form("%s/Data_All.root",ROOTFILE_GAMMACLUS.c_str()));
   TTree* tr = (TTree*)tf->Get("trCluster");
-  ClusterTimeReader* reader = new ClusterTimeReader(tr);
+  */
+  ClusterTimeReader* reader = new ClusterTimeReader(ch);
   Int_t nEntries = reader->fChain->GetEntries(); 
   
   TFile* tfout = new TFile(Form("%s/ClusterTimeStructure_SIM_%dMeV_%ddeg.root",ROOTFILE_GAMMACLUS.c_str(),Energy,Theta),"recreate");  
