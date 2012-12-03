@@ -18,7 +18,7 @@ int main( int argc, char** argv ){
   
   TChain* ch = new TChain("trCluster");
   for( int iIndex =0; iIndex < 10; iIndex++){
-    ch->Add(Form("%s/Cluster_Time_BACK_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),Energy,Theta,iIndex));
+    ch->Add(Form("%s/Cluster_Time_Back_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),Energy,Theta,iIndex));
   }
   
   TFile* tf = new TFile(Form("%s/Data_All.root",ROOTFILE_GAMMACLUS.c_str()));
@@ -26,7 +26,7 @@ int main( int argc, char** argv ){
   ClusterTimeReader* reader = new ClusterTimeReader(tr);
   Int_t nEntries = reader->fChain->GetEntries(); 
   
-  TFile* tfout = new TFile(Form("%s/ClusterTimeStructure_SIM_BACK_%dMeV_%ddeg.root",ROOTFILE_GAMMACLUS.c_str(),Energy,Theta),"recreate");  
+  TFile* tfout = new TFile(Form("%s/ClusterTimeStructure_SIM_Back_%dMeV_%ddeg.root",ROOTFILE_GAMMACLUS.c_str(),Energy,Theta),"recreate");  
 
   const int nE = 6;
   const int nTheta = 8; 

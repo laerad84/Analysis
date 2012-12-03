@@ -51,10 +51,10 @@ int main( int argc, char** argv ){
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
 
   TChain* ch = new TChain("T");  
-  ch->Add(Form("%s/Cluster_BACK_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree, DataIndex ));
+  ch->Add(Form("%s/Cluster_Back_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree, DataIndex ));
   std::cout<< "File is Opened" << std::endl;
 
-  TFile*  tfout = new TFile(Form("%s/Cluster_Time_BACK_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree,DataIndex ),"RECREATE");
+  TFile*  tfout = new TFile(Form("%s/Cluster_Time_Back_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree,DataIndex ),"RECREATE");
   TTree* trout = new TTree("trCluster","");
   const int arrSize = 120;
   Int_t EventNumber;
