@@ -5,9 +5,10 @@ void EDepositAnalysis::ConvertPosition(const  Double_t Radius,const  Double_t Th
   ny = (x+Radius)*TMath::Sin( Theta ) + y*TMath::Cos(Theta);
 }
 const double EDepositAnalysis::Speed_of_Signal = 80.;//[mm/ns]
-EDepositAnalysis::EDepositAnalysis( const char* InputFilename,const  char* OutputFilename){
+EDepositAnalysis::EDepositAnalysis( const char* InputFilename,const  char* OutputFilename, Int_t InjectionDirection){
   m_InputFilename = InputFilename;
   m_OutputFilename = OutputFilename;
+  m_ZDirection     = InjectionDirection;  
   Init();
 }
 EDepositAnalysis::~EDepositAnalysis(){
@@ -86,10 +87,13 @@ int  EDepositAnalysis::EventProcess( int ievent ){
     hitIDVec.push_back( CsIID );
     hitZVec.push_back( trin->CSI_hits_r_fZ[ihit] );
     hitEVec.push_back( trin->CSI_hits_edep[ihit] );
-    // For injection from front// 
-    //hitTVec.push_back( trin->CSI_hits_time[ihit] + (500 - trin->CSI_hits_r_fZ[ihit])/Speed_of_Signal);
+    if( m_ZDirection == 0){
+      // For injection from front// 
+      hitTVec.push_back( trin->CSI_hits_time[ihit] + (500 - trin->CSI_hits_r_fZ[ihit])/Speed_of_Signal);
+    }else{
     // For injection from back // 
-    hitTVec.push_back( trin->CSI_hits_time[ihit] + (trin->CSI_hits_r_fZ[ihit])/Speed_of_Signal);
+      hitTVec.push_back( trin->CSI_hits_time[ihit] + (trin->CSI_hits_r_fZ[ihit])/Speed_of_Signal);
+    }
     // Decision ID is new or already added // 
     for( itIDVec = CrystalIDVec.begin(); itIDVec != CrystalIDVec.end(); itIDVec++){
       if(( *itIDVec) == CsIID ){ break; }
