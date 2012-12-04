@@ -156,8 +156,8 @@ int  ClusterTimeAnalyzer::ConvertData( Cluster& clus, ClusterTime& clusterTime){
       CrystalDeltaPhi = CrystalPhi - ClusterPhi ; 
     }
     RVec.push_back( CrystalR );
-    //PhiVec.push_back( CrystalDeltaPhi);    
-    PhiVec.push_back( CrystalPhi );
+    PhiVec.push_back( CrystalDeltaPhi);    
+    //PhiVec.push_back( CrystalPhi );
     if( CrystalR  < RadiusThreshold ){
       MeanTime += TVec[ vecIndex ] ;
       nCenterCrystal++; 
