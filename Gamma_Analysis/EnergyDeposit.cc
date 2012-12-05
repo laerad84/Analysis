@@ -31,10 +31,11 @@ int main( int argc, char** argv){
   }else{
     OutputFilename = Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",
 			  ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
+    std::cout << OutputFilename << std::endl;
   }
+
   EDepositAnalysis* EDep = new EDepositAnalysis(InputFilename.c_str(),
 						OutputFilename.c_str(),Direction);	
-
   /*
   for( int i = 0; i< 100; i++){
     EDep->CsIEne->Reset();
@@ -49,5 +50,5 @@ int main( int argc, char** argv){
   */
   EDep->Loop();  
   EDep->Close();
-  //app->Run();
+  
 }

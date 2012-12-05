@@ -1,11 +1,15 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// DON'T CONCERN ABOUT SPELL MISS!!!                                                              //
 // MakeTemplate_Height - Making Template histogram with function-waveform-fitter                  //
 // ./MakeTemplate_Height [RunNumber] [MinimumHeight] [MaximumHeight]                              //
 // You must define environment arguement ...                                                      //
 // $ROOTFILE_CONV  : convfile( which has waveform data ) directory                                //
 // $ROOTFILE_WAV   : output folder                                                                //
 // $ROOTFILE_SUMUP : for read channel map                                                         //
+// NEED FILE LIST                                                                                 //
+// InputFile : convFile( which has waveform information                                           //
+// OutputFile: TEMPLETE_HEIGHT_[RunNumber]_[MinimumHeight]_[MaximumHeight].root                   //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,3 +1,16 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// TimeZeroWithPi0Run -- GetTimeData(CsiTime - ScintiTime ) and make histogram.
+// Intput : CalibrationFile : CosmicResult..
+//          data File       : run_wav_%d.root 
+// Output : Pi0Out.root in CWD 
+// Environment : 
+// $ANALYSISLIB
+// $ROOTFILE_WAB
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -41,6 +54,7 @@ main( int argc ,char ** argv ){
   TChain* trin = new TChain("Tree");
   for( int i = 0; i< 22; i++){
     //trin->Add(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVFILE.c_str(),4503+i));
+    std::cout << "EDIT HERE" << __PRETTY_FUNCTION__ << " : "  << __LINE__ << std::endl; 
     trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),4503+i));
   }
 
@@ -58,12 +72,11 @@ main( int argc ,char ** argv ){
 				     40,0,16000,
 				     400,-100,100);
   }
-
-  E14WavReader* reader = new E14WavReader(trin);
-  Long_t entries =  reader->fChain->GetEntries();
   
+  E14WavReader* reader = new E14WavReader(trin);
+  Long_t entries =  reader->fChain->GetEntries();  
   TTree* trout = new TTree("trOut","");
-
+  
   const int nCSI = 2716;
   Int_t    RunNumber;
   Int_t    EventNumber;
@@ -76,7 +89,7 @@ main( int argc ,char ** argv ){
   Double_t CSIDigiHHTime[nCSI];
   Int_t    CSIDigiID[nCSI];
   Double_t CSIDigiSignal[nCSI];
-
+  
   trout->Branch( "RunNumber"     , &RunNumber     , "RunNumber/I");
   trout->Branch( "EventNumber"   , &EventNumber   , "EventNumber/I");
   trout->Branch( "ScintiSignal"  , &ScintiSignal  , "ScintiSignal/D");
@@ -105,14 +118,14 @@ main( int argc ,char ** argv ){
     ScintiTime = -500;
     ScintiHHTime = -500.;
     nCSIDigi = 0;
-
+    
     for( Int_t iCSI = 0; iCSI < nCSI; iCSI++ ){
       CSIDigiE[iCSI]      = 0;
       CSIDigiTime[iCSI]   = 0;
       CSIDigiHHTime[iCSI] = 0;
       CSIDigiID[iCSI]     = -1;
     }
-
+    
     stepHist->Fill(0);   
     //std::cout<< "Scinti" << std::endl;
     RunNumber = reader->RunNo;
@@ -132,13 +145,13 @@ main( int argc ,char ** argv ){
     if( !ScintiOn || reader->EtcSignal[ScintiID] < 50 ){ continue; }
     stepHist->Fill(1);
     //std::cout << "CsI" << std::endl;
-
+    
     for( int ich  = 0; ich < reader->CsiNumber; ich++){
       
       if( reader->CsiSignal[ich] < 5 ){ 
 	continue;
       }
-
+      
       //std::cout << "Converter " << std::endl;
       if( Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] ) > 1.5){
 	CSIDigiID[nCSIDigi]     = reader->CsiID[ich];
@@ -159,7 +172,7 @@ main( int argc ,char ** argv ){
     std::list<Gamma>   glist;
     clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE, CSIDigiHHTime);
     gFinder.findGamma( clist , glist );
-
+    
     if( glist.size() != 2 ) continue;
     stepHist->Fill(2);
     //std::cout <<"Pi0 Reconstruction" << std::endl;
@@ -186,12 +199,12 @@ main( int argc ,char ** argv ){
     data.setData( piList );
     trout->Fill();
   }
-
+  
   for( int i = 0; i< 2716; i++){
     hisEnergyTimeDelta[i]->Write();
     hisTimeDeltaCH[i]->Write();
   }
-
+  
   trout->Write();
   stepHist->Write();
   hisTimeDelta->Write();
