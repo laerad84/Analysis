@@ -7,6 +7,8 @@
 #include "TApplication.h"
 #include "ClusterTimeReader.h"
 #include "TMath.h"
+#include "TF1.h"
+
 int main( int argc, char** argv ){
   
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
@@ -27,57 +29,86 @@ int main( int argc, char** argv ){
   TH2D* hisDT_r[nE-1][nTheta-1];
   TH2D* hisDT_l[nE-1][nTheta-1];
   TH2D* hisPhiPhi[nE-1][nTheta -1 ];
+  TH2D* hisRPhi[nE-1][nTheta -1 ];
+  TH2D* hisRPhiChisqN[nE-1][nTheta -1];
+  const int nBinsR   = 41;
+  const int nBinsPhi = 41;
+  
+  TH1D* hisRPhiTime[nE-1][nTheta -1 ][41][41];
   Int_t EArr[nE] = {100,200,300,500,800,1300};
   Int_t ThetaArr[nTheta] = {10,15,20,25,30,35,40,45};
   
-
+  Int_t RArr[ nBinsR ];
+  Int_t PhiArr[ nBinsPhi ];
+  for( int kIndex  = 0; kIndex < nBinsR; kIndex++){
+    RArr[ kIndex ] = -100+ 5*kIndex;
+  }
+  for( int lIndex = 0; lIndex < nBinsPhi; lIndex++){
+    PhiArr[ lIndex ] = -100+5*lIndex;
+  }
+  
   for( int iIndex = 0; iIndex < nE-1; iIndex++){
     for( int jIndex = 0; jIndex < nTheta-1; jIndex++){
-      hisPhiPhi[iIndex][jIndex] = new TH2D(Form("hisPhiPhi_E_%d_%d_Theta_%d_%d",
-					       EArr[iIndex],EArr[iIndex+1],
-					       ThetaArr[jIndex],ThetaArr[jIndex+1]),
-					  Form("hisPhiPhi_E_%d_%d_Theta_%d_%d",
-					       EArr[iIndex],EArr[iIndex+1],
-					       ThetaArr[jIndex],ThetaArr[jIndex+1]),
-					  60,-1*TMath::Pi(),TMath::Pi(),60,-1*TMath::Pi(),TMath::Pi());
-      hisRT[iIndex][jIndex]  = new TH2D(Form("hisRT_E_%d_%d_Theta_%d_%d",
-					     EArr[iIndex],EArr[iIndex+1],
-					     ThetaArr[jIndex],ThetaArr[jIndex+1]),
+      for( int kIndex  = 0; kIndex  < nBinsR; kIndex++){
+	for( int lIndex = 0; lIndex < nBinsPhi; lIndex++){
+	  hisRPhiTime[ iIndex][jIndex][kIndex][lIndex] 
+	    = new TH1D(Form("hisRPhiTime_%d_%d_%d_%d",iIndex,jIndex,kIndex,lIndex),
+		       Form("hisRPhiTime_E_%d_%d_Theta_%d_%d_xy_%d_%d",
+			    EArr[iIndex],EArr[iIndex+1],ThetaArr[jIndex],ThetaArr[jIndex+1],
+			    RArr[kIndex],PhiArr[lIndex]),
+		       200,-10,10);
+	}
+      }
+      hisRPhi[iIndex][jIndex] = new TH2D(Form("hisRPhi_E_%d_Theta_%d",
+					      iIndex,jIndex),
+					 Form("hisRPhi_E_%d_%d_Theta_%d_%d",
+					      EArr[iIndex], EArr[iIndex+1],
+					      ThetaArr[jIndex], ThetaArr[jIndex+1]),
+					 41,-105,105,41,-105,105);
+      hisRPhiChisqN[iIndex][jIndex] = new TH2D(Form("hisRPhiChisqN_E_%d_%d_Theta_%d_%d",
+						    iIndex,jIndex),
+					       Form("hisRThetaChisqN_E_%d_%d_Theta_%d_%d",
+						    EArr[iIndex], EArr[iIndex+1],
+						    ThetaArr[jIndex], ThetaArr[jIndex+1]),
+					       41,-105,105,41,-105,105);
+      hisPhiPhi[iIndex][jIndex] = new TH2D(Form("hisPhiPhi_E_%d_Theta_%d",
+						iIndex,jIndex),
+					   Form("hisPhiPhi_E_%d_%d_Theta_%d_%d",
+						EArr[iIndex],EArr[iIndex+1],
+						ThetaArr[jIndex],ThetaArr[jIndex+1]),
+					   60,-1*TMath::Pi(),TMath::Pi(),60,-1*TMath::Pi(),TMath::Pi());
+      hisRT[iIndex][jIndex]  = new TH2D(Form("hisRT_E_%d_Theta_%d",
+					     iIndex,jIndex), 
 					Form("hisRT_E_%d_%d_Theta_%d_%d",
 					     EArr[iIndex],EArr[iIndex+1],
 					     ThetaArr[jIndex],ThetaArr[jIndex+1]),
 					40,-100,100,200,-10,10);
-      hisRT_l[iIndex][jIndex]  = new TH2D(Form("hisRT_l_E_%d_%d_Theta_%d_%d",
-					       EArr[iIndex],EArr[iIndex+1],
-					       ThetaArr[jIndex],ThetaArr[jIndex+1]),
+      hisRT_l[iIndex][jIndex]  = new TH2D(Form("hisRT_l_E_%d_Theta_%d",
+					       iIndex,jIndex),
 					  Form("hisRT_l_E_%d_%d_Theta_%d_%d",
 					       EArr[iIndex],EArr[iIndex+1],
 					       ThetaArr[jIndex],ThetaArr[jIndex+1]),
 					  40,-100,100,200,-10,10);
-      hisRT_r[iIndex][jIndex]  = new TH2D(Form("hisRT_r_E_%d_%d_Theta_%d_%d",
-					       EArr[iIndex],EArr[iIndex+1],
-					       ThetaArr[jIndex],ThetaArr[jIndex+1]),
+      hisRT_r[iIndex][jIndex]  = new TH2D(Form("hisRT_r_E_%d_Theta_%d",
+					       iIndex,jIndex),
 					  Form("hisRT_r_E_%d_%d_Theta_%d_%d",
 					       EArr[iIndex],EArr[iIndex+1],
 					       ThetaArr[jIndex],ThetaArr[jIndex+1]),
 					  40,-100,100,200,-10,10);
-      hisDT[iIndex][jIndex]  = new TH2D(Form("hisDT_E_%d_%d_Theta_%d_%d",
-					     EArr[iIndex],EArr[iIndex+1],
-					     ThetaArr[jIndex],ThetaArr[jIndex+1]),
+      hisDT[iIndex][jIndex]  = new TH2D(Form("hisDT_E_%d_Theta_%d",
+					     iIndex,jIndex),
 					Form("hisDT_E_%d_%d_Theta_%d_%d",
 					     EArr[iIndex],EArr[iIndex+1],
 					     ThetaArr[jIndex],ThetaArr[jIndex+1]),
 					40,-100,100,200,-10,10);
-      hisDT_l[iIndex][jIndex]  = new TH2D(Form("hisDT_l_E_%d_%d_Theta_%d_%d",
-					       EArr[iIndex],EArr[iIndex+1],
-					       ThetaArr[jIndex],ThetaArr[jIndex+1]),
+      hisDT_l[iIndex][jIndex]  = new TH2D(Form("hisDT_l_E_%d_Theta_%d",
+					       iIndex,jIndex),
 					  Form("hisDT_l_E_%d_%d_Theta_%d_%d",
 					       EArr[iIndex],EArr[iIndex+1],
 					       ThetaArr[jIndex],ThetaArr[jIndex+1]),
 					  40,-100,100,200,-10,10);
-      hisDT_r[iIndex][jIndex]  = new TH2D(Form("hisDT_r_E_%d_%d_Theta_%d_%d",
-					       EArr[iIndex],EArr[iIndex+1],
-					       ThetaArr[jIndex],ThetaArr[jIndex+1]),
+      hisDT_r[iIndex][jIndex]  = new TH2D(Form("hisDT_r_E_%d_Theta_%d",
+					       iIndex,jIndex),
 					  Form("hisDT_r_E_%d_%d_Theta_%d_%d",
 					       EArr[iIndex],EArr[iIndex+1],
 					       ThetaArr[jIndex],ThetaArr[jIndex+1]),
@@ -89,6 +120,8 @@ int main( int argc, char** argv ){
     reader->GetEntry( evtIndex );
     for( int clusterIndex = 0; clusterIndex < reader->nCluster; clusterIndex++){
       if( reader->ClusterR[ clusterIndex] > 500 ){ continue; }
+      if( reader->ClusterR[ clusterIndex] < 200 ){ continue; }
+
       bool bAbort = true; 
       Int_t EnergyIndex = 0;
       Int_t ThetaIndex  = 0;
@@ -126,7 +159,7 @@ int main( int argc, char** argv ){
 	Double_t RinCluster = reader->CrystalR[ clusterIndex][crystalIndex]*TMath::Cos( reader->CrystalPhi[clusterIndex][crystalIndex]);
 	Double_t DinCluster = reader->CrystalR[ clusterIndex][crystalIndex]*TMath::Sin( reader->CrystalPhi[clusterIndex][crystalIndex]);
 	Double_t TinCluster = reader->CrystalT[ clusterIndex][crystalIndex];
-
+	if( TinCluster == 0){ continue; }
 	hisPhiPhi[EnergyIndex][ThetaIndex]->Fill( reader->ClusterPhi[clusterIndex], reader->CrystalPhi[clusterIndex][crystalIndex]);
 	if( TMath::Abs(DinCluster) < 25*sqrt(2) ){
 	  hisRT[EnergyIndex][ThetaIndex]->Fill( RinCluster, TinCluster);
@@ -144,12 +177,79 @@ int main( int argc, char** argv ){
 	    hisDT_r[EnergyIndex][ThetaIndex]->Fill( DinCluster,TinCluster);
 	  }
 	}
+	int iBinR = (int)((RinCluster+105)/5) - 1;
+	int iBinTheta = (int)((DinCluster+105)/5) -1;
+	if( iBinR < 0 || iBinTheta < 0 ){
+	  continue;
+	}else if( iBinR >= nBinsR || iBinTheta >= nBinsPhi ){
+	  continue;
+	}else{ 
+	  hisRPhiTime[EnergyIndex][ThetaIndex][iBinR][iBinTheta]->Fill(TinCluster);
+	}
       }
     }
   }
+  
+
+  Double_t TimeMean[ nE-1 ][ nTheta-1 ][ nBinsR ][ nBinsPhi ];
+  Double_t TimeSigma[ nE-1 ][ nTheta-1 ][ nBinsR ][ nBinsPhi ];
+  Double_t TimeChisqN[ nE-1 ][ nTheta-1 ][ nBinsR ][ nBinsPhi ];
+  for( int iIndex  = 0; iIndex <nE-1; iIndex++){
+    for( int jIndex  = 0; jIndex < nTheta-1; jIndex++){
+      for( int kIndex = 0; kIndex < nBinsR; kIndex++){
+	for( int lIndex  = 0; lIndex < nBinsPhi; lIndex++){
+	  TimeMean[ iIndex][ jIndex][ kIndex][ lIndex]   = -10;
+	  TimeSigma[ iIndex][ jIndex][ kIndex][ lIndex]  = -1;
+	  TimeChisqN[ iIndex][ jIndex][ kIndex][ lIndex] = -1;
+	  Double_t Mean  =  hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->GetMean();
+	  Double_t RMS   =  hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->GetRMS();	  
+	  Bool_t Flag = kTRUE;
+	  if( hisRPhiTime[ iIndex][jIndex][ kIndex][lIndex]->GetEntries() < 25 ){ 
+	    Flag = kFALSE;
+	  }else{
+	    hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->Fit("gaus","Q","",Mean-RMS,Mean+RMS);
+	    TF1* func = hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->GetFunction("gaus");
+	    if( func->GetParameter(0 ) < 10 ){  
+	      hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->GetListOfFunctions()->Delete();	      
+	      Flag = kFALSE; 
+	    }else{
+	      Mean = func->GetParameter(1);
+	      RMS  = func->GetParameter(2);	 	  
+	      if( RMS < 0.5 ){ RMS  = 0.5;} 	      
+	      hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->Fit("gaus","Q","",Mean-2*RMS,Mean+2*RMS);
+	      func = hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->GetFunction("gaus");
+	      TimeMean[ iIndex][ jIndex][ kIndex][ lIndex] = func->GetParameter( 1 );
+	      if( TimeMean[ iIndex][ jIndex][ kIndex][ lIndex] > 2 || 
+		  TimeMean[ iIndex][ jIndex][ kIndex][ lIndex] <-2 ){
+		hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->GetListOfFunctions()->Delete();	      
+		Flag = kFALSE;
+	      }else{
+		TimeSigma[ iIndex][ jIndex][ kIndex][ lIndex] = func->GetParameter( 2 );
+		TimeChisqN[ iIndex][ jIndex][ kIndex][ lIndex] = func->GetChisquare()/func->GetNDF();	  
+		hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->GetListOfFunctions()->Delete();
+	      }
+	    }
+	  }
+	  hisRPhi[iIndex][jIndex]->SetBinContent( lIndex+1, kIndex+1, TimeMean[iIndex][jIndex][kIndex][lIndex]);
+	  hisRPhi[iIndex][jIndex]->SetBinError( lIndex+1, kIndex+1, TimeSigma[iIndex][jIndex][kIndex][lIndex]);	
+	  hisRPhiChisqN[iIndex][jIndex]->SetBinContent( lIndex+1, kIndex+1, TimeChisqN[iIndex][jIndex][kIndex][lIndex]);
+	}
+      }
+    }
+  }
+  
+  
+  
 
   for( int iIndex = 0; iIndex < nE-1; iIndex++){
     for( int jIndex = 0; jIndex < nTheta-1; jIndex++){
+      for( int kIndex = 0; kIndex < nBinsR; kIndex++){
+	for( int lIndex = 0; lIndex < nBinsPhi; lIndex++){
+	  hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->Write();
+	}
+      }
+      hisRPhi[iIndex][jIndex]->Write();
+      hisRPhiChisqN[iIndex][jIndex]->Write();      
       hisPhiPhi[iIndex][jIndex]->Write();
       hisRT[iIndex][jIndex]->Write();
       hisRT_l[iIndex][jIndex]->Write();
@@ -157,6 +257,7 @@ int main( int argc, char** argv ){
       hisDT[iIndex][jIndex]->Write();
       hisDT_l[iIndex][jIndex]->Write();
       hisDT_r[iIndex][jIndex]->Write();
+
     }
   }
 

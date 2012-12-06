@@ -8,7 +8,7 @@
 #include "ClusterTimeReader.h"
 #include "TMath.h"
 #include "TChain.h"
-
+#include "TF1.h"
 
 int main( int argc, char** argv ){
 
@@ -31,6 +31,13 @@ int main( int argc, char** argv ){
 
   const int nE = 6;
   const int nTheta = 8; 
+  const int nBinsR = 41;
+  const int nBinsPhi = 41;
+
+  TH1D* hisRPhiTime[ nBinsR ][ nBinsPhi ];
+  TH2D* hisRPhi;
+  TH2D* hisRPhiChisqN;
+
   TH2D* hisRT;
   TH2D* hisRT_l;
   TH2D* hisRT_r;
@@ -38,6 +45,26 @@ int main( int argc, char** argv ){
   TH2D* hisDT_r;
   TH2D* hisDT_l;
   TH2D* hisPhiPhi;
+  for( int kIndex = 0; kIndex < nBinsR; kIndex++){
+    for( int lIndex  = 0; lIndex <nBinsPhi; lIndex++){
+      hisRPhiTime[ kIndex ][ lIndex ] = new TH1D(Form("hisRPhiTime_E_%d_Theta_%d_%d_%d",
+						      Energy,Theta,kIndex,lIndex),
+						 Form("hisRPhiTime_E_%d_Theta_%d_%d_%d",
+						      Energy,Theta,kIndex,lIndex),
+						 200, -10, 10);
+    }
+  }
+  hisRPhi   = new TH2D(Form("hisRPhi_E_%d_%d_Theta_%d_%d",
+			    Energy,Energy,Theta,Theta),
+		       Form("hisRPhi_E_%d_%d_Theta_%d_%d",
+			    Energy,Energy,Theta,Theta),
+		       41,-105,105,41,-105,105);
+  hisRPhiChisqN = new TH2D(Form("hisRPhiChisqN_E_%d_%d_Theta_%d_%d",
+						Energy,Energy,Theta,Theta),
+					   Form("hisRPhiChisqN_E_%d_%d_Theta_%d_%d",
+						Energy,Energy,Theta,Theta),
+					   41,-105,105,41,-105,105);
+  
   hisPhiPhi = new TH2D(Form("hisPhiPhi_E_%d_%d_Theta_%d_%d",
 			    Energy,Energy,
 			    Theta,Theta),
@@ -106,7 +133,7 @@ int main( int argc, char** argv ){
 	Double_t RinCluster = reader->CrystalR[ clusterIndex][crystalIndex]*TMath::Cos( reader->CrystalPhi[clusterIndex][crystalIndex]);
 	Double_t DinCluster = reader->CrystalR[ clusterIndex][crystalIndex]*TMath::Sin( reader->CrystalPhi[clusterIndex][crystalIndex]);
 	Double_t TinCluster = reader->CrystalT[ clusterIndex][crystalIndex];
-	
+	if( TinCluster == 0 ){ continue; }
 	hisPhiPhi->Fill( reader->ClusterPhi[clusterIndex], reader->CrystalPhi[clusterIndex][crystalIndex]);
 	if( TMath::Abs(DinCluster) < 25*sqrt(2) ){
 	  hisRT->Fill( RinCluster, TinCluster);
@@ -124,10 +151,68 @@ int main( int argc, char** argv ){
 	    hisDT_r->Fill( DinCluster,TinCluster);
 	  }
 	}
+	int iBinR = (int)((RinCluster+105)/5) -1;
+	int iBinPhi = (int)((DinCluster+105)/5) -1;
+	if( iBinR <0 || iBinPhi < 0) { continue; }
+	else if( iBinR >= nBinsR || iBinPhi >= nBinsPhi ){continue; }
+	else{
+	  hisRPhiTime[iBinR][iBinPhi]->Fill(TinCluster);
+	}			  
       }
     }
   }
 
+  Double_t TimeMean[ nBinsR ][ nBinsPhi ];
+  Double_t TimeSigma[ nBinsR ][ nBinsPhi ];
+  Double_t TimeChisqN[ nBinsR ][ nBinsPhi ];
+  for( int kIndex  = 0; kIndex < nBinsR; kIndex++){
+    for( int lIndex  = 0; lIndex < nBinsPhi; lIndex++){
+      TimeMean[ kIndex][ lIndex]   = -10;
+      TimeSigma[ kIndex][ lIndex]  = -1;
+      TimeChisqN[ kIndex][ lIndex] = -1;
+      Double_t Mean  =  hisRPhiTime[kIndex][lIndex]->GetMean();
+      Double_t RMS   =  hisRPhiTime[kIndex][lIndex]->GetRMS();	  
+      Bool_t Flag = kTRUE;
+      if( hisRPhiTime[kIndex][lIndex]->GetEntries() < 25 ){ 
+	Flag = kFALSE;
+      }else{
+	hisRPhiTime[kIndex][lIndex]->Fit("gaus","Q","",Mean-RMS,Mean+RMS);
+	TF1* func = hisRPhiTime[kIndex][lIndex]->GetFunction("gaus");
+	if( func->GetParameter(0 ) < 10 ){  
+	  hisRPhiTime[kIndex][lIndex]->GetListOfFunctions()->Delete();	      
+	  Flag = kFALSE; 
+	}else{
+	  Mean = func->GetParameter(1);
+	  RMS  = func->GetParameter(2);	 	  
+	  if( RMS < 0.5 ){ RMS  = 0.5;} 	      
+	  hisRPhiTime[kIndex][lIndex]->Fit("gaus","Q","",Mean-2*RMS,Mean+2*RMS);
+	  func = hisRPhiTime[kIndex][lIndex]->GetFunction("gaus");
+	  TimeMean[ kIndex][ lIndex] = func->GetParameter( 1 );
+	  if( TimeMean[ kIndex][ lIndex] > 2 || 
+	      TimeMean[ kIndex][ lIndex] <-2 ){
+	    hisRPhiTime[kIndex][lIndex]->GetListOfFunctions()->Delete();	      
+	    Flag = kFALSE;
+	  }else{
+	    TimeSigma[ kIndex][ lIndex] = func->GetParameter( 2 );
+	    TimeChisqN[ kIndex][ lIndex] = func->GetChisquare()/func->GetNDF();	  
+	    hisRPhiTime[kIndex][lIndex]->GetListOfFunctions()->Delete();
+	  }
+	}
+      }
+      hisRPhi->SetBinContent( lIndex+1, kIndex+1, TimeMean[kIndex][lIndex]);
+      hisRPhi->SetBinError( lIndex+1, kIndex+1, TimeSigma[kIndex][lIndex]);	
+      hisRPhiChisqN->SetBinContent( lIndex+1, kIndex+1, TimeChisqN[kIndex][lIndex]);
+    }
+  }
+
+  for( int kIndex = 0; kIndex < nBinsR; kIndex++){
+    for( int lIndex = 0; lIndex < nBinsPhi; lIndex++){
+      hisRPhiTime[kIndex][lIndex] ->Write();
+    }
+  }
+
+  hisRPhi->Write();
+  hisRPhiChisqN->Write();
   hisPhiPhi->Write();
   hisRT->Write();
   hisRT_l->Write();
