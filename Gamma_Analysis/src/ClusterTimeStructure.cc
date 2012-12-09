@@ -81,6 +81,7 @@ int ClusterTimeAnalyzer::Convert(std::list<Cluster>& clist , std::list<ClusterTi
     ClusterR = TMath::Sqrt( coex*coex + coey*coey );
     ClusterPhi = TMath::ATan2( coey , coex );
     //std::cout<< __LINE__ << std::endl; 
+    Double_t TempR  = 1000;//mm
     for( int vecIndex = 0; vecIndex < IDVec.size(); vecIndex++){
       Double_t CrystalR   =  TMath::Sqrt(( Posx[ IDVec[vecIndex] ] - coex )*( Posx[ IDVec[vecIndex] ] - coex ) + ( Posy[ IDVec[vecIndex] ] - coey )*( Posy[ IDVec[vecIndex] ] - coey ));
       Double_t CrystalPhi =  TMath::ATan2( (Posy[ IDVec[vecIndex] ] - coey ) , (Posx[ IDVec[vecIndex] ] - coex ) );
@@ -98,14 +99,19 @@ int ClusterTimeAnalyzer::Convert(std::list<Cluster>& clist , std::list<ClusterTi
       PhiVec.push_back( CrystalDeltaPhi);    
       //PhiVec.push_back( CrystalPhi);    
       //std::cout<< " R: "<< CrystalR << " : " << RadiusThreshold << std::endl;
+      ///Edit 1
+      /*
       if( CrystalR  < RadiusThreshold ){
 	MeanTime += TVec[ vecIndex ] ;
 	nCenterCrystal++; 
-
-      } 
+	} */
+      if( TempR > CrystalR) {
+	TempR = CrystalR;
+	MeanTime = TVec[ vecIndex ];
+      }
     }
-
-    MeanTime = MeanTime/nCenterCrystal;
+      ///Edit 1
+      //MeanTime = MeanTime/nCenterCrystal;
     
     clusTime.SetClusterMeanTime( MeanTime );
     clusTime.SetClusterR( ClusterR );

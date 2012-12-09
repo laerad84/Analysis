@@ -21,9 +21,9 @@ int main( int argc, char** argv ){
   TFile* tfout = new TFile("ClusterTimeStructure.root","recreate");  
 
   const int nE = 6;
-  const int nTheta = 8; 
+  const int nTheta = 8;
   TH2D* hisRT[nE-1][nTheta-1];
-  TH2D* hisRT_l[nE-1][nTheta-1];  
+  TH2D* hisRT_l[nE-1][nTheta-1];
   TH2D* hisRT_r[nE-1][nTheta-1];  
   TH2D* hisDT[nE-1][nTheta-1];
   TH2D* hisDT_r[nE-1][nTheta-1];
@@ -31,20 +31,25 @@ int main( int argc, char** argv ){
   TH2D* hisPhiPhi[nE-1][nTheta -1 ];
   TH2D* hisRPhi[nE-1][nTheta -1 ];
   TH2D* hisRPhiChisqN[nE-1][nTheta -1];
+  TH2D* hisRPhiE[nE-1][nTheta -1];
+
+  
   const int nBinsR   = 41;
   const int nBinsPhi = 41;
   
-  TH1D* hisRPhiTime[nE-1][nTheta -1 ][41][41];
+  TH1D* hisRPhiTime[nE-1][nTheta-1][41][41];
+  TH1D* hisRPhiEnergy[nE-1][nTheta-1][41][41];
+
   Int_t EArr[nE] = {100,200,300,500,800,1300};
   Int_t ThetaArr[nTheta] = {10,15,20,25,30,35,40,45};
   
   Int_t RArr[ nBinsR ];
   Int_t PhiArr[ nBinsPhi ];
   for( int kIndex  = 0; kIndex < nBinsR; kIndex++){
-    RArr[ kIndex ] = -100+ 5*kIndex;
+    RArr[ kIndex ] = -105+ 5*kIndex;
   }
   for( int lIndex = 0; lIndex < nBinsPhi; lIndex++){
-    PhiArr[ lIndex ] = -100+5*lIndex;
+    PhiArr[ lIndex ] = -105+5*lIndex;
   }
   
   for( int iIndex = 0; iIndex < nE-1; iIndex++){
@@ -57,6 +62,12 @@ int main( int argc, char** argv ){
 			    EArr[iIndex],EArr[iIndex+1],ThetaArr[jIndex],ThetaArr[jIndex+1],
 			    RArr[kIndex],PhiArr[lIndex]),
 		       200,-10,10);
+	  hisRPhiEnergy[iIndex][jIndex][kIndex][lIndex]
+	    = new TH1D(Form("hisRPhiEnergy_%d_%d_%d_%d",iIndex,jIndex,kIndex,lIndex),
+		       Form("hisRPhiEnergy_E_%d_%d_Theta_%d_%d_xy_%d_%d",
+			    EArr[iIndex],EArr[iIndex+1],ThetaArr[jIndex],ThetaArr[jIndex+1],
+			    RArr[kIndex],PhiArr[lIndex]),
+		       100,0,1000);					       
 	}
       }
       hisRPhi[iIndex][jIndex] = new TH2D(Form("hisRPhi_E_%d_Theta_%d",
@@ -65,6 +76,13 @@ int main( int argc, char** argv ){
 					      EArr[iIndex], EArr[iIndex+1],
 					      ThetaArr[jIndex], ThetaArr[jIndex+1]),
 					 41,-105,105,41,-105,105);
+      hisRPhiE[iIndex][jIndex] = new TH2D(Form("hisRPhiE_E_%d_Theta_%d",
+					      iIndex,jIndex),
+					 Form("hisRPhiE_E_%d_%d_Theta_%d_%d",
+					      EArr[iIndex], EArr[iIndex+1],
+					      ThetaArr[jIndex], ThetaArr[jIndex+1]),
+					 41,-105,105,41,-105,105);
+      
       hisRPhiChisqN[iIndex][jIndex] = new TH2D(Form("hisRPhiChisqN_E_%d_%d_Theta_%d_%d",
 						    iIndex,jIndex),
 					       Form("hisRThetaChisqN_E_%d_%d_Theta_%d_%d",
@@ -119,15 +137,15 @@ int main( int argc, char** argv ){
   for( int evtIndex = 0; evtIndex < nEntries; evtIndex++){
     reader->GetEntry( evtIndex );
     for( int clusterIndex = 0; clusterIndex < reader->nCluster; clusterIndex++){
-      if( reader->ClusterR[ clusterIndex] > 500 ){ continue; }
-      if( reader->ClusterR[ clusterIndex] < 200 ){ continue; }
+      if( reader->ClusterR[clusterIndex] > 500 ){ continue; }
+      if( reader->ClusterR[clusterIndex] < 200 ){ continue; }
 
       bool bAbort = true; 
       Int_t EnergyIndex = 0;
       Int_t ThetaIndex  = 0;
       for( int EIndex = 0; EIndex < nE-1; EIndex++){
-	if( reader->ClusterEnergy[ clusterIndex ] > EArr[ EIndex] &&
-	    reader->ClusterEnergy[ clusterIndex ] <= EArr[ EIndex +1] ){
+	if( reader->ClusterEnergy[clusterIndex] >  EArr[EIndex] &&
+	    reader->ClusterEnergy[clusterIndex] <= EArr[EIndex +1] ){
 	  EnergyIndex  = EIndex;
 	  bAbort = false;
 	  break;
@@ -136,8 +154,8 @@ int main( int argc, char** argv ){
       if( bAbort ) { continue;}
       bAbort = true; 
       for( int TIndex = 0; TIndex < nTheta -1 ; TIndex++){
-	if( reader->ClusterTheta[ clusterIndex ]*180./TMath::Pi() >  ThetaArr[ TIndex] &&
-	    reader->ClusterTheta[ clusterIndex ]*180./TMath::Pi() <= ThetaArr[ TIndex +1 ]){
+	if( reader->ClusterTheta[clusterIndex]*180./TMath::Pi() >  ThetaArr[TIndex] &&
+	    reader->ClusterTheta[clusterIndex]*180./TMath::Pi() <= ThetaArr[TIndex+1]){
 	  ThetaIndex = TIndex;
 	  bAbort = false;
 	  break;
@@ -155,11 +173,13 @@ int main( int argc, char** argv ){
       if( reader->ClusterR[clusterIndex] < 250 ){ continue; }
       for( int crystalIndex  = 0; crystalIndex < reader->nCrystal[ clusterIndex ]; crystalIndex++){       
 	if( reader->CrystalEnergy[clusterIndex][crystalIndex] <= 3 ) { continue; }
-	
-	Double_t RinCluster = reader->CrystalR[ clusterIndex][crystalIndex]*TMath::Cos( reader->CrystalPhi[clusterIndex][crystalIndex]);
-	Double_t DinCluster = reader->CrystalR[ clusterIndex][crystalIndex]*TMath::Sin( reader->CrystalPhi[clusterIndex][crystalIndex]);
-	Double_t TinCluster = reader->CrystalT[ clusterIndex][crystalIndex];
-	if( TinCluster == 0){ continue; }
+	//if( reader->CrystalEnergy[clusterIndex][crystalIndex] > 400 ){ continue; }
+	Double_t RinCluster = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Cos(reader->CrystalPhi[clusterIndex][crystalIndex]);
+	Double_t DinCluster = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Sin(reader->CrystalPhi[clusterIndex][crystalIndex]);
+	Double_t TinCluster = reader->CrystalT[clusterIndex][crystalIndex];
+	Double_t EinCluster = reader->CrystalEnergy[clusterIndex][crystalIndex];
+
+	if( EinCluster == 0){ continue; }
 	hisPhiPhi[EnergyIndex][ThetaIndex]->Fill( reader->ClusterPhi[clusterIndex], reader->CrystalPhi[clusterIndex][crystalIndex]);
 	if( TMath::Abs(DinCluster) < 25*sqrt(2) ){
 	  hisRT[EnergyIndex][ThetaIndex]->Fill( RinCluster, TinCluster);
@@ -170,7 +190,7 @@ int main( int argc, char** argv ){
 	  }
 	}	
 	if( TMath::Abs(RinCluster) < 25*sqrt(2) ){
-	  hisDT[EnergyIndex][ThetaIndex]->Fill( DinCluster, TinCluster);
+	  hisDT[EnergyIndex][ThetaIndex]->Fill( DinCluster,TinCluster);
 	  if( !blr ){
 	    hisDT_l[EnergyIndex][ThetaIndex]->Fill( DinCluster,TinCluster);
 	  }else{
@@ -183,8 +203,11 @@ int main( int argc, char** argv ){
 	  continue;
 	}else if( iBinR >= nBinsR || iBinTheta >= nBinsPhi ){
 	  continue;
-	}else{ 
-	  hisRPhiTime[EnergyIndex][ThetaIndex][iBinR][iBinTheta]->Fill(TinCluster);
+	}else{
+	  if( TinCluster != 0){
+	    hisRPhiTime[EnergyIndex][ThetaIndex][iBinR][iBinTheta]->Fill(TinCluster);
+	  }
+	  hisRPhiEnergy[EnergyIndex][ThetaIndex][iBinR][iBinTheta]->Fill(EinCluster);
 	}
       }
     }
@@ -194,6 +217,10 @@ int main( int argc, char** argv ){
   Double_t TimeMean[ nE-1 ][ nTheta-1 ][ nBinsR ][ nBinsPhi ];
   Double_t TimeSigma[ nE-1 ][ nTheta-1 ][ nBinsR ][ nBinsPhi ];
   Double_t TimeChisqN[ nE-1 ][ nTheta-1 ][ nBinsR ][ nBinsPhi ];
+
+  Double_t EnergyMean[ nE-1 ][ nTheta-1 ][ nBinsR ][ nBinsPhi ];
+  Double_t EnergySigma[ nE-1 ][ nTheta-1 ][ nBinsR ][ nBinsPhi ];
+  Double_t EnergyChisqN[ nE-1 ][ nTheta-1 ][ nBinsR ][ nBinsPhi ];
   for( int iIndex  = 0; iIndex <nE-1; iIndex++){
     for( int jIndex  = 0; jIndex < nTheta-1; jIndex++){
       for( int kIndex = 0; kIndex < nBinsR; kIndex++){
@@ -237,19 +264,32 @@ int main( int argc, char** argv ){
       }
     }
   }
+  for( int iIndex  = 0; iIndex <nE-1; iIndex++){
+    for( int jIndex  = 0; jIndex < nTheta-1; jIndex++){
+      for( int kIndex = 0; kIndex < nBinsR; kIndex++){
+	for( int lIndex  = 0; lIndex < nBinsPhi; lIndex++){
+	  EnergyMean[iIndex][jIndex][kIndex][lIndex] = hisRPhiEnergy[iIndex][jIndex][kIndex][lIndex]->GetMean();
+	  EnergySigma[iIndex][jIndex][kIndex][lIndex] = hisRPhiEnergy[iIndex][jIndex][kIndex][lIndex]->GetRMS();
+	  hisRPhiE[iIndex][jIndex]->SetBinContent( lIndex+1, kIndex+1, EnergyMean[iIndex][jIndex][kIndex][lIndex]);
+	  hisRPhiE[iIndex][jIndex]->SetBinError( lIndex+1, kIndex+1, EnergySigma[iIndex][jIndex][kIndex][lIndex]);	
+	  //hisRPhiChisqN[iIndex][jIndex]->SetBinContent( lIndex+1, kIndex+1, EnergyChisqN[iIndex][jIndex][kIndex][lIndex]);
+	  std::cout << iIndex << ":" << jIndex << ":" << kIndex << ":" << lIndex << " : " << EnergyMean[iIndex][jIndex][kIndex][lIndex] << std::endl;
+	}
+      }
+    }
+  }
   
-  
-  
-
   for( int iIndex = 0; iIndex < nE-1; iIndex++){
     for( int jIndex = 0; jIndex < nTheta-1; jIndex++){
       for( int kIndex = 0; kIndex < nBinsR; kIndex++){
 	for( int lIndex = 0; lIndex < nBinsPhi; lIndex++){
 	  hisRPhiTime[iIndex][jIndex][kIndex][lIndex]->Write();
+	  hisRPhiEnergy[iIndex][jIndex][kIndex][lIndex]->Write();
 	}
       }
       hisRPhi[iIndex][jIndex]->Write();
       hisRPhiChisqN[iIndex][jIndex]->Write();      
+      hisRPhiE[iIndex][jIndex]->Write();
       hisPhiPhi[iIndex][jIndex]->Write();
       hisRT[iIndex][jIndex]->Write();
       hisRT_l[iIndex][jIndex]->Write();

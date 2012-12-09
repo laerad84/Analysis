@@ -52,7 +52,7 @@ int main( int argc, char** argv ){
     std::cout << tmpRunNumber << std::endl;
     ch->Add( Form("%s/run_wav_%d_Cal_CosmicTime.root",ROOTFILE_WAV.c_str(),tmpRunNumber));
   }
-
+  GammaFinder gFinder;
   TFile*  tfout = new TFile(Form("%s/Data_All.root",ROOTFILE_GAMMACLUS.c_str()),"RECREATE");
   TTree*  trout = new TTree("trCluster","");
   const int arrSize = 120;
@@ -115,11 +115,17 @@ int main( int argc, char** argv ){
     }    
     std::list<Cluster>     clist;
     std::list<ClusterTime> ctlist;
+    std::list<Gamma>       glist;
     std::vector<Klong>     klVec;
     data.getData( clist );
     data.getData( klVec );
+    gFinder.findGamma( clist, glist );
+    if( clist.size() < 6 ){ continue; }
+    if( glist.size() != 6 ){ continue; }
+
     //std::cout<< "Number of Cluster:" <<  clist.size() << std::endl;
-    clusterTimeAnalyzer->Convert( clist ,ctlist);
+    
+    clusterTimeAnalyzer->Convert( clist ,ctlist);    
     if(( clist.size() != ctlist.size() ) ||
        ( clist.size() == 0 )             ||
        ( ctlist.size() == 0)             ){ continue; }
