@@ -69,7 +69,7 @@ main( int argc ,char ** argv ){
 				 40,-30,10);
     hisEnergyTimeDelta[i] = new TH2D(Form("hisEnergyTimeDelta%d",i),
 				     Form("hisEnergyTimeDelta%d",i),
-				     40,0,16000,
+				     160,0,16000,
 				     400,-100,100);
   }
   
@@ -173,7 +173,7 @@ main( int argc ,char ** argv ){
     clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE, CSIDigiHHTime);
     gFinder.findGamma( clist , glist );
     
-    if( glist.size() != 2 ) continue;
+    //if( glist.size() != 2 ) continue;
     stepHist->Fill(2);
     //std::cout <<"Pi0 Reconstruction" << std::endl;
     std::list<Pi0> piList; 

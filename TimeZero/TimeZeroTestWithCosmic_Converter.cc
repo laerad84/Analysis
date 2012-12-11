@@ -52,28 +52,19 @@ main( int argc ,char ** argv ){
 					  ANALIBDIR.c_str()));
    
   TChain* trin = new TChain("Tree");
+  int iRunNumber;
   if( argc == 2 ){
-    int iRunNumber = atoi( argv[1] );
+    iRunNumber = atoi( argv[1] );
     trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),iRunNumber));
-  }else if( argc == 3 ){
+  }
+  /*else if( argc == 3 ){
     Int_t StartRunNumber = atoi( argv[1] );
     Int_t EndRunNumber   = atoi( argv[2] );
     for( int iRunNumber  =  StartRunNumber; iRunNumber <= EndRunNumber; iRunNumber++){
       trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),iRunNumber));
     }
-  }
-  /*
-  TFile* tfin = new TFile(Form("%s/run_wav_4501.root",WAVFILE.c_str()));  
-  TTree* trin = (TTree*)tfin->Get("Tree");
-  */
-  /*
-  TChain* trin = new TChain("WFTree");
-  for( int i = 0; i< 22; i++){
-    trin->Add(Form("%s/TEMPLATE_FIT_RESULT_1_%d.root",WAVFILE.c_str(),4503+i));
-  }
-  */
+    }*/
 
-  //int RunNumber = atoi( argv[1]);
   TApplication* app = new TApplication("App",&argc, argv );
   
   IDHandler* handler        = new IDHandler();
@@ -111,8 +102,8 @@ main( int argc ,char ** argv ){
     handler->GetMetricPosition( i, x, y );
     TimeOffsetCrystalPosition[i] = (TMath::Sqrt( 2624*2624 + x*x +y*y ) - 2624 )/ 299.7 ; // ns 
   }
-
-  TFile* tfout = new TFile("CosmicOut_V1.root","RECREATE");
+  
+  TFile* tfout = new TFile(Form("%s/CosmicOut_Converted_%d.root",WAVFILE.c_str(),iRunNumber),"RECREATE");
 
   E14WavReader* reader = new E14WavReader(trin);
   Long_t entries =  reader->fChain->GetEntries();
