@@ -123,7 +123,9 @@ int main( int argc, char** argv){
     for( int ievent = 0; ievent < trin->GetEntries() ; ievent++){
       trin->GetEntry(ievent);
       if( nCSIDigi > 200 ){ continue; }
+      if( FitChisq[2] > 5){ continue; }
       for( int idigi = 0; idigi < nCSIDigi; idigi++){
+
 	hisTimeEnergy[CSIDigiID[idigi]]->Fill(CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
 	profTimeEnergy[CSIDigiID[idigi]]->Fill(CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
 	hisTimeSignal[CSIDigiID[idigi]]->Fill(CSIDigiSignal[idigi],CSIDigiDeltaT1[idigi]);
