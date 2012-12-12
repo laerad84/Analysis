@@ -48,7 +48,7 @@ main( int argc ,char ** argv ){
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),RunNumber));
 
-  TFile* tfout = new TFile(Form("%s/run_wav_%d_cl.root",WAVFILE.c_str(),RunNumber),"recreate");
+  TFile* tfout = new TFile(Form("%s/run_wav_%d_pi0peakT0.root",WAVFILE.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("T", "Output from Time zero" );
 
   int EventNumber;
