@@ -208,6 +208,8 @@ main( int argc ,char ** argv ){
   std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
   Long_t entries =  reader->fChain->GetEntries();
   for( int ievent  = 0; ievent < entries ; ievent++){
+    /* Initilaize */ 
+
     nCsI = 0;
     nCSIDigi = 0;
     nOEVDigi = 0;
@@ -315,6 +317,7 @@ main( int argc ,char ** argv ){
     /// Adjustment ///
 
     nCSIDigi=0;
+    //std::cout<< __PRETTY_FUNCTION__<< " : " << __LINE__ << std::endl;
     for( int idigi = 0; idigi< nCsI; idigi++){
       if( CsISignal[idigi] > 5 && CsIEnergy[idigi]>0.5){
 	CSIDigiID[ nCSIDigi ]     = CsIID[idigi];
@@ -324,49 +327,52 @@ main( int argc ,char ** argv ){
 	nCSIDigi++;
       }
     }
-    for (int idigi = 0; reader->CVNumber; idigi++){
+    //std::cout<< __PRETTY_FUNCTION__<< " : " << __LINE__ << std::endl;
+    for (int idigi = 0; idigi<reader->CVNumber; idigi++){
       CVSignal[idigi] = reader->CVSignal[idigi];
       CVDigiID[idigi] = reader->CVID[idigi];
       CVDigiE[idigi]  = reader->CVEne[idigi];
       CVDigiTime[idigi] = reader->CVTime[idigi];
       nCVDigi++;
     }
-    for (int idigi = 0; reader->EtcNumber; idigi++){
+    //std::cout<< __PRETTY_FUNCTION__<< " : " << __LINE__ << std::endl;
+    for (int idigi = 0; idigi<reader->EtcNumber; idigi++){
       EtcSignal[idigi] = reader->EtcSignal[idigi];
       EtcDigiID[idigi] = reader->EtcID[idigi];
       EtcDigiE[idigi]  = reader->EtcEne[idigi];
       EtcDigiTime[idigi] = reader->EtcTime[idigi];
       nEtcDigi++;
     }
-    for (int idigi = 0; reader->CC03Number; idigi++){
+    std::cout<< __PRETTY_FUNCTION__<< " : " << __LINE__ << std::endl;
+    for (int idigi = 0; idigi<reader->CC03Number; idigi++){
       CC03Signal[idigi] = reader->CC03Signal[idigi];
       CC03DigiID[idigi] = reader->CC03ID[idigi];
       CC03DigiE[idigi]  = reader->CC03Ene[idigi];
       CC03DigiTime[idigi] = reader->CC03Time[idigi];
       nCC03Digi++;
     }
-    for (int idigi = 0; reader->CosmicNumber; idigi++){
-      CosmicSignal[idigi] = reader->CosmicSignal[idigi];
-      CosmicDigiID[idigi] = reader->CosmicID[idigi];
-      CosmicDigiE[idigi]  = reader->CosmicEne[idigi];
-      CosmicDigiTime[idigi] = reader->CosmicTime[idigi];
-      nCosmicDigi++;
-    }
-    for (int idigi = 0; reader->LaserNumber; idigi++){
+    //std::cout<< __PRETTY_FUNCTION__<< " : " << __LINE__ << std::endl;
+    for (int idigi = 0; idigi<reader->LaserNumber; idigi++){
       LaserSignal[idigi] = reader->LaserSignal[idigi];
       LaserDigiID[idigi] = reader->LaserID[idigi];
       LaserDigiE[idigi]  = reader->LaserEne[idigi];
       LaserDigiTime[idigi] = reader->LaserTime[idigi];
       nLaserDigi++;
     }
-    for (int idigi = 0; reader->OEVNumber; idigi++){
+    for (int idigi = 0; idigi< reader->OEVNumber; idigi++){
       OEVSignal[idigi] = reader->OEVSignal[idigi];
       OEVDigiID[idigi] = reader->OEVID[idigi];
       OEVDigiE[idigi]  = reader->OEVEne[idigi];
       OEVDigiTime[idigi] = reader->OEVTime[idigi];
       nOEVDigi++;
     }
-
+    for (int idigi = 0; idigi<reader->CosmicNumber; idigi++){
+      CosmicSignal[idigi] = reader->CosmicSignal[idigi];
+      CosmicDigiID[idigi] = reader->CosmicID[idigi];
+      CosmicDigiE[idigi]  = reader->CosmicEne[idigi];
+      CosmicDigiTime[idigi] = reader->CosmicTime[idigi];
+      nCosmicDigi++;
+    }
 
 
     //if( nCSIDigi<5){ continue;}
