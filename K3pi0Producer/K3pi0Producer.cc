@@ -50,6 +50,7 @@ main( int argc ,char ** argv ){
 
   TFile* tfout = new TFile(Form("%s/run_wav_%d_pi0peakT0.root",WAVFILE.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("T", "Output from Time zero" );
+  std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
 
   int EventNumber;
 
@@ -167,6 +168,7 @@ main( int argc ,char ** argv ){
   trout->Branch("LaserHHTime"       ,LaserDigiHHTime,"LaserHHTime[LaserNumber]/D");//nLaserDigi
   trout->Branch("LaserIntegratedADC",LaserIntegratedADC,"LaserIntegratedADC[LaserNumber]/D");//nLaserDigi
   trout->Branch("LaserSignal"       ,LaserSignal       ,"LaserSignal[LaserNumber]/D");//nLaserDigi
+  std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
 
   /*
   E14GNAnaDataContainer data; 
