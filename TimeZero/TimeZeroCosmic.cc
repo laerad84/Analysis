@@ -251,6 +251,7 @@ main( int argc ,char ** argv ){
       if( reader->CsiSignal[ich] < 5 ){ 
 	continue;
       }
+      if( ich > 20000 ){ break; }
       Double_t x,y;
       handler->GetMetricPosition( reader->CsiID[ich] , x, y );
       
