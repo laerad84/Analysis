@@ -97,12 +97,12 @@ main( int argc, char** argv ){
     
     for( int idigi = 0; idigi < nCSIDigi ; idigi++){
       if( CSIDigiID[idigi] < 2240 ){ // Case of Small Crystal 
-	if( CSIDigiE[idigi] > 12 && CSIDigiE[idigi] <16 ){
+	if( CSIDigiE[idigi] > 12 && CSIDigiE[idigi] < 16 ){
 	  hisDelta[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
 	  hisDeltaChannel->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
 	}
       }else{ // Case of Large Crystal ... 
-	if( CSIDigiE[idigi] > 12 && CSIDigiE[idigi] <16 ){
+	if( CSIDigiE[idigi] > 24 && CSIDigiE[idigi] < 32 ){
 	  hisDelta[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
 	  hisDeltaChannel->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
 	}

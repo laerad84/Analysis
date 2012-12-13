@@ -66,7 +66,6 @@ main( int argc ,char ** argv ){
     trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),tmpRunNumber));
   }
 			      
-
   IDHandler* handler        = new IDHandler();
   TH2D* TriggerMap          = new TH2D("Trigger","Trigger",5,0,5,5,0,5);
   CsIImage* TimeMap         = new CsIImage( handler );
@@ -103,6 +102,19 @@ main( int argc ,char ** argv ){
     TimeOffsetCrystalPosition[i] = (TMath::Sqrt( 2624*2624 + x*x +y*y ) - 2624 )/ 299.7 ; // ns 
   }
 
+  double DeltaT[2716]={0};
+  double ResolutionT[2716]={0xFFFF};
+  if( IterationNumber >0 ){
+    std::ifstream ifst(Form("CosmicTimeDeltaResolution_%d.dat",IterationNumber-1));
+    int tmpID;
+    double tmpDelta;
+    double tmpResolution;
+    while( ifst >> tmpID >> tmpDelta >> tmpResolution ){
+      DeltaT[tmpID] = tmpDelta;
+      ResolutionT[tmpID] = tmpResolution; 
+    }
+  }
+  
   TFile* tfout = new TFile(Form("CosmicOut_TimeCalibration_%d.root",IterationNumber),"RECREATE");
 
   E14WavReader* reader = new E14WavReader(trin);
@@ -170,10 +182,12 @@ main( int argc ,char ** argv ){
     TimeMap->Reset();
     EnergyMap->Reset();
     TriggerMap->Reset();
+
     grHeightTimeNoADJ->Set(0);
     grHeightTimePi0->Set(0);
     grHeightTimeADJ->Set(0);
     grTrack->Set(0);
+
     cosmicAnalyzer->Reset();
 
     ScintiTime = -500;
@@ -253,21 +267,35 @@ main( int argc ,char ** argv ){
 	grHeightTimeNoADJ->SetPoint( grHeightTimeNoADJ->GetN(),
 				     y,
 				     reader->CsiHHTime[ ich ] );
-	grHeightTimeNoADJ->SetPointError( grHeightTimeNoADJ->GetN()-1,
-					  0,
-					  1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
 	grHeightTimePi0  ->SetPoint( grHeightTimePi0->GetN(),
 				     y,
 				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
-	grHeightTimePi0  ->SetPointError( grHeightTimePi0->GetN()-1,
-				     0,
-				     1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
 	grHeightTimeADJ  ->SetPoint( grHeightTimeADJ->GetN(), 
 				     y,
-				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] + TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ]);
-	grHeightTimeADJ  ->SetPointError( grHeightTimeADJ->GetN()-1,
-					  0,
-					  1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] + TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ] - DeltaT[ reader->CsiID[ ich ] ]);
+	
+	if( IterationNumber == 0 ){
+	  grHeightTimeNoADJ->SetPointError( grHeightTimeNoADJ->GetN()-1,
+					    0,
+					    1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+	  grHeightTimePi0  ->SetPointError( grHeightTimePi0->GetN()-1,
+					    0,
+					    1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+	  
+	  grHeightTimeADJ  ->SetPointError( grHeightTimeADJ->GetN()-1,
+					    0,
+					    1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+	}else{ 
+	  grHeightTimeNoADJ->SetPointError( grHeightTimeNoADJ->GetN()-1,
+					    0,
+					    ResolutionT[reader->CsiID[ich]]/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+	  grHeightTimePi0  ->SetPointError( grHeightTimePi0->GetN()-1,
+					    0,
+					    ResolutionT[reader->CsiID[ ich ]]/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));  
+	  grHeightTimeADJ  ->SetPointError( grHeightTimeADJ->GetN()-1,
+					    0,
+					    ResolutionT[reader->CsiID[ ich ]]/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+	}
 	grTrack->SetPoint( grTrack->GetN(),x,y);	
 	
 	TimeMap->Fill( reader->CsiID[ ich ]   , reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
@@ -324,6 +352,9 @@ main( int argc ,char ** argv ){
     */
 
     trout->Fill();
+    if( ievent % 10000 == 0 && ievent ){
+      trout->AutoSave();
+    }
   }
 
   trout->Write();
