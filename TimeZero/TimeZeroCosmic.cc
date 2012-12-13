@@ -177,7 +177,7 @@ main( int argc ,char ** argv ){
   TH1D* stepHist = new TH1D("hisStep","Step;Step;Survived Event",20,0,20);
   for( int ievent  = 0; ievent < entries ; ievent++ ){
     if( ievent % 100 == 0){std::cout << ievent << "/" << entries << std::endl;}
-
+    if( ievent > 20000 ){ break; }
     reader->GetEntry( ievent  );
     TimeMap->Reset();
     EnergyMap->Reset();
@@ -251,7 +251,7 @@ main( int argc ,char ** argv ){
       if( reader->CsiSignal[ich] < 5 ){ 
 	continue;
       }
-      if( ich > 20000 ){ break; }
+
       Double_t x,y;
       handler->GetMetricPosition( reader->CsiID[ich] , x, y );
       
