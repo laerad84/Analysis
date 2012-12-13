@@ -58,7 +58,7 @@ main( int argc ,char ** argv ){
 					  ANALIBDIR.c_str()));
    
   TChain* trin = new TChain("Tree");
-  int fRunNumber = argv[1];
+  int fRunNumber = atoi(argv[1]);
   int IterationNumber = atoi( argv[2]);  
   trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),fRunNumber));  
   
@@ -76,7 +76,7 @@ main( int argc ,char ** argv ){
   grHeightTimeADJ->SetMarkerStyle( 6 );
 
   Double_t TimeOffset[2716]={500};
-  Double_t TimeOffsetSigma[ 2716 ] = {0};
+  Double_t TimeOffsetSigma[ 2716 ] = {0xFFFF};
   Double_t TimeOffsetCrystalPosition[2716] = {0};
 
   std::ifstream ifs("Pi0Peak.dat");
@@ -111,7 +111,7 @@ main( int argc ,char ** argv ){
     }
   }
   
-  TFile* tfout = new TFile(Form("CosmicOut_TimeCalibration_%d_%d.root",fRunNumber,IterationNumber),"RECREATE");
+  TFile* tfout = new TFile(Form("%s/CosmicOut_TimeCalibration_%d_%d.root",WAVFILE.c_str(),fRunNumber,IterationNumber),"RECREATE");
 
   E14WavReader* reader = new E14WavReader(trin);
   Long_t entries =  reader->fChain->GetEntries();
@@ -173,7 +173,7 @@ main( int argc ,char ** argv ){
   TH1D* stepHist = new TH1D("hisStep","Step;Step;Survived Event",20,0,20);
   for( int ievent  = 0; ievent < entries ; ievent++ ){
     if( ievent % 100 == 0){std::cout << ievent << "/" << entries << std::endl;}
-    if( ievent > 20000 ){ break; }
+    //if( ievent > 20000 ){ break; }
     reader->GetEntry( ievent  );
     TimeMap->Reset();
     EnergyMap->Reset();
@@ -253,7 +253,7 @@ main( int argc ,char ** argv ){
       
       //std::cout << "Converter " << std::endl;
       double Energy  = Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] );         
-      if( Energy > CosmicEventEnergyThreshold && TimeOffsetSigma > 0 && Energy>CosmicEventEnergyThreshold){
+      if( Energy > CosmicEventEnergyThreshold && TimeOffsetSigma[reader->CsiID[ich]] > 0 ){
 	
 	CSIDigiID[nCSIDigi]     = reader->CsiID[ich];
 	CSIDigiTime[nCSIDigi]   = reader->CsiTime[ich];
@@ -301,7 +301,7 @@ main( int argc ,char ** argv ){
       }
     }
     
-    if( nCSIDigi < 10 ){ continue; }
+    if( nCSIDigi < 8 ){ continue; }
     
     cosmicAnalyzer->GetResult( grTrack, Roh, Theta );
     

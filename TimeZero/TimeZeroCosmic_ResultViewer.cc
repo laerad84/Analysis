@@ -22,10 +22,17 @@ main( int argc, char** argv ){
   gStyle->SetOptFit(11111111);
   gStyle->SetOptStat(11111111);
   
-  int IterationNumber = atoi( argv[1] );
+  std::string RunList = argv[1];
+  int IterationNumber = atoi( argv[2] );
 
-  TFile* tf = new TFile(Form("CosmicOut_TimeCalibration_%d.root",IterationNumber));
-  TTree* trin = (TTree*)tf->Get("trOut");
+  TChain* trin = new TChain("trOut");
+
+  std::string ROOTFILE_WAV=std::getenv("ROOTFILE_WAV");
+  std::ifstream ifsRunList(RunList.c_str());
+  int tmpRunNumber;
+  while( ifsRunList >> tmpRunNumber ){
+    trin->Add(Form("%s/CosmicOut_TimeCalibration_%d_%d.root",ROOTFILE_WAV.c_str(),tmpRunNumber,IterationNumber));
+  }  
 
   const int nCSI = 2716;
   Int_t    RunNumber;
