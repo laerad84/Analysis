@@ -49,6 +49,30 @@ main( int argc, char** argv ){
   Double_t Roh;
   Double_t Theta;
 
+
+  trin->SetBranchStatus( "*", 0 );
+  trin->SetBranchStatus( "RunNumber"      );
+  trin->SetBranchStatus( "EventNumber"    );
+  trin->SetBranchStatus( "ScintiSignal"   );
+  trin->SetBranchStatus( "ScintiHHTimne"  );
+  trin->SetBranchStatus( "ScintiTime"     );
+  trin->SetBranchStatus( "nCSIDigi"       );
+  trin->SetBranchStatus( "CSIDigiE"       );
+  trin->SetBranchStatus( "CSIDigiTime"    );
+  trin->SetBranchStatus( "CSIDigiHHTime"  );
+  trin->SetBranchStatus( "CSIDigiID"      );
+  trin->SetBranchStatus( "CSIDigiSignal"  );
+  trin->SetBranchStatus( "CSIDigiDeltaT0" );
+  trin->SetBranchStatus( "CSIDigiDeltaT1" );
+  trin->SetBranchStatus( "FitP0"          );
+  trin->SetBranchStatus( "FitP1"          );
+  trin->SetBranchStatus( "FitChisq"       );
+  trin->SetBranchStatus( "CosmicTrigUp"   );
+  trin->SetBranchStatus( "CosmicTrigDn"   );
+  trin->SetBranchStatus( "Roh"            );
+  trin->SetBranchStatus( "Theta"          );
+
+
   trin->SetBranchAddress( "RunNumber"      , &RunNumber      );
   trin->SetBranchAddress( "EventNumber"    , &EventNumber    );
   trin->SetBranchAddress( "ScintiSignal"   , &ScintiSignal   );
