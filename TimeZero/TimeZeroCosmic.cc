@@ -58,14 +58,10 @@ main( int argc ,char ** argv ){
 					  ANALIBDIR.c_str()));
    
   TChain* trin = new TChain("Tree");
-  std::string InputFilename = argv[1];
-  int IterationNumber = atoi( argv[2]);
-  std::ifstream ifsRunNumber(InputFilename.c_str());
-  int tmpRunNumber;
-  while( ifsRunNumber >> tmpRunNumber ){
-    trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),tmpRunNumber));
-  }
-			      
+  int fRunNumber = argv[1];
+  int IterationNumber = atoi( argv[2]);  
+  trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),fRunNumber));  
+  
   IDHandler* handler        = new IDHandler();
   TH2D* TriggerMap          = new TH2D("Trigger","Trigger",5,0,5,5,0,5);
   CsIImage* TimeMap         = new CsIImage( handler );
@@ -115,7 +111,7 @@ main( int argc ,char ** argv ){
     }
   }
   
-  TFile* tfout = new TFile(Form("CosmicOut_TimeCalibration_%d.root",IterationNumber),"RECREATE");
+  TFile* tfout = new TFile(Form("CosmicOut_TimeCalibration_%d_%d.root",fRunNumber,IterationNumber),"RECREATE");
 
   E14WavReader* reader = new E14WavReader(trin);
   Long_t entries =  reader->fChain->GetEntries();
