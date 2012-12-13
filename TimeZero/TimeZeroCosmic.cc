@@ -63,7 +63,7 @@ main( int argc ,char ** argv ){
   std::ifstream ifsRunNumber(InputFilename.c_str());
   int tmpRunNumber;
   while( ifsRunNumber >> tmpRunNumber ){
-    trin->Add(Form("%s/run_wav_%d/root",WAVFILE.c_str(),tmpRunNumber));
+    trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),tmpRunNumber));
   }
 			      
 
