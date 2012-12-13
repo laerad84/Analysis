@@ -242,37 +242,37 @@ main( int argc ,char ** argv ){
       
       //std::cout << "Converter " << std::endl;
       double Energy  = Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] );         
-      if( Energy > CosmicEventEnergyThreshold &&TimeOffsetSigma > 0 ){
+      if( Energy > CosmicEventEnergyThreshold && TimeOffsetSigma > 0 && Energy>CosmicEventEnergyThreshold){
 	
 	CSIDigiID[nCSIDigi]     = reader->CsiID[ich];
 	CSIDigiTime[nCSIDigi]   = reader->CsiTime[ich];
 	CSIDigiHHTime[nCSIDigi] = reader->CsiHHTime[ich];
 	CSIDigiSignal[nCSIDigi] = reader->CsiSignal[ich];
 	CSIDigiE[nCSIDigi]      = Converter->ConvertToEnergy( reader->CsiID[ich] ,reader->CsiSignal[ich] );
-	nCSIDigi++;
-	
- 	if( reader->CsiSignal[ich] <2240 ){ 
-	  if(  Energy < 12.5 || Energy > 15.5 ){
-	    continue; 
-	  }
-	}else{
-	  if( Energy < 25 || Energy > 31 ){ 
-	    continue;
-	  }
-	}
+
 	grHeightTimeNoADJ->SetPoint( grHeightTimeNoADJ->GetN(),
 				     y,
 				     reader->CsiHHTime[ ich ] );
+	grHeightTimeNoADJ->SetPointError( grHeightTimeNoADJ->GetN()-1,
+					  0,
+					  1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
 	grHeightTimePi0  ->SetPoint( grHeightTimePi0->GetN(),
 				     y,
 				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
+	grHeightTimePi0  ->SetPointError( grHeightTimePi0->GetN()-1,
+				     0,
+				     1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
 	grHeightTimeADJ  ->SetPoint( grHeightTimeADJ->GetN(), 
 				     y,
 				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] + TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ]);
+	grHeightTimeADJ  ->SetPointError( grHeightTimeADJ->GetN()-1,
+					  0,
+					  1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
 	grTrack->SetPoint( grTrack->GetN(),x,y);	
 	
 	TimeMap->Fill( reader->CsiID[ ich ]   , reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
 	EnergyMap->Fill( reader->CsiID[ ich ] , Converter->ConvertToEnergy( reader->CsiID[ ich ] , reader->CsiSignal[ ich ] ));
+	nCSIDigi++;
       }
     }
     
