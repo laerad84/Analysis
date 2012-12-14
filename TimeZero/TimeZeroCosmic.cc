@@ -349,9 +349,6 @@ main( int argc ,char ** argv ){
     */
 
     trout->Fill();
-    if( ievent % 10000 == 0 && ievent ){
-      trout->AutoSave();
-    }
   }
 
   trout->Write();
