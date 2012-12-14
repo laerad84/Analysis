@@ -105,6 +105,9 @@ main( int argc, char** argv ){
 
   TH2D* hisDeltaChannel = new TH2D("hisDeltaChannel","hisDeltaChannel",2716,0,2716,100,-10,10);
   TH1D* hisDelta[2716];
+  TH2D* hisDeltaAll = new TH2D("hisDeltaAll","hisDeltaAll;ChannelNo;DeltaT",2716,0,2716,100,-10,10);
+  TH1D* hisDeltaNoCut[2716];
+
   TGraphErrors* grDelta = new TGraphErrors();
   TGraphErrors* grRES   = new TGraphErrors();   
 
@@ -120,20 +123,24 @@ main( int argc, char** argv ){
 
   for( int i = 0; i< 2716; i++){
     hisDelta[i] = new TH1D(Form("hisDelta%d",i ),Form("hisDelta%d",i),100,-10,10);
+    hisDeltaNoCut[i] = new TH1D(Form("hisDeltaNoCut%d",i),Form("hisDeltaNoCut%d",i),100,-10,10);
   }
 
   for( int ievent = 0; ievent < trin->GetEntries(); ievent++){
 
     trin->GetEntry(ievent);
-    
+    //if( FitChisq[1] > 7 ){ continue; }
     for( int idigi = 0; idigi < nCSIDigi ; idigi++){
+      hisDeltaNoCut[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
+      hisDeltaAll->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
+    
       if( CSIDigiID[idigi] < 2240 ){ // Case of Small Crystal 
-	if( CSIDigiE[idigi] > 12 && CSIDigiE[idigi] < 16 ){
+	if( CSIDigiE[idigi] > 11 && CSIDigiE[idigi] < 17 ){
 	  hisDelta[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
 	  hisDeltaChannel->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
 	}
       }else{ // Case of Large Crystal ... 
-	if( CSIDigiE[idigi] > 24 && CSIDigiE[idigi] < 32 ){
+	if( CSIDigiE[idigi] > 22 && CSIDigiE[idigi] < 34 ){
 	  hisDelta[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
 	  hisDeltaChannel->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
 	}
@@ -168,7 +175,7 @@ main( int argc, char** argv ){
     }
 
     hisDelta[ i ]  ->Write(); 
-    
+    hisDeltaNoCut[ i]->Write();
   }
 
   int    ID[2716];
@@ -207,6 +214,7 @@ main( int argc, char** argv ){
   grRES->SetNameTitle("grRES","grRES");
   grDelta->Write();
   grRES->Write();
+  hisDeltaAll->Write();
   hisDeltaChannel->Write();
   tfout->Close();
   ps->Close();

@@ -60,6 +60,13 @@ main( int argc ,char ** argv ){
   TChain* trin = new TChain("Tree");
   int fRunNumber = atoi(argv[1]);
   int IterationNumber = atoi( argv[2]);  
+  std::cout << "////////////////////////////////////////////////////\n";
+  std::cout << "RunNumber       : " << fRunNumber << "\n";
+  std::cout << "IterationNumber : " << IterationNumber << "\n";
+  std::cout << "////////////////////////////////////////////////////\n";
+    
+
+
   trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),fRunNumber));  
   
   IDHandler* handler        = new IDHandler();
@@ -100,16 +107,26 @@ main( int argc ,char ** argv ){
 
   double DeltaT[2716]={0};
   double ResolutionT[2716]={0xFFFF};
-  if( IterationNumber >0 ){
-    std::ifstream ifst(Form("CosmicTimeDeltaResolution_%d.dat",IterationNumber-1));
+  if( IterationNumber !=0 ){
+    std::cout<< "IterationNumber is bigger than 0" << std::endl;
+    std::string offsetFilename=Form("CosmicOutTimeDeltaResolution_%d.dat",IterationNumber-1);
+    std::cout<< offsetFilename << std::endl;
+    std::ifstream ifst(offsetFilename.c_str());
+    if( ifst.is_open() ){ std::cout << Form("CosmicTimeDeltaResolution_%d.dat is opened.",IterationNumber-1) << std::endl; }
     int tmpID;
     double tmpDelta;
     double tmpResolution;
     while( ifst >> tmpID >> tmpDelta >> tmpResolution ){
       DeltaT[tmpID] = tmpDelta;
       ResolutionT[tmpID] = tmpResolution; 
+      std::cout<< tmpID << " : " << tmpDelta << " : " << tmpResolution << std::endl;
     }
   }
+  /*
+  for( int i = 0; i< 2716; i++){
+    std::cout<< i<< " : " << DeltaT[i] << " : " << ResolutionT[i] << std::endl;
+  }
+  */
   
   TFile* tfout = new TFile(Form("%s/CosmicOut_TimeCalibration_%d_%d.root",WAVFILE.c_str(),fRunNumber,IterationNumber),"RECREATE");
 
@@ -231,7 +248,7 @@ main( int argc ,char ** argv ){
 	CosmicTrigDn = i;
       }
     }
-    if( nTrigUp != 1  || nTrigDn != 1 ){
+    if( nTrigUp != 1  || nTrigDn != 1 ){      
       continue;
     }
 	
@@ -243,6 +260,7 @@ main( int argc ,char ** argv ){
     Double_t CosmicEventEnergyThreshold= 3.;
     Double_t CosmicEnergyThreshold = 5.;
 
+    //std::cout<< "Channel Loop" << std::endl;
     for( int ich  = 0; ich < reader->CsiNumber; ich++){
       if( reader->CsiSignal[ich] < 5 ){ 
 	continue;
@@ -253,55 +271,59 @@ main( int argc ,char ** argv ){
       
       //std::cout << "Converter " << std::endl;
       double Energy  = Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] );         
-      if( Energy > CosmicEventEnergyThreshold && TimeOffsetSigma[reader->CsiID[ich]] > 0 ){
-	
+
+      if( Energy > CosmicEventEnergyThreshold ){//&& TimeOffsetSigma[reader->CsiID[ich]] > 0 ){
+	//std::cout << ich << " : " <<   Energy << std::endl; 	
 	CSIDigiID[nCSIDigi]     = reader->CsiID[ich];
 	CSIDigiTime[nCSIDigi]   = reader->CsiTime[ich];
 	CSIDigiHHTime[nCSIDigi] = reader->CsiHHTime[ich];
 	CSIDigiSignal[nCSIDigi] = reader->CsiSignal[ich];
 	CSIDigiE[nCSIDigi]      = Converter->ConvertToEnergy( reader->CsiID[ich] ,reader->CsiSignal[ich] );
-
+	nCSIDigi++;
 	grHeightTimeNoADJ->SetPoint( grHeightTimeNoADJ->GetN(),
 				     y,
 				     reader->CsiHHTime[ ich ] );
 	grHeightTimePi0  ->SetPoint( grHeightTimePi0->GetN(),
 				     y,
-				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
+				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] -DeltaT[ reader->CsiID[ ich ] ]);
 	grHeightTimeADJ  ->SetPoint( grHeightTimeADJ->GetN(), 
 				     y,
-				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] + TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ] - DeltaT[ reader->CsiID[ ich ] ]);
+				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] - TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ] - DeltaT[ reader->CsiID[ ich ] ]);
 	
 	if( IterationNumber == 0 ){
 	  grHeightTimeNoADJ->SetPointError( grHeightTimeNoADJ->GetN()-1,
 					    0,
-					    1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+					    1/TMath::Sqrt(Energy/14));
 	  grHeightTimePi0  ->SetPointError( grHeightTimePi0->GetN()-1,
 					    0,
-					    1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+					    1/TMath::Sqrt(Energy/14));
 	  
 	  grHeightTimeADJ  ->SetPointError( grHeightTimeADJ->GetN()-1,
 					    0,
-					    1/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+					    1/TMath::Sqrt(Energy/14));
 	}else{ 
 	  grHeightTimeNoADJ->SetPointError( grHeightTimeNoADJ->GetN()-1,
 					    0,
-					    ResolutionT[reader->CsiID[ich]]/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+					    ResolutionT[reader->CsiID[ich]]/TMath::Sqrt(Energy/14));
 	  grHeightTimePi0  ->SetPointError( grHeightTimePi0->GetN()-1,
 					    0,
-					    ResolutionT[reader->CsiID[ ich ]]/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));  
+					    ResolutionT[reader->CsiID[ ich ]]/TMath::Sqrt(Energy/14));  
 	  grHeightTimeADJ  ->SetPointError( grHeightTimeADJ->GetN()-1,
 					    0,
-					    ResolutionT[reader->CsiID[ ich ]]/TMath::Sqrt(CSIDigiE[nCSIDigi]/14));
+					    ResolutionT[reader->CsiID[ ich ]]/TMath::Sqrt(Energy/14));
 	}
 	grTrack->SetPoint( grTrack->GetN(),x,y);	
 	
 	TimeMap->Fill( reader->CsiID[ ich ]   , reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
 	EnergyMap->Fill( reader->CsiID[ ich ] , Converter->ConvertToEnergy( reader->CsiID[ ich ] , reader->CsiSignal[ ich ] ));
-	nCSIDigi++;
+
       }
     }
     
-    if( nCSIDigi < 8 ){ continue; }
+    if( nCSIDigi < 8 ){ 
+      //std::cout<< "nCSIDigi:" << nCSIDigi <<  std::endl;
+      continue; 
+    }
     
     cosmicAnalyzer->GetResult( grTrack, Roh, Theta );
     
@@ -321,11 +343,12 @@ main( int argc ,char ** argv ){
       Double_t x,y;
       handler->GetMetricPosition( CSIDigiID[ idigi ] , x, y);
       CSIDigiDeltaT0[idigi] = CSIDigiHHTime[idigi] - funcTime1->Eval( y) -TimeOffset[CSIDigiID[idigi]];
-      CSIDigiDeltaT1[idigi] = CSIDigiHHTime[idigi] - funcTime1->Eval( y) -TimeOffset[CSIDigiID[idigi]] + TimeOffsetCrystalPosition[ CSIDigiID[idigi] ];
+      CSIDigiDeltaT1[idigi] = CSIDigiHHTime[idigi] - funcTime1->Eval( y) -TimeOffset[CSIDigiID[idigi]] - TimeOffsetCrystalPosition[ CSIDigiID[idigi] ];
     }
     grHeightTimePi0->GetListOfFunctions()->Delete();
     grHeightTimeADJ->GetListOfFunctions()->Delete();
 
+    //std::cout<<FitP0[0] << std::endl;
     /*
     can->cd(1);
     TimeMap->Draw("colz");
