@@ -103,9 +103,10 @@ main( int argc, char** argv ){
 
   TFile* tfout = new TFile(Form("CosmicOuthist_%d.root",IterationNumber), "recreate");
 
-  TH2D* hisDeltaChannel = new TH2D("hisDeltaChannel","hisDeltaChannel",2716,0,2716,100,-10,10);
+  TH1D* hisResult = new TH1D("hisResult","hisResult;DeltaTime[ns];nEnetries[0.1ns]",200,-10,10);
+  TH2D* hisDeltaChannel = new TH2D("hisDeltaChannel","hisDeltaChannel",2716,0,2716,250,-10,40);
   TH1D* hisDelta[2716];
-  TH2D* hisDeltaAll = new TH2D("hisDeltaAll","hisDeltaAll;ChannelNo;DeltaT",2716,0,2716,100,-10,10);
+  TH2D* hisDeltaAll = new TH2D("hisDeltaAll","hisDeltaAll;ChannelNo;DeltaT",2716,0,2716,250,-10,40);
   TH1D* hisDeltaNoCut[2716];
 
   TGraphErrors* grDelta = new TGraphErrors();
@@ -122,8 +123,8 @@ main( int argc, char** argv ){
   ps->NewPage();
 
   for( int i = 0; i< 2716; i++){
-    hisDelta[i] = new TH1D(Form("hisDelta%d",i ),Form("hisDelta%d",i),100,-10,10);
-    hisDeltaNoCut[i] = new TH1D(Form("hisDeltaNoCut%d",i),Form("hisDeltaNoCut%d",i),100,-10,10);
+    hisDelta[i] = new TH1D(Form("hisDelta%d",i ),Form("hisDelta%d",i),250,-10,40);
+    hisDeltaNoCut[i] = new TH1D(Form("hisDeltaNoCut%d",i),Form("hisDeltaNoCut%d",i),250,-10,40);
   }
 
   for( int ievent = 0; ievent < trin->GetEntries(); ievent++){
@@ -152,7 +153,9 @@ main( int argc, char** argv ){
   for( int i = 0; i< 2716; i++){
     //std::cout << hisDelta[i]->GetEntries() << std::endl;
     if( hisDelta[i]->GetEntries() > 10){
-      int rst = hisDelta[i]->Fit("gaus","Q","",hisDelta[i]->GetBinCenter( hisDelta[i]->GetMaximumBin() ) - 2, hisDelta[i]->GetBinCenter( hisDelta[i]->GetMaximumBin() ) + 2);
+      int rst = hisDelta[i]->Fit("gaus","Q","",
+				 hisDelta[i]->GetBinCenter( hisDelta[i]->GetMaximumBin() ) - 2, 
+				 hisDelta[i]->GetBinCenter( hisDelta[i]->GetMaximumBin() ) + 2);
       TF1* func = NULL;
       func = hisDelta[i]->GetFunction("gaus");
       if( func != NULL ){
@@ -191,16 +194,18 @@ main( int argc, char** argv ){
   double tmpDelta;
   double tmpResolution;
   if( IterationNumber > 0){
-    std::ifstream ifs(Form("CosmicTimeDeltaResolution_%d.dat",IterationNumber));
+    std::ifstream ifs(Form("CosmicTimeDeltaResolution_%d.dat",IterationNumber-1));
     while ( ifs >> tmpID >> tmpDelta >> tmpResolution ){
       Delta[ tmpID ] = tmpDelta;
       Resolution[ tmpID ] = tmpResolution;
+
     }
     ifs.close();
   }
 
   std::ofstream ofs(Form("CosmicOutTimeDeltaResolution_%d.dat",IterationNumber));
   for( int i = 0; i< grRES->GetN(); i++){
+    hisResult->Fill(grDelta->GetY()[i]);
     Delta[(int)(grDelta->GetX()[i])] += grDelta->GetY()[i];
     Resolution[(int)(grRES->GetX()[i])] = grRES->GetY()[i] ;
   }
@@ -216,6 +221,7 @@ main( int argc, char** argv ){
   grRES->Write();
   hisDeltaAll->Write();
   hisDeltaChannel->Write();
+  hisResult->Write();
   tfout->Close();
   ps->Close();
   ofs.close();

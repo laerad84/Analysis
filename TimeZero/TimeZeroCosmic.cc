@@ -82,15 +82,27 @@ main( int argc ,char ** argv ){
   grHeightTimePi0->SetMarkerStyle( 6 );
   grHeightTimeADJ->SetMarkerStyle( 6 );
 
+
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Time Offset 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Double_t TimeOffsetTotal[2716] = {0};
+  Double_t TimeOffsetTotalSigma[2716]= {0xFFFF};
+
   Double_t TimeOffset[2716]={500};
   Double_t TimeOffsetSigma[ 2716 ] = {0xFFFF};
   Double_t TimeOffsetCrystalPosition[2716] = {0};
+  Double_t DeltaT[2716]={0};
+  Double_t ResolutionT[2716]={0xFFFF};
 
+  ////////////////////////////
+  /* Time offset of Pi0Peak */ 
+  ////////////////////////////
   std::ifstream ifs("Pi0Peak.dat");
   Int_t tID;
   Double_t tOffset;
   Double_t tOffsetSigma;
-
   while( ifs >> tID >> tOffset >> tOffsetSigma ){
     TimeOffsetSigma[ tID ] = tOffsetSigma;
     if( tOffsetSigma > 0 ){
@@ -99,20 +111,30 @@ main( int argc ,char ** argv ){
       TimeOffset[ tID ] = -384 ;
     }
   }
+
+  ///////////////////////////////////////
+  /* Time offset from crystal position */
+  ///////////////////////////////////////
   for( int i = 0; i< 2716; i++){
     double x,y; 
     handler->GetMetricPosition( i, x, y );
     TimeOffsetCrystalPosition[i] = (TMath::Sqrt( 2624*2624 + x*x +y*y ) - 2624 )/ 299.7 ; // ns 
   }
 
-  double DeltaT[2716]={0};
-  double ResolutionT[2716]={0xFFFF};
+  //////////////////////////////////////
+  /*Time Offset from iteration*/
+  //////////////////////////////////////
+
   if( IterationNumber !=0 ){
     std::cout<< "IterationNumber is bigger than 0" << std::endl;
     std::string offsetFilename=Form("CosmicOutTimeDeltaResolution_%d.dat",IterationNumber-1);
     std::cout<< offsetFilename << std::endl;
     std::ifstream ifst(offsetFilename.c_str());
-    if( ifst.is_open() ){ std::cout << Form("CosmicTimeDeltaResolution_%d.dat is opened.",IterationNumber-1) << std::endl; }
+    if( ifst.is_open() ){ std::cout << Form("CosmicTimeDeltaResolution_%d.dat is opened.",IterationNumber-1) << std::endl;
+    }else{
+      std::cout << "File isn't opened" << std::endl; return -1;
+    }
+
     int tmpID;
     double tmpDelta;
     double tmpResolution;
@@ -122,6 +144,30 @@ main( int argc ,char ** argv ){
       std::cout<< tmpID << " : " << tmpDelta << " : " << tmpResolution << std::endl;
     }
   }
+
+  ////////////////////////////////////
+  /* Sum up All Offsets */ 
+  ///////////////////////////////////
+
+  for( int idIndex  = 0; idIndex  < 2716; idIndex++){
+    TimeOffsetTotal[idIndex] += TimeOffset[idIndex];
+    TimeOffsetTotal[idIndex] -= TimeOffsetCrystalPosition[idIndex];
+    if( IterationNumber >0 ){
+      if( ResolutionT[ idIndex ] > 0 && ResolutionT[ idIndex ] < 0xFFFF ){
+	TimeOffsetTotal[idIndex] += DeltaT[idIndex];
+	TimeOffsetTotalSigma[idIndex] = ResolutionT[ idIndex ];
+      }
+    }
+  }
+  for( int idIndex = 0; idIndex < 2716; idIndex++){
+    std::cout<< idIndex << " : " << TimeOffset[idIndex] << " : " <<  TimeOffsetTotal[idIndex] << std::endl;
+  }
+  
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
   /*
   for( int i = 0; i< 2716; i++){
     std::cout<< i<< " : " << DeltaT[i] << " : " << ResolutionT[i] << std::endl;
@@ -190,7 +236,7 @@ main( int argc ,char ** argv ){
   TH1D* stepHist = new TH1D("hisStep","Step;Step;Survived Event",20,0,20);
   for( int ievent  = 0; ievent < entries ; ievent++ ){
     if( ievent % 100 == 0){std::cout << ievent << "/" << entries << std::endl;}
-    //if( ievent > 20000 ){ break; }
+    //if( ievent > 10000 ){ break; }
     reader->GetEntry( ievent  );
     TimeMap->Reset();
     EnergyMap->Reset();
@@ -282,13 +328,13 @@ main( int argc ,char ** argv ){
 	nCSIDigi++;
 	grHeightTimeNoADJ->SetPoint( grHeightTimeNoADJ->GetN(),
 				     y,
-				     reader->CsiHHTime[ ich ] );
+				     reader->CsiTime[ ich ] );
 	grHeightTimePi0  ->SetPoint( grHeightTimePi0->GetN(),
 				     y,
-				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] -DeltaT[ reader->CsiID[ ich ] ]);
+				     reader->CsiTime[ ich ] - TimeOffsetTotal[ reader->CsiID[ ich ] ]);
 	grHeightTimeADJ  ->SetPoint( grHeightTimeADJ->GetN(), 
 				     y,
-				     reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] - TimeOffsetCrystalPosition[ reader->CsiID[ ich ] ] - DeltaT[ reader->CsiID[ ich ] ]);
+				     reader->CsiTime[ ich ] - TimeOffsetTotal[ reader->CsiID[ ich ] ]);
 	
 	if( IterationNumber == 0 ){
 	  grHeightTimeNoADJ->SetPointError( grHeightTimeNoADJ->GetN()-1,
@@ -307,16 +353,16 @@ main( int argc ,char ** argv ){
 					    ResolutionT[reader->CsiID[ich]]/TMath::Sqrt(Energy/14));
 	  grHeightTimePi0  ->SetPointError( grHeightTimePi0->GetN()-1,
 					    0,
-					    ResolutionT[reader->CsiID[ ich ]]/TMath::Sqrt(Energy/14));  
+					    ResolutionT[reader->CsiID[ich]]/TMath::Sqrt(Energy/14));  
 	  grHeightTimeADJ  ->SetPointError( grHeightTimeADJ->GetN()-1,
 					    0,
-					    ResolutionT[reader->CsiID[ ich ]]/TMath::Sqrt(Energy/14));
+					    ResolutionT[reader->CsiID[ich]]/TMath::Sqrt(Energy/14));
 	}
-	grTrack->SetPoint( grTrack->GetN(),x,y);	
+	grTrack->SetPoint( grTrack->GetN(),x,y);
 	
-	TimeMap->Fill( reader->CsiID[ ich ]   , reader->CsiHHTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
+	TimeMap->Fill( reader->CsiID[ ich ]   , reader->CsiTime[ ich ] - TimeOffset[ reader->CsiID[ ich ] ] );
 	EnergyMap->Fill( reader->CsiID[ ich ] , Converter->ConvertToEnergy( reader->CsiID[ ich ] , reader->CsiSignal[ ich ] ));
-
+	
       }
     }
     
@@ -342,8 +388,8 @@ main( int argc ,char ** argv ){
     for( int idigi = 0; idigi < nCSIDigi; idigi++){
       Double_t x,y;
       handler->GetMetricPosition( CSIDigiID[ idigi ] , x, y);
-      CSIDigiDeltaT0[idigi] = CSIDigiHHTime[idigi] - funcTime1->Eval( y) -TimeOffset[CSIDigiID[idigi]];
-      CSIDigiDeltaT1[idigi] = CSIDigiHHTime[idigi] - funcTime1->Eval( y) -TimeOffset[CSIDigiID[idigi]] - TimeOffsetCrystalPosition[ CSIDigiID[idigi] ];
+      CSIDigiDeltaT0[idigi] = CSIDigiTime[idigi] - TimeOffsetTotal[CSIDigiID[idigi]] - funcTime0->Eval(y);
+      CSIDigiDeltaT1[idigi] = CSIDigiTime[idigi] - TimeOffsetTotal[CSIDigiID[idigi]] - funcTime1->Eval(y);
     }
     grHeightTimePi0->GetListOfFunctions()->Delete();
     grHeightTimeADJ->GetListOfFunctions()->Delete();
