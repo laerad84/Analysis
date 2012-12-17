@@ -15,6 +15,8 @@
 #include "TF1.h"
 #include "TMath.h"
 #include "TStyle.h"
+#include "TProfile.h"
+#include "IDHandler.h"
 
 int
 main( int argc, char** argv ){
@@ -32,7 +34,9 @@ main( int argc, char** argv ){
   std::string ANALYSISDIR = std::getenv("ANALYSISDIR");
   std::string ROOTFILE_COSMIC=std::getenv("ROOTFILE_COSMIC");
   std::ifstream ifsRunList(RunList.c_str());
+  IDHandler* handler = new IDHandler();
   int tmpRunNumber;
+  
   while( ifsRunList >> tmpRunNumber ){
     trin->Add(Form("%s/CosmicOut_TimeCalibration_%d_%d.root",ROOTFILE_COSMIC.c_str(),tmpRunNumber,IterationNumber));
   }  
@@ -120,9 +124,18 @@ main( int argc, char** argv ){
   TH1D* hisDelta[2716];
   TH2D* hisDeltaAll = new TH2D("hisDeltaAll","hisDeltaAll;ChannelNo;DeltaT",2716,0,2716,250,-10,40);
   TH1D* hisDeltaNoCut[2716];
-
+  TH2D* hisDeltaEnergy[2716];
+  TProfile* profDeltaEnergy[2716];
   TGraphErrors* grDelta = new TGraphErrors();
   TGraphErrors* grRES   = new TGraphErrors();   
+  TH2D* hisDeltaEnergySmall = new TH2D("hisDeltaEnergySmall","hisDeltaEnergySmall",60,0,60,200,-10,10);
+  TH2D* hisDeltaEnergyLarge = new TH2D("hisDeltaEnergyLarge","hisDeltaEnergyLarge",60,0,60,200,-10,10);
+  TH2D* hisDeltaEnergyL = new TH2D("hisDeltaEnergyL","hisDeltaEnergyL",60,0,60,200,-10,10);
+  TH2D* hisDeltaEnergyR = new TH2D("hisDeltaEnergyR","hisDeltaEnergyR",60,0,60,200,-10,10);
+  TH2D* hisDeltaEnergyLargeL = new TH2D("hisDeltaEnergyLargeL","hisDeltaEnergyLargeL",60,0,60,200,-10,10);
+  TH2D* hisDeltaEnergyLargeR = new TH2D("hisDeltaEnergyLargeR","hisDeltaEnergyLargeR",60,0,60,200,-10,10);
+
+
 
   TPostScript* ps  = new TPostScript(Form("%s/CosmicOuthist_%d.ps",ROOTFILE_COSMIC.c_str(),IterationNumber),111);
   TCanvas *can = new TCanvas("can","",1000*TMath::Sqrt(0.5),1000);
@@ -137,6 +150,8 @@ main( int argc, char** argv ){
   for( int i = 0; i< 2716; i++){
     hisDelta[i] = new TH1D(Form("hisDelta%d",i ),Form("hisDelta%d",i),250,-10,40);
     hisDeltaNoCut[i] = new TH1D(Form("hisDeltaNoCut%d",i),Form("hisDeltaNoCut%d",i),250,-10,40);
+    hisDeltaEnergy[i] = new TH2D(Form("hisDeltaEnergy%d",i),Form("hisDeltaEnergy%d",i),15,0,60,200,-10,10);
+    profDeltaEnergy[i] = new TProfile(Form("profDeltaEnergy%d",i),Form("hisDeltaEnergy%d",i),15,0,60);
   }
 
   for( int ievent = 0; ievent < trin->GetEntries(); ievent++){
@@ -146,13 +161,30 @@ main( int argc, char** argv ){
     for( int idigi = 0; idigi < nCSIDigi ; idigi++){
       hisDeltaNoCut[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
       hisDeltaAll->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
-    
+      hisDeltaEnergy[CSIDigiID[idigi]]->Fill( CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
+      profDeltaEnergy[CSIDigiID[idigi]]->Fill(CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
       if( CSIDigiID[idigi] < 2240 ){ // Case of Small Crystal 
+	Double_t x,y;
+	handler->GetMetricPosition(CSIDigiID[idigi],x,y);
+	hisDeltaEnergySmall->Fill( CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
+	if(( y>0 && x < 100 ) || (y <=0 && x < -10 )){
+	  hisDeltaEnergyL->Fill( CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
+	}else{
+	  hisDeltaEnergyR->Fill( CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
+	}
 	if( CSIDigiE[idigi] > 11 && CSIDigiE[idigi] < 17 ){
 	  hisDelta[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
 	  hisDeltaChannel->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
 	}
       }else{ // Case of Large Crystal ... 
+	Double_t x,y;
+	handler->GetMetricPosition(CSIDigiID[idigi],x,y);
+	hisDeltaEnergyLarge->Fill( CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
+	if(( y>0 && x < 100 ) || (y <=0 && x < -10 )){
+	  hisDeltaEnergyLargeL->Fill( CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
+	}else{
+	  hisDeltaEnergyLargeR->Fill( CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
+	}
 	if( CSIDigiE[idigi] > 22 && CSIDigiE[idigi] < 34 ){
 	  hisDelta[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
 	  hisDeltaChannel->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
@@ -181,6 +213,7 @@ main( int argc, char** argv ){
 	Delta[i] = func->GetParameter(1);
 	Resolution[i] = func->GetParameter(2);
 	hisResult->Fill(Delta[i]);
+
       }
     }
  
@@ -195,6 +228,8 @@ main( int argc, char** argv ){
 
     hisDelta[ i ]  ->Write(); 
     hisDeltaNoCut[ i]->Write();
+    hisDeltaEnergy[i]->Write();
+    profDeltaEnergy[i]->Write();
   }
 
   int tmpID;
@@ -225,6 +260,13 @@ main( int argc, char** argv ){
 	<< Delta[i]      << "\t"
 	<< Resolution[i] << "\n";
   }
+
+  hisDeltaEnergyR->Write();
+  hisDeltaEnergyL->Write();
+  hisDeltaEnergyLargeR->Write();
+  hisDeltaEnergyLargeL->Write();
+  hisDeltaEnergySmall->Write();
+  hisDeltaEnergyLarge->Write();
   
   grDelta->SetNameTitle("grDelta","grDelta");
   grRES->SetNameTitle("grRES","grRES");

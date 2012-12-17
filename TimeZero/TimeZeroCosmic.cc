@@ -53,6 +53,9 @@ main( int argc ,char ** argv ){
 
   std::string WAVFILE   = std::getenv("ROOTFILE_WAV");
   std::string ANALIBDIR = std::getenv("ANALYSISLIB");
+  std::string ANALYSISDIR = std::getenv("ANALYSISDIR");
+  std::string DIRNAME   = "TimeZero";
+  std::string ROOTFILE_COSMIC= std::getenv("ROOTFILE_COSMIC");
   EnergyConverter *Converter = new EnergyConverter();  
   Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",
 					  ANALIBDIR.c_str()));
@@ -63,10 +66,7 @@ main( int argc ,char ** argv ){
   std::cout << "////////////////////////////////////////////////////\n";
   std::cout << "RunNumber       : " << fRunNumber << "\n";
   std::cout << "IterationNumber : " << IterationNumber << "\n";
-  std::cout << "////////////////////////////////////////////////////\n";
-    
-
-
+  std::cout << "////////////////////////////////////////////////////\n";    
   trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),fRunNumber));  
   
   IDHandler* handler        = new IDHandler();
@@ -99,7 +99,8 @@ main( int argc ,char ** argv ){
   ////////////////////////////
   /* Time offset of Pi0Peak */ 
   ////////////////////////////
-  std::ifstream ifs("Pi0Peak.dat");
+  std::ifstream ifs(Form("%s/Pi0Peak.dat",ROOTFILE_COSMIC.c_str()));
+  if( !ifs.is_open()){ std::cout<< "Pi0Peak.dat is not existed" << std::endl; return -1;}
   Int_t tID;
   Double_t tOffset;
   Double_t tOffsetSigma;
@@ -125,14 +126,16 @@ main( int argc ,char ** argv ){
   /*Time Offset from iteration*/
   //////////////////////////////////////
 
-  if( IterationNumber !=0 ){
+  if( IterationNumber >0 ){
     std::cout<< "IterationNumber is bigger than 0" << std::endl;
-    std::string offsetFilename=Form("CosmicOutTimeDeltaResolution_%d.dat",IterationNumber-1);
+    std::string offsetFilename=Form("%s/CosmicOutTimeDeltaResolution_%d.dat",ROOTFILE_COSMIC.c_str(),IterationNumber-1);
     std::cout<< offsetFilename << std::endl;
-    std::ifstream ifst(offsetFilename.c_str());
-    if( ifst.is_open() ){ std::cout << Form("CosmicTimeDeltaResolution_%d.dat is opened.",IterationNumber-1) << std::endl;
+    std::ifstream ifst(Form("%s/CosmicOutTimeDeltaResolution_%d.dat",ROOTFILE_COSMIC.c_str(),IterationNumber-1));
+    if( ifst.is_open() ){
+      std::cout << Form("CosmicOutTimeDeltaResolution_%d.dat is opened.",IterationNumber-1) << std::endl;
     }else{
-      std::cout << "File isn't opened" << std::endl; return -1;
+      std::cout << "File isn't opened" << std::endl;
+      return -1;
     }
 
     int tmpID;
@@ -174,7 +177,7 @@ main( int argc ,char ** argv ){
   }
   */
   
-  TFile* tfout = new TFile(Form("%s/CosmicOut_TimeCalibration_%d_%d.root",WAVFILE.c_str(),fRunNumber,IterationNumber),"RECREATE");
+  TFile* tfout = new TFile(Form("%s/CosmicOut_TimeCalibration_%d_%d.root",ROOTFILE_COSMIC.c_str(),fRunNumber,IterationNumber),"RECREATE");
 
   E14WavReader* reader = new E14WavReader(trin);
   Long_t entries =  reader->fChain->GetEntries();
@@ -235,7 +238,7 @@ main( int argc ,char ** argv ){
 
   TH1D* stepHist = new TH1D("hisStep","Step;Step;Survived Event",20,0,20);
   for( int ievent  = 0; ievent < entries ; ievent++ ){
-    if( ievent % 100 == 0){std::cout << ievent << "/" << entries << std::endl;}
+    if( ievent % 1000 == 0){std::cout << ievent << "/" << entries << std::endl;}
     //if( ievent > 10000 ){ break; }
     reader->GetEntry( ievent  );
     TimeMap->Reset();
