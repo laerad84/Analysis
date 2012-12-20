@@ -157,13 +157,15 @@ main( int argc, char** argv ){
   for( int ievent = 0; ievent < trin->GetEntries(); ievent++){
 
     trin->GetEntry(ievent);
-    //if( FitChisq[1] > 7 ){ continue; }
+    if( FitChisq[1] > 7 ){ continue; }
     for( int idigi = 0; idigi < nCSIDigi ; idigi++){
+      
       hisDeltaNoCut[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
       hisDeltaAll->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
       hisDeltaEnergy[CSIDigiID[idigi]]->Fill( CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
       profDeltaEnergy[CSIDigiID[idigi]]->Fill(CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
-      if( CSIDigiID[idigi] < 2240 ){ // Case of Small Crystal 
+      
+      if( CSIDigiID[idigi] < 2240 ){ // Case of Small Crystal
 	Double_t x,y;
 	handler->GetMetricPosition(CSIDigiID[idigi],x,y);
 	hisDeltaEnergySmall->Fill( CSIDigiE[idigi],CSIDigiDeltaT1[idigi]);
