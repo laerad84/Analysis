@@ -142,7 +142,7 @@ main( int argc, char** argv ){
   for( int ievent = 0; ievent < trin->GetEntries(); ievent++){
 
     trin->GetEntry(ievent);
-    //if( FitChisq[1] > 7 ){ continue; }
+    if( FitChisq[1] > 3 ){ continue; }
     for( int idigi = 0; idigi < nCSIDigi ; idigi++){
       hisDeltaNoCut[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
       hisDeltaAll->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
