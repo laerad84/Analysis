@@ -177,7 +177,7 @@ main( int argc ,char ** argv ){
   }
   */
   
-  TFile* tfout = new TFile(Form("%s/CosmicOut_TimeCalibration_%d_%d.root",ROOTFILE_COSMIC.c_str(),fRunNumber,IterationNumber),"RECREATE");
+  TFile* tfout = new TFile(Form("%s/CosmicOut_TimeCalibration_ADV_%d_%d.root",ROOTFILE_COSMIC.c_str(),fRunNumber,IterationNumber),"RECREATE");
 
   E14WavReader* reader = new E14WavReader(trin);
   Long_t entries =  reader->fChain->GetEntries();
@@ -196,9 +196,9 @@ main( int argc ,char ** argv ){
   Double_t CSIDigiHHTime[nCSI];//nCSIDigi
   Int_t    CSIDigiID[nCSI];//nCSIDigi
   Double_t CSIDigiSignal[nCSI];//nCSIDigi
-  Double_t FitP0[2];
-  Double_t FitP1[2];
-  Double_t FitChisq[2];
+  Double_t FitP0[nCSI];//nCSIDigi
+  Double_t FitP1[nCSI];//nCSIDigi
+  Double_t FitChisq[nCSI];//nCSIDigi
   Double_t CSIDigiDeltaT0[nCSI];//nCSIDigi
   Double_t CSIDigiDeltaT1[nCSI];//nCSIDigi
   Int_t    CosmicTrigUp;
@@ -219,9 +219,9 @@ main( int argc ,char ** argv ){
   trout->Branch( "CSIDigiSignal" , CSIDigiSignal   , "CSIDigiSignal[nCSIDigi]/D");//nCSIDigi
   trout->Branch( "CSIDigiDeltaT0", CSIDigiDeltaT0  , "CSIDigiDeltaT0[nCSIDigi]/D");//nCSIDigi
   trout->Branch( "CSIDigiDeltaT1", CSIDigiDeltaT1  , "CSIDigiDeltaT1[nCSIDigi]/D");//nCSIDigi
-  trout->Branch( "FitP0"         , FitP0           , "FitP0[2]/D" );
-  trout->Branch( "FitP1"         , FitP1           , "FitP1[2]/D" );
-  trout->Branch( "FitChisq"      , FitChisq        , "FitChisq[2]/D" );
+  trout->Branch( "FitP0"         , FitP0           , "FitP0[nCSIDigi]/D" );//nCSIDigi
+  trout->Branch( "FitP1"         , FitP1           , "FitP1[nCSIDigi]/D" );//nCSIDigi
+  trout->Branch( "FitChisq"      , FitChisq        , "FitChisq[nCSIDigi]/D");//nCSIDigi
   trout->Branch( "CosmicTrigUp"  , &CosmicTrigUp   , "CosmicTrigUp/I");
   trout->Branch( "CosmicTrigDn"  , &CosmicTrigDn   , "CosmicTrigDn/I");
   trout->Branch( "Roh"           , &Roh            , "Roh/D");
@@ -274,11 +274,11 @@ main( int argc ,char ** argv ){
     //std::cout<< "Scinti" << std::endl;
     RunNumber = reader->RunNo;
     EventNumber = reader->EventNo;
-    if( reader->CosmicTrigFlagUp == 0 || 
+    if( reader->CosmicTrigFlagUp == 0 && 
 	reader->CosmicTrigFlagDn == 0 ){
       continue;
     }
-    if((reader->TrigFlag&2) != 2 ){
+    if( reader->TrigFlag != 2 ){
       continue;
     }
     int nTrigUp = 0;
@@ -297,11 +297,10 @@ main( int argc ,char ** argv ){
 	CosmicTrigDn = i;
       }
     }
-    /*
     if( nTrigUp != 1  || nTrigDn != 1 ){      
       continue;
     }
-    */	
+	
       
 
     stepHist->Fill(1);
@@ -375,14 +374,11 @@ main( int argc ,char ** argv ){
       continue; 
     }
     
-    cosmicAnalyzer->GetResult( grTrack, Roh, Theta );
-    if( TMath::Abs(Theta) > 20 ){ continue; }
+    cosmicAnalyzer->GetResult( grTrack, Roh, Theta );    
     grHeightTimePi0->Fit( "pol1", "Q","", -1000, 1000);
-    TF1* funcTime0 = grHeightTimePi0->GetFunction("pol1");
-    
+    TF1* funcTime0 = grHeightTimePi0->GetFunction("pol1");    
     grHeightTimeADJ->Fit( "pol1", "Q","", -1000,1000);
     TF1* funcTime1 = grHeightTimeADJ->GetFunction("pol1");
-
     FitP0[0] = funcTime0->GetParameter(0);
     FitP0[1] = funcTime1->GetParameter(0);
     FitP1[0] = funcTime0->GetParameter(1);

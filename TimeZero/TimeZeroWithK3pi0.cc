@@ -62,7 +62,6 @@ main( int argc ,char ** argv ){
 				     400,-100,100);
   }
 
-
   E14WavReader* reader = new E14WavReader(trin);
   int nCsIDigi           = 0;
   int CsIID[2716]        = {-1};
