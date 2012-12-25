@@ -128,13 +128,12 @@ main( int argc, char** argv ){
   TProfile* profDeltaEnergy[2716];
   TGraphErrors* grDelta = new TGraphErrors();
   TGraphErrors* grRES   = new TGraphErrors();   
-  TH2D* hisDeltaEnergySmall = new TH2D("hisDeltaEnergySmall","hisDeltaEnergySmall",60,0,60,200,-10,10);
-  TH2D* hisDeltaEnergyLarge = new TH2D("hisDeltaEnergyLarge","hisDeltaEnergyLarge",60,0,60,200,-10,10);
-  TH2D* hisDeltaEnergyL = new TH2D("hisDeltaEnergyL","hisDeltaEnergyL",60,0,60,200,-10,10);
-  TH2D* hisDeltaEnergyR = new TH2D("hisDeltaEnergyR","hisDeltaEnergyR",60,0,60,200,-10,10);
-  TH2D* hisDeltaEnergyLargeL = new TH2D("hisDeltaEnergyLargeL","hisDeltaEnergyLargeL",60,0,60,200,-10,10);
-  TH2D* hisDeltaEnergyLargeR = new TH2D("hisDeltaEnergyLargeR","hisDeltaEnergyLargeR",60,0,60,200,-10,10);
-
+  TH2D* hisDeltaEnergySmall = new TH2D("hisDeltaEnergySmall","hisDeltaEnergySmall",30,0,60,200,-10,10);
+  TH2D* hisDeltaEnergyLarge = new TH2D("hisDeltaEnergyLarge","hisDeltaEnergyLarge",30,0,60,200,-10,10);
+  TH2D* hisDeltaEnergyL = new TH2D("hisDeltaEnergyL","hisDeltaEnergyL",30,0,60,200,-10,10);
+  TH2D* hisDeltaEnergyR = new TH2D("hisDeltaEnergyR","hisDeltaEnergyR",30,0,60,200,-10,10);
+  TH2D* hisDeltaEnergyLargeL = new TH2D("hisDeltaEnergyLargeL","hisDeltaEnergyLargeL",30,0,60,200,-10,10);
+  TH2D* hisDeltaEnergyLargeR = new TH2D("hisDeltaEnergyLargeR","hisDeltaEnergyLargeR",30,0,60,200,-10,10);
 
 
   TPostScript* ps  = new TPostScript(Form("%s/CosmicOuthist_%d.ps",ROOTFILE_COSMIC.c_str(),IterationNumber),111);
