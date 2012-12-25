@@ -205,7 +205,7 @@ main( int argc ,char ** argv ){
   Int_t    CosmicTrigDn;
   Double_t Roh;
   Double_t Theta;
-
+  {
   trout->Branch( "RunNumber"     , &RunNumber      , "RunNumber/I");
   trout->Branch( "EventNumber"   , &EventNumber    , "EventNumber/I");
   trout->Branch( "ScintiSignal"  , &ScintiSignal   , "ScintiSignal/D");
@@ -226,7 +226,7 @@ main( int argc ,char ** argv ){
   trout->Branch( "CosmicTrigDn"  , &CosmicTrigDn   , "CosmicTrigDn/I");
   trout->Branch( "Roh"           , &Roh            , "Roh/D");
   trout->Branch( "Theta"         , &Theta          , "Theta/D");
-
+  }
   TCanvas* can = new TCanvas("can","can",1200,800);
   can->Divide( 3,2 );
   for( int i = 0; i< 6; i++){

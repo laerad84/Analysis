@@ -22,6 +22,7 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include "TCanvas.h"
+#include "TF1.h"
 
 #include "csimap/CsiMap.h"
 #include "E14Fsim/E14FsimFunction.h"

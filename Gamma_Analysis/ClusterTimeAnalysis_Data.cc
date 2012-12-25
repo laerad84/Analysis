@@ -18,6 +18,7 @@
 #include "TMarker.h"
 #include "TProfile.h"
 #include "TRandom.h"
+#include "TF1.h"
 
 #include "CsIPoly.h"
 #include "IDHandler.h"
@@ -39,7 +40,25 @@
 //#include "User_Function.h"
 #include "ClusterTimeStructure.h"
 
+double AdjFunc( double* x, double* par ){
+  double x0 = x[0];
+  double p0 = par[0];
+  double p1 = par[1];
+  double p2 = par[2];
+  double p3 = par[3];
+  double p4 = par[4];
+  double value = p0 + p1*exp(p2*x0) + p3*exp(p4*x0);
+  return value;
+}
+
+
 int main( int argc, char** argv ){
+  TF1* TimeAdjFunc = new TF1("TimeAdjFunc",AdjFunc, 0, 2000,5);
+  Double_t Par[5] = {-0.0905327+0.0112319,1.54915,-0.114423,0.0758477,0.00487457};
+  Double_t ParErrors[5] = {0.00245834,0.0263153,0.00188467,0.007594,4.81501e-05};
+  TimeAdjFunc->SetParameters(Par);
+  TimeAdjFunc->SetParErrors(ParErrors);
+  
 
   std::string ROOTFILE_WAV       = std::getenv("ROOTFILE_WAV");  
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
