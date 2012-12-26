@@ -11,16 +11,38 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 
+double AdjFunc( double* x, double* par ){
+  double x0 = x[0];
+  double p0 = par[0];
+  double p1 = par[1];
+  double p2 = par[2];
+  double p3 = par[3];
+  double p4 = par[4];
+  double value = p0 + p1*exp(p2*x0) + p3*exp(p4*x0);
+  return value;
+}
 int main( int argc, char** argv ){
   
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
+  TF1* TimeAdjFunc = new TF1("TimeAdjFunc",AdjFunc, 0, 2000,5);
+
+  //Double_t Par[5] = {-0.0905327,1.54915,-0.114423,0.0758477,0.00487457};
+  //Double_t ParErrors[5] = {0.00245834,0.0263153,0.00188467,0.007594,4.81501e-05};
+  //Double_t Par[5] = {-0.105097,1.52645,-0.10655,0.0620572,0.00910542};
+  //Double_t ParErrors[5]={0.00186334,0.0135129,0.000805812,0.000167933,1.18097e-05};
+  //Double_t Par[5] = {-0.0644067,1.1759,-0.165316,0.0570758,0.0049958};
+  //Double_t ParErrors[5] = {0.00203663,0.0418876,0.00542069,0.00221644,4.08696e-05};
+  Double_t Par[5] = {-0.0976609,1.17012,-0.160851,0.0823451,0.00420403};
+  Double_t ParErrors[5] = {0.0193245,0.0423249,0.00586115,0.0147254,0.000386874};
+  TimeAdjFunc->SetParameters(Par);
+  TimeAdjFunc->SetParErrors(ParErrors);
 
   TFile* tf = new TFile(Form("%s/Data_All.root",ROOTFILE_GAMMACLUS.c_str()));
   TTree* tr = (TTree*)tf->Get("trCluster");
   ClusterTimeReader* reader = new ClusterTimeReader(tr);
   Int_t nEntries = reader->fChain->GetEntries(); 
   
-  TFile* tfout = new TFile("CrystalTimeEnergy.root","recreate");  
+  TFile* tfout = new TFile("CrystalTimeEnergy_1.root","recreate");  
 
   const int nClusterE  = 10;
   const int nCrystalE  = 18;
@@ -168,7 +190,27 @@ int main( int argc, char** argv ){
       if( reader->ClusterR[ clusterIndex ] > 500 ){ continue; }
       if( reader->ClusterR[ clusterIndex ] < 200 ){ continue; }
 
-      if( !blr ){ continue; }
+      //if( !blr ){ continue; }
+      
+
+      Double_t RCenterCrystal = 1000;
+      Double_t ECenterCrystal = 0;
+      Double_t TCenterCrystal = 0;
+      for( int crystalIndex = 0; crystalIndex < reader->nCrystal[ clusterIndex]; crystalIndex++){
+	Double_t RadinCluster = reader->CrystalR[clusterIndex][crystalIndex];
+	Double_t RinCluster = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Cos(reader->CrystalPhi[clusterIndex][crystalIndex]);
+	Double_t DinCluster = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Sin(reader->CrystalPhi[clusterIndex][crystalIndex]);
+	Double_t EinCluster = reader->CrystalEnergy[clusterIndex][crystalIndex];
+	// Time-Energy relation fixed ? // 
+	Double_t TinCluster = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFunc->Eval(EinCluster);
+	if( RadinCluster < RCenterCrystal){ 
+	  RCenterCrystal = RadinCluster;
+	  ECenterCrystal = EinCluster;
+	  TCenterCrystal = TinCluster;
+	}
+      }
+      
+
       if( CrystalMaxE < reader->ClusterEnergy[clusterIndex]/3. ){ continue; }
       for( int crystalIndex  = 0; crystalIndex < reader->nCrystal[clusterIndex]; crystalIndex++){
 	//if( reader->CrystalEnergy[clusterIndex][crystalIndex] > reader->ClusterEnergy[clusterIndex]/3. ){ continue; }
@@ -178,12 +220,15 @@ int main( int argc, char** argv ){
 	Double_t R        = reader->CrystalR[clusterIndex][crystalIndex];
 	Double_t RinCluster = R*CosTheta;
 	Double_t DinCluster = R*SinTheta;
-	Double_t TinCluster = reader->CrystalT[clusterIndex][crystalIndex];
 	Double_t EinCluster = reader->CrystalEnergy[clusterIndex][crystalIndex];
+	//Double_t TinCluster = reader->CrystalT[clusterIndex][crystalIndex];
+	Double_t OldTinCluster = reader->CrystalT[clusterIndex][crystalIndex];
+	Double_t TinCluster = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFunc->Eval(EinCluster)-TCenterCrystal;
+
 	profEnergyPosition[ThetaIndex]->Fill(RinCluster,DinCluster,EinCluster);
 	profTimePosition[ThetaIndex]->Fill(RinCluster,DinCluster,TinCluster);
 	if( EinCluster == 0){ continue; }
-	if( TinCluster == 0){ continue; }
+	if( OldTinCluster == 0){ continue; }
 	if( R < 30 && RinCluster< 25){
 	  hisTimeEnergyClusterE[EnergyIndex][ThetaIndex]   ->Fill(EinCluster, TinCluster);
 	  hisTimeEnergyCrystalE[ECrystalIndex][ThetaIndex] ->Fill(EinCluster, TinCluster);
@@ -193,7 +238,7 @@ int main( int argc, char** argv ){
 	  profTimeEnergyCrystalE_Wide[ECrystalIndex][ThetaIndex]->Fill(EinCluster,TinCluster);
 	  if( ThetaIndex < 3 ){
 	    profTimeEnergyCrystalEMerge[ECrystalIndex]->Fill( EinCluster,TinCluster);
-	    if( EnergyIndex == 3 ){
+	    if( ECrystalIndex == 3 ){
 	      profTimeEnergyLowEnergy->Fill( EinCluster,TinCluster);
 	    }
 	  }

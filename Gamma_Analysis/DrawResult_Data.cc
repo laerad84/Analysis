@@ -26,11 +26,16 @@ int main( int argc, char** argv ){
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
   TF1* TimeAdjFunc = new TF1("TimeAdjFunc",AdjFunc, 0, 2000,5);
 
-  Double_t Par[5] = {-0.0905327,1.54915,-0.114423,0.0758477,0.00487457};
-  Double_t ParErrors[5] = {0.00245834,0.0263153,0.00188467,0.007594,4.81501e-05};
+  //Double_t Par[5] = {-0.0905327,1.54915,-0.114423,0.0758477,0.00487457};
+  //Double_t ParErrors[5] = {0.00245834,0.0263153,0.00188467,0.007594,4.81501e-05};
+  //Double_t Par[5] = {-0.105097,1.52645,-0.10655,0.0620572,0.00910542};
+  //Double_t ParErrors[5]={0.00186334,0.0135129,0.000805812,0.000167933,1.18097e-05};
+  Double_t Par[5] = {-0.0644067,1.1759,-0.165316,0.0570758,0.0049958};
+  Double_t ParErrors[5] = {0.00203663,0.0418876,0.00542069,0.00221644,4.08696e-05};
+  
   TimeAdjFunc->SetParameters(Par);
   TimeAdjFunc->SetParErrors(ParErrors);
-  
+ 
 
 
   TFile* tf = new TFile(Form("%s/Data_All.root",ROOTFILE_GAMMACLUS.c_str()));
@@ -206,7 +211,7 @@ int main( int argc, char** argv ){
 	Double_t EinCluster = reader->CrystalEnergy[clusterIndex][crystalIndex];
 	// Time-Energy relation fixed ? // 
 	Double_t TinCluster = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFunc->Eval(EinCluster);
-	if( RadinCluster > RCenterCrystal){ 
+	if( RadinCluster < RCenterCrystal){ 
 	  RCenterCrystal = RadinCluster;
 	  ECenterCrystal = EinCluster;
 	  TCenterCrystal = TinCluster;
@@ -220,7 +225,7 @@ int main( int argc, char** argv ){
 	Double_t DinCluster = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Sin(reader->CrystalPhi[clusterIndex][crystalIndex]);
 	Double_t EinCluster = reader->CrystalEnergy[clusterIndex][crystalIndex];
 	// Time-Energy relation fixed ? // 
-	Double_t TinCluster = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFunc->Eval(EinCluster) - TCenterCrystal;
+	Double_t TinCluster = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFunc->Eval(EinCluster);
 	if( EinCluster == 0){ continue; }
 	hisPhiPhi[EnergyIndex][ThetaIndex]->Fill( reader->ClusterPhi[clusterIndex], reader->CrystalPhi[clusterIndex][crystalIndex]);
 	if( TMath::Abs(DinCluster) < 25*sqrt(2) ){
