@@ -59,6 +59,8 @@ int main( int argc, char** argv ){
   TProfile2D* profTimeEnergyClusterCrystalE[nTheta-1];
   TProfile2D* profEnergyPosition[nTheta-1];
   TProfile2D* profTimePosition[nTheta-1];
+  TProfile2D* profEnergyPostionLarge[nTheta-1];
+  TProfile2D* profTimePositionLarge[nTheta-1];
 
   TProfile* profTimeEnergyLowEnergy = new TProfile("profTimeEnergyLowEnergy",
 						   "profTimeEnergyLowEnergy",
