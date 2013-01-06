@@ -32,7 +32,8 @@ int main( int argc, char** argv ){
   //Double_t ParErrors[5]={0.00186334,0.0135129,0.000805812,0.000167933,1.18097e-05};
   //Double_t Par[5] = {-0.0644067,1.1759,-0.165316,0.0570758,0.0049958};
   //Double_t ParErrors[5] = {0.00203663,0.0418876,0.00542069,0.00221644,4.08696e-05};
-  Double_t Par[5] = {-0.0976609,1.17012,-0.160851,0.0823451,0.00420403};
+  //Double_t Par[5] = {-0.0976609,1.17012,-0.160851,0.0823451,0.00420403};
+  Double_t Par[5] = {-0.1976609,1.17012,-0.160851,0.0823451,0.00420403};//test
   Double_t ParErrors[5] = {0.0193245,0.0423249,0.00586115,0.0147254,0.000386874};
   TimeAdjFunc->SetParameters(Par);
   TimeAdjFunc->SetParErrors(ParErrors);
@@ -79,12 +80,12 @@ int main( int argc, char** argv ){
   for( int lIndex = 0; lIndex < nBinsPhi; lIndex++){
     PhiArr[lIndex] = -105+5*lIndex;
   }
-
+  
   for( int iIndex = 0 ; iIndex < nCrystalE-1; iIndex++){
     profTimeEnergyCrystalEMerge[iIndex] = new TProfile(Form("profTimeEnergyCrystalMerge_%d",iIndex),
 						       Form("profTimeEnergyCrystalMerge_%d_%d",
 							    ECrystalArr[iIndex],ECrystalArr[iIndex+1]),
-						       20,0,500);						       
+						       20,0,500);
   }
 
   for( int jIndex = 0; jIndex < nTheta-1; jIndex++){
