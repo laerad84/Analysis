@@ -84,15 +84,16 @@ Int_t main( int argc , char** argv ){
   Double_t KLChisq;
   Double_t KLE;
   Double_t KLPos[3];
-  
+  Double_t KLMom[3];
   Double_t GammaE[6];
   Double_t GammaPos[6][3];
-  trKL->Branch("KLMass",&KLMass,"KLMass/D");
-  trKL->Branch("KLChisq",&KLChisq,"KLChisq/D");
-  trKL->Branch("KLE",&KLE,"KLE/D");
-  trKL->Branch("KLPos",KLPos,"KLPos[3]/D");
-  trKL->Branch("GammaE",GammaE,"GammaE[6]/D");
-  trKL->Branch("GammaPos",GammaPos,"GammaPos[6][3]/D");
+  trKL->Branch("KLMass"  ,&KLMass  ,"KLMass/D");
+  trKL->Branch("KLChisq" ,&KLChisq ,"KLChisq/D");
+  trKL->Branch("KLE"     ,&KLE     ,"KLE/D");
+  trKL->Branch("KLPos"   ,KLPos    ,"KLPos[3]/D");
+  trKL->Branch("GammaE"  ,GammaE   ,"GammaE[6]/D");
+  trKL->Branch("GammaPos",GammaPos ,"GammaPos[6][3]/D");
+  trKL->Branch("KLMom"   ,KLMom    ,"KLMom[3]/D");
 
   for( int ievent = 0; ievent < ch->GetEntries() ; ievent++){
     ch->GetEntry( ievent );
@@ -107,6 +108,8 @@ Int_t main( int argc , char** argv ){
     if( klVec.size() == 0 ){ continue; }
     if( clist.size() != 0 ){ continue; }
     int GammaID = 0;
+    if( glist.size() != 6 ){ continue; }
+
     for( std::list<Gamma>::iterator itGamma = glist.begin(); 
 	 itGamma != glist.end();
 	 itGamma++,GammaID++){
@@ -117,13 +120,16 @@ Int_t main( int argc , char** argv ){
       
       if( GammaID >=  6 ){ break; }
     }
-    
-    KLMass = klVec[0].m();
-    KLE    = klVec[0].e();
+
+    KLMass   = klVec[0].m();
+    KLE      = klVec[0].e();
     KLPos[0] = klVec[0].vx();
     KLPos[1] = klVec[0].vy();
     KLPos[2] = klVec[0].vz();
-
+    KLMom[0] = klVec[0].p3()[0];
+    KLMom[1] = klVec[0].p3()[1];
+    KLMom[2] = klVec[0].p3()[2];
+    
     trKL->Fill();
   }
 
