@@ -70,14 +70,18 @@ int  main(int argc,char** argv)
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  if( argc !=4 ){
+  if( argc != 4 && argc !=5 ){
     std::cerr << "Please Input RunNumber and section Number" << std::endl;
-    std::cerr << argv[0] << " [RunNumber] [MinimumHeight] [MaximumHeight] " << std::endl; 
+    std::cerr << argv[0] << " [RunNumber] [MinimumHeight] [MaximumHeight] :[TriggerFlag:default0]: " << std::endl; 
     return -1; 
   }
   Int_t RunNumber = atoi( argv[1] );
   Int_t MinHeight = atoi( argv[2] );
   Int_t MaxHeight = atoi( argv[3] );
+  Int_t TriggerFlag = 0;
+  if( argc == 4 ){
+    TriggerFlag = atoi( argv[4] );
+  }
   if( MinHeight >= MaxHeight ){
     std::cerr << "MinHeight >= MaxHeight" << std::endl;
     return -1;
@@ -104,7 +108,6 @@ int  main(int argc,char** argv)
   WaveformFitter* wavFitter = new WaveformFitter(48, kFALSE);  
 
   TFile* tf[nCrate];
-
   E14ConvReader* conv[nCrate];
   for( int icrate = 0; icrate < nCrate; icrate++){
     tf[icrate]   = new TFile(Form("%s/crate%d/run%d_conv.root",CONVFILEDIR.c_str(), icrate, RunNumber)); 
@@ -392,7 +395,8 @@ int  main(int argc,char** argv)
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     
-    if( (wConv->m_TrigFlag & 1)  != 0  || (wConv->m_TrigFlag & 2) !=0 ){
+    //if( (wConv->m_TrigFlag & 1)  != 0  || (wConv->m_TrigFlag & 2) !=0 ){
+    if( (wConv->m_TrigFlag & 1)  != TriggerFlag ){
       continue;
     }else{ //Other Beam Event : GammaEvent// 
       for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){

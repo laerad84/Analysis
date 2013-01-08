@@ -1,5 +1,4 @@
 #include "PulseGenerator.h"
-
 #include "TF1.h"
 #include "TGraph.h"
 #include "TH1.h"
@@ -9,7 +8,7 @@
 
 int main( int argc, char** argv ){
   
-  //TApplication* app = new TApplication("app",&argc,argv);
+  TApplication* app = new TApplication("app",&argc,argv);
   PulseGenerator* gen = new PulseGenerator();
   PulseGenerator* gen1 = new PulseGenerator(); 
   TCanvas* can = new TCanvas("can","",800,800);
@@ -29,6 +28,7 @@ int main( int argc, char** argv ){
   
   meanTime = meanTime/Energy;
   can->Divide(2,2);
+
   for( int i = 0; i< 100 ; i++){
     //std::cout<< "Generator" << std::endl;
     can->cd(1);
@@ -43,21 +43,31 @@ int main( int argc, char** argv ){
 	     << func1->GetMaximumX( 0, 500 ) << "  "
 	     << func2->GetMaximumX( 0, 500 ) << std::endl;
     */
-    delete func;
-    delete func1;
-    delete func2;
-    /*
+    const Int_t nPoint= 48;
+    TGraph* gr = new TGraph(nPoint);
+    for( int ipoint = 0 ; ipoint < nPoint; ipoint++){
+      double offset = 8*(gRandom->Rndm()*-0.5);
+      double tsum   = 0.;
+      double d_tmp  = func1->Eval(ipoint*8.-offset)+gRandom->Gaus(0.,2.4);
+      gr->SetPoint(ipoint,ipoint*8,d_tmp);
+    }
+
     func->Draw("C");
     func1->Draw("same C");
     can->cd(2);
     gen->pePDF->Draw();
     can->cd(3);
     gen->pfPDF->Draw();
+    gr->SetMarkerStyle(8);
+    gr->Draw("AP");
     can->Update();
     can->Modified();
     getchar();
-    */
+    delete func;
+    delete func1;
+    delete func2;
+    delete gr;
   }
   
-  //app->Run();
+  app->Run();
 }
