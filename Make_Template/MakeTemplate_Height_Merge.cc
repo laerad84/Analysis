@@ -93,29 +93,31 @@ main( int argc, char** argv ){
     tf->Close();
   }
  
+  std::cout << "Loop for ID" << std::endl;
   tfout->cd();
   for( int ich  = 0; ich < 2716; ich++){
     std::cout<< ich << std::endl;
+    /*
     TH1D* hisSlice[400];
     grTemp->Set(0);
+    std::cout<< __LINE__ << std::endl;
     if( hisTempCosmic[ich]->GetEntries() != 0 ){
       int ipoint = 0;
       for( int ibin = 0; ibin < 450; ibin++){
 	hisSlice[ibin] = hisTempCosmic[ich]->ProjectionY(Form("bin%d",ibin),ibin,ibin+1);
 	if( hisSlice[ibin]->GetEntries() < 100 ){ continue; }
 	if( hisTempCosmic[ich]->GetBinCenter(ibin) < -150 ){ continue; }
-	
+	std::cout<< __LINE__ << std::endl;
 	hisSlice[ibin]->Fit("gaus","Q","",
 			    hisSlice[ibin]->GetMean()-1.5*hisSlice[ibin]->GetRMS(),
 			    hisSlice[ibin]->GetMean()+1.5*hisSlice[ibin]->GetRMS());
 	TF1* func = hisSlice[ibin]->GetFunction("gaus");
 	grTemp->SetPoint( ipoint ,hisTempCosmic[ich]->GetBinCenter( ibin ),
 			  func->GetParameter(1));
-	
-	/*
-	grTemp->SetPoint( ipoint , hisTempCosmic[ich]->GetBinCenter( ibin ),
-			  hisSlice[ibin]->GetMean());
-	*/
+	std::cout<< __LINE__ << std::endl;
+
+	//grTemp->SetPoint( ipoint , hisTempCosmic[ich]->GetBinCenter( ibin ),
+	//		  hisSlice[ibin]->GetMean());	
 	//grTemp->SetPointError(ipoint,0,func->GetParameter(2));      
 	ipoint++;
       }
@@ -123,6 +125,7 @@ main( int argc, char** argv ){
       int    minpoint = 0;
       double pedestal = 0;
       double height   = 0;
+      std::cout<< __LINE__ << std::endl;
       for( int ipoint = 0; ipoint < grTemp->GetN()-7; ipoint++){
 	if( grTemp->GetX()[ipoint+6] > 0 ){ continue; }
 	double rms        = 0; 
@@ -141,13 +144,17 @@ main( int argc, char** argv ){
 	  minpoint  = ipoint;
 	}
       }
+      std::cout<< __LINE__ << std::endl;
+      std::cout<< grTemp->GetN() << std::endl;
       for( int ipoint = minpoint; ipoint < minpoint +7; ipoint++){
 	pedestal += grTemp->GetY()[ipoint];
       }
+      std::cout<< __LINE__ << std::endl;
       pedestal = pedestal / 7;
       TSpline3* spl = new TSpline3("spl",(TGraph*)grTemp);
       height = spl->Eval(0) - pedestal; 
       Int_t Wavepoint = 0;
+      std::cout<< __LINE__ << std::endl;
       for( int ipoint = 0; ipoint < grTemp->GetN(); ipoint++){
 	if( grTemp->GetY()[ipoint] > 1.25 || grTemp->GetY()[ipoint] < -0.25 ){
 	  continue;
@@ -157,15 +164,16 @@ main( int argc, char** argv ){
 	grWave[ich]->SetPointError( Wavepoint, 0 , grTemp->GetEY()[ipoint]/height ); 
 	Wavepoint++;
       }
+      std::cout<< __LINE__ << std::endl;
       spl->Delete();
     }
-    
+    */
     /*
       TSpline3* splWave = new TSpline3(Form("WaveForm_Cosmic_spl_%d",ich),
       (TGraph*)grWave[ich]);
       splWave->Write();
     */
-    grWave[ich]->Write();
+    //grWave[ich]->Write();
     hisTempCosmic[ich]->Write();
   }
   tfout->Close();
