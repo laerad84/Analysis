@@ -94,45 +94,44 @@ Int_t main( int argc , char** argv ){
   trKL->Branch("GammaE"  ,GammaE   ,"GammaE[6]/D");
   trKL->Branch("GammaPos",GammaPos ,"GammaPos[6][3]/D");
   trKL->Branch("KLMom"   ,KLMom    ,"KLMom[3]/D");
-
+  std::cout<< ch->GetEntries() << std::endl;
   for( int ievent = 0; ievent < ch->GetEntries() ; ievent++){
     ch->GetEntry( ievent );
-    if(ievent > 1000){ break; }
+
+    //if(ievent > 1000){ break; }
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
     data.getData( clist );
     data.getData( glist );
     data.getData( klVec );
-    
+    //std::cout<< clist.size() << std::endl;
     if( klVec.size() == 0 ){ continue; }
-    if( clist.size() != 0 ){ continue; }
+    if( clist.size() == 0 ){ continue; }
+    if( glist.size() <  6 ){ continue; }
+    //if( glist.size() != 6 ){ continue; }
     int GammaID = 0;
-    if( glist.size() != 6 ){ continue; }
 
-    for( std::list<Gamma>::iterator itGamma = glist.begin(); 
-	 itGamma != glist.end();
-	 itGamma++,GammaID++){
-      GammaE[GammaID] = (*itGamma).e();
+    for( std::list<Gamma>::iterator itGamma = glist.begin();itGamma != glist.end();itGamma++,GammaID++){
+      //std::cout<<"G:"<< GammaID << std::endl;
+      if( GammaID >=  6 ){ break; }
+      GammaE[GammaID]      = (*itGamma).e();
       GammaPos[GammaID][0] = (*itGamma).x();
       GammaPos[GammaID][1] = (*itGamma).y();
       GammaPos[GammaID][2] = (*itGamma).z();
-      
-      if( GammaID >=  6 ){ break; }
-    }
 
+    }
     KLMass   = klVec[0].m();
     KLE      = klVec[0].e();
     KLPos[0] = klVec[0].vx();
     KLPos[1] = klVec[0].vy();
     KLPos[2] = klVec[0].vz();
-    KLMom[0] = klVec[0].p3()[0];
-    KLMom[1] = klVec[0].p3()[1];
-    KLMom[2] = klVec[0].p3()[2];
-    
+    KLMom[0] = (klVec[0].p3()).x();
+    KLMom[1] = (klVec[0].p3()).y();
+    KLMom[2] = (klVec[0].p3()).z();
     trKL->Fill();
   }
-
+  
   trKL->Write();
   tfout->Close();
   return 0; 
