@@ -357,11 +357,13 @@ main( int argc ,char ** argv ){
 
       double Energy  = Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] );         
       //Distance cut //////////////////
+      /*
       if( reader->CsiID[ich] < 2240 ){
-	if( D > 25 ){ continue; }
-      }else{
 	if( D > 50 ){ continue; }
+      }else{
+	if( D > 100 ){ continue; }
       }
+      */
       /////////////////////////////////
 
       if( Energy > CosmicEventEnergyThreshold ){//&& TimeOffsetSigma[reader->CsiID[ich]] > 0 ){
