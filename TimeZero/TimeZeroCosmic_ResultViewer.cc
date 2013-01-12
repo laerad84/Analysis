@@ -34,7 +34,7 @@ main( int argc, char** argv ){
   std::ifstream ifsRunList(RunList.c_str());
   int tmpRunNumber;
   while( ifsRunList >> tmpRunNumber ){
-    trin->Add(Form("%s/CosmicOut_TimeCalibration_%d_%d.root",ROOTFILE_COSMIC.c_str(),tmpRunNumber,IterationNumber));
+    trin->Add(Form("%s/CosmicOut_TimeCalibration_FNL_%d_%d.root",ROOTFILE_COSMIC.c_str(),tmpRunNumber,IterationNumber));
   }  
 
   int    ID[2716];
