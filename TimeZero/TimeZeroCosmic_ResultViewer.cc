@@ -60,12 +60,14 @@ main( int argc, char** argv ){
   Double_t FitP0[2];
   Double_t FitP1[2];
   Double_t FitChisq[2];
-  Double_t CSIDigiDeltaT0[nCSI];//nCSIDigi
-  Double_t CSIDigiDeltaT1[nCSI];//nCSIDigi
+  Double_t CSIDigiDeltaT[nCSI];//nCSIDigi
   Int_t    CosmicTrigUp;
   Int_t    CosmicTrigDn;
   Double_t Roh;
   Double_t Theta;
+  Double_t DistFromLine[nCSI];//nCSIDigi
+  Double_t HeightFromLine[nCSI];//nCSIDigi
+  
 
 
   trin->SetBranchStatus( "*", 0 );
@@ -80,8 +82,7 @@ main( int argc, char** argv ){
   trin->SetBranchStatus( "CSIDigiHHTime"  );
   trin->SetBranchStatus( "CSIDigiID"      );
   trin->SetBranchStatus( "CSIDigiSignal"  );
-  trin->SetBranchStatus( "CSIDigiDeltaT0" );
-  trin->SetBranchStatus( "CSIDigiDeltaT1" );
+  trin->SetBranchStatus( "CSIDigiDeltaT"  );
   trin->SetBranchStatus( "FitP0"          );
   trin->SetBranchStatus( "FitP1"          );
   trin->SetBranchStatus( "FitChisq"       );
@@ -89,7 +90,9 @@ main( int argc, char** argv ){
   trin->SetBranchStatus( "CosmicTrigDn"   );
   trin->SetBranchStatus( "Roh"            );
   trin->SetBranchStatus( "Theta"          );
-
+  trin->SetBranchStatus( "DistFromLine"   );
+  trin->SetBranchStatus( "HeightFromLine" );
+  
 
   trin->SetBranchAddress( "RunNumber"      , &RunNumber      );
   trin->SetBranchAddress( "EventNumber"    , &EventNumber    );
@@ -102,8 +105,7 @@ main( int argc, char** argv ){
   trin->SetBranchAddress( "CSIDigiHHTime"  , CSIDigiHHTime   );
   trin->SetBranchAddress( "CSIDigiID"      , CSIDigiID       );
   trin->SetBranchAddress( "CSIDigiSignal"  , CSIDigiSignal   );
-  trin->SetBranchAddress( "CSIDigiDeltaT0" , CSIDigiDeltaT0  );
-  trin->SetBranchAddress( "CSIDigiDeltaT1" , CSIDigiDeltaT1  );
+  trin->SetBranchAddress( "CSIDigiDeltaT"  , CSIDigiDeltaT   );
   trin->SetBranchAddress( "FitP0"          , FitP0           );
   trin->SetBranchAddress( "FitP1"          , FitP1           );
   trin->SetBranchAddress( "FitChisq"       , FitChisq        );
@@ -111,7 +113,8 @@ main( int argc, char** argv ){
   trin->SetBranchAddress( "CosmicTrigDn"   , &CosmicTrigDn   );
   trin->SetBranchAddress( "Roh"            , &Roh            );
   trin->SetBranchAddress( "Theta"          , &Theta          );
-
+  trin->SetBranchAddress( "DistFromLine"   , DistFromLine    );
+  trin->SetBranchAddress( "HeightFromLine" , HeightFromLine  );
 
   TFile* tfout = new TFile(Form("%s/CosmicOuthist_%d.root",ROOTFILE_COSMIC.c_str(),IterationNumber), "recreate");
 
@@ -144,18 +147,18 @@ main( int argc, char** argv ){
     trin->GetEntry(ievent);
     if( FitChisq[1] > 3 ){ continue; }
     for( int idigi = 0; idigi < nCSIDigi ; idigi++){
-      hisDeltaNoCut[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
-      hisDeltaAll->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
+      hisDeltaNoCut[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT[ idigi ] );
+      hisDeltaAll->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT[ idigi ] );
     
       if( CSIDigiID[idigi] < 2240 ){ // Case of Small Crystal 
 	if( CSIDigiE[idigi] > 11 && CSIDigiE[idigi] < 17 ){
-	  hisDelta[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
-	  hisDeltaChannel->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
+	  hisDelta[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT[ idigi ] );
+	  hisDeltaChannel->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT[ idigi ] );
 	}
       }else{ // Case of Large Crystal ... 
 	if( CSIDigiE[idigi] > 22 && CSIDigiE[idigi] < 34 ){
-	  hisDelta[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT1[ idigi ] );
-	  hisDeltaChannel->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT1[ idigi ] );
+	  hisDelta[ CSIDigiID[ idigi ] ]->Fill( CSIDigiDeltaT[ idigi ] );
+	  hisDeltaChannel->Fill( CSIDigiID[ idigi  ] , CSIDigiDeltaT[ idigi ] );
 	}
       }
       //std::cout  << CSIDigiID[ idigi ] << std::endl;
