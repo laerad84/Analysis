@@ -241,12 +241,12 @@ main( int argc ,char ** argv ){
   trout->Branch( "FitP0"         , FitP0           , "FitP0[nCSIDigi]/D" );//nCSIDigi
   trout->Branch( "FitP1"         , FitP1           , "FitP1[nCSIDigi]/D" );//nCSIDigi
   trout->Branch( "FitChisq"      , FitChisq        , "FitChisq[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "DistFromLine"  , DistFromLine    , "DistFromLine[nCSIDigi]/D");//nCSIDigi
+  trout->Branch( "HeightFromLine", HeightFromLine  , "HeightFromLine[nCSIDigi]/D");//nCSIDigi
   trout->Branch( "CosmicTrigUp"  , &CosmicTrigUp   , "CosmicTrigUp/I");
   trout->Branch( "CosmicTrigDn"  , &CosmicTrigDn   , "CosmicTrigDn/I");
   trout->Branch( "Roh"           , &Roh            , "Roh/D");
   trout->Branch( "Theta"         , &Theta          , "Theta/D");
-  trout->Branch( "DistFromLine"  , DistFromLine    , "DistFromLine[nCSIDigi]/D");//nCSIDigi
-  trout->Branch( "HeightFromLine", HeightFromLine  , "HeightFromLine[nCSIDigi]/D");//nCSIDigi
   }
   TCanvas* can = new TCanvas("can","can",1200,800);
   can->Divide( 3,2 );
