@@ -352,7 +352,7 @@ main( int argc ,char ** argv ){
       }
       Double_t x,y;
       Double_t D,H;
-      DHFromLine( x,y,Roh,Theta,H,D);
+      DHFromLine( x,y,Roh,Theta/180*TMath::Pi(),H,D);
       handler->GetMetricPosition( reader->CsiID[ich] , x, y );      
 
       double Energy  = Converter->ConvertToEnergy( reader->CsiID[ich], reader->CsiSignal[ich] );         
@@ -447,7 +447,7 @@ main( int argc ,char ** argv ){
       Double_t x,y;
       Double_t D,H;
       handler->GetMetricPosition( CSIDigiID[ idigi ],x,y);      
-      DHFromLine(x,y,Roh,Theta,H,D);      
+      DHFromLine(x,y,Roh,Theta*TMath::Pi()/180,H,D);      
       Double_t FuncFitTime = FitP0[idigi] + FitP1[idigi]*HeightFromLine[idigi];
       CSIDigiDeltaT[idigi] = CSIDigiTime[idigi] - TimeOffsetTotal[CSIDigiID[idigi]] - FuncFitTime; 
     }
