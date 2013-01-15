@@ -119,7 +119,7 @@ main( int argc, char** argv ){
   TFile* tfout = new TFile(Form("%s/CosmicOuthist_%d.root",ROOTFILE_COSMIC.c_str(),IterationNumber), "recreate");
 
   TH1D* hisResult = new TH1D("hisResult","hisResult;DeltaTime[ns];nEnetries[0.1ns]",200,-10,10);
-  TH2D* hisDeltaChannel = new TH2D("hisDeltaChannel","hisDeltaChannel",2716,0,2716,250,-10,40);
+  TH2D* hisDeltaChannel = new TH2D("hisDeltaChannel","hisDeltaChannel",2716,0,2716,400,-40,40);
   TH1D* hisDelta[2716];
   TH2D* hisDeltaAll = new TH2D("hisDeltaAll","hisDeltaAll;ChannelNo;DeltaT",2716,0,2716,250,-10,40);
   TH1D* hisDeltaNoCut[2716];
@@ -180,7 +180,7 @@ main( int argc, char** argv ){
 	func = hisDelta[i]->GetFunction("gaus");
 	Delta[i] = func->GetParameter(1);
 	Resolution[i] = func->GetParameter(2);
-	if( TMath::Abs(Delta[i] - mean ) > 2*sigma ){ 
+	if( TMath::Abs(Delta[i] - mean ) > sigma ){ 
 	  rst_1 = hisDelta[i]->Fit("gaus","Q","",mean-4*sigma, mean+4*sigma);
 	  func = hisDelta[i]->GetFunction("gaus");
 	  Delta[i] = func->GetParameter(1);
