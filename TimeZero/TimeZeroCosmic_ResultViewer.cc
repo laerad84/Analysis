@@ -176,13 +176,19 @@ main( int argc, char** argv ){
       if( func != NULL ){
 	double mean = func->GetParameter(1);
 	double sigma = func->GetParameter(2);
-	int rst_1 = hisDelta[i]->Fit("gaus","Q","",mean-1.5*sigma, mean+1.5*sigma);
+	int rst_1 = hisDelta[i]->Fit("gaus","Q","",mean-2*sigma, mean+2*sigma);
 	func = hisDelta[i]->GetFunction("gaus");
+	Delta[i] = func->GetParameter(1);
+	Resolution[i] = func->GetParameter(2);
+	if( TMath::Abs(Delta[i] - mean ) > 2*sigma ){ 
+	  rst_1 = hisDelta[i]->Fit("gaus","Q","",mean-3*sigma, mean+3*sigma);
+	  func = hisDelta[i]->GetFunction("gaus");
+	  Delta[i] = func->GetParameter(1);
+	  Resolution[i] = func->GetParameter(2);
+	}
 	grDelta->SetPoint( grDelta->GetN(), i, func->GetParameter(1));
 	grDelta->SetPointError( grDelta->GetN()-1, 0, func->GetParError(2));
 	grRES->SetPoint( grRES->GetN() , i , func->GetParameter(2));
-	Delta[i] = func->GetParameter(1);
-	Resolution[i] = func->GetParameter(2);
 	hisResult->Fill(Delta[i]);
       }
     }
