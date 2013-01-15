@@ -181,7 +181,7 @@ main( int argc, char** argv ){
 	Delta[i] = func->GetParameter(1);
 	Resolution[i] = func->GetParameter(2);
 	if( TMath::Abs(Delta[i] - mean ) > 2*sigma ){ 
-	  rst_1 = hisDelta[i]->Fit("gaus","Q","",mean-3*sigma, mean+3*sigma);
+	  rst_1 = hisDelta[i]->Fit("gaus","Q","",mean-4*sigma, mean+4*sigma);
 	  func = hisDelta[i]->GetFunction("gaus");
 	  Delta[i] = func->GetParameter(1);
 	  Resolution[i] = func->GetParameter(2);
