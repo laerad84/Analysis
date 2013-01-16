@@ -349,7 +349,7 @@ main( int argc ,char ** argv ){
     // Copy Cosmic Data ;
     for( int ich = 0; ich < reader->CosmicNumber; ich++){
       if( reader->CosmicSignal[ich] < 2000){ continue;}
-      CosmicTrigTime[CosmicArr[reader->CosmicID[ich]] = reader->CosmicHHTime[ich];
+      CosmicTrigTime[CosmicArr[reader->CosmicID[ich]]] = reader->CosmicHHTime[ich];
     }
 
 
