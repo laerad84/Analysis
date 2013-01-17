@@ -75,9 +75,10 @@ TF1* PulseGenerator::GetWaveform( double Energy, double SignalTime, double E_to_
   SetLightYield( E_to_CNT, E_to_PE);
   Double_t t_npe = 0;
   Int_t nPE = 0 ;
-  while( nPE == 0){
-    nPE = gRandom->Poisson( Energy*E_to_PE );
-  }
+  //while( nPE == 0){
+  //nPE = gRandom->Poisson( Energy*E_to_PE );
+  //}
+  nPE = gRandom->Poisson(Energy*E_to_PE);
   t_npe += nPE;
   Waveform = new TF1("Waveform",pulseFunc,0.,8.*nSample, 2*t_npe+1);
   Waveform->SetParameter(0,t_npe);
@@ -104,10 +105,11 @@ TF1* PulseGenerator::GetWaveform( std::vector<double> EnergyArr, std::vector<dou
   for( std::vector<double>::iterator it = EnergyArr.begin();it != EnergyArr.end(); it++){
     Int_t nPE = 0; 
     
-    while ( nPE == 0 ){
-      if( *it==0 ){ break; }
-      nPE = gRandom->Poisson( (*it)*E_to_PE );
-    }
+    //while ( nPE == 0 ){
+    //  if( *it==0 ){ break; }
+    //  nPE = gRandom->Poisson( (*it)*E_to_PE );
+    //}
+    nPE = gRandom->Poisson((*it)*E_to_PE );
     t_npe += nPE;
     nPEArrInt.push_back( nPE );
   }
