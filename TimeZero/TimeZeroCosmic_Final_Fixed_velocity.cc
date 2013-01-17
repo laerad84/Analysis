@@ -447,8 +447,8 @@ main( int argc ,char ** argv ){
     ///////////////////////////////////////////////////////////////////    
     for( Int_t ipoint = 0; ipoint < grHeightTimeADJ->GetN(); ipoint++){
       TF1* funcTime = new TF1("linearFunc",linearFunc,-1000,1000,2);
-      funcTime->SetParameter(1,300);
-      funcTime->SetParLimits(1,300,300);
+      funcTime->SetParameter(1,1./300);
+      funcTime->SetParLimits(1,1./300,1./300);
       Double_t tmpErr = grHeightTimeADJ->GetEY()[ipoint];
       // For get off effect of point //
       grHeightTimeADJ->SetPointError(ipoint, 0, 0xFFFF);
