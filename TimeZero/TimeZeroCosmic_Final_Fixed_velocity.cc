@@ -46,6 +46,13 @@
 // TimeZeroCosmic [RunNumberList] [IterationNumber]
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+double linearFunc( double *x , double *par ){
+  double x0 = x[0];
+  double p0 = par[0];
+  double p1 = par[1];
+  return p0+x0*p1;
+}
+
 Double_t DFromLine( double x, double y, double roh, double theta){
   TVector2 vec(x,y);
   TVector2 vecp = vec.Rotate( -1*theta );
@@ -318,11 +325,21 @@ main( int argc ,char ** argv ){
 	CosmicTrigDn = i;
       }
     }
-    if( nTrigUp != 1  || nTrigDn != 1 ){      
+
+    bool SameScintiTriggered = false;
+    for( int i = 0; i< 5; i++){
+      Int_t TrigFlag = 1 << i; 
+      if(( TrigFlag & reader->CosmicTrigFlagUp ) == TrigFlag &&
+	 ( TrigFlag & reader->CosmicTrigFlagDn ) == TrigFlag ){
+	SameScintiTriggered = true; 
+      }						     
+    }
+
+
+    if( nTrigUp >= 1  || nTrigDn >= 1 ){      
       continue;
     }
-	
-      
+    if( !SameScintiTriggered ){ continue; }
 
     stepHist->Fill(1);
     //std::cout << "CsI" << std::endl;
@@ -427,12 +444,14 @@ main( int argc ,char ** argv ){
     // Fitting with linear data 
     ///////////////////////////////////////////////////////////////////    
     for( Int_t ipoint = 0; ipoint < grHeightTimeADJ->GetN(); ipoint++){
+      TF1* funcTime = new TF1("linearFunc",linearFunc,-1000,1000,2);
+      funcTime->SetParameter(1,300);
+      funcTime->SetParLimits(1,300,300);
       Double_t tmpErr = grHeightTimeADJ->GetEY()[ipoint];
       // For get off effect of point //
       grHeightTimeADJ->SetPointError(ipoint, 0, 0xFFFF);
-      grHeightTimeADJ->Fit("pol1","Q","",-1000,1000);
+      grHeightTimeADJ->Fit(funcTime,"Q","",-1000,1000);
 
-      TF1* funcTime    = grHeightTimeADJ->GetFunction("pol1");
       FitP0[ipoint]    = funcTime->GetParameter(0);
       FitP1[ipoint]    = funcTime->GetParameter(1);
       FitChisq[ipoint] = funcTime->GetChisquare() / funcTime->GetNDF();     
