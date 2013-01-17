@@ -329,16 +329,18 @@ main( int argc ,char ** argv ){
     bool SameScintiTriggered = false;
     for( int i = 0; i< 5; i++){
       Int_t TrigFlag = 1 << i; 
-      if(( TrigFlag & reader->CosmicTrigFlagUp ) == TrigFlag &&
-	 ( TrigFlag & reader->CosmicTrigFlagDn ) == TrigFlag ){
+      if(( TrigFlag & reader->CosmicTrigFlagUp ) !=0 &&
+	 ( TrigFlag & reader->CosmicTrigFlagDn ) !=0 ){
 	SameScintiTriggered = true; 
       }						     
     }
 
-
+    /*
     if( nTrigUp >= 1  || nTrigDn >= 1 ){      
       continue;
     }
+    */
+
     if( !SameScintiTriggered ){ continue; }
 
     stepHist->Fill(1);
