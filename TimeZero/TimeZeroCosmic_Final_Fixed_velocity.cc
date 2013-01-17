@@ -201,7 +201,7 @@ main( int argc ,char ** argv ){
   }
   */
   
-  TFile* tfout = new TFile(Form("%s/CosmicOut_TimeCalibration_FNL_%d_%d.root",ROOTFILE_COSMIC.c_str(),fRunNumber,IterationNumber),"RECREATE");
+  TFile* tfout = new TFile(Form("%s/CosmicOut_TimeCalibration_FNL_FIXV_%d_%d.root",ROOTFILE_COSMIC.c_str(),fRunNumber,IterationNumber),"RECREATE");
 
   E14WavReader* reader = new E14WavReader(trin);
   Long_t entries =  reader->fChain->GetEntries();
