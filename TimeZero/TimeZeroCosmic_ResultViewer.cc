@@ -15,6 +15,8 @@
 #include "TF1.h"
 #include "TMath.h"
 #include "TStyle.h"
+#include "TApplication.h"
+
 
 int
 main( int argc, char** argv ){
@@ -25,6 +27,8 @@ main( int argc, char** argv ){
   std::string RunList = argv[1];
   int IterationNumber = atoi( argv[2] );
 
+
+  //TApplication* app = new TApplication("app",&argc, argv);
   TChain* trin = new TChain("trOut");
 
   std::string ROOTFILE_WAV=std::getenv("ROOTFILE_WAV");
@@ -34,6 +38,7 @@ main( int argc, char** argv ){
   std::ifstream ifsRunList(RunList.c_str());
   int tmpRunNumber;
   while( ifsRunList >> tmpRunNumber ){
+    //trin->Add(Form("%s/CosmicOut_TimeCalibration_FNL_FIXV_%d_%d.root",ROOTFILE_COSMIC.c_str(),tmpRunNumber,IterationNumber));
     trin->Add(Form("%s/CosmicOut_TimeCalibration_FNL_FIXV_%d_%d.root",ROOTFILE_COSMIC.c_str(),tmpRunNumber,IterationNumber));
   }  
 
@@ -121,7 +126,7 @@ main( int argc, char** argv ){
   TH1D* hisResult = new TH1D("hisResult","hisResult;DeltaTime[ns];nEnetries[0.1ns]",200,-10,10);
   TH2D* hisDeltaChannel = new TH2D("hisDeltaChannel","hisDeltaChannel",2716,0,2716,400,-40,40);
   TH1D* hisDelta[2716];
-  TH2D* hisDeltaAll = new TH2D("hisDeltaAll","hisDeltaAll;ChannelNo;DeltaT",2716,0,2716,250,-10,40);
+  TH2D* hisDeltaAll = new TH2D("hisDeltaAll","hisDeltaAll;ChannelNo;DeltaT",2716,0,2716,400,-40,40);
   TH1D* hisDeltaNoCut[2716];
 
   TGraphErrors* grDelta = new TGraphErrors();
@@ -135,11 +140,12 @@ main( int argc, char** argv ){
     gPad->SetGridx();
     gPad->SetGridy();
   }
-  ps->NewPage();
+
+  //ps->NewPage();
 
   for( int i = 0; i< 2716; i++){
-    hisDelta[i] = new TH1D(Form("hisDelta%d",i ),Form("hisDelta%d",i),250,-10,40);
-    hisDeltaNoCut[i] = new TH1D(Form("hisDeltaNoCut%d",i),Form("hisDeltaNoCut%d",i),250,-10,40);
+    hisDelta[i] = new TH1D(Form("hisDelta%d",i ),Form("hisDelta%d",i),400,-40,40);
+    hisDeltaNoCut[i] = new TH1D(Form("hisDeltaNoCut%d",i),Form("hisDeltaNoCut%d",i),400,-40,40);
   }
 
   for( int ievent = 0; ievent < trin->GetEntries(); ievent++){
@@ -165,23 +171,26 @@ main( int argc, char** argv ){
     }
   }
 
+  Int_t iCan = 1; 
   for( int i = 0; i< 2716; i++){
     //std::cout << hisDelta[i]->GetEntries() << std::endl;
     if( hisDelta[i]->GetEntries() > 10){
       int rst = hisDelta[i]->Fit("gaus","Q","",
-				 hisDelta[i]->GetBinCenter( hisDelta[i]->GetMaximumBin() ) - 2, 
-				 hisDelta[i]->GetBinCenter( hisDelta[i]->GetMaximumBin() ) + 2);
+				 hisDelta[i]->GetBinCenter( hisDelta[i]->GetMaximumBin() ) - 6, 
+				 hisDelta[i]->GetBinCenter( hisDelta[i]->GetMaximumBin() ) + 6);
       TF1* func = NULL;
       func = hisDelta[i]->GetFunction("gaus");
       if( func != NULL ){
 	double mean = func->GetParameter(1);
 	double sigma = func->GetParameter(2);
-	int rst_1 = hisDelta[i]->Fit("gaus","Q","",mean-2*sigma, mean+2*sigma);
+	int rst_1 = hisDelta[i]->Fit("gaus","Q","",mean-3*sigma, mean+3*sigma);
+	if( rst_1 != 0 ){ std::cout<< i << std::endl; }
 	func = hisDelta[i]->GetFunction("gaus");
 	Delta[i] = func->GetParameter(1);
 	Resolution[i] = func->GetParameter(2);
-	if( TMath::Abs(Delta[i] - mean ) > sigma ){ 
+	if( TMath::Abs(Delta[i] - mean ) > 3*sigma || rst_1 != 0 ){ 
 	  rst_1 = hisDelta[i]->Fit("gaus","Q","",mean-4*sigma, mean+4*sigma);
+	  if( rst_1 !=0 ){ std::cout<< i << std::endl; }
 	  func = hisDelta[i]->GetFunction("gaus");
 	  Delta[i] = func->GetParameter(1);
 	  Resolution[i] = func->GetParameter(2);
@@ -193,17 +202,17 @@ main( int argc, char** argv ){
       }
     }
  
-    can->cd( i%6 + 1);
-    hisDelta[i]->Draw();
- 
-    if( ((i+1)%6) == 0&& i!=0){
-      can->Modified();
+    can->cd(iCan);
+    hisDelta[i]->DrawCopy(); 
+    if( iCan == 6 ){
       can->Update();
+      can->Modified();
       ps->NewPage();
     }
-
-    hisDelta[ i ]  ->Write(); 
-    hisDeltaNoCut[ i]->Write();
+    if( iCan == 6 ){ iCan = 0;}
+    iCan++;
+    hisDelta[i]     ->Write(); 
+    hisDeltaNoCut[i]->Write();
   }
 
   int tmpID;
@@ -246,4 +255,5 @@ main( int argc, char** argv ){
   ps->Close();
   ofs.close();
 
+  //app->Run();
 }
