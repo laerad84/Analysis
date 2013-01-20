@@ -50,11 +50,16 @@ int main( int argc, char** argv ){
   std::string ROOTFILE_GAMMAHIT  = std::getenv("ROOTFILE_GAMMAHIT");
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
 
-  TChain* ch = new TChain("T");  
-  ch->Add(Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree, DataIndex ));
-  std::cout<< "File is Opened" << std::endl;
+  std::string iFileForm = "%s/Cluster_%dMeV_%ddeg-1E5-%d.root";      //ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree, DataIndex
+  std::string oFileForm = "%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root"; //ROOTFILE_GAMMACLUS.c_str(),GammaEnergy,Degree, DataIndex
 
-  TFile*  tfout = new TFile(Form("%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree,DataIndex ),"RECREATE");
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //File I/O
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+  TChain* ch = new TChain("T");  
+  ch->Add(Form(iFileForm.c_str(),ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree, DataIndex ));  
+  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_GAMMACLUS.c_str(),GammaEnergy, Degree,DataIndex ),"RECREATE");
   TTree* trout = new TTree("trCluster","");
   const int arrSize = 120;
   Int_t EventNumber;
