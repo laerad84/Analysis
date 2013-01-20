@@ -221,14 +221,16 @@ main( int argc ,char ** argv ){
     clist = clusterFinder.findCluster( nCSIDigi,CSIDigiID,CSIDigiE,CSIDigiTime);
 
     gFinder.findGamma( clist, glist );
-    if( clist.size() < 6 ){ continue; }
-    if( glist.size() !=6 ){ continue; }
-    if( user_rec(glist,klVec)){
-      data.setData( clist );
-      data.setData( glist );
-      user_cut( data, klVec );
-      data.setData(klVec);    
+    //if( clist.size() < 6 ){ continue; }
+    if( glist.size() ==6 ){ 
+      if( user_rec(glist,klVec)){
+	data.setData( clist );
+	data.setData( glist );
+	user_cut( data, klVec );
+	data.setData(klVec);    
+      }
     }
+
     trout->Fill();
   }
   std::cout<< "End" << std::endl;
