@@ -35,51 +35,67 @@
 int main( int argc , char** argv ){
 
   TChain* ch  = new TChain("T");
-  std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
-
+  std::string ANALYSISLIB       = std::getenv("ANALYSISLIB");
+  std::string ROOTFILE_WAV      = std::getenv("ROOTFILE_WAV");
+  std::string TimeOffsetFile    = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());
+  std::string InputDataFileForm = "%s/run_wav_%d_Cal.root";
   TApplication* app = new TApplication("app",&argc, argv );
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///// Read Data File /////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   std::ifstream ifs( "KLRunList_2.txt");
   int tmpRunNumber; 
   int nFiles = 0;
   while(ifs >> tmpRunNumber ){
-    ch->Add(Form("%s/run_wav_%d_Cal_CosmicTime.root",ROOTFILE_WAV.c_str(),tmpRunNumber));
+    ch->Add(Form(InputDataFileForm.c_str(),ROOTFILE_WAV.c_str(),tmpRunNumber));
     nFiles++; 
     //    if( nFiles > 10 ){ break; }
   }	    
-	
-  std::ifstream ifsPi0Peak("Data/ResultTimeDelta.dat");
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///// TimeOffset ///// 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  std::ifstream ifsTimeOffset(TimeOffsetFile.c_str());
   int tmpID;
   double tmpDelta;
   double tmpResolution;
-  double Pi0Delta[2716]={0};
-  double Pi0Resolution[2716]={0xFFFF};
+  double TimeOffset[2716]      = {0};
+  double TimeOffsetSigma[2716] = {0xFFFF};
 
-  while( ifsPi0Peak >> tmpID >> tmpDelta >> tmpResolution ){
-    if( tmpResolution > 0xFFFE || tmpResolution < 0 ){
-      continue;
-    }
-    Pi0Delta[ tmpID ] = tmpDelta;
-    Pi0Resolution[ tmpID ] = tmpResolution; 
+  if( !ifsTimeOffset.is_open() ){ 
+    std::cout<< TimeOffsetFile.c_str() << " is Not existed" << std::endl;
+    return -1; 
   }
+  while( ifsTimeOffset >> tmpID >> tmpDelta >> tmpResolution ){
+    if( tmpResolution > 0xFFFE || tmpResolution < 0 ){
+      TimeOffset[tmpID]      = 0;
+      TimeOffsetSigma[tmpID] = 0xFFFF;
+    }else{
+      TimeOffset[tmpID]      = tmpDelta;
+      TimeOffsetSigma[tmpID] = tmpResolution; 
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///// Prepare for analysis ///// 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   E14GNAnaDataContainer data;
   data.setBranchAddress( ch );
 
-  IDHandler* handler = new IDHandler();
-  CsIImage* imageTime = new CsIImage(handler);
+  IDHandler* handler    = new IDHandler();
+  CsIImage* imageTime   = new CsIImage(handler);
   CsIImage* imageEnergy = new CsIImage( handler); 
-
   Double_t sol = 299.792458;// [mm/ns]
-
   double x,y;
-
   TCanvas* can  = new TCanvas("can","",800,800);
   can->Divide(2,2);
 
-  TFile* tfout  = new TFile(Form("hist_KlongZ_TimeDelta.root"),"recreate");
-  TH2D* hisKlongZTimeDelta    = new TH2D("hisKlongZTimeDelta","hisKlongZTimeDelta", 300,3000,6000,200,-5,5);
-  TH2D* hisKlongZTimeDeltaCal = new TH2D("hisKlongZTimeDeltaCal","hisKlongZTimeDeltaCal", 300,3000,6000,200,-5,5);
+  TFile* tfout                 = new TFile(Form("hist_KlongZ_TimeDelta.root"),"recreate");
+  TH2D*  hisKlongZTimeDelta    = new TH2D("hisKlongZTimeDelta","hisKlongZTimeDelta", 300,3000,6000,200,-5,5);
+  TH2D*  hisKlongZTimeDeltaCal = new TH2D("hisKlongZTimeDeltaCal","hisKlongZTimeDeltaCal", 300,3000,6000,200,-5,5);
 
   // Fill by 10Degrees // 
   TH2D* hisKlongZGammaInjectDirection[5] ;
@@ -155,27 +171,24 @@ int main( int argc , char** argv ){
     if( InnerR < 200 ){ continue; }
     if( OuterR < 300 ){ continue; }
 
-    Double_t KlongZ = klVec[0].vz();
-    Double_t CsISurface = 6148;
-    Double_t DeltaZ = CsISurface - KlongZ;
-    Double_t CalInnerR = TMath::Sqrt( ( InnerRx - klVec[0].vx() )*( InnerRx - klVec[0].vx() ) + ( InnerRy - klVec[0].vy() )*( InnerRy - klVec[0].vy() ));
-    Double_t CalOuterR = TMath::Sqrt( ( OuterRx - klVec[0].vx() )*( OuterRx - klVec[0].vx() ) + ( OuterRy - klVec[0].vy() )*( OuterRy - klVec[0].vy() ));
-
-    Double_t DeltaLengthInner = TMath::Sqrt( (KlongZ -CsISurface)*(KlongZ - CsISurface ) + InnerR*InnerR) - TMath::Abs( CsISurface - KlongZ );
-    Double_t DeltaLengthOuter = TMath::Sqrt( (KlongZ -CsISurface)*(KlongZ - CsISurface ) + OuterR*OuterR) - TMath::Abs( CsISurface - KlongZ );
+    Double_t KlongZ              = klVec[0].vz();
+    Double_t CsISurface          = 6148;
+    Double_t DeltaZ              = CsISurface - KlongZ;
+    Double_t CalInnerR           = TMath::Sqrt( ( InnerRx - klVec[0].vx() )*( InnerRx - klVec[0].vx() ) + ( InnerRy - klVec[0].vy() )*( InnerRy - klVec[0].vy() ));
+    Double_t CalOuterR           = TMath::Sqrt( ( OuterRx - klVec[0].vx() )*( OuterRx - klVec[0].vx() ) + ( OuterRy - klVec[0].vy() )*( OuterRy - klVec[0].vy() ));
+    Double_t DeltaLengthInner    = TMath::Sqrt( (KlongZ -CsISurface)*(KlongZ - CsISurface ) + InnerR*InnerR) - TMath::Abs( CsISurface - KlongZ );
+    Double_t DeltaLengthOuter    = TMath::Sqrt( (KlongZ -CsISurface)*(KlongZ - CsISurface ) + OuterR*OuterR) - TMath::Abs( CsISurface - KlongZ );
     Double_t DeltaLengthInnerCal = TMath::Sqrt( (KlongZ -CsISurface)*(KlongZ - CsISurface ) + CalInnerR*CalInnerR) - TMath::Abs( CsISurface - KlongZ );
     Double_t DeltaLengthOuterCal = TMath::Sqrt( (KlongZ -CsISurface)*(KlongZ - CsISurface ) + CalOuterR*CalOuterR) - TMath::Abs( CsISurface - KlongZ );
 
     //std::cout << KlongZ << std::endl;
-    Double_t TimeZero = InnerTime - DeltaLengthInner/sol;
-    Double_t DeltaTime = OuterTime - DeltaLengthOuter/sol - TimeZero; 
+    Double_t TimeZero     = InnerTime - DeltaLengthInner/sol;
+    Double_t DeltaTime    = OuterTime - DeltaLengthOuter/sol - TimeZero; 
     Double_t TimeZeroCal  = InnerTime - DeltaLengthInnerCal/sol;
     Double_t DeltaTimeCal = OuterTime - DeltaLengthOuterCal/sol - TimeZeroCal; 
 
     hisKlongZTimeDelta->Fill( KlongZ, DeltaTime );
     hisKlongZTimeDeltaCal->Fill( KlongZ, DeltaTimeCal );
-
-
 
     // Search minimum/Maximum Radius Gamma    
     for( std::list<Gamma>::iterator itGamma = glist.begin();
