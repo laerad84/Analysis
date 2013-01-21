@@ -9,25 +9,34 @@
 #include "TMath.h"
 #include "TChain.h"
 #include "TF1.h"
+#include "TProfile2D.h"
 
 int main( int argc, char** argv ){
 
   Int_t Energy = atoi( argv[1] );
   Int_t Theta  = atoi( argv[2] );
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
-  
+  std::string iFileForm = "%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root";
+  std::string oFileForm = "%s/ClusterTimeStructure_SIM_%dMeV_%ddeg.root";
+
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  /// I/O File Setting ///////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+
   TChain* ch = new TChain("trCluster");
   for( int iIndex =0; iIndex < 10; iIndex++){
-    ch->Add(Form("%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root",ROOTFILE_GAMMACLUS.c_str(),Energy,Theta,iIndex));
+    ch->Add(Form(iFileForm.c_str(),ROOTFILE_GAMMACLUS.c_str(),Energy,Theta,iIndex));
   }
   /*
   TFile* tf = new TFile(Form("%s/Data_All.root",ROOTFILE_GAMMACLUS.c_str()));
   TTree* tr = (TTree*)tf->Get("trCluster");
   */
   ClusterTimeReader* reader = new ClusterTimeReader(ch);
-  Int_t nEntries = reader->fChain->GetEntries(); 
-  
-  TFile* tfout = new TFile(Form("%s/ClusterTimeStructure_SIM_%dMeV_%ddeg.root",ROOTFILE_GAMMACLUS.c_str(),Energy,Theta),"recreate");  
+  Int_t nEntries = reader->fChain->GetEntries();   
+  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_GAMMACLUS.c_str(),Energy,Theta),"recreate");  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   const int nE = 6;
   const int nTheta = 8; 

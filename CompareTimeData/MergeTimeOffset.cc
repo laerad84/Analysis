@@ -2,6 +2,9 @@ void MergeTimeOffset(){
 
   std::string ANALYSISLIB = std::getenv("ANALYSISLIB");
   gSystem->Load(Form("%s/lib/libAnalysisLib.so",ANALYSISLIB.c_str()));
+  gSystem->Load("/home/jwlee/local/Analysis/DrawLib/lib/libDrawLib.so");
+  CsIPoly* csi = new CsIPoly("DeltaT","DeltaT");
+
   IDHandler* handler = new IDHandler();
 
   std::ifstream ifsPi0Offet(Form("%s/Data/TimeOffset/Pi0Peak.dat",ANALYSISLIB.c_str()));
