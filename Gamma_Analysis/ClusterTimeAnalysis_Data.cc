@@ -69,10 +69,11 @@ int main( int argc, char** argv ){
   int tmpRunNumber;
   while( ifs >> tmpRunNumber ){
     std::cout << tmpRunNumber << std::endl;
-    ch->Add( Form("%s/run_wav_%d_Cal_CosmicTime.root",ROOTFILE_WAV.c_str(),tmpRunNumber));
+    //ch->Add( Form("%s/run_wav_%d_Cal_CosmicTime.root",ROOTFILE_WAV.c_str(),tmpRunNumber));
+    ch->Add( Form("%s/run_wav_%d_Cal_FNL_COS.root",ROOTFILE_WAV.c_str(),tmpRunNumber));
   }
   GammaFinder gFinder;
-  TFile*  tfout = new TFile(Form("%s/Data_All.root",ROOTFILE_GAMMACLUS.c_str()),"RECREATE");
+  TFile*  tfout = new TFile(Form("%s/Data_All_Cal_FNL_COS.root",ROOTFILE_GAMMACLUS.c_str()),"RECREATE");
   TTree*  trout = new TTree("trCluster","");
   const int arrSize = 120;
   Int_t EventNumber;

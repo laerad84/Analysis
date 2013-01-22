@@ -9,6 +9,7 @@
 #include "TMath.h"
 #include "TChain.h"
 #include "TF1.h"
+#include "TProfile.h"
 #include "TProfile2D.h"
 
 int main( int argc, char** argv ){
@@ -54,6 +55,24 @@ int main( int argc, char** argv ){
   TH2D* hisDT_r;
   TH2D* hisDT_l;
   TH2D* hisPhiPhi;
+
+  TProfile2D* profRPhiEnergy; // x: R, y: Phi, z: Energy
+  TProfile2D* profRPhiTime;   // x: R, y: Phi, z: Time
+  //TProfile2D* profRPhiTime_R[6];
+
+
+
+  profRPhiEnergy = new TProfile2D(Form("profRPhiEnergy_%d_%d",Energy,Theta),
+				  Form("profRPhiEnergy_%d_%d",Energy,Theta),
+				  41,-105,105,41,-105,105);
+  profRPhiTime   = new TProfile2D(Form("profRPhiTime_%d_%d",Energy,Theta),
+				  Form("profRPhiTime_%d_%d",Energy,Theta),
+				  41,-105,105,41,-105,105);
+  /*
+  profRThetaTime = new TProfile2D(Form("profRThetaTime_%d_%d",Energy,Theta),
+				  Form("profRThetaTime_%d_%d",Energy,Theta),
+				  41,-105,105,10,0,60);
+  */
   for( int kIndex = 0; kIndex < nBinsR; kIndex++){
     for( int lIndex  = 0; lIndex <nBinsPhi; lIndex++){
       hisRPhiTime[ kIndex ][ lIndex ] = new TH1D(Form("hisRPhiTime_E_%d_Theta_%d_%d_%d",
@@ -63,6 +82,10 @@ int main( int argc, char** argv ){
 						 200, -10, 10);
     }
   }
+
+  
+
+
   hisRPhi   = new TH2D(Form("hisRPhi_E_%d_%d_Theta_%d_%d",
 			    Energy,Energy,Theta,Theta),
 		       Form("hisRPhi_E_%d_%d_Theta_%d_%d",
