@@ -92,11 +92,19 @@ int  main(int argc,char** argv)
   std::string CONVFILEDIR = std::getenv("ROOTFILE_CONV");
   std::string WAVEFILEDIR = std::getenv("ROOTFILE_WAV" );
   std::string SUMFILEDIR  = std::getenv("ROOTFILE_SUMUP");
+  std::string SUMFILEDIR_1= "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/2012_FEB/Sumup";
+  
   std::cout << ANALIBDIR   << std::endl;  
   std::cout << CONVFILEDIR << std::endl;
   std::cout << WAVEFILEDIR << std::endl;
   std::cout << SUMFILEDIR  << std::endl;
-
+  std::string iFileForm = "%s/crate%d/run%d_conv.root";
+  std::string mapFileDir;
+  if( RunNumber <= 4742 ){ 
+    mapFileDir = SUMFILEDIR;
+  }else{
+    mapFileDir = SUMFILEDIR_1;
+  }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,7 +126,8 @@ int  main(int argc,char** argv)
 				WAVEFILEDIR.c_str(),RunNumber,MinHeight,MaxHeight),
 			   "recreate");
   TTree* trout = new TTree("WFTree","Waveform Analyzed Tree");   
-  E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),
+  
+  E14ConvWriter* wConv = new E14ConvWriter( Form("%s/Sum%d.root",mapFileDir.c_str(),RunNumber),
 					    trout);
   tfout->cd();
   {
