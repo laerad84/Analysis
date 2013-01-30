@@ -132,8 +132,10 @@ int main( int argc, char** argv ){
   
   TProfile2D* profRTE[nE-1][nTheta-1];
   TProfile2D* profDTE[nE-1][nTheta-1];
-
-
+  TProfile2D* profRDT_NRCL[nTheta-1];
+  TProfile*   profRT_NRCL[nTheta-1];
+  TProfile*   profDT_NRCL[nTheta-1];
+  
 
   const int nBinsR   = 41;
   const int nBinsPhi = 41;
@@ -158,6 +160,18 @@ int main( int argc, char** argv ){
   Double_t RDMax   = width*nBinsRD/2.;
   Double_t RDMin   = -1*width*nBinsRD/2.;
 
+
+  for( int iIndex = 0; iIndex < nTheta-1; iIndex++){
+    profRDT_NRCL[iIndex] = new TProfile2D(Form("profRDT_NRCL_Theta_%d",iIndex),
+					  Form("profRDT_NRCL_Theta_%d",ThetaArr[iIndex]),
+					  nBinsRD,RDMin,RDMax,nBinsRD,RDMin,RDMax);
+    profRT_NRCL[iIndex] = new TProfile(Form("profRT_NRCL_Theta_%d",iIndex),
+				       Form("profRT_NRCL_Theta_%d",iIndex),
+				       nBinsRD,RDMin,RDMax);
+    profDT_NRCL[iIndex] = new TProfile(Form("profDT_NRCL_Theta_%d",iIndex),
+				       Form("profDT_NRCL_Theta_%d",iIndex),
+				       nBinsRD,RDMin,RDMax);
+  }
 
   profET_D_All = new TProfile("profET_D_All","profET_D_All",50,0,800);
   profET_D_All_min = new TProfile("profET_D_All_min","profET_D_All_min",160,0,800);
@@ -439,10 +453,14 @@ int main( int argc, char** argv ){
 	  if( EinCluster > ECenterCrystal*0.8 && EinCluster < ECenterCrystal*1.2){
 	    profRDT_NR[EnergyIndex][ThetaIndex]->Fill(RinCluster,DinCluster,TinCluster);
 	    profRDE_NR[EnergyIndex][ThetaIndex]->Fill(RinCluster,DinCluster,EinCluster);
+	    profRDT_NRCL[ThetaIndex]->Fill(RinCluster,DinCluster,TinCluster);
+	    
 	    if( TMath::Abs(DinCluster)< CutValue ){
+	      profRT_NRCL[ThetaIndex]->Fill(RinCluster,TinCluster);
 	      profRT_NR[EnergyIndex][ThetaIndex]->Fill(RinCluster,TinCluster);
 	    }
 	    if( TMath::Abs(RinCluster)< CutValue ){
+	      profDT_NRCL[ThetaIndex]->Fill(DinCluster,TinCluster);
 	      profDT_NR[EnergyIndex][ThetaIndex]->Fill(DinCluster,TinCluster);
 	    }	    
 	  }
@@ -536,8 +554,12 @@ int main( int argc, char** argv ){
     }
   }
 
-
-
+  
+  for( int jIndex = 0; jIndex < nTheta-1; jIndex++){
+    profRDT_NRCL[jIndex]->Write();
+    profRT_NRCL[jIndex]->Write();
+    profDT_NRCL[jIndex]->Write();
+  }
 
   for( int iIndex = 0; iIndex < nE-1; iIndex++){
     for( int jIndex = 0; jIndex < nTheta-1; jIndex++){

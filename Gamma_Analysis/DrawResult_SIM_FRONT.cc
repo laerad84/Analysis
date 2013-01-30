@@ -64,7 +64,12 @@ int main( int argc, char** argv ){
   TProfile2D* profEET;
   TProfile2D* profEET_D;
 
-
+  TH2D*     hisRT = new TH2D(Form("hisRT_E_%d_Theta_%d",Energy,Theta),
+			     Form("hisRT_E_%d_Theta_%d",Energy,Theta),
+			     nBinsRD,RDMin,RDMax,100,-10,10);
+  TH2D*     hisDT = new TH2D(Form("hisDT_E_%d_Theta_%d",Energy,Theta),
+			     Form("hisDT_E_%d_Theta_%d",Energy,Theta),
+			     nBinsRD,RDMin,RDMax,100,-10,10);
   TProfile* profRT;
   TProfile* profDT;
   TProfile* profRE;
@@ -239,14 +244,16 @@ int main( int argc, char** argv ){
 	    profRDE_Low->Fill(RinCluster,DinCluster,EinCluster);
 	  }
 	  
-	  if( TMath::Abs(RinCluster) < RDCutNar ){
-	    profRT->Fill(RinCluster,TinCluster+10);
+	  if( TMath::Abs(DinCluster) < RDCutNar ){
+	    profRT->Fill(RinCluster,TinCluster);
 	    profRE->Fill(RinCluster,EinCluster);
+	    hisRT->Fill(RinCluster,TinCluster);
 	  }
 	  
-	  if( TMath::Abs(DinCluster) < RDCutNar ){
+	  if( TMath::Abs(RinCluster) < RDCutNar ){
 	    profDT->Fill(DinCluster,TinCluster);
 	    profDE->Fill(DinCluster,EinCluster);
+	    hisDT->Fill(DinCluster,TinCluster);
 	  }
 	  
 	  profEET->Fill(ECenterCrystal,EinCluster,TinCluster);
@@ -262,6 +269,8 @@ int main( int argc, char** argv ){
 
 
   tfout->cd();
+  hisRT->Write();
+  hisDT->Write();
   profRDT->Write();
   profRDE->Write();
   profRDE_NR->Write();

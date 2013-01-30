@@ -396,7 +396,7 @@ int  main(int argc,char** argv)
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     
     //if( (wConv->m_TrigFlag & 1)  != 0  || (wConv->m_TrigFlag & 2) !=0 ){
-    if( (wConv->m_TrigFlag != TriggerFlag ){
+    if( wConv->m_TrigFlag != TriggerFlag ){
       continue;
     }else{ //Other Beam Event : GammaEvent// 
       for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
