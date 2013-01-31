@@ -33,6 +33,7 @@
 #include "E14ConvReader.h"
 #include "E14IDHandler.h"
 #include "E14ConvWriter.h"
+#include "sys/stat.h"
 
 #include "TROOT.h"
 #include "TApplication.h"
@@ -45,6 +46,9 @@
 #include "TH2.h"
 #include "TH1.h"
 #include "TProfile.h"
+
+struct stat st;
+
 const int nCrate = 11;
 
 const Double_t COSMIC_THRESHOLD[20] = {100,100,100,100,100,
@@ -79,9 +83,10 @@ int  main(int argc,char** argv)
   Int_t MinHeight = atoi( argv[2] );
   Int_t MaxHeight = atoi( argv[3] );
   Int_t TriggerFlag = 0;
-  if( argc == 4 ){
+  if( argc == 5 ){
     TriggerFlag = atoi( argv[4] );
   }
+
   if( MinHeight >= MaxHeight ){
     std::cerr << "MinHeight >= MaxHeight" << std::endl;
     return -1;
@@ -100,7 +105,7 @@ int  main(int argc,char** argv)
   std::cout << SUMFILEDIR  << std::endl;
   std::string iFileForm = "%s/crate%d/run%d_conv.root";
   std::string mapFileDir;
-  if( RunNumber <= 4742 ){ 
+  if( stat(Form("%s/Sum%d.root",SUMFILEDIR.c_str(),RunNumber),&st) == 0 ){
     mapFileDir = SUMFILEDIR;
   }else{
     mapFileDir = SUMFILEDIR_1;
@@ -397,7 +402,6 @@ int  main(int argc,char** argv)
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     /// Fill data to Template histogram ///
@@ -408,6 +412,7 @@ int  main(int argc,char** argv)
     if( wConv->m_TrigFlag != TriggerFlag ){
       continue;
     }else{ //Other Beam Event : GammaEvent// 
+      std::cout<< wConv->m_TrigFlag << std::endl;
       for( int idigi = 0; idigi < wConv->mod[CsiModuleID]->m_nDigi; idigi++ ){
 	// Cut off range event // 
 	if( wConv->mod[CsiModuleID]->m_Signal[idigi]  <  MinHeight ||
