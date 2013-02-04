@@ -30,8 +30,7 @@
 #include "TFile.h"
 #include "TTree.h"
 
-#include "CsI_Module.h"
-
+#include "CsIPoly.h"
 static const int nCrateFeb     = 11; 
 static const int nCVModule     = 10;
 static const int nCosmicModule = 20; 

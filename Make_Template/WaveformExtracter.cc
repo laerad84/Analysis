@@ -152,10 +152,10 @@ int  main(int argc,char** argv)
   }
   // Additional Branch
   Double_t LaserTrigWF[48];
-  Double_t ChannelOutWF[10][48];
+  Double_t ChannelOutWF[2716][48];
   Double_t SignalTime[48];
   trout->Branch("LaserTrigWF",LaserTrigWF,"LaserTrigWF[48]/D");
-  trout->Branch("ChannelOutWF",ChannelOutWF,"ChannelOutWF[10][48]/D");
+  trout->Branch("ChannelOutWF",ChannelOutWF,"ChannelOutWF[2716][48]/D");
   trout->Branch("SignalTime",SignalTime,"SignalTime[48]/D");
   for( int iPoint  =0; iPoint < 48; iPoint ++){
     SignalTime[iPoint] = 8*iPoint;
@@ -219,7 +219,6 @@ int  main(int argc,char** argv)
 
   std::cout <<"Loop " <<std::endl;
   for( int ievent  = 0; ievent < conv[0]->GetEntries(); ievent++){
-    
     wConv->InitData();
     for( int icosmic = 0; icosmic < 20; icosmic++){
       CosmicSignal[icosmic] = 0;
@@ -260,7 +259,7 @@ int  main(int argc,char** argv)
     for( int iMod = 0 ; iMod <1; iMod++){
       int nSubModule = (wConv->ModMap[iMod]).nMod;
       for( int iSubMod = 0 ; iSubMod <wConv->GetNsubmodule(0) ; iSubMod++){
-	if( iSubMod %100 != 0 || iSubMod > 1000){ continue;}
+	//if( iSubMod %100 != 0 || iSubMod > 1000){ continue;}
 	//std::cout<< iSubMod << std::endl;
 	int iCrate = 9999;
 	int iSlot  = 9999;
@@ -272,7 +271,7 @@ int  main(int argc,char** argv)
 	// SetData to Graph // 	
 	wConv->SetGraph( iMod, iSubMod, conv, gr);
 	for( int iPoint = 0; iPoint < 48 ; iPoint++){
-	  ChannelOutWF[(int)(iSubMod/100)][iPoint] = gr->GetY()[iPoint];
+	  ChannelOutWF[iSubMod][iPoint] = gr->GetY()[iPoint];
 	}
 	
 	// Fit graph with waveform Fitter // 

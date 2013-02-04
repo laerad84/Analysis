@@ -9,7 +9,7 @@ ClusterTime::ClusterTime(): m_id(-1),
   m_cTimeDeltaVec.reserve( 300 );
   m_cRVec.reserve( 300 );
   m_cPhiVec.reserve( 300 );
-
+  m_cSHVec.reserve( 300 );
 }
 ClusterTime::~ClusterTime(){
   ;
@@ -125,6 +125,7 @@ int ClusterTimeAnalyzer::Convert(std::list<Cluster>& clist , std::list<ClusterTi
   //std::cout<< __LINE__ << std::endl;
   return ctlist.size();
 }
+
 int  ClusterTimeAnalyzer::ConvertData( Cluster& clus, ClusterTime& clusterTime){
 
   Double_t ClusterR   = 0.;
@@ -162,7 +163,7 @@ int  ClusterTimeAnalyzer::ConvertData( Cluster& clus, ClusterTime& clusterTime){
       CrystalDeltaPhi = CrystalPhi - ClusterPhi ; 
     }
     RVec.push_back( CrystalR );
-    PhiVec.push_back( CrystalDeltaPhi);    
+    PhiVec.push_back( CrystalDeltaPhi);
     //PhiVec.push_back( CrystalPhi );
     if( CrystalR  < RadiusThreshold ){
       MeanTime += TVec[ vecIndex ] ;

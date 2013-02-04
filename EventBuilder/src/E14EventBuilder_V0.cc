@@ -467,11 +467,11 @@ void E14EventBuilder_V0::Clear(){
   TotalTriggerFlag = 0;
 }
 void E14EventBuilder_V0::DrawEvent(TCanvas* can){
-  CsI_Module* csiEnergy = new CsI_Module("Energy");
-  CsI_Module* csiTime   = new CsI_Module("Time");
-  CsI_Module* csiEnergyCluster[2];
+  CsIPoly* csiEnergy = new CsIPoly("Energy","Energy");
+  CsIPoly* csiTime   = new CsIPoly("Time","Time");
+  CsIPoly* csiEnergyCluster[2];
   for( int i  =0; i< 2; i++){
-    csiEnergyCluster[i] = new CsI_Module(Form("Cluster%d",i));
+    csiEnergyCluster[i] = new CsIPoly(Form("Cluster%d",i),Form("Cluster%d",i));
   }
 
   m_EnergyTimeDistrib->Reset();

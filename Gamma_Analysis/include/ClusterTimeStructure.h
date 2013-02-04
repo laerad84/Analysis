@@ -42,12 +42,21 @@ class ClusterTime{
   void  SetClusterMeanTime( double MeanTime ){ m_MeanTime = MeanTime ; }
   void  SetClusterR( double R ){ m_RCluster = R; }
   void  SetClusterPhi( double Phi ){ m_PhiCluster = Phi; }
+
   void  SetCrystalData( double cID, double cTime, double cR, double cPhi){
     m_cidVec.push_back( cID );
     m_cTimeDeltaVec.push_back( cTime );
     m_cRVec.push_back( cR );
     m_cPhiVec.push_back( cPhi );
   }
+  void SetCrystalData( double cID, double cTime, double cR, double cPhi, double cSH){
+    m_cidVec.push_back( cID );
+    m_cTimeDeltaVec.push_back( cTime );
+    m_cRVec.push_back( cR );
+    m_cPhiVec.push_back( cPhi );
+    m_cSHVec.push_back( cSH );
+  }
+
   void  Reset(){
     m_id = -1;
     m_status = -1; 
@@ -64,11 +73,12 @@ class ClusterTime{
   double GetClusterTime()   const { return m_MeanTime; }
   double GetClusterR()   const { return m_RCluster; }
   double GetClusterPhi() const { return m_PhiCluster; }
+
   const std::vector<double>& clusterIDVec()        const { return m_cidVec; }
   const std::vector<double>& clusterTimeDeltaVec() const { return m_cTimeDeltaVec; }
-  const std::vector<double>& clusterPhiVec()        const { return m_cPhiVec; }
+  const std::vector<double>& clusterPhiVec()       const { return m_cPhiVec; }
   const std::vector<double>& clusterRVec()         const { return m_cRVec; }
-  
+  const std::vector<double>& clusterSHVec()        const { return m_cSHVec;}
 
  private:
   int    m_id;
@@ -82,7 +92,7 @@ class ClusterTime{
   std::vector<double> m_cTimeDeltaVec;
   std::vector<double> m_cRVec;
   std::vector<double> m_cPhiVec;
-
+  std::vector<double> m_cSHVec;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////
