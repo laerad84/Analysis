@@ -31,6 +31,8 @@
 #include "TTree.h"
 
 #include "CsIPoly.h"
+#include <sys/stat.h>
+
 static const int nCrateFeb     = 11; 
 static const int nCVModule     = 10;
 static const int nCosmicModule = 20; 

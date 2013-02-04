@@ -53,7 +53,17 @@ bool E14EventBuilder_V0::InitIOFile(){
     }      
   }
   std::cout << Form("%s/Sum%d.root",SUMFILEDIR.c_str(),m_RunNumber) << std::endl;  
-  wConv = new E14ConvWriter( Form("%s/Sum%d.root",SUMFILEDIR.c_str(),m_RunNumber),
+  std::string SUMUPFILEDIR_1= "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/2012_FEB/Sumup";
+  std::string mapFileDir;
+  struct stat st;
+  if( stat(Form("%s/Sum%d.root",SUMFILEDIR.c_str(),m_RunNumber),&st) == 0 ){
+    mapFileDir = SUMFILEDIR;
+  }else{
+    mapFileDir = SUMUPFILEDIR_1;
+  }
+
+
+  wConv = new E14ConvWriter( Form("%s/Sum%d.root",mapFileDir.c_str(),m_RunNumber),
 					    m_trOut);
   std::cout<< "Setting Map" << std::endl;
   {
