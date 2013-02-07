@@ -68,7 +68,7 @@ main( int argc ,char ** argv ){
   trout->Branch("CsiEne"     ,CSIDigiE     ,"CsiEne[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiTime"    ,CSIDigiTime  ,"CsiTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiHHTime"  ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
-  trout->Branch("CsiSignal"  ,CSIDigiSignal,"CsiDigiSignal[CsiNumber]/D");//nCSIDigi
+  trout->Branch("CsiSignal"  ,CSIDigiSignal,"CsiSignal[CsiNumber]/D");//nCSIDigi
   /*
   trout->Branch("nCSIDigi",&nCSIDigi,"nCSIDigi/I");
   trout->Branch("CSIDigiID",CSIDigiID,"CSIDigiID[nCSIDigi]/I");//nCSIDigi
@@ -153,6 +153,7 @@ main( int argc ,char ** argv ){
       CSIDigiE[ich] = 0;
       CSIDigiTime[ich]   = 0;
       CSIDigiHHTime[ich] = 0;
+      CSIDigiSignal[ich] = 0.;
     }    
     if( (ievent%100) ==0 && ievent ){ std::cout<< ievent << std::endl;}
     reader->GetEntry( ievent  );

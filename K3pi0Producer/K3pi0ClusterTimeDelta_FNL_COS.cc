@@ -66,6 +66,7 @@ main( int argc ,char ** argv ){
   double CSIDigiE[2716] = {0.};
   double CSIDigiTime[2716] ;
   double CSIDigiHHTime[2716];
+  double CSIDigiSignal[2716]={0};
   trout->Branch("RunNumber"  ,&RunNumber   ,"RunNumber/I");
   trout->Branch("EventNumber",&EventNumber ,"EventNumber/I");
   trout->Branch("CsiNumber"  ,&nCSIDigi    ,"CsiNumber/I");
@@ -73,7 +74,8 @@ main( int argc ,char ** argv ){
   trout->Branch("CsiEne"     ,CSIDigiE     ,"CsiEne[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiTime"    ,CSIDigiTime  ,"CsiTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiHHTime"  ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
-
+  trout->Branch("CsiSignal"  ,CSIDigiSignal,"CsiSignal[CsiNumber]/D");//nCSIDigi
+  
   /*
   trout->Branch("nCSIDigi",&nCSIDigi,"nCSIDigi/I");
   trout->Branch("CSIDigiID",CSIDigiID,"CSIDigiID[nCSIDigi]/I");//nCSIDigi
@@ -139,7 +141,6 @@ main( int argc ,char ** argv ){
   double CsISignal[2716] = {0.};
   double CsITime[2716]   = {-1};
   double CsIHHTime[2716] = {-1};
-
   
   std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
   Long_t entries =  reader->fChain->GetEntries();
@@ -157,6 +158,7 @@ main( int argc ,char ** argv ){
       CSIDigiE[ich] = 0;
       CSIDigiTime[ich]   = 0;
       CSIDigiHHTime[ich] = 0;
+      CSIDigiSignal[ich] = 0.;
     }    
     if( (ievent%100) ==0 && ievent ){ std::cout<< ievent << std::endl;}
     reader->GetEntry( ievent  );
@@ -195,6 +197,7 @@ main( int argc ,char ** argv ){
 	CSIDigiE[ nCSIDigi ]      = CsIEnergy[idigi]*CalibrationFactor[ CsIID[idigi] ];
 	CSIDigiTime[ nCSIDigi ]   = CsITime[idigi]-TimeDelta[CsIID[idigi]];
 	CSIDigiHHTime[ nCSIDigi ] = CsIHHTime[idigi];
+	CSIDigiSignal[nCSIDigi]   = CsISignal[idigi];
 	nCSIDigi++;
       }
     }
