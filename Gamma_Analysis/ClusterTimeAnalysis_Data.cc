@@ -39,6 +39,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 //#include "User_Function.h"
 #include "ClusterTimeStructure.h"
+#include "EnergyConverter.h"
 
 double AdjFunc( double* x, double* par ){
   double x0 = x[0];
@@ -64,6 +65,9 @@ int main( int argc, char** argv ){
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
   std::string ANALYSISLIB        = std::getenv("ANALYSISLIB");
 
+  EnergyConverter* Econv = new EnergyConverter();
+  Econv->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",ANALYSISLIB.c_str()));
+
   TChain* ch = new TChain("T");  
   std::ifstream ifs(Form("%s/Data/RunList/KLRunList_2.txt",ANALYSISLIB.c_str()));
   int tmpRunNumber;
@@ -87,12 +91,11 @@ int main( int argc, char** argv ){
   Double_t ClusterEnergy[arrSize];//[nCluster]
   Double_t ClusterPhi[arrSize];//[nCluster]
 
-
   Double_t CrystalT[arrSize][arrSize]; 
   Double_t CrystalEnergy[arrSize][arrSize];
   Double_t CrystalR[arrSize][arrSize];
   Double_t CrystalPhi[arrSize][arrSize];
-
+  Double_t CrystalSignal[arrSize][arrSize];
   trout->Branch("EventNumber"  ,&EventNumber ,"EventNumber/I");
   trout->Branch("nCluster"     ,&nCluster    ,"nCluster/I");
   trout->Branch("nCrystal"     ,nCrystal     ,"nCrystal[nCluster]/I");
@@ -106,6 +109,7 @@ int main( int argc, char** argv ){
   trout->Branch("CrystalEnergy",CrystalEnergy,"CrystalEnergy[nCluster][120]/D");
   trout->Branch("CrystalR"     ,CrystalR     ,"CrystalR[nCluster][120]/D");
   trout->Branch("CrystalPhi"   ,CrystalPhi   ,"CrystalPhi[nCluster][120]/D");
+  trout->Branch("CrystalSignal",CrystalSignal,"CrystalSignal[nCluster][120]/D");
 
   E14GNAnaDataContainer data;
   ClusterTimeAnalyzer* clusterTimeAnalyzer = new ClusterTimeAnalyzer();
@@ -127,10 +131,11 @@ int main( int argc, char** argv ){
       ClusterT[iarr] = 0;      
       ClusterTheta[iarr] = 0;
       for( int jarr  =0; jarr < arrSize; jarr++){
-	CrystalR[iarr][jarr] = 0;
-	CrystalT[iarr][jarr] = 0;
+	CrystalR[iarr][jarr]      = 0;
+	CrystalT[iarr][jarr]      = 0;
 	CrystalEnergy[iarr][jarr] = 0;
-	CrystalPhi[iarr][jarr] = 0;
+	CrystalPhi[iarr][jarr]    = 0;
+	CrystalSignal[iarr][jarr] = 0;
       }
     }    
     std::list<Cluster>     clist;

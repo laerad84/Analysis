@@ -31,7 +31,7 @@ double FuncsplLaser( double *x, double *par ){
   double p0 = par[0];
   double p1 = par[1];
   double p2 = par[2];
-  double value = splLaserTemp->Eval(x0-p0)*p1+p2;
+  double value = splLaser->Eval(x0-p0)*p1+p2;
   return value;
 }
 
@@ -71,10 +71,10 @@ int main(int argc, char** argv){
   TGraph*   grLaser;
   TGraph*   grLaserTemp;
 
-  TH2D*     tempCsi[2716];
-  TProfile* profCsi[2716];
-  TGraph*   grCsi[2716];
-  TGraph*   grCsiTemp[2716];
+  TH2D*     tempCsi[2716]={NULL};
+  TProfile* profCsi[2716]={NULL};
+  TGraph*   grCsi[2716]={NULL};
+  TGraph*   grCsiTemp[2716]={NULL};
   
   // Set STemplate to hist // 
   TFile* tfLaserTemplate = new TFile("LaserWaveTemplate.root");
@@ -87,11 +87,16 @@ int main(int argc, char** argv){
     grLaserTemp->SetPoint( grLaserTemp->GetN(),profLaser->GetBinCenter(iBin+1),profLaser->GetBinContent(iBin+1));
   }
   splLaserTemp = new TSpline3("splLaserTemp",grLaserTemp);
+  for( int iBin = 0; iBin < profLaser->GetNbinsX();iBin++){
+    grLaser->SetPoint( grLaser->GetN(),profLaser->GetBinCenter(iBin+1),profLaser->GetBinContent(iBin+1)/splLaserTemp->Eval(0));
+  }
+  splLaser = new TSpline3("splLaser",grLaser);
   tfLaserTemplate->Close();
 
   TFile* tfTemplate = new TFile("laserTemplate.root");
   for( int i = 0; i< 2716;i++){
     tempCsi[i]=(TH2D*)tfTemplate->Get(Form("ChannelTemplate_%d",i));
+    if( tempCsi[i]->GetEntries() < 4800 ){ continue; }
     profCsi[i]=tempCsi[i]->ProfileX();
     grCsi[i] = new TGraph();
     grCsiTemp[i] = new TGraph();
@@ -99,6 +104,10 @@ int main(int argc, char** argv){
       grCsiTemp[i]->SetPoint( grCsiTemp[i]->GetN(),profCsi[i]->GetBinCenter(iBin+1),profCsi[i]->GetBinContent(iBin+1));
     }
     splCsiTemp[i] = new TSpline3(Form("splCsiTemp_%d",i),grCsiTemp[i]);
+    for( int iBin = 0; iBin < profCsi[i]->GetNbinsX();iBin++){
+      grCsi[i]->SetPoint( grCsi[i]->GetN(),profCsi[i]->GetBinCenter(iBin+1),profCsi[i]->GetBinContent(iBin+1)/splCsiTemp[i]->Eval(0));
+    }
+    splCsi[i] = new TSpline3(Form("splCsi_%d",i),grCsi[i]);
   }
   tfTemplate->Close();
   
@@ -143,15 +152,15 @@ int main(int argc, char** argv){
   TGraph* grLaserEvent = new TGraph();
   TF1* funcLaser = new TF1("funcLaser",FuncsplLaser,-100,200,2);
   
-  TFile* tfOut  = new TFile(Form("LaserTime_%d.root",DivNumber),"recreate");
+  TFile*   tfOut  = new TFile(Form("LaserTime_m100p50_%d.root",DivNumber),"recreate");
   Int_t    EventNumber;
   Double_t LaserT;
   Double_t LaserHeight;
-  Int_t nDigi;
+  Int_t    nDigi;
   Int_t    CsiModID[2716];
   Double_t CsiT[2716];
   Double_t CsiHeight[2716];
-  TTree* trout  =new TTree("FitTimeHeight","");
+  TTree*   trout  =new TTree("FitTimeHeight","");
   trout->Branch("EventNumber",&EventNumber,"EventNumber/I");
   trout->Branch("LaserT"     ,&LaserT     ,"LaserT/D");
   trout->Branch("LaserHeight",&LaserHeight,"LaserHeight/D");
@@ -172,6 +181,8 @@ int main(int argc, char** argv){
   }
   */
   //  for( int ievent  = 0; ievent < nEntries; ievent++){
+  std::cout<< "Loop" << std::endl;
+
   for( int ievent  = DivStart; ievent < DivEnd; ievent++){
     if( (ievent%100) == 0 && ievent ){ std::cout<< ievent << "/" << nEntries << std::endl; }
 
@@ -225,7 +236,6 @@ int main(int argc, char** argv){
     funcLaser->SetParameter(2,0);
     funcLaser->SetParLimits(2,-20,20);
     grLaserEvent->Fit(funcLaser,"Q","",LaserMaxPoint*8-50,LaserMaxPoint*8+20);
-    
     LaserT      = funcLaser->GetParameter(0);
     LaserHeight = funcLaser->GetParameter(1);
     nDigi = 0; 
@@ -235,11 +245,12 @@ int main(int argc, char** argv){
     }
     for( int iCh = 0; iCh < CsiNumber; iCh++){
       //std::cout<<ievent << " : " <<  iCh << std::endl;
+      //if( tempCsi[CsiID[iCh]] == NULL ){ continue; }
       //if( tempCsi[CsiID[iCh]]->GetEntries() < 4800 ){ continue; }
-      TF1* funcCsi   = new TF1("funcCsi",FuncsplCsi,-100,200,2);
-      
-      spl = splCsiTemp[CsiID[iCh]];
-      
+      if( splCsiTemp[CsiID[iCh]] == NULL ){ continue; }
+      if( splCsi[CsiID[iCh]] == NULL ){ continue; }
+      spl = splCsi[CsiID[iCh]];
+      TF1* funcCsi   = new TF1("funcCsi",FuncsplCsi,-100,200,2);      
       for( int iPoint = 0; iPoint < 48; iPoint++){	
 	grCsiEvent[CsiID[iCh]]->SetPoint(iPoint,iPoint*8,ChannelOutWF[CsiID[iCh]][iPoint]-CsiPedestal[iCh]);
 	if( CsiMax[CsiID[iCh]] < ChannelOutWF[CsiID[iCh]][iPoint] ){ 
@@ -251,8 +262,8 @@ int main(int argc, char** argv){
       funcCsi->SetParameter(0,CsiTime[iCh]);
       funcCsi->SetParLimits(1,CsiSignal[iCh]*0.8,CsiSignal[iCh]*1.2);
       funcCsi->SetParLimits(0,(CsiMaxPoint[CsiID[iCh]]-1)*8,(CsiMaxPoint[CsiID[iCh]]+1)*8);
-      grCsiEvent[CsiID[iCh]]->Fit( funcCsi,"Q","",CsiMaxPoint[CsiID[iCh]]*8-70,CsiMaxPoint[CsiID[iCh]]*8+20);
-
+      // -70,20 -- initial
+      grCsiEvent[CsiID[iCh]]->Fit( funcCsi,"Q","",CsiMaxPoint[CsiID[iCh]]*8-100,CsiMaxPoint[CsiID[iCh]]*8+50);
       CsiModID[nDigi]  = CsiID[iCh];
       CsiT[nDigi]      = funcCsi->GetParameter(0);
       CsiHeight[nDigi] = funcCsi->GetParameter(1);

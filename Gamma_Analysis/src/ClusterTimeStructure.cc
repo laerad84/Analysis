@@ -71,6 +71,7 @@ int ClusterTimeAnalyzer::Convert(std::list<Cluster>& clist , std::list<ClusterTi
     std::vector<double> TVec  = (*itCluster).clusterTimeVec();
     std::vector<double> RVec;
     std::vector<double> PhiVec;
+    std::vector<double> SHVec;
     //std::cout<< __LINE__ << std::endl; 
     Int_t    IDInCluster = 0;
     Double_t TInCluster  = 0.;
@@ -97,6 +98,7 @@ int ClusterTimeAnalyzer::Convert(std::list<Cluster>& clist , std::list<ClusterTi
       }
       RVec.push_back( CrystalR );
       PhiVec.push_back( CrystalDeltaPhi);    
+
       //PhiVec.push_back( CrystalPhi);    
       //std::cout<< " R: "<< CrystalR << " : " << RadiusThreshold << std::endl;
       ///Edit 1
@@ -108,7 +110,7 @@ int ClusterTimeAnalyzer::Convert(std::list<Cluster>& clist , std::list<ClusterTi
       if( TempR > CrystalR) {
 	TempR = CrystalR;
 	MeanTime = TVec[ vecIndex ];
-      }
+      }      
     }
       ///Edit 1
       //MeanTime = MeanTime/nCenterCrystal;

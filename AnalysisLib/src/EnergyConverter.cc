@@ -8,7 +8,7 @@ EnergyConverter::EnergyConverter(){
   Init();
   m_nChannel = 2716;
   m_DetectorName = "CsI";
-  m_Compensater = new PeakCompensater();
+  m_Compensater  = new PeakCompensater();
 }  
 EnergyConverter::EnergyConverter(const char* DetectorName , int nChannel ){
   // For Other Detector 
@@ -108,4 +108,19 @@ double EnergyConverter::ConvertToEnergy        ( int channelNumber, double PeakH
     Energy            = this->GetCalibrationConstant( channelNumber ) * CompensatedHeight;
   }
   return Energy;
+}
+double EnergyConverter::ConvertToHeight       ( int channelNumber, double Energy ) const  {
+  double PeakHeight = 0;
+  double CompensatedHeight = 0;
+  if( Energy < 0 ) { return 0;}
+  if( m_Compensater == NULL ){
+    PeakHeight  = Energy/(this->GetCalibrationConstant( channelNumber ));
+  }else{
+    // In Case of CsI // 
+
+    CompensatedHeight = Energy /(this->GetCalibrationConstant( channelNumber ));
+    PeakHeight = m_Compensater->InvCompensate( channelNumber, CompensatedHeight);
+    //std::cout<< CompensatedHeight << "\t" << PeakHeight << std::endl;
+  }
+  return PeakHeight;
 }

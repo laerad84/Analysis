@@ -21,7 +21,8 @@ bool PeakCompensater::Init(){
   int ID;
   int nPoint;
   for( int i = 0; i < 3; i++){
-    m_gr[i]  = new TGraph();
+    m_gr[i]    = new TGraph();
+    m_grInv[i] = new TGraph();
     //spl[i]->SetTitle(Form("Linearity%d",i));
   }
   for( int i = 0; i < 3; i++){
@@ -29,10 +30,12 @@ bool PeakCompensater::Init(){
     for( int j = 0; j < nPoint; j++){
       ifs >> x[i][j] >> y[i][j];
       m_gr[i]->SetPoint(m_gr[i]->GetN(), x[i][j], y[i][j]);      
+      m_grInv[i]->SetPoint(m_grInv[i]->GetN(),x[i][j]/y[i][j],x[i][j]);
     }
   }
   for( int i = 0; i< 3; i++){
     m_spl[i]= new TSpline3(Form("Linearity%d",i), m_gr[i]);    
+    m_splInv[i] = new TSpline3(Form("LineartyInv%d",i),m_grInv[i]);
   }
   ifs.close();
   return true;
@@ -61,6 +64,31 @@ double PeakCompensater::Compensate(int id , double Peak ){
   }
   return CompensateOut;
 }
+double PeakCompensater::InvCompensate( int id, double CompensateOut){
+  //This function was made for recover peakHeight.
+  //result is equal ~0.1% level.
+  //No Compensatable for waveforms which height is over 15000 cnt.
+  int splID=-1;
+  double Peak = 0.;
+  if( id == -1 ){
+    splID = 1;
+  }else if( id < 0 || id >2716){
+    return -1;
+  }else if( id < 2240 ){
+    splID = 0;
+  }else if( id >= 2240){
+    splID = 2;
+  }else{
+    return -1;
+  }
+  if( CompensateOut < 0. ){
+    CompensateOut = 0;
+  }else{
+    Peak = m_splInv[splID]->Eval(CompensateOut);
+  }
+  return Peak;
+}
+
 void PeakCompensater::Draw(int id, char* DrawOption){
   if( id >=3 ){ return ;}
   m_gr[id]->Draw(DrawOption);

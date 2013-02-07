@@ -59,6 +59,8 @@ main( int argc ,char ** argv ){
   double CSIDigiE[2716] = {0.};
   double CSIDigiTime[2716] ;
   double CSIDigiHHTime[2716];
+  double CSIDigiSignal[2716]={0};
+  
   trout->Branch("RunNumber"  ,&RunNumber   ,"RunNumber/I");
   trout->Branch("EventNumber",&EventNumber ,"EventNumber/I");
   trout->Branch("CsiNumber"  ,&nCSIDigi    ,"CsiNumber/I");
@@ -66,7 +68,7 @@ main( int argc ,char ** argv ){
   trout->Branch("CsiEne"     ,CSIDigiE     ,"CsiEne[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiTime"    ,CSIDigiTime  ,"CsiTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiHHTime"  ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
-
+  trout->Branch("CsiSignal"  ,CSIDigiSignal,"CsiDigiSignal[CsiNumber]/D");//nCSIDigi
   /*
   trout->Branch("nCSIDigi",&nCSIDigi,"nCSIDigi/I");
   trout->Branch("CSIDigiID",CSIDigiID,"CSIDigiID[nCSIDigi]/I");//nCSIDigi
@@ -189,6 +191,7 @@ main( int argc ,char ** argv ){
 	CSIDigiE[ nCSIDigi ]      = CsIEnergy[idigi]*CalibrationFactor[ CsIID[idigi] ];
 	CSIDigiTime[ nCSIDigi ]   = CsITime[idigi]-TimeDelta[CsIID[idigi]]-TimeDeltaLength[CsIID[idigi]];
 	CSIDigiHHTime[ nCSIDigi ] = CsIHHTime[idigi];
+	CSIDigiSignal[nCSIDigi]   = CsISignal[idigi];
 	nCSIDigi++;
       }
     }

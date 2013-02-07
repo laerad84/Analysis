@@ -30,7 +30,7 @@ class EnergyConverter {
   virtual bool   IsGoodChannel         ( int )         const ;
   virtual double GetCalibrationConstant( int )         const ;
   virtual double ConvertToEnergy       ( int, double ) const ; 
-  
+  virtual double ConvertToHeight       ( int, double ) const ;
  private:
   virtual void Init();
   virtual void Reset();
