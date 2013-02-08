@@ -420,7 +420,7 @@ int main( int argc, char** argv ){
 	Double_t DinCluster   = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Sin(reader->CrystalPhi[clusterIndex][crystalIndex]);
 	Double_t EinCluster   = reader->CrystalEnergy[clusterIndex][crystalIndex];
 	// Time-Energy relation fixed ? // 
-	DOuble_t SiginCluster = reader->CrystalSignal[clusterIndex]][crystalIndex];
+	Double_t SiginCluster = reader->CrystalSignal[clusterIndex][crystalIndex];
 	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFunc->Eval(EinCluster);
 	if( RadinCluster < TMath::Abs(RCenterCrystal)){ 
 	  RCenterCrystal = RadinCluster;
