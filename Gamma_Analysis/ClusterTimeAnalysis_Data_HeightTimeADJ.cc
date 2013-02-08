@@ -122,7 +122,7 @@ int main( int argc, char** argv ){
   Double_t CsiSignal[2716];
   Double_t CsiEne[2716];
   ch->SetBranchAddress("CsiNumber",&CsiNumber);
-  ch->SetBranchAddress("CsiDigiID",CsiDigiID);//CsiNumber
+  ch->SetBranchAddress("CsiModID",CsiDigiID);//CsiNumber
   ch->SetBranchAddress("CsiTime"  ,CsiTime   );//CsiNumber
   ch->SetBranchAddress("CsiHHTime",CsiHHTime );//CsiNumber
   ch->SetBranchAddress("CsiSignal",CsiSignal );//CsiNumber
