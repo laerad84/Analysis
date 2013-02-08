@@ -93,6 +93,7 @@ int main( int argc, char** argv ){
   Double_t CrystalR[arrSize][arrSize];
   Double_t CrystalPhi[arrSize][arrSize];
   Double_t CrystalSignal[arrSize][arrSize];
+  Int_t    CrystalID[arrSize][arrSize];
 
   trout->Branch("EventNumber"  ,&EventNumber ,"EventNumber/I");
   trout->Branch("nCluster"     ,&nCluster    ,"nCluster/I");
@@ -108,11 +109,26 @@ int main( int argc, char** argv ){
   trout->Branch("CrystalR"     ,CrystalR     ,"CrystalR[nCluster][120]/D");
   trout->Branch("CrystalPhi"   ,CrystalPhi   ,"CrystalPhi[nCluster][120]/D");
   trout->Branch("CrystalSignal",CrystalSignal,"CrystalSignal[nCluster][120]/D");
+  trout->Branch("CrystalID"    ,CrystalID    ,"CrystalID[nCluster][120]/I");
 
   E14GNAnaDataContainer data;
   ClusterTimeAnalyzer* clusterTimeAnalyzer = new ClusterTimeAnalyzer();
   
   data.setBranchAddress( ch );
+  Int_t CsiNumber;
+  Double_t CsiDigiID[2716];
+  Double_t CsiTime[2716];
+  Double_t CsiHHTime[2716];
+  Double_t CsiSignal[2716];
+  Double_t CsiEne[2716];
+  ch->SetBranchAddress("CsiNumber",&CsiNumber);
+  ch->SetBranchAddress("CsiDigiID",CsiDigiID);//CsiNumber
+  ch->SetBranchAddress("CsiTime"  ,CsiTime   );//CsiNumber
+  ch->SetBranchAddress("CsiHHTime",CsiHHTime );//CsiNumber
+  ch->SetBranchAddress("CsiSignal",CsiSignal );//CsiNumber
+  ch->SetBranchAddress("CsiEne"   ,CsiEne    );//CsiNumber
+  //ch->SetBranchAddress
+
   std::cout<< ch->GetEntries() << std::endl;
   for( Int_t eventIndex = 0; eventIndex < ch->GetEntries(); eventIndex++){
     //if( eventIndex > 1E5 ){ break ; }
@@ -136,6 +152,7 @@ int main( int argc, char** argv ){
 	CrystalSignal[iarr][jarr] = 0;
       }
     }    
+
     std::list<Cluster>     clist;
     std::list<ClusterTime> ctlist;
     std::list<Gamma>       glist;
@@ -169,10 +186,17 @@ int main( int argc, char** argv ){
       ClusterTheta[clIndex] = TMath::ATan2((*itlist).GetClusterR(),(6148. - klVec[0].vz() ));
       nCrystal[clIndex]     = (*itCl).clusterIdVec().size();
       for( Int_t cryIndex = 0; cryIndex < nCrystal[clIndex] ; cryIndex++ ){
-	CrystalR[ clIndex ][ cryIndex ]     = (*itlist).clusterRVec()[cryIndex];
-	CrystalPhi[ clIndex ][ cryIndex]    = (*itlist).clusterPhiVec()[cryIndex];
-	CrystalT[ clIndex ][ cryIndex ]     = (*itlist).clusterTimeDeltaVec()[cryIndex];
-	CrystalEnergy[ clIndex ][ cryIndex] = (*itCl).clusterEVec()[cryIndex];	
+	CrystalR[clIndex][cryIndex]      = (*itlist).clusterRVec()[cryIndex];
+	CrystalPhi[clIndex][cryIndex]    = (*itlist).clusterPhiVec()[cryIndex];
+	CrystalT[clIndex][cryIndex]      = (*itlist).clusterTimeDeltaVec()[cryIndex];
+	CrystalEnergy[clIndex][cryIndex] = (*itCl).clusterEVec()[cryIndex];
+	CrystalID[clIndex][cryIndex]     = (*itlist).clusterIDVec()[cryIndex];
+	for( int idigi = 0; idigi < CsiNumber; idigi++){
+	  if( CrystalID[clIndex][cryIndex] == CsiDigiID[idigi] ){
+	    CrystalSignal[clIndex][cryIndex] = CsiSignal[idigi];
+	    break;
+	  }
+	}
       }
     }
     trout->Fill();
