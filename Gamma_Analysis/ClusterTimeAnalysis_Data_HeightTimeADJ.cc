@@ -131,8 +131,8 @@ int main( int argc, char** argv ){
   //ch->SetBranchAddress
 
   std::cout<< ch->GetEntries() << std::endl;
-  //for( Int_t eventIndex = 0; eventIndex < ch->GetEntries(); eventIndex++){
-  for( Int_t eventIndex = 0; eventIndex < 1000; eventIndex++){
+  for( Int_t eventIndex = 0; eventIndex < ch->GetEntries(); eventIndex++){
+  //for( Int_t eventIndex = 0; eventIndex < 1000; eventIndex++){
     //if( eventIndex > 1E5 ){ break ; }
     ch->GetEntry( eventIndex );
     EventNumber = eventIndex ;
