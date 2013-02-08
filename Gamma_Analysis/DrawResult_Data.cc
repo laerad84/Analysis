@@ -416,11 +416,12 @@ int main( int argc, char** argv ){
       Double_t DCenter=0;
       for( int crystalIndex = 0; crystalIndex < reader->nCrystal[ clusterIndex]; crystalIndex++){
 	Double_t RadinCluster = reader->CrystalR[clusterIndex][crystalIndex];
-	Double_t RinCluster = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Cos(reader->CrystalPhi[clusterIndex][crystalIndex]);
-	Double_t DinCluster = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Sin(reader->CrystalPhi[clusterIndex][crystalIndex]);
-	Double_t EinCluster = reader->CrystalEnergy[clusterIndex][crystalIndex];
+	Double_t RinCluster   = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Cos(reader->CrystalPhi[clusterIndex][crystalIndex]);
+	Double_t DinCluster   = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Sin(reader->CrystalPhi[clusterIndex][crystalIndex]);
+	Double_t EinCluster   = reader->CrystalEnergy[clusterIndex][crystalIndex];
 	// Time-Energy relation fixed ? // 
-	Double_t TinCluster = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFunc->Eval(EinCluster);
+	DOuble_t SiginCluster = reader->CrystalSignal[clusterIndex]][crystalIndex];
+	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFunc->Eval(EinCluster);
 	if( RadinCluster < TMath::Abs(RCenterCrystal)){ 
 	  RCenterCrystal = RadinCluster;
 	  ECenterCrystal = EinCluster;
@@ -438,11 +439,12 @@ int main( int argc, char** argv ){
       for( int crystalIndex  = 0; crystalIndex < reader->nCrystal[ clusterIndex ]; crystalIndex++){       
 	if( reader->CrystalEnergy[clusterIndex][crystalIndex] <= LowEnergyCut ) { continue; }
 	//if( reader->CrystalEnergy[clusterIndex][crystalIndex] > 400 ){ continue; }
-	Double_t RinCluster = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Cos(reader->CrystalPhi[clusterIndex][crystalIndex]);
-	Double_t DinCluster = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Sin(reader->CrystalPhi[clusterIndex][crystalIndex]);
-	Double_t EinCluster = reader->CrystalEnergy[clusterIndex][crystalIndex];
+	Double_t RinCluster   = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Cos(reader->CrystalPhi[clusterIndex][crystalIndex]);
+	Double_t DinCluster   = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Sin(reader->CrystalPhi[clusterIndex][crystalIndex]);
+	Double_t EinCluster   = reader->CrystalEnergy[clusterIndex][crystalIndex];
 	// Time-Energy relation fixed ? // 
-	Double_t TinCluster = reader->CrystalT[clusterIndex][crystalIndex]-TCenterCrystal-TimeAdjFunc->Eval(EinCluster);
+	Double_t SiginCluster = reader->CrystalSignal[clusterIndex][crystalIndex];
+	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TCenterCrystal-TimeAdjFunc->Eval(EinCluster);
 	if( EinCluster == 0){ continue; }
 
 	hisPhiPhi[EnergyIndex][ThetaIndex]->Fill( reader->ClusterPhi[clusterIndex], reader->CrystalPhi[clusterIndex][crystalIndex]);
@@ -542,7 +544,6 @@ int main( int argc, char** argv ){
 	      }else if( EinCluster <400 ){
 		profET_D3[EnergyIndex][ThetaIndex]->Fill(ECenterCrystal,TinCluster);
 	      }
-
 	    }
 	  }	  
 	  profTimeRD[EnergyIndex][ThetaIndex]->Fill(RinCluster,DinCluster,TinCluster);

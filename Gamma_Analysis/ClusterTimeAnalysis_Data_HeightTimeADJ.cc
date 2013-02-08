@@ -93,6 +93,7 @@ int main( int argc, char** argv ){
   Double_t CrystalR[arrSize][arrSize];
   Double_t CrystalPhi[arrSize][arrSize];
   Double_t CrystalSignal[arrSize][arrSize];
+  Double_t CrystalHHT[arrSize][arrSize];
   Int_t    CrystalID[arrSize][arrSize];
 
   trout->Branch("EventNumber"  ,&EventNumber ,"EventNumber/I");
@@ -116,13 +117,13 @@ int main( int argc, char** argv ){
   
   data.setBranchAddress( ch );
   Int_t CsiNumber;
-  Double_t CsiDigiID[2716];
+  Int_t CsiDigiID[2716];
   Double_t CsiTime[2716];
   Double_t CsiHHTime[2716];
   Double_t CsiSignal[2716];
   Double_t CsiEne[2716];
   ch->SetBranchAddress("CsiNumber",&CsiNumber);
-  ch->SetBranchAddress("CsiModID",CsiDigiID);//CsiNumber
+  ch->SetBranchAddress("CsiModID" ,CsiDigiID);//CsiNumber
   ch->SetBranchAddress("CsiTime"  ,CsiTime   );//CsiNumber
   ch->SetBranchAddress("CsiHHTime",CsiHHTime );//CsiNumber
   ch->SetBranchAddress("CsiSignal",CsiSignal );//CsiNumber
@@ -130,7 +131,8 @@ int main( int argc, char** argv ){
   //ch->SetBranchAddress
 
   std::cout<< ch->GetEntries() << std::endl;
-  for( Int_t eventIndex = 0; eventIndex < ch->GetEntries(); eventIndex++){
+  //for( Int_t eventIndex = 0; eventIndex < ch->GetEntries(); eventIndex++){
+  for( Int_t eventIndex = 0; eventIndex < 1000; eventIndex++){
     //if( eventIndex > 1E5 ){ break ; }
     ch->GetEntry( eventIndex );
     EventNumber = eventIndex ;

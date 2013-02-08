@@ -31,7 +31,8 @@ public :
    Double_t        CrystalEnergy[120][120];   //[nCluster]
    Double_t        CrystalR[120][120];   //[nCluster]
    Double_t        CrystalPhi[120][120];   //[nCluster]
-
+   Int_t           CrystalID[120][120];   //[nCluster]
+   Double_t        CrystalSignal[120][120];//[nCluster]
    // List of branches
    TBranch        *b_EventNumber;   //!
    TBranch        *b_nCluster;   //!
@@ -46,6 +47,8 @@ public :
    TBranch        *b_CrystalEnergy;   //!
    TBranch        *b_CrystalR;   //!
    TBranch        *b_CrystalPhi;   //!
+   TBranch        *b_CrystalID;  //!
+   TBranch        *b_CrystalSignal; //!
 
    ClusterTimeReader(TTree *tree=0);
    virtual ~ClusterTimeReader();
@@ -109,19 +112,21 @@ void ClusterTimeReader::Init(TTree *tree)
    fCurrent = -1;
    fChain->SetMakeClass(1);
 
-   fChain->SetBranchAddress("EventNumber", &EventNumber, &b_EventNumber);
-   fChain->SetBranchAddress("nCluster", &nCluster, &b_nCluster);
-   fChain->SetBranchAddress("nCrystal", nCrystal, &b_nCrystal);
-   fChain->SetBranchAddress("ClusterID", ClusterID, &b_ClusterID);
-   fChain->SetBranchAddress("ClusterEnergy", ClusterEnergy, &b_ClusterEnergy);
-   fChain->SetBranchAddress("ClusterR", ClusterR, &b_ClusterR);
-   fChain->SetBranchAddress("ClusterT", ClusterT, &b_ClusterT);
-   fChain->SetBranchAddress("ClusterTheta", ClusterTheta, &b_ClusterTheta);
-   fChain->SetBranchAddress("ClusterPhi", ClusterPhi, &b_ClusterPhi);
-   fChain->SetBranchAddress("CrystalT", CrystalT, &b_CrystalT);
-   fChain->SetBranchAddress("CrystalEnergy", CrystalEnergy, &b_CrystalEnergy);
-   fChain->SetBranchAddress("CrystalR", CrystalR, &b_CrystalR);
-   fChain->SetBranchAddress("CrystalPhi", CrystalPhi, &b_CrystalPhi);
+   fChain->SetBranchAddress("EventNumber"  ,&EventNumber , &b_EventNumber);
+   fChain->SetBranchAddress("nCluster"     ,&nCluster    , &b_nCluster);
+   fChain->SetBranchAddress("nCrystal"     ,nCrystal     , &b_nCrystal);
+   fChain->SetBranchAddress("ClusterID"    ,ClusterID    , &b_ClusterID);
+   fChain->SetBranchAddress("ClusterEnergy",ClusterEnergy, &b_ClusterEnergy);
+   fChain->SetBranchAddress("ClusterR"     ,ClusterR     , &b_ClusterR);
+   fChain->SetBranchAddress("ClusterT"     ,ClusterT     , &b_ClusterT);
+   fChain->SetBranchAddress("ClusterTheta" ,ClusterTheta , &b_ClusterTheta);
+   fChain->SetBranchAddress("ClusterPhi"   ,ClusterPhi   , &b_ClusterPhi);
+   fChain->SetBranchAddress("CrystalT"     ,CrystalT     , &b_CrystalT);
+   fChain->SetBranchAddress("CrystalEnergy",CrystalEnergy, &b_CrystalEnergy);
+   fChain->SetBranchAddress("CrystalR"     ,CrystalR     , &b_CrystalR);
+   fChain->SetBranchAddress("CrystalPhi"   ,CrystalPhi   , &b_CrystalPhi);
+   fChain->SetBranchAddress("CrystalID"    ,CrystalID    , &b_CrystalID);
+   fChain->SetBranchAddress("CrystalSignal",CrystalSignal, &b_CrystalSignal);
    Notify();
 }
 
