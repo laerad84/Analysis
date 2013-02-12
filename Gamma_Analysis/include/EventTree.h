@@ -13,13 +13,13 @@
 #include <TFile.h>
 
 const Int_t kMaxCSI = 1;
-const Int_t kMaxCSI_hits = 6000;
+const Int_t kMaxCSI_hits = 1000;
 const Int_t kMaxCSI_digi = 1;
 const Int_t kMaxCSI_mtime = 1;
 const Int_t kMaxCSI_trig = 1;
 const Int_t kMaxEvent = 1;
 const Int_t kMaxGenParticle = 1;
-const Int_t kMaxGenParticle_briefTracks = 1000;
+const Int_t kMaxGenParticle_briefTracks = 100;
 
 class EventTree {
 public :
