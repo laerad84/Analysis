@@ -39,12 +39,16 @@ double AdjFuncTest( double* x, double* par){
   return value;
 
 }
+double AdjfuncTH( double*x ,double*par ){  
+  double value = par[0]*(-1*TMath::Log(1 + par[1])+TMath::Log( 1 + par[1]*exp( par[2]*x[0] )));
+  return value;
+}
 
 int main( int argc, char** argv ){
   
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
-  std::string iFileForm = "%s/Data_All_Cal_FNL_COS.root";//ROOTFILE_GAMMACLUS
-  std::string oFileForm = "ClusterTimeStructure_Data_FNL_COS_2.root";
+  std::string iFileForm = "%s/Data_All_Cal_FNL_COS_HTADJ.root";//ROOTFILE_GAMMACLUS
+  std::string oFileForm = "ClusterTimeStructure_Data_FNL_COS_3.root";
 
   TF1* TimeAdjFunc = new TF1("TimeAdjFunc",AdjFunc, 0, 2000,5);
   //Double_t Par[5] = {-0.0905327,1.54915,-0.114423,0.0758477,0.00487457};
@@ -56,13 +60,20 @@ int main( int argc, char** argv ){
 
   //Double_t Par[6] = {-0.0644067,3*1.1759,-0.165316,2.92809e-1,2.57735e-03};
   //Double_t ParErrors[5] = {0.00203663,0.0418876,0.00542069,0.00221644,4.08696e-05};
-  double Par[5] = {-0.261894,1.35789,-0.106939,0.094532,0.00395812};
+  //double Par[5] = {-0.261894,1.35789,-0.106939,0.094532,0.00395812};
+  //double Par[5] = {-7.51860e-01,9.57348e-01,-9.55972e-02,0,0};
+  //double Par[5] = {-9.69218e-01,1.12202e+00,-7.52470e-02,0,0};
+  double Par[5] = {-7.68748e-01,9.06928e-01,-8.45235e-02,0,0};
   TimeAdjFunc->SetParameters(Par);
   //TimeAdjFunc->SetParErrors(ParErrors);
- 
-  TF1* TimeAdjFunc1 = new TF1("TimeAdjFunc",AdjFunc1,0,2000,3);
+  TF1* TimeAdjFunc1 = new TF1("TimeAdjFunc1",AdjFunc1,0,2000,3);
   Double_t Par1[3] = {5.70121e-01,-2.92809e-01,2.57735e-03};
   TimeAdjFunc1->SetParameters(Par1);
+
+  // Height AdjFunc //
+  TF1* TimeAdjFunc2 = new TF1("TimeAdjFunc2",AdjfuncTH,0,16000,3);
+  TimeAdjFunc2->SetParameters(3.308,0.005644,0.0004385);
+  //TimeAdjFunc2->SetParErrors(0.3406,0.0005503,1.925e-5);
 
   TFile* tf = new TFile(Form(iFileForm.c_str(),ROOTFILE_GAMMACLUS.c_str()));
   TTree* tr = (TTree*)tf->Get("trCluster");
@@ -80,7 +91,6 @@ int main( int argc, char** argv ){
   TProfile* profET_D_All;
   TProfile* profET_D_All_min;
   TProfile* profET_D_All_max;
-
 
   TH2D* hisRT[nE-1][nTheta-1];
   TH2D* hisRE[nE-1][nTheta-1];
@@ -392,6 +402,8 @@ int main( int argc, char** argv ){
 	  break;
 	}
       }
+
+
       if( bAbort ) { continue;}
       bAbort = true; 
       for( int TIndex = 0; TIndex < nTheta -1 ; TIndex++){
@@ -408,12 +420,20 @@ int main( int argc, char** argv ){
       if( TMath::Cos( reader->ClusterPhi[ clusterIndex ] ) < 0 ){ 
 	blr = false;
       }else{ blr = true; }
-            
+      bool     MaxCenterFlag  = false;
       Double_t RCenterCrystal = 1000;
       Double_t ECenterCrystal = 0;
       Double_t TCenterCrystal = 0;
       Double_t RCenter=0;
       Double_t DCenter=0;
+      Double_t EMax = 0;
+      for( int crystalIndex = 0; crystalIndex < reader->nCrystal[ clusterIndex]; crystalIndex++){
+	Double_t EinCluster   = reader->CrystalEnergy[clusterIndex][crystalIndex];
+	if( EinCluster > EMax ){ 
+	  EMax = EinCluster;
+	}
+      }
+
       for( int crystalIndex = 0; crystalIndex < reader->nCrystal[ clusterIndex]; crystalIndex++){
 	Double_t RadinCluster = reader->CrystalR[clusterIndex][crystalIndex];
 	Double_t RinCluster   = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Cos(reader->CrystalPhi[clusterIndex][crystalIndex]);
@@ -421,15 +441,20 @@ int main( int argc, char** argv ){
 	Double_t EinCluster   = reader->CrystalEnergy[clusterIndex][crystalIndex];
 	// Time-Energy relation fixed ? // 
 	Double_t SiginCluster = reader->CrystalSignal[clusterIndex][crystalIndex];
-	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFunc->Eval(EinCluster);
+	//Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex];-TimeAdjFunc->Eval(EinCluster);
+	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFunc2->Eval(SiginCluster)-TimeAdjFunc->Eval(EinCluster);
+	//if( EinCluster > ECenterCrystal ){
 	if( RadinCluster < TMath::Abs(RCenterCrystal)){ 
 	  RCenterCrystal = RadinCluster;
 	  ECenterCrystal = EinCluster;
-	  TCenterCrystal = TinCluster-TimeAdjFunc->Eval(ECenterCrystal);
+	  //TCenterCrystal = TinCluster-TimeAdjFunc->Eval(ECenterCrystal);
+	  TCenterCrystal = TinCluster;
 	  RCenter        = RinCluster;
 	  DCenter        = DinCluster;
 	}
       }
+      //if( EMax < ECenterCrystal ){ continue; }
+      //if( reader->ClusterEnergy[clusterIndex]*0.2 > ECenterCrystal ){continue; }
       /*
       if(TMath::Abs(RCenter) > 12.5/2. || TMath::Abs(DCenter) > 12.5/2.){
 	continue;
@@ -438,15 +463,20 @@ int main( int argc, char** argv ){
       Double_t CutValue = 25;
       for( int crystalIndex  = 0; crystalIndex < reader->nCrystal[ clusterIndex ]; crystalIndex++){       
 	if( reader->CrystalEnergy[clusterIndex][crystalIndex] <= LowEnergyCut ) { continue; }
-	//if( reader->CrystalEnergy[clusterIndex][crystalIndex] > 400 ){ continue; }
-	Double_t RinCluster   = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Cos(reader->CrystalPhi[clusterIndex][crystalIndex]);
-	Double_t DinCluster   = reader->CrystalR[clusterIndex][crystalIndex]*TMath::Sin(reader->CrystalPhi[clusterIndex][crystalIndex]);
+	//if( reader->CrystalEnergy[clusterIndex][crystalIndex] > 600 ){ continue; }
+	Double_t RadinCluster = reader->CrystalR[clusterIndex][crystalIndex];
+	Double_t PhiinCluster = reader->CrystalPhi[clusterIndex][crystalIndex];
+	Double_t RinCluster   = RadinCluster*TMath::Cos(PhiinCluster);
+	Double_t DinCluster   = RadinCluster*TMath::Sin(PhiinCluster);
 	Double_t EinCluster   = reader->CrystalEnergy[clusterIndex][crystalIndex];
 	// Time-Energy relation fixed ? // 
 	Double_t SiginCluster = reader->CrystalSignal[clusterIndex][crystalIndex];
-	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TCenterCrystal-TimeAdjFunc->Eval(EinCluster);
-	if( EinCluster == 0){ continue; }
+	//Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TCenterCrystal-TimeAdjFunc->Eval(EinCluster);
+	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]
+	  -TimeAdjFunc2->Eval(SiginCluster)-TimeAdjFunc->Eval(EinCluster)-TCenterCrystal;
 
+	if( EinCluster == 0){ continue; }
+	//if( TMath::Abs( TinCluster - TCenterCrystal ) > 4 ){ continue; }
 	hisPhiPhi[EnergyIndex][ThetaIndex]->Fill( reader->ClusterPhi[clusterIndex], reader->CrystalPhi[clusterIndex][crystalIndex]);
 	if(reader->CrystalR[clusterIndex][crystalIndex]  > RCenterCrystal ){
 	  profRDT[EnergyIndex][ThetaIndex]->Fill(RinCluster,DinCluster,TinCluster);

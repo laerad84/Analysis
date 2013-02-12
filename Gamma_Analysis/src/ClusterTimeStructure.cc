@@ -5,11 +5,11 @@ ClusterTime::ClusterTime(): m_id(-1),
 			    m_Rthreshold(TMath::Sqrt(2)*5./6.*25.),
 			    m_MeanTime(0)
 {
-  m_cidVec.reserve( 300 );
-  m_cTimeDeltaVec.reserve( 300 );
-  m_cRVec.reserve( 300 );
-  m_cPhiVec.reserve( 300 );
-  m_cSHVec.reserve( 300 );
+  m_cidVec.reserve( 1200 );
+  m_cTimeDeltaVec.reserve( 1200 );
+  m_cRVec.reserve( 1200 );
+  m_cPhiVec.reserve( 1200 );
+  m_cSHVec.reserve( 1200 );
 }
 ClusterTime::~ClusterTime(){
   ;

@@ -45,7 +45,8 @@ int main( int argc , char** argv ){
   TH1D* hisVoltResponse[120];
   for( int i = 0; i< 120; i++){
     hisTemplate[i] = new TH2D(Form("hisTemplate_%d",i),
-			      Form("hisTemplate_%d;Time[ns];Normalized Pulse",i*5),500,-250,300,150,-0.25,1.25);
+			      Form("hisTemplate_%d;Time[ns];Normalized Pulse",i*5),
+			      500,-250,300,150,-0.25,1.25);
     hisVoltResponse[i] = new TH1D(Form("hisVoltResponse_%d",i),
 				  Form("hisVoltResponse_%d;volt[mV];Height/Volt[cnt/mV]",i),
 				  200,0,50);

@@ -61,11 +61,11 @@ int  EDepositAnalysis::EventProcess( int ievent ){
   trin->GetEntry( ievent );
   ResetDump();
   double TotalEnergy = 0; 
-  std::vector<int> CrystalIDVec;
-  std::vector<double> CrystalEVec;
-  std::vector<int>::iterator itIDVec;
+  std::vector<int>     CrystalIDVec;
+  std::vector<double>  CrystalEVec;
+  std::vector<int>::iterator    itIDVec;
   std::vector<double>::iterator itEVec;
-  std::vector<int> hitIDVec;
+  std::vector<int>    hitIDVec;
   std::vector<double> hitZVec;
   std::vector<double> hitEVec;
   std::vector<double> hitTVec; 

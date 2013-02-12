@@ -11,6 +11,7 @@
 #include "TF1.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
+#include "TROOT.h"
 
 int main( int argc, char** argv ){
 
@@ -63,7 +64,6 @@ int main( int argc, char** argv ){
   TProfile2D* profDET;
   TProfile2D* profEET;
   TProfile2D* profEET_D;
-
   TH2D*     hisRT = new TH2D(Form("hisRT_E_%d_Theta_%d",Energy,Theta),
 			     Form("hisRT_E_%d_Theta_%d",Energy,Theta),
 			     nBinsRD,RDMin,RDMax,100,-10,10);
@@ -80,6 +80,7 @@ int main( int argc, char** argv ){
   TProfile* profDT_High;
   TProfile* profDT_Low;
   TProfile* profRT_Low;
+  TProfile* profET_D;
 
   
   profRDT = new TProfile2D(Form("profRDT_E_%d_Theta_%d",Energy,Theta),
@@ -113,7 +114,7 @@ int main( int argc, char** argv ){
 			      Form("profRDE_INV_E_%d_Theta_%d",Energy,Theta),
 			      nBinsRD,RDMin,RDMax,nBinsRD,RDMin,RDMax);
 
-
+  
   profRET = new TProfile2D(Form("profRET_E_%d_Theta_%d",Energy,Theta),
 			   Form("profRET_E_%d_Theta_%d",Energy,Theta),
 			   nBinsRD,RDMin,RDMax,100,0,400);
@@ -126,7 +127,9 @@ int main( int argc, char** argv ){
   profEET_D = new TProfile2D(Form("profEET_D_E_%d_Theta_%d",Energy,Theta),
 			     Form("profEET_D_E_%d_Theta_%d",Energy,Theta),
 			     20,0,400,20,0,400);
-       
+  profET_D = new TProfile(Form("profET_D_E_%d_Theta_%d",Energy,Theta),
+			  Form("profET_D_E_%d_Theta_%d",Energy,Theta),
+			  20,0,400);
   profRT = new TProfile(Form("profRT_E_%d_Theta_%d",Energy,Theta),
 			Form("profRT_E_%d_Theta_%d",Energy,Theta),
 			nBinsRD,RDMin,RDMax);  
@@ -212,8 +215,10 @@ int main( int argc, char** argv ){
 	Double_t PhiinCluster = reader->CrystalPhi[clusterIndex][crystalIndex];
 	Double_t RinCluster   = RadinCluster*TMath::Cos(PhiinCluster);
 	Double_t DinCluster   = RadinCluster*TMath::Sin(PhiinCluster);
-	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex];//-TCenterCrystal;
+	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TCenterCrystal;
 	Double_t EinCluster   = reader->CrystalEnergy[clusterIndex][crystalIndex];
+	//if(TinCluster != TinCluster){ continue; }
+	if( TMath::IsNaN(TinCluster) != 0){ continue; }
 	//std::cout<< RinCluster << " : " << DinCluster << " : " << EinCluster << " : "<< TinCluster << std::endl;
 	if( EinCluster == 0 ){continue;}
 	if(RadinCluster > RCenterCrystal ){
@@ -259,6 +264,9 @@ int main( int argc, char** argv ){
 	  profEET->Fill(ECenterCrystal,EinCluster,TinCluster);
 	  if( TMath::Abs(RinCluster) < RDCutNar && TMath::Abs(DinCluster) < RDCutWid){
 	    profEET_D->Fill(ECenterCrystal,EinCluster,TinCluster);
+	    if(EinCluster < 24){
+	      profET_D->Fill(ECenterCrystal,TinCluster);
+	    }
 	  }
 	}
 
@@ -271,6 +279,7 @@ int main( int argc, char** argv ){
   tfout->cd();
   hisRT->Write();
   hisDT->Write();
+  profET_D->Write();
   profRDT->Write();
   profRDE->Write();
   profRDE_NR->Write();
