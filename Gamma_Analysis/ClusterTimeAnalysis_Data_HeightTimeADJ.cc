@@ -86,7 +86,7 @@ int main( int argc, char** argv ){
   Double_t ClusterR[arrSize];//[nCluster]
   Double_t ClusterEnergy[arrSize];//[nCluster]
   Double_t ClusterPhi[arrSize];//[nCluster]
-
+  Double_t ClusterChisq2[arrSize];//[nCluster]
 
   Double_t CrystalT[arrSize][arrSize]; 
   Double_t CrystalEnergy[arrSize][arrSize];
@@ -104,6 +104,7 @@ int main( int argc, char** argv ){
   trout->Branch("ClusterR"     ,ClusterR     ,"ClusterR[nCluster]/D");
   trout->Branch("ClusterT"     ,ClusterT     ,"ClusterT[nCluster]/D");
   trout->Branch("ClusterTheta" ,ClusterTheta ,"ClusterTheta[nCluster]/D");
+  trout->Branch("ClusterChisq2",ClusterChisq2,"ClusterChisq2[nCluster]/D");
   trout->Branch("ClusterPhi"   ,ClusterPhi   ,"ClusterPhi[nCluster]/D");
   trout->Branch("CrystalT"     ,CrystalT     ,"CrystalT[nCluster][120]/D");
   trout->Branch("CrystalEnergy",CrystalEnergy,"CrystalEnergy[nCluster][120]/D");
@@ -116,8 +117,8 @@ int main( int argc, char** argv ){
   ClusterTimeAnalyzer* clusterTimeAnalyzer = new ClusterTimeAnalyzer();
   
   data.setBranchAddress( ch );
-  Int_t CsiNumber;
-  Int_t CsiDigiID[2716];
+  Int_t    CsiNumber;
+  Int_t    CsiDigiID[2716];
   Double_t CsiTime[2716];
   Double_t CsiHHTime[2716];
   Double_t CsiSignal[2716];
@@ -146,6 +147,7 @@ int main( int argc, char** argv ){
       ClusterPhi[iarr] = 0;
       ClusterT[iarr] = 0;      
       ClusterTheta[iarr] = 0;
+      ClusterChisq2[iarr] = 0;
       for( int jarr  =0; jarr < arrSize; jarr++){
 	CrystalR[iarr][jarr] = 0;
 	CrystalT[iarr][jarr] = 0;
@@ -162,7 +164,7 @@ int main( int argc, char** argv ){
     data.getData( clist );
     data.getData( klVec );
     gFinder.findGamma( clist, glist );
-    if( clist.size() < 6 ){ continue; }
+    if( clist.size() != 6 ){ continue; }
     if( glist.size() != 6 ){ continue; }
 
     //std::cout<< "Number of Cluster:" <<  clist.size() << std::endl;
@@ -175,10 +177,11 @@ int main( int argc, char** argv ){
 
     std::list<ClusterTime>::iterator  itlist = ctlist.begin();
     std::list<Cluster>::iterator      itCl   = clist.begin();
+    std::list<Gamma>::iterator        itgamma= glist.begin();
     Int_t clIndex = 0;
     for( ;
 	 itlist != ctlist.end();
-	 itlist++ ,itCl++ ,clIndex++ ){
+	 itlist++ ,itCl++ ,clIndex++, itgamma++){
       //std::cout<< (*itList).GetClusterTime() << " : " << (*itList).GetClusterR() << std::endl;
       ClusterID[clIndex]    = (*itCl).id();
       ClusterT[clIndex]     = (*itlist).GetClusterTime();
@@ -186,6 +189,7 @@ int main( int argc, char** argv ){
       ClusterPhi[clIndex]   = (*itlist).GetClusterPhi();
       ClusterEnergy[clIndex]= (*itCl).e();
       ClusterTheta[clIndex] = TMath::ATan2((*itlist).GetClusterR(),(6148. - klVec[0].vz() ));
+      ClusterChisq2[clIndex]= (*itgamma).chisq();
       nCrystal[clIndex]     = (*itCl).clusterIdVec().size();
       for( Int_t cryIndex = 0; cryIndex < nCrystal[clIndex] ; cryIndex++ ){
 	CrystalR[clIndex][cryIndex]      = (*itlist).clusterRVec()[cryIndex];
