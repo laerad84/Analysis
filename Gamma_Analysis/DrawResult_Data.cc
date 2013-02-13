@@ -62,8 +62,8 @@ int main( int argc, char** argv ){
   //Double_t ParErrors[5] = {0.00203663,0.0418876,0.00542069,0.00221644,4.08696e-05};
   //double Par[5] = {-0.261894,1.35789,-0.106939,0.094532,0.00395812};
   //double Par[5] = {-7.51860e-01,9.57348e-01,-9.55972e-02,0,0};
-  //double Par[5] = {-9.69218e-01,1.12202e+00,-7.52470e-02,0,0};
-  double Par[5] = {-7.68748e-01,9.06928e-01,-8.45235e-02,0,0};
+  double Par[5] = {-9.69218e-01,1.12202e+00,-7.52470e-02,0,0};
+  //double Par[5] = {-7.68748e-01,9.06928e-01,-8.45235e-02,0,0};
   TimeAdjFunc->SetParameters(Par);
   //TimeAdjFunc->SetParErrors(ParErrors);
   TF1* TimeAdjFunc1 = new TF1("TimeAdjFunc1",AdjFunc1,0,2000,3);
@@ -390,6 +390,7 @@ int main( int argc, char** argv ){
       if( reader->ClusterR[clusterIndex] > OuterRadCut ){ continue; }
       if( reader->ClusterR[clusterIndex] < InnerRadCut ){ continue; }
       if( reader->nCrystal[clusterIndex] < ClusterSizeCut ){ continue; }
+      if( reader->ClusterChisq2[clusterIndex] > 2.5 ){ continue; }
 
       bool bAbort = true; 
       Int_t EnergyIndex = 0;

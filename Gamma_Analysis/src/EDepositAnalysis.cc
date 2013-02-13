@@ -47,6 +47,7 @@ void EDepositAnalysis::PrepareIO(){
 
 }
 void EDepositAnalysis::DrawEvent(){
+
   CsIEne->Draw("colz L");
 }
   
@@ -75,6 +76,7 @@ int  EDepositAnalysis::EventProcess( int ievent ){
   Double_t CsiPosX, CsiPosY;
   Double_t Radius = gRandom->Rndm()*300+200; 
   Double_t Theta  = gRandom->Rndm()*2*TMath::Pi();
+  //std::cout<< Radius <<"\t" << Theta*180/TMath::Pi() << std::endl;
   for( int ihit = 0; ihit < trin->CSI_hits_; ihit++){
     if( trin->CSI_hits_edep[ihit] == 0 ){ continue; }
     TotalEnergy += trin->CSI_hits_edep[ihit];

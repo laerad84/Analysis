@@ -11,7 +11,7 @@
 
 int main( int argc, char** argv){
   //TApplication* app = new TApplication("app",&argc, argv);
-  //TCanvas* can =  new TCanvas("can","",800,800);
+  TCanvas* can =  new TCanvas("can","",800,800);
   std::cout<< "Start" << std::endl;
   std::string ROOTFILE_GAMMAHIT = std::getenv("ROOTFILE_GAMMAHIT");
   std::string ROOTFILE_GAMMACLUS= std::getenv("ROOTFILE_GAMMACLUS");
@@ -29,7 +29,7 @@ int main( int argc, char** argv){
     OutputFilename = Form("%s/Cluster_Back_%dMeV_%ddeg-1E5-%d.root",
 			  ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
   }else{
-    OutputFilename = Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",
+    OutputFilename = Form("%s/Cluster_%dMeV_%ddeg-1E5-%d_1.root",
 			  ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
     std::cout << OutputFilename << std::endl;
   }
@@ -37,16 +37,18 @@ int main( int argc, char** argv){
   EDepositAnalysis* EDep = new EDepositAnalysis(InputFilename.c_str(),
 						OutputFilename.c_str(),Direction);	
   /*
-  for( int i = 0; i< 100; i++){
-    EDep->CsIEne->Reset();
-    EDep->EventProcess(i);
-    can->cd();
-    EDep->DrawEvent();
-    EDep->Export();
-    can->Update();
-    can->Modified();
-    getchar();
-  }
+  for( int i = 0; i< 500; i++){
+    //EDep->CsIEne->Reset();
+    //EDep->EventProcess(i);
+    //can->cd();
+    //gPad->SetLogz();
+    //EDep->DrawEvent();
+    //EDep->Export();
+    //can->Update();
+    //can->Modified();
+    //getchar();
+  }  
+  //app->Run();
   */
   EDep->Loop();  
   EDep->Close();

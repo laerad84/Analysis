@@ -27,6 +27,7 @@ public :
    Double_t        ClusterT[120];   //[nCluster]
    Double_t        ClusterTheta[120];   //[nCluster]
    Double_t        ClusterPhi[120];   //[nCluster]
+   Double_t        ClusterChisq2[120];//[nCluster]
    Double_t        CrystalT[120][120];   //[nCluster]
    Double_t        CrystalEnergy[120][120];   //[nCluster]
    Double_t        CrystalR[120][120];   //[nCluster]
@@ -43,6 +44,7 @@ public :
    TBranch        *b_ClusterT;   //!
    TBranch        *b_ClusterTheta;   //!
    TBranch        *b_ClusterPhi;   //!
+   TBranch        *b_ClusterChisq2; //!
    TBranch        *b_CrystalT;   //!
    TBranch        *b_CrystalEnergy;   //!
    TBranch        *b_CrystalR;   //!
@@ -121,6 +123,7 @@ void ClusterTimeReader::Init(TTree *tree)
    fChain->SetBranchAddress("ClusterT"     ,ClusterT     , &b_ClusterT);
    fChain->SetBranchAddress("ClusterTheta" ,ClusterTheta , &b_ClusterTheta);
    fChain->SetBranchAddress("ClusterPhi"   ,ClusterPhi   , &b_ClusterPhi);
+   fChain->SetBranchAddress("ClusterChisq2",ClusterChisq2, &b_ClusterChisq2);
    fChain->SetBranchAddress("CrystalT"     ,CrystalT     , &b_CrystalT);
    fChain->SetBranchAddress("CrystalEnergy",CrystalEnergy, &b_CrystalEnergy);
    fChain->SetBranchAddress("CrystalR"     ,CrystalR     , &b_CrystalR);

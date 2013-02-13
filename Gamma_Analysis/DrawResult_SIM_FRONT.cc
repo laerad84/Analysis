@@ -18,15 +18,15 @@ int main( int argc, char** argv ){
   Int_t Energy = atoi( argv[1] );
   Int_t Theta  = atoi( argv[2] );
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
-  std::string iFileForm = "%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root";
-  std::string oFileForm = "%s/ClusterTimeStructure_SIM_%dMeV_%ddeg.root";
+  std::string iFileForm = "%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root";//ROOTFILE_GAMMACLUS
+  std::string oFileForm = "%s/ClusterTimeStructure_SIM_%dMeV_%ddeg.root";//ROOTFILE_GAMMACLUS
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /// I/O File Setting ///////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   TChain* ch = new TChain("trCluster");
-  for( int iIndex =0; iIndex < 2; iIndex++){
+  for( int iIndex =0; iIndex < 1; iIndex++){
     ch->Add(Form(iFileForm.c_str(),ROOTFILE_GAMMACLUS.c_str(),Energy,Theta,iIndex));
   }
   /*
