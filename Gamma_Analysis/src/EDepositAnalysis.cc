@@ -77,6 +77,7 @@ int  EDepositAnalysis::EventProcess( int ievent ){
   Double_t Radius = gRandom->Rndm()*300+200; 
   Double_t Theta  = gRandom->Rndm()*2*TMath::Pi();
   //std::cout<< Radius <<"\t" << Theta*180/TMath::Pi() << std::endl;
+  if( trin->CSI_hits_ > kMaxCSI_hits ){return 0;}
   for( int ihit = 0; ihit < trin->CSI_hits_; ihit++){
     if( trin->CSI_hits_edep[ihit] == 0 ){ continue; }
     TotalEnergy += trin->CSI_hits_edep[ihit];
@@ -141,7 +142,7 @@ int  EDepositAnalysis::EventProcess( int ievent ){
   clist = clusterFinder->findCluster( nDigi, ID, Energy, SignalTime );
   data->setData( clist );
   // Clustering // 
-  return 0;
+  return trin->CSI_hits_;
 }
 int  EDepositAnalysis::Loop( int Entries ){
   
@@ -153,8 +154,10 @@ int  EDepositAnalysis::Loop( int Entries ){
   for( int ievent = 0; ievent < nLoop; ievent++){
     //std::cout << ievent << std::endl;
     ResetDump();
-    EventProcess ( ievent );
-    Export();
+    Int_t rst = EventProcess ( ievent );
+    if( rst != 0 ){
+      Export();
+    }
     nProcessed++;
   }
   return nProcessed;
