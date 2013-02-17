@@ -149,7 +149,7 @@ main( int argc, char** argv ){
     hisDelta[i] = new TH1D(Form("hisDelta%d",i ),Form("hisDelta%d",i),250,-10,40);
     hisDeltaNoCut[i] = new TH1D(Form("hisDeltaNoCut%d",i),Form("hisDeltaNoCut%d",i),250,-10,40);
     hisDeltaEnergy[i] = new TH2D(Form("hisDeltaEnergy%d",i),Form("hisDeltaEnergy%d",i),15,0,60,200,-10,10);
-    profDeltaEnergy[i] = new TProfile(Form("profDeltaEnergy%d",i),Form("hisDeltaEnergy%d",i),15,0,60);
+    profDeltaEnergy[i] = new TProfile(Form("profDeltaEnergy%d",i),Form("hisDeltaEnergy%d",i),20,0,60);
   }
 
   for( int ievent = 0; ievent < trin->GetEntries(); ievent++){
