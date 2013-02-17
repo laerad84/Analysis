@@ -62,9 +62,15 @@ int main( int argc, char** argv ){
   //Double_t ParErrors[5] = {0.00203663,0.0418876,0.00542069,0.00221644,4.08696e-05};
   //double Par[5] = {-0.261894,1.35789,-0.106939,0.094532,0.00395812};
   //double Par[5] = {-7.51860e-01,9.57348e-01,-9.55972e-02,0,0};
-  double Par[5] = {-9.69218e-01,1.12202e+00,-7.52470e-02,0,0};
+  //double Par[5] = {-9.69218e-01,1.12202e+00,-7.52470e-02,0,0};
   //double Par[5] = {-7.68748e-01,9.06928e-01,-8.45235e-02,0,0};
-  TimeAdjFunc->SetParameters(Par);
+  //TimeAdjFunc->SetParameters(Par);
+
+  //TimeAdjFunc->SetParameters(-6.32987e-01,7.64508e-01,-9.74328e-02,0,0);//E:200-300;
+  //TimeAdjFunc->SetParameters(-6.38508e-01,7.55330e-01,-9.05449e-02,0,0);//E:200-300,T:10-14
+  //TimeAdjFunc->SetParameters(-1.31116e-01,4.71445e-01,-9.41992e-02,0,0);//E:200-300,T:10-14,Emin>12
+  TimeAdjFunc->SetParameters(0,0,0,0,0);
+
   //TimeAdjFunc->SetParErrors(ParErrors);
   TF1* TimeAdjFunc1 = new TF1("TimeAdjFunc1",AdjFunc1,0,2000,3);
   Double_t Par1[3] = {5.70121e-01,-2.92809e-01,2.57735e-03};
@@ -153,7 +159,7 @@ int main( int argc, char** argv ){
   TH1D* hisRPhiTime[nE-1][nTheta-1][41][41];
   TH1D* hisRPhiEnergy[nE-1][nTheta-1][41][41];
 
-  Int_t EArr[nE] = {100,300,500,700,900,1100};
+  Int_t EArr[nE] = {100,200,300,500,800,1100};
   Int_t ThetaArr[nTheta] = {10,15,20,25,30,35,40,45};
   
   Int_t RArr[ nBinsR ];
@@ -473,10 +479,11 @@ int main( int argc, char** argv ){
 	// Time-Energy relation fixed ? // 
 	Double_t SiginCluster = reader->CrystalSignal[clusterIndex][crystalIndex];
 	//Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TCenterCrystal-TimeAdjFunc->Eval(EinCluster);
-	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]
-	  -TimeAdjFunc2->Eval(SiginCluster)-TimeAdjFunc->Eval(EinCluster)-TCenterCrystal;
+	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TCenterCrystal
+	  -TimeAdjFunc2->Eval(SiginCluster)-TimeAdjFunc->Eval(EinCluster);
 
 	if( EinCluster == 0){ continue; }
+	if( EinCluster < 20 ){ continue; }
 	//if( TMath::Abs( TinCluster - TCenterCrystal ) > 4 ){ continue; }
 	hisPhiPhi[EnergyIndex][ThetaIndex]->Fill( reader->ClusterPhi[clusterIndex], reader->CrystalPhi[clusterIndex][crystalIndex]);
 	if(reader->CrystalR[clusterIndex][crystalIndex]  > RCenterCrystal ){
