@@ -61,9 +61,9 @@ main( int argc, char** argv ){
   Double_t CSIDigiHHTime[nCSI];//nCSIDigi
   Int_t    CSIDigiID[nCSI];//nCSIDigi
   Double_t CSIDigiSignal[nCSI];//nCSIDigi
-  Double_t FitP0[2];
-  Double_t FitP1[2];
-  Double_t FitChisq[2];
+  Double_t FitP0[nCSI];
+  Double_t FitP1[nCSI];
+  Double_t FitChisq[nCSI];
   Double_t CSIDigiDeltaT0[nCSI];//nCSIDigi
   Double_t CSIDigiDeltaT1[nCSI];//nCSIDigi
   Int_t    CosmicTrigUp;
