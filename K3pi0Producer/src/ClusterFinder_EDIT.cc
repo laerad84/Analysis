@@ -183,7 +183,7 @@ ClusterFinder_EDIT::findCluster(int nDigi,int *ID,double *E,double *time )
 	csiList.push_back(csiData);
 	// Edited by jwlee for test 
 	// if(minTime>csiData.time) minTime = csiData.time;
-	if( maximumE < csiData.Edep ) minTime = csiData.time;
+	if( maximumE < csiData.Edep ){minTime = csiData.time;maximumE = csiData.Edep;}
 	std::list<int>::iterator dj = j--;
         templist.erase(dj);
       }
