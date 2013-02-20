@@ -10,6 +10,8 @@
 #include "TF1.h"
 #include "TProfile2D.h"
 #include "TProfile.h"
+#include "TChain.h"
+
 double AdjFunc( double* x, double* par ){
   double x0 = x[0];
   double p0 = par[0];
@@ -46,8 +48,12 @@ double AdjfuncTH( double*x ,double*par ){
 
 int main( int argc, char** argv) {
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
-  std::string iFileForm = "%s/Data_All_Cal_FNL_COS_HTADJ.root";//ROOTFILE_GAMMACLUS
-  std::string oFileForm = "ClusterTimeStructure_Data_FNL_COS_TimeOffsetSearch.root";
+
+  std::string iFileForm = "%s/Cluster_Time_%dMeV_%ddeg-1E5-%d.root";//ROOTFILE_GAMMACLUE
+  std::string oFileForm = "ClusterTimeStructure_SIM_All.root";
+
+  //std::string iFileForm = "%s/Data_All_Cal_FNL_COS_HTADJ.root";//ROOTFILE_GAMMACLUS
+  //std::string oFileForm = "ClusterTimeStructure_Data_FNL_COS_TimeOffsetSearch.root";
   
   TF1* TimeAdjFuncEnergy = new TF1("TimeAdjFuncEnergy",AdjFunc,0,2000,5);
   //TimeAdjFuncEnergy->SetParameters(-7.51860e-01,9.57348e-01,-9.55972e-02,0,0);
@@ -57,15 +63,35 @@ int main( int argc, char** argv) {
   TimeAdjFuncEnergy->SetParameters(0,0,0,0,0);
 
   TF1* TimeAdjFuncHeight = new TF1("TimeAdjFuncHeight",AdjfuncTH,0,16000,3);
-  TimeAdjFuncHeight->SetParameters(3.308,0.005644,0.0004385);
-  
-  TFile* tf       = new TFile(Form(iFileForm.c_str(),ROOTFILE_GAMMACLUS.c_str()));
-  TTree* tr       = (TTree*)tf->Get("trCluster");
+  //TimeAdjFuncHeight->SetParameters(3.308,0.005644,0.0004385);
+  TimeAdjFuncHeight->SetParameters(0,0,0);
+
+  std::cout<< "Chain" << std::endl;
+  TChain* tr = new TChain("trCluster");
+  std::cout<< __LINE__ <<std::endl;
+
+  /*
+  double EArr[7]  = {100, 145, 210, 310, 450, 650, 950};
+  double TArr[14] = {10, 12, 14, 16, 18, 20, 22, 25, 28, 30, 32, 35, 40, 50};
+  for( int iarr  =0; iarr < 7; iarr++){
+    for( int jarr = 0; jarr < 15; jarr++){
+      for( int i = 0; i < 4; i++){
+	tr->Add(Form(iFileForm.c_str(),EArr[iarr],TArr[jarr],i));
+      }
+    }
+  }
+  */
+  Int_t SIMTheta = 40; 
+  for( int i = 0; i< 4; i++){
+    tr->Add(Form(iFileForm.c_str(),ROOTFILE_GAMMACLUS.c_str(),450,SIMTheta,i));
+  }
+  //TFile* tf       = new TFile(Form(iFileForm.c_str(),ROOTFILE_GAMMACLUS.c_str()));
+  //TTree* tr       = (TTree*)tf->Get("trCluster");
   ClusterTimeReader* reader = new ClusterTimeReader(tr);
   Int_t  nEntries = reader->fChain->GetEntries();
   TFile* tfout    = new TFile(oFileForm.c_str(),"recreate");
   
-
+  std::cout<< __LINE__ <<std::endl;
 
   TH2D*  hisThetaRDistribution = new TH2D("hisThetaRDistribution" ,"hisThetaRDistribution;R[mm];Theta[degree]"    ,300,200,500,60,0,60);
   TH2D*  hisERDistribution     = new TH2D("hisREDistribution"     ,"hisREDistributionl;R[mm];E[MeV]"              ,300,200,500,300,0,900);
@@ -78,7 +104,7 @@ int main( int argc, char** argv) {
   TH2D*  hisClusterEnergyLength= new TH2D("hisClusterEnergyLength","hisClusterEnergyLength;Energy[MeV];Length[mm]",300,0,900,24,0,300);
   TH2D*  hisClusterEnergyWidth = new TH2D("hisClusterEnergyWidth" ,"hisClusterEnergyWidth;Energy[MeV];Length[mm]" ,300,0,900,24,0,300);
   TProfile2D* profEETDependency= new TProfile2D("profEETDependency","profEETDependency;E[MeV];E[MeV]",200,0,600,200,0,600);
-  TProfile*   profETDependency = new TProfile("profETDependency","profETDependency;E[MeV];T[ns]",300,0,900);
+  TProfile*   profETDependency = new TProfile("profETDependency"  ,"profETDependency;E[MeV];T[ns]",300,0,900);
 
 
   const int nRegion= 6;  
@@ -99,11 +125,13 @@ int main( int argc, char** argv) {
   TProfile* prof2ndETD[nRegion];
   TH2D*     his2ndETR[nRegion];
   TH2D*     his2ndETD[nRegion];
+
   Int_t EnergyBoundary[nRegion+1] = {100,200,300,500,800,1300,2000};
   Int_t CEnergyBoundary[nRegion+1]= {50,100,150,250,400,650,1000};
   const int nTRegion  = 6;
   Int_t ThetaBoundary[nTRegion+1] = {0,10,14,18,26,40,90};
   
+  std::cout<< "Setting" << std::endl;
   for( int Index = 0; Index < nRegion; Index++){
     
     profET[Index] = new TProfile(Form("profET_%d",Index),Form("profET_%d_%d",EnergyBoundary[Index],EnergyBoundary[Index+1]),300,0,300);
@@ -125,7 +153,6 @@ int main( int argc, char** argv) {
     for( int IIndex = 0; IIndex < 3; IIndex++){
       profETR[IIndex][Index] = new TProfile(Form("profETR_%d_%d",IIndex,Index),Form("profETR_%d_%d_%d",IIndex,EnergyBoundary[Index],EnergyBoundary[Index+1]),50,0,300);
       profCETR[IIndex][Index] = new TProfile(Form("profCETR_%d_%d",IIndex,Index),Form("proCfCETR_%d_%d_%d",IIndex,CEnergyBoundary[Index],CEnergyBoundary[Index+1]),50,0,300);
-
     }
   }
   
@@ -137,9 +164,11 @@ int main( int argc, char** argv) {
   const Double_t OuterRadCut  = 500;
   const Double_t LowEnergyCut = 3;
   
+  std::cout<< "Loop" << std::endl;
   for( int ievent = 0; ievent < nEntries; ievent++){
     reader->GetEntry(ievent);
     
+    if( reader->nCluster > 1 ){ continue; }
     for( int clusterIndex = 0; clusterIndex < reader->nCluster; clusterIndex++){
       Double_t clusterR = reader->ClusterR[clusterIndex];
       Double_t clusterTheta = reader->ClusterTheta[clusterIndex];
@@ -167,12 +196,23 @@ int main( int argc, char** argv) {
       }
 
       Int_t ThetaIndex = -1;
+      /*
       for( int Index = 0; Index <nRegion+1; Index++){
 	if( reader->ClusterTheta[clusterIndex]*180 > ThetaBoundary[Index]*TMath::Pi() && reader->ClusterTheta[clusterIndex]*180 <= ThetaBoundary[Index+1]*TMath::Pi()){
 	  ThetaIndex = Index;
 	  break;
 	}
       }
+      */
+      for( int Index = 0; Index <nRegion+1; Index++){
+	if( SIMTheta > ThetaBoundary[Index]*TMath::Pi() && SIMTheta <= ThetaBoundary[Index+1]*TMath::Pi()){
+	  ThetaIndex = Index;
+	  break;
+	}
+      }
+      EnergyIndex = 0;
+      ThetaIndex  = 0;
+
       //std::cout<< ThetaIndex << std::endl;
       //if(TMath::Tan(reader->ClusterTheta[clusterIndex]) > 0.3 ){ continue; }
       //if( reader->ClusterEnergy[clusterIndex] > 300 ){ continue; }
@@ -200,9 +240,9 @@ int main( int argc, char** argv) {
 	}
       }
       
+
       
       for(int crystalIndex = 0 ;crystalIndex < reader->nCrystal[clusterIndex]; crystalIndex++){
-	  
 	Double_t RadinCluster = reader->CrystalR[clusterIndex][crystalIndex];
 	Double_t PhiinCluster = reader->CrystalPhi[clusterIndex][crystalIndex];	
 	Double_t RinCluster   = RadinCluster*TMath::Cos(PhiinCluster);
@@ -266,24 +306,22 @@ int main( int argc, char** argv) {
 	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFuncHeight->Eval(SiginCluster)-TimeAdjFuncEnergy->Eval(EinCluster)-TCenterCrystal;//-0.05*RadinCluster;
 	if( TinCluster > 10  || TinCluster < -10 ){ continue;}
 	//Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TCenterCrystal-TimeAdjFuncHeight->Eval(SiginCluster);
-	if( EnergyIndex < 0 || EnergyIndex >= nRegion ){continue;}
-	if( RadinCluster <= RadCenterCrystal ){continue;}
+	if( EnergyIndex < 0 || EnergyIndex >= nRegion ){ continue; }
+	if( RadinCluster <= RadCenterCrystal ){ continue; }
 	profET[EnergyIndex]->Fill(EinCluster,TinCluster);
-	
-	Double_t Tmax = reader->CrystalT[clusterIndex][0];
-	//if( crystalIndex ==1){
-	if( EinCluster > 3 ){
-	  if(ECenterCrystal > 200 && ECenterCrystal < 500){
+
+	if(ECenterCrystal > 100 && ECenterCrystal < 500){
+	  if( EinCluster > 50 ){
 	    prof2ndET[ThetaIndex]->Fill( RinCluster,DinCluster,TinCluster);
-	    if( TMath::Abs(DinCluster-DCenterCrystal) < 25 ){ 
+	    if( TMath::Abs(DinCluster) < 25 ){ 
 	      prof2ndETR[ThetaIndex]->Fill( RinCluster,TinCluster);
 	      his2ndETR[ThetaIndex]->Fill( RinCluster,TinCluster);
 	    }
-	    if( TMath::Abs(RinCluster-RCenterCrystal) < 25 ){ 
+	    if( TMath::Abs(RinCluster) < 25 ){ 
 	      prof2ndETD[ThetaIndex]->Fill( TMath::Abs(DinCluster),TinCluster);
-	      his2ndETD[ThetaIndex]->Fill( TMath::Abs(DinCluster),TinCluster);
+	      his2ndETD[ThetaIndex]->Fill( TMath::Abs( DinCluster ), TinCluster);
 	    }
-	  }	  
+	  }
 	}
 	
 	if( ThetaIndex >= 0 && ThetaIndex < nRegion ){
@@ -293,7 +331,7 @@ int main( int argc, char** argv) {
 		profTR_E_restrict[ThetaIndex]->Fill(RinCluster,TinCluster);
 		hisTR_E_restrict[ThetaIndex]->Fill(RinCluster,TinCluster);
 	      }
-	      if( TMath::Abs(DinCluster) < 62.5){
+	      if( TMath::Abs(RinCluster) < 62.5){
 		profTD_E_restrict[ThetaIndex]->Fill(DinCluster,TinCluster);
 		hisTD_E_restrict[ThetaIndex]->Fill(DinCluster,TinCluster);
 	      }
@@ -374,6 +412,7 @@ int main( int argc, char** argv) {
     prof2ndETD[Index]->Write();
     his2ndETR[Index]->Write();
     his2ndETD[Index]->Write();
+
     for( int IIndex  = 0; IIndex < 3; IIndex++){
       profETR[IIndex][Index]->SetLineColor(IIndex+1);
       profETR[IIndex][Index]->Write();

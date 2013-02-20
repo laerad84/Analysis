@@ -10,6 +10,8 @@
 #include "TF1.h"
 #include "TProfile2D.h"
 #include "TProfile.h"
+#include "CsIPoly.h"
+#include "TGraph.h"
 double AdjFunc( double* x, double* par ){
   double x0 = x[0];
   double p0 = par[0];
@@ -48,7 +50,10 @@ int main( int argc, char** argv) {
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
   std::string iFileForm = "%s/Data_All_Cal_FNL_COS_HTADJ.root";//ROOTFILE_GAMMACLUS
   std::string oFileForm = "ClusterTimeStructure_Data_FNL_COS_TimeOffsetSearch.root";
-  
+  TApplication* app = new TApplication("app",&argc, argv);
+  TCanvas* can = new TCanvas("can","can",1500,1000);
+  can->Divide(3,2);
+
   TF1* TimeAdjFuncEnergy = new TF1("TimeAdjFuncEnergy",AdjFunc,0,2000,5);
   //TimeAdjFuncEnergy->SetParameters(-7.51860e-01,9.57348e-01,-9.55972e-02,0,0);
   //TimeAdjFuncEnergy->SetParameters(-9.69218e-01,1.12202e+00,-7.52470e-02,0,0);
@@ -58,12 +63,16 @@ int main( int argc, char** argv) {
 
   TF1* TimeAdjFuncHeight = new TF1("TimeAdjFuncHeight",AdjfuncTH,0,16000,3);
   TimeAdjFuncHeight->SetParameters(3.308,0.005644,0.0004385);
-  
+  CsIPoly* csiTime   = new CsIPoly("csiTime","csiTime");
+  CsIPoly* csiEnergy = new CsIPoly("csiEnergy","csiEnergy");
+  TProfile* profRT_evt = new TProfile("profRT_evt","profRT_evt",9,-112.5,112.5);
+  TProfile* profDT_evt = new TProfile("profDT_evt","profDT_evt",9,-112.5,112.5);
+  TGraph*   grevt      = new TGraph();
   TFile* tf       = new TFile(Form(iFileForm.c_str(),ROOTFILE_GAMMACLUS.c_str()));
   TTree* tr       = (TTree*)tf->Get("trCluster");
   ClusterTimeReader* reader = new ClusterTimeReader(tr);
   Int_t  nEntries = reader->fChain->GetEntries();
-  TFile* tfout    = new TFile(oFileForm.c_str(),"recreate");
+  //TFile* tfout    = new TFile(oFileForm.c_str(),"recreate");
   
 
 
@@ -94,18 +103,13 @@ int main( int argc, char** argv) {
   TH2D*       hisTR_E_restrict[nRegion];
   TProfile*   profTD_E_restrict[nRegion];
   TH2D*       hisTD_E_restrict[nRegion];
-  TProfile2D* prof2ndET[nRegion];
-  TProfile* prof2ndETR[nRegion];
-  TProfile* prof2ndETD[nRegion];
-  TH2D*     his2ndETR[nRegion];
-  TH2D*     his2ndETD[nRegion];
+
   Int_t EnergyBoundary[nRegion+1] = {100,200,300,500,800,1300,2000};
   Int_t CEnergyBoundary[nRegion+1]= {50,100,150,250,400,650,1000};
   const int nTRegion  = 6;
   Int_t ThetaBoundary[nTRegion+1] = {0,10,14,18,26,40,90};
   
   for( int Index = 0; Index < nRegion; Index++){
-    
     profET[Index] = new TProfile(Form("profET_%d",Index),Form("profET_%d_%d",EnergyBoundary[Index],EnergyBoundary[Index+1]),300,0,300);
     profCET[Index] = new TProfile(Form("profCET_%d",Index),Form("profCET_%d_%d",CEnergyBoundary[Index],CEnergyBoundary[Index+1]),300,0,600);
     profCER[Index] = new TProfile(Form("profCER_%d",Index),Form("profCER_%d_%d",CEnergyBoundary[Index],CEnergyBoundary[Index+1]),300,0,600);
@@ -116,12 +120,7 @@ int main( int argc, char** argv) {
     hisTR_E_restrict[Index]  = new TH2D(Form("hisTR_E_restrict_%d",Index),Form("hisTR_E_restrict_%d_%d",ThetaBoundary[Index],ThetaBoundary[Index+1]),21,-105,105,100,-10,10);
     profTD_E_restrict[Index] = new TProfile(Form("profTD_E_restrict_%d",Index),Form("profTD_E_restrict_%d_%d",ThetaBoundary[Index],ThetaBoundary[Index+1]),21,-105,105);
     hisTD_E_restrict[Index]  = new TH2D(Form("hisTD_E_restrict_%d",Index),Form("hisTD_E_restrict_%d_%d",ThetaBoundary[Index],ThetaBoundary[Index+1]),21,-105,105,100,-10,10);
-    prof2ndET[Index]         = new TProfile2D(Form("prof2ndET_%d",Index),Form("prof2ndET_%d_%d",ThetaBoundary[Index],ThetaBoundary[Index+1]),21,-105,105,21,-105,105);
-    prof2ndETR[Index]        = new TProfile(Form("prof2ndETR_%d",Index),Form("prof2ndETR_%d_%d",ThetaBoundary[Index],ThetaBoundary[Index+1]),21,-105,105);
-    prof2ndETD[Index]        = new TProfile(Form("prof2ndETD_%d",Index),Form("prof2ndETD_%d_%d",ThetaBoundary[Index],ThetaBoundary[Index+1]),21,-105,105);
-    his2ndETR[Index]         = new TH2D(Form("his2ndETR_%d",Index),Form("his2ndETR_%d_%d",ThetaBoundary[Index],ThetaBoundary[Index+1]),21,-105,105,100,-10,10);
-    his2ndETD[Index]         = new TH2D(Form("his2ndETD_%d",Index),Form("his2ndETD_%d_%d",ThetaBoundary[Index],ThetaBoundary[Index+1]),21,-105,105,100,-10,10);
-
+					    
     for( int IIndex = 0; IIndex < 3; IIndex++){
       profETR[IIndex][Index] = new TProfile(Form("profETR_%d_%d",IIndex,Index),Form("profETR_%d_%d_%d",IIndex,EnergyBoundary[Index],EnergyBoundary[Index+1]),50,0,300);
       profCETR[IIndex][Index] = new TProfile(Form("profCETR_%d_%d",IIndex,Index),Form("proCfCETR_%d_%d_%d",IIndex,CEnergyBoundary[Index],CEnergyBoundary[Index+1]),50,0,300);
@@ -139,8 +138,13 @@ int main( int argc, char** argv) {
   
   for( int ievent = 0; ievent < nEntries; ievent++){
     reader->GetEntry(ievent);
-    
+
     for( int clusterIndex = 0; clusterIndex < reader->nCluster; clusterIndex++){
+      csiEnergy->Reset();
+      csiTime->Reset();
+      profRT_evt->Reset();
+      profDT_evt->Reset();
+      grevt->Set(0);
       Double_t clusterR = reader->ClusterR[clusterIndex];
       Double_t clusterTheta = reader->ClusterTheta[clusterIndex];
       Double_t clusterPhi = reader->ClusterPhi[clusterIndex];
@@ -264,28 +268,18 @@ int main( int argc, char** argv) {
 	Double_t SiginCluster = reader->CrystalSignal[clusterIndex][crystalIndex];
 	Double_t EinCluster   = reader->CrystalEnergy[clusterIndex][crystalIndex];
 	Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TimeAdjFuncHeight->Eval(SiginCluster)-TimeAdjFuncEnergy->Eval(EinCluster)-TCenterCrystal;//-0.05*RadinCluster;
-	if( TinCluster > 10  || TinCluster < -10 ){ continue;}
+	if( TinCluster > 3  || TinCluster < -3 ){ continue;}
+	if( EinCluster < 3 ){ continue; }
+	csiTime->Fill(reader->CrystalID[clusterIndex][crystalIndex],TinCluster+6);
+	csiEnergy->Fill(reader->CrystalID[clusterIndex][crystalIndex],EinCluster);
+	profRT_evt->Fill(RinCluster,TinCluster);
+	profDT_evt->Fill(DinCluster,TinCluster);
+	grevt->SetPoint( grevt->GetN(), EinCluster, TinCluster);
 	//Double_t TinCluster   = reader->CrystalT[clusterIndex][crystalIndex]-TCenterCrystal-TimeAdjFuncHeight->Eval(SiginCluster);
-	if( EnergyIndex < 0 || EnergyIndex >= nRegion ){continue;}
-	if( RadinCluster <= RadCenterCrystal ){continue;}
+	if( EnergyIndex < 0 || EnergyIndex >= nRegion ){ continue; }
+	if( RadinCluster <= RadCenterCrystal ){ continue; }
 	profET[EnergyIndex]->Fill(EinCluster,TinCluster);
-	
-	Double_t Tmax = reader->CrystalT[clusterIndex][0];
-	//if( crystalIndex ==1){
-	if( EinCluster > 3 ){
-	  if(ECenterCrystal > 200 && ECenterCrystal < 500){
-	    prof2ndET[ThetaIndex]->Fill( RinCluster,DinCluster,TinCluster);
-	    if( TMath::Abs(DinCluster-DCenterCrystal) < 25 ){ 
-	      prof2ndETR[ThetaIndex]->Fill( RinCluster,TinCluster);
-	      his2ndETR[ThetaIndex]->Fill( RinCluster,TinCluster);
-	    }
-	    if( TMath::Abs(RinCluster-RCenterCrystal) < 25 ){ 
-	      prof2ndETD[ThetaIndex]->Fill( TMath::Abs(DinCluster),TinCluster);
-	      his2ndETD[ThetaIndex]->Fill( TMath::Abs(DinCluster),TinCluster);
-	    }
-	  }	  
-	}
-	
+
 	if( ThetaIndex >= 0 && ThetaIndex < nRegion ){
 	  if( ECenterCrystal > 200 && ECenterCrystal < 500 ){
 	    if( EinCluster > 3 && EinCluster < 24 ){
@@ -333,6 +327,8 @@ int main( int argc, char** argv) {
 	TVec.push_back(TinCluster);
 	EVec.push_back(EinCluster);
       }
+
+
       //std::cout<< "Test" << std::endl;
       if( RadVec.size() < 2 ){ continue; }
       for( int iIndex = 0; iIndex < RadVec.size(); iIndex++){
@@ -352,9 +348,28 @@ int main( int argc, char** argv) {
 	  }
 	}
       }
+      
+      can->cd(1);
+      csiTime->Draw("colz L");
+      can->cd(2);
+      gPad->SetLogz();
+      csiEnergy->Draw("colz L");
+      can->cd(3);
+      profRT_evt->Draw();
+      can->cd(4);
+      profDT_evt->Draw();
+      can->cd(5);
+      gPad->SetLogx();
+      gPad->SetGridy();
+      grevt->SetMarkerStyle(5);      
+      grevt->Draw("AP");
+      can->Update();
+      can->Modified();
+
+      getchar();
     }
   }
-
+  /*
   for( int Index = 0; Index < nRegion; Index++){
     profET[Index]->Write();
     profCET[Index]->Write();
@@ -366,14 +381,7 @@ int main( int argc, char** argv) {
     hisTR_E_restrict[Index]->Write();
     profTD_E_restrict[Index]->Write();
     hisTD_E_restrict[Index]->Write();
-    prof2ndET[Index]->Write();
-    prof2ndETR[Index]->SetLineColor(Index+1);
-    prof2ndETD[Index]->SetLineColor(Index+1);
 
-    prof2ndETR[Index]->Write();
-    prof2ndETD[Index]->Write();
-    his2ndETR[Index]->Write();
-    his2ndETD[Index]->Write();
     for( int IIndex  = 0; IIndex < 3; IIndex++){
       profETR[IIndex][Index]->SetLineColor(IIndex+1);
       profETR[IIndex][Index]->Write();
@@ -394,5 +402,6 @@ int main( int argc, char** argv) {
   hisClusterEnergyLength->Write();
   profEETDependency->Write();
   profETDependency->Write();
-  tfout->Write();
+  */
+  //tfout->Write();
 }
