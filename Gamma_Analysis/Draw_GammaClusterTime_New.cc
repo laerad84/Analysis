@@ -100,7 +100,7 @@ int main( int argc, char** argv) {
 
 
   TFile*  tf = new TFile(Form("%s/Data_All_GammaTime.root",ROOTFILE_GAMMACLUS.c_str()));
-  TTree*  trIn = new TTree("trCluster","");
+  TTree*  trIn = (TTree*)tf->Get("trCluster");
   const int arrSize = 120;
 
   Int_t EventNumber;
