@@ -176,7 +176,7 @@ int main( int argc, char** argv) {
   
   for( int ievt = 0; ievt < nEntries; ievt++){
     trIn->GetEntry(ievt);
-    for( int iCluster = 0; ; iCluster < nCluster-1; iCluster++){
+    for( int iCluster = 0;iCluster < nCluster-1; iCluster++){
       for( int jCluster = iCluster+1; jCluster < nCluster; jCluster++){
 	Int_t histIndex  = -1;
 	if( GammaRID[iCluster] == 1 ){
@@ -251,7 +251,7 @@ int main( int argc, char** argv) {
 	  histIndex = -1;
 	}
 
-	if( ClusterEnergy[iCluster]*0.9 < ClsuterEnergy[jCluster] &&
+	if( ClusterEnergy[iCluster]*0.9 < ClusterEnergy[jCluster] &&
 	    ClusterEnergy[iCluster]*1.1 > ClusterEnergy[jCluster] &&
 	    histIndex > 0                                         ){
 	  
