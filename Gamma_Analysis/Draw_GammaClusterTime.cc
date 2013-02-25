@@ -47,8 +47,8 @@ double AdjfuncTH( double*x ,double*par ){
 
 int main( int argc, char** argv) {
   std::string ROOTFILE_GAMMACLUS = std::getenv("ROOTFILE_GAMMACLUS");
-  std::string iFileForm = "%s/Data_All_Cal_FNL_COS_HTADJ.root";//ROOTFILE_GAMMACLUS
-  //std::string iFileForm = "%s/Data_All_old.root";//ROOTFILE_GAMMACLUS
+  //std::string iFileForm = "%s/Data_All_Cal_FNL_COS_HTADJ.root";//ROOTFILE_GAMMACLUS
+  std::string iFileForm = "%s/Data_All_old.root";//ROOTFILE_GAMMACLUS
   std::string oFileForm = "GammaClusterTime.root";
   
   TF1* TimeAdjFuncEnergy = new TF1("TimeAdjFuncEnergy",AdjFunc,0,2000,5);
@@ -68,7 +68,7 @@ int main( int argc, char** argv) {
   TFile* tfout    = new TFile(oFileForm.c_str(),"recreate");
   
   TH2D* hisRTNew = new TH2D("hisRTNew","hisRTNew",80,0,1000,100,-20,20);
-  TH2D* hisRT    = new TH2D("hisRT"   ,"hisRT",80,0,1000,100,-50,50);
+  TH2D* hisRT    = new TH2D("hisRT"   ,"hisRT",80,0,1000,100,-10,10);
   TH2D* hisRTNon = new TH2D("hisRTNon","hisRTNon",80,0,1000,100,-20,20);
   TH1D* hisCut   = new TH1D("hisCut","hisCut",20,0,20);
   TH2D* hisWT    = new TH2D("hisWT","hisWT",80,-1000,1000,100,-20,20);
@@ -82,6 +82,7 @@ int main( int argc, char** argv) {
   */
   static double const Pcor[2]={6.49003,0.99254};
   static double const CsIX0=18.5;//mm
+
 
   for( int ievent = 0; ievent < nEntries; ievent++){
     reader->GetEntry(ievent);
@@ -126,6 +127,7 @@ int main( int argc, char** argv) {
 	ClusterRegion = false;  
 	continue; 
       }
+
       /*
       if( clusterR < 400 ){ ClusterMinRBool = true; }
       */
@@ -165,6 +167,7 @@ int main( int argc, char** argv) {
     
     if( !ClusterRegion ){ continue; }
     hisCut->Fill(1);
+
     /*
     if( !ClusterMinRBool ){ continue; }
     hisCut->Fill(2);

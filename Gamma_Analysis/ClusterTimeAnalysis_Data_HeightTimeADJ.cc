@@ -73,9 +73,10 @@ int main( int argc, char** argv ){
     ch->Add( Form("%s/run_wav_%d_Cal_FNL_COS.root",ROOTFILE_WAV.c_str(),tmpRunNumber));
   }
   GammaFinder gFinder;
-  TFile*  tfout = new TFile(Form("%s/Data_All_Cal_FNL_COS_HTADJ.root",ROOTFILE_GAMMACLUS.c_str()),"RECREATE");
+  TFile*  tfout = new TFile(Form("%s/Data_All_Cal_FNL_COS_HTADJ1.root",ROOTFILE_GAMMACLUS.c_str()),"RECREATE");
   TTree*  trout = new TTree("trCluster","");
   const int arrSize = 120;
+
   Int_t EventNumber;
   Int_t nCluster;
   Int_t nCrystal[arrSize];//[nCluster]
@@ -87,6 +88,8 @@ int main( int argc, char** argv ){
   Double_t ClusterEnergy[arrSize];//[nCluster]
   Double_t ClusterPhi[arrSize];//[nCluster]
   Double_t ClusterChisq2[arrSize];//[nCluster]
+  Double_t ClusterPos[arrSize][3];//[nCluster]
+  Double_t GammaPos[arrSize][3];//[nCluster]
 
   Double_t CrystalT[arrSize][arrSize]; 
   Double_t CrystalEnergy[arrSize][arrSize];
@@ -112,7 +115,11 @@ int main( int argc, char** argv ){
   trout->Branch("CrystalPhi"   ,CrystalPhi   ,"CrystalPhi[nCluster][120]/D");
   trout->Branch("CrystalSignal",CrystalSignal,"CrystalSignal[nCluster][120]/D");
   trout->Branch("CrystalID"    ,CrystalID    ,"CrystalID[nCluster][120]/I");
-
+  trout->Branch("ClusterPos"   ,ClusterPos   ,"ClusterPos[nCluster][3]/D");
+  trout->Branch("GammaPos"     ,GammaPos     ,"GammaPos[nCluster][3]/D");
+  
+  Double_t KlongPos[3];
+  trout->Branch("KlongPos"     ,KlongPos       ,"KlongPos[3]/D");
   E14GNAnaDataContainer data;
   ClusterTimeAnalyzer* clusterTimeAnalyzer = new ClusterTimeAnalyzer();
   
@@ -138,6 +145,9 @@ int main( int argc, char** argv ){
     ch->GetEntry( eventIndex );
     EventNumber = eventIndex ;
     nCluster = 0;
+    KlongPos[0] = 0;
+    KlongPos[1] = 0;
+    KlongPos[2] = 0;
 
     for( int iarr = 0; iarr < arrSize; iarr++){
       nCrystal[iarr] = 0;
@@ -148,6 +158,13 @@ int main( int argc, char** argv ){
       ClusterT[iarr] = 0;      
       ClusterTheta[iarr] = 0;
       ClusterChisq2[iarr] = 0;
+      ClusterPos[iarr][0]  =0;
+      ClusterPos[iarr][1] = 0;
+      ClusterPos[iarr][2] = 0;
+      GammaPos[iarr][0]  =0;
+      GammaPos[iarr][1] = 0;
+      GammaPos[iarr][2] = 0;
+
       for( int jarr  =0; jarr < arrSize; jarr++){
 	CrystalR[iarr][jarr] = 0;
 	CrystalT[iarr][jarr] = 0;
@@ -168,7 +185,7 @@ int main( int argc, char** argv ){
     if( glist.size() != 6 ){ continue; }
 
     //std::cout<< "Number of Cluster:" <<  clist.size() << std::endl;
-    
+
     clusterTimeAnalyzer->Convert( clist ,ctlist);    
     if(( clist.size() != ctlist.size() ) ||
        ( clist.size() == 0 )             ||
@@ -178,18 +195,30 @@ int main( int argc, char** argv ){
     std::list<ClusterTime>::iterator  itlist = ctlist.begin();
     std::list<Cluster>::iterator      itCl   = clist.begin();
     std::list<Gamma>::iterator        itgamma= glist.begin();
+    KlongPos[0] = (klVec[0]).vx();
+    KlongPos[1] = (klVec[0]).vy();
+    KlongPos[2] = (klVec[0]).vz();
+
     Int_t clIndex = 0;
     for( ;
 	 itlist != ctlist.end();
 	 itlist++ ,itCl++ ,clIndex++, itgamma++){
       //std::cout<< (*itList).GetClusterTime() << " : " << (*itList).GetClusterR() << std::endl;
+
       ClusterID[clIndex]    = (*itCl).id();
       ClusterT[clIndex]     = (*itlist).GetClusterTime();
       ClusterR[clIndex]     = (*itlist).GetClusterR();
       ClusterPhi[clIndex]   = (*itlist).GetClusterPhi();
       ClusterEnergy[clIndex]= (*itCl).e();
       ClusterTheta[clIndex] = TMath::ATan2((*itlist).GetClusterR(),(6148. - klVec[0].vz() ));
+      ClusterPos[clIndex][0]= (*itCl).x();
+      ClusterPos[clIndex][1]= (*itCl).y();
+      ClusterPos[clIndex][2]= (*itCl).z();
       ClusterChisq2[clIndex]= (*itgamma).chisq();
+      GammaPos[clIndex][0]  = (*itgamma).x();
+      GammaPos[clIndex][1]  = (*itgamma).y();
+      GammaPos[clIndex][2]  = (*itgamma).z();
+      
       nCrystal[clIndex]     = (*itCl).clusterIdVec().size();
       for( Int_t cryIndex = 0; cryIndex < nCrystal[clIndex] ; cryIndex++ ){
 	CrystalR[clIndex][cryIndex]      = (*itlist).clusterRVec()[cryIndex];
