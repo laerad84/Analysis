@@ -231,7 +231,7 @@ int main( int argc, char** argv ){
 
     if( clist.size() != 6 ){ continue; }
     if( glist.size() != 6 ){ continue; }
-    if( klVec.size() >  0 ){ continue; }
+    if( klVec.size() <  0 ){ continue; }
 
     //std::cout<< "Number of Cluster:" <<  clist.size() << std::endl;
 
