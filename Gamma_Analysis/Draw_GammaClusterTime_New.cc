@@ -98,42 +98,72 @@ int main( int argc, char** argv) {
   static double const Pcor[2]= {6.49003,0.99254};
   static double const CsIX0  = 18.5;//mm
 
-  TChain* ch = new TChain("T");
-  std::ifstream ifs(Form("%s/Data/RunList/KLRunList_2.txt",ANALYSISLIB.c_str()));
-  int tmpRunNumber;
-  while( ifs >> tmpRunNumber ){
-    std::cout<<  tmpRunNumber  << std::endl;
-    ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS.root", ROOTFILE_WAV.c_str(),tmpRunNumber));
-  }
-  E14GNAnaDataContainer data;
-  data.setBranchAddress(ch);
 
+  TFile*  tf = new TFile(Form("%s/Data_All_GammaTime.root",ROOTFILE_GAMMACLUS.c_str()));
+  TTree*  trIn = new TTree("trCluster","");
+  const int arrSize = 120;
 
+  Int_t EventNumber;
+  Int_t nCluster;
+  Int_t nCrystal[arrSize];//[nCluster]
+  Int_t ClusterID[arrSize];//[nCluster]
 
-  GammaFinder gFinder;
-  std::cout<< ch->GetEntries() << std::endl;
+  Double_t ClusterTheta[arrSize];//[nCluster]
+  Double_t ClusterT[arrSize];//[nCluster] 
+  Double_t ClusterR[arrSize];//[nCluster]
+  Double_t ClusterEnergy[arrSize];//[nCluster]
+  Double_t ClusterPhi[arrSize];//[nCluster]
+  Double_t ClusterChisq2[arrSize];//[nCluster]
+  Double_t ClusterPos[arrSize][3];//[nCluster]
+  Double_t GammaPos[arrSize][3];//[nCluster]
+  Double_t GammaTOF[arrSize];//[nCluster]
+  Double_t GammaDOS[arrSize];//[nCluster]
+  Int_t GammaRID[arrSize];//[nCluster]
 
-
-
-
-
-  TFile* tfOut = new TFile("GammaTimeOut.root","recreate");
-  TTree* trOut = new TTree("trOut","");
-
-  Int_t    GammaRegion[6];
-  Int_t    GammaCrystalID[6];
-  Double_t GammaEnergy[6];
-  Double_t GammaTime[6];
-  Double_t GammaTimeV0[6];
-  Double_t GammaPos[6][3];
-  Double_t GammaTheta[6];
-  Double_t LengthOfFlight[6];
-  Double_t DepthOfShower[6];
+  Double_t CrystalT[arrSize][arrSize]; 
+  Double_t CrystalTAdj[arrSize][arrSize]; 
+  Double_t CrystalEnergy[arrSize][arrSize];
+  Double_t CrystalR[arrSize][arrSize];
+  Double_t CrystalPhi[arrSize][arrSize];
+  Double_t CrystalSignal[arrSize][arrSize];
+  Double_t CrystalHHT[arrSize][arrSize];
+  Int_t    CrystalID[arrSize][arrSize];
 
   Double_t KlongPos[3];
   Double_t KlongEne;
   Double_t KlongMass;
   Double_t KlongPt;
   Double_t KlongChisqZ;
+
+  trIn->SetBranchAddress("EventNumber"  ,&EventNumber );
+  trIn->SetBranchAddress("nCluster"     ,&nCluster    );
+  trIn->SetBranchAddress("nCrystal"     ,nCrystal     );
+  trIn->SetBranchAddress("ClusterID"    ,ClusterID    );
+  trIn->SetBranchAddress("ClusterEnergy",ClusterEnergy);
+  trIn->SetBranchAddress("ClusterR"     ,ClusterR     );
+  trIn->SetBranchAddress("ClusterT"     ,ClusterT     );
+  trIn->SetBranchAddress("ClusterTheta" ,ClusterTheta );
+  trIn->SetBranchAddress("ClusterChisq2",ClusterChisq2);
+  trIn->SetBranchAddress("ClusterPhi"   ,ClusterPhi   );
+  trIn->SetBranchAddress("CrystalT"     ,CrystalT     );
+  trIn->SetBranchAddress("CrystalTAdj"  ,CrystalTAdj  );
+  trIn->SetBranchAddress("CrystalEnergy",CrystalEnergy);
+  trIn->SetBranchAddress("CrystalR"     ,CrystalR     );
+  trIn->SetBranchAddress("CrystalPhi"   ,CrystalPhi   );
+  trIn->SetBranchAddress("CrystalSignal",CrystalSignal);
+  trIn->SetBranchAddress("CrystalID"    ,CrystalID    );
+  trIn->SetBranchAddress("ClusterPos"   ,ClusterPos   );
+  trIn->SetBranchAddress("GammaPos"     ,GammaPos     );
+  trIn->SetBranchAddress("GammaTOF"     ,GammaTOF     );
+  trIn->SetBranchAddress("GammaDOS"     ,GammaDOS     );
+  trIn->SetBranchAddress("GammaRID"     ,GammaRID     );
+
+  trIn->SetBranchAddress("KlongPos"     ,KlongPos     );
+  trIn->SetBranchAddress("KlongEne"     ,&KlongEne    );
+  trIn->SetBranchAddress("KlongMass"    ,&KlongMass   );
+  trIn->SetBranchAddress("KlongPt"      ,&KlongPt     );
+
+
+
 
 }
