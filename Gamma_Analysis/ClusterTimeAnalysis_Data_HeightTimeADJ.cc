@@ -163,6 +163,7 @@ int main( int argc, char** argv ){
   trout->Branch("KlongEne"     ,&KlongEne    ,"KlongEne/D");
   trout->Branch("KlongMass"    ,&KlongMass   ,"KlongMass/D");
   trout->Branch("KlongPt"      ,&KlongPt     ,"KlongPt/D");
+  trout->Branch("KongChisqZ"   ,&KlongChisqZ ,"KlongChisqZ/D");
 
   E14GNAnaDataContainer data;
   ClusterTimeAnalyzer* clusterTimeAnalyzer = new ClusterTimeAnalyzer();

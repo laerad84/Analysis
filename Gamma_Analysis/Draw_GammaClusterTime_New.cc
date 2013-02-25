@@ -162,8 +162,116 @@ int main( int argc, char** argv) {
   trIn->SetBranchAddress("KlongEne"     ,&KlongEne    );
   trIn->SetBranchAddress("KlongMass"    ,&KlongMass   );
   trIn->SetBranchAddress("KlongPt"      ,&KlongPt     );
+  trIn->SetBranchAddress("KlongChisqZ"  ,&KlongChisqZ );
 
+  Int_t nEntries = trIn->GetEntries();
+  
+  TFile* tfout= new TFile("TimeOut.root","recreate");
+  TProfile2D* profGammaEET  = new TProfile2D("profGammaEET","profGammaEET;GammaE[MeV];GammaE[MeV];MeanTimeDelta[ns]", 100,0,1000,100,0,1000);
+  TH2D*       hisGammaTimeResolution[16];
+  for( int i = 0; i < 10; i++){
+    hisGammaTimeResolution[i] = new TH2D(Form("hisGammaTimeResolution_%d",i),Form("hisGammaTimeResolution_%d",i),
+					 100,0,1000,400,-20,20);
+  }
+  
+  for( int ievt = 0; ievt < nEntries; ievt++){
+    trIn->GetEntry(ievt);
+    for( int iCluster = 0; ; iCluster < nCluster-1; iCluster++){
+      for( int jCluster = iCluster+1; jCluster < nCluster; jCluster++){
+	Int_t histIndex  = -1;
+	if( GammaRID[iCluster] == 1 ){
+	  switch( GammaRID[jCluster] ){
+	  case 1:
+	    histIndex = 1;
+	    break;
+	  case 2:
+	    histIndex = 2;
+	    break;
+	  case 3:
+	    histIndex = 3;
+	    break;
+	  case 4:
+	    histIndex = 4;
+	    break;
+	  default: 
+	    histIndex  = -1;
+	  }
+	}else if( GammaRID[iCluster] == 2 ){
+	  switch( GammaRID[jCluster] ){
+	  case 1:
+	    histIndex = 2;
+	    break;
+	  case 2:
+	    histIndex = 5;
+	    break;
+	  case 3:
+	    histIndex = 6;
+	    break;
+	  case 4:
+	    histIndex = 7;
+	    break;
+	  default: 
+	    histIndex  = -1;
+	  }	  
+	}else if( GammaRID[iCluster] == 3 ){
+	  switch( GammaRID[jCluster] ){
+	  case 1:
+	    histIndex = 3;
+	    break;
+	  case 2:
+	    histIndex = 6;
+	    break;
+	  case 3:
+	    histIndex = 8;
+	    break;
+	  case 4:
+	    histIndex = 9;
+	    break;
+	  default: 
+	    histIndex  = -1;
+	  }	  
+	}else if( GammaRID[iCluster] == 4 ){
+	  switch( GammaRID[jCluster] ){
+	  case 1:
+	    histIndex = 4;
+	    break;
+	  case 2:
+	    histIndex = 7;
+	    break;
+	  case 3:
+	    histIndex = 9;
+	    break;
+	  case 4:
+	    histIndex = 10;
+	    break;
+	  default: 
+	    histIndex  = -1;
+	  }	  
+	}else{
+	  histIndex = -1;
+	}
 
+	if( ClusterEnergy[iCluster]*0.9 < ClsuterEnergy[jCluster] &&
+	    ClusterEnergy[iCluster]*1.1 > ClusterEnergy[jCluster] &&
+	    histIndex > 0                                         ){
+	  
+	  hisGammaTimeResolution[histIndex-1]->Fill(ClusterEnergy[iCluster],
+						    ClusterT[iCluster]-GammaTOF[iCluster]- (ClusterT[jCluster]-GammaTOF[jCluster]));
+	}
 
-
+	if( ClusterEnergy[iCluster] >= ClusterEnergy[jCluster] ){
+	  profGammaEET->Fill( ClusterEnergy[iCluster],ClusterEnergy[jCluster],
+			      ClusterT[iCluster]-GammaTOF[iCluster]- (ClusterT[jCluster]-GammaTOF[jCluster]));
+	}else{
+	  profGammaEET->Fill( ClusterEnergy[jCluster],ClusterEnergy[jCluster],
+			      ClusterT[jCluster]-GammaTOF[jCluster]-(ClusterT[iCluster]-GammaTOF[iCluster]));
+	}	    
+      }
+    }
+  }  
+  profGammaEET->Write();
+  for( int i = 0; i< 16; i++){
+    hisGammaTimeResolution[i]->Write();
+  }
+  tfout->Close();
 }
