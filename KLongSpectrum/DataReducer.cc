@@ -40,7 +40,8 @@ Int_t main( int argc , char** argv ){
   std::string ROOTFILE_SUMUP = std::getenv("ROOTFILE_SUMUP");
   std::string ROOTFILE_WAV   = std::getenv("ROOTFILE_WAV");
 
-  std::string ROOTFILE_3PI0CALIBRATIONWAV = std::getenv("ROOTFILE_3PI0CALIBRATIONWAV");
+  //std::string ROOTFILE_3PI0CALIBRATIONWAV = std::getenv("ROOTFILE_3PI0CALIBRATIONWAV");
+  std::string ROOTFILE_3PI0CALIBRATIONWAV = std::getenv("ROOTFILE_WAV");
   std::string ROOTFILE_3PI0CALIBRATIONSUM = std::getenv("ROOTFILE_3PI0CALIBRATIONSUM");
   std::string ROOTFILE_3PI0CALIBRATIONSIM = std::getenv("ROOTFILE_3PI0CALIBRATIONSIM");
       
@@ -58,7 +59,8 @@ Int_t main( int argc , char** argv ){
     }
     int tmpRunNumber; 
     while( ifsRunNumber >> tmpRunNumber ){
-      ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+      //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+      ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
     }
   }else if( FileType ==2 ){
     std::string HOMEDIR  =std::getenv("HOME");
