@@ -87,12 +87,14 @@ Int_t main( int argc , char** argv ){
   Double_t KLMom[3];
   Double_t GammaE[6];
   Double_t GammaPos[6][3];
+  Double_t GammaTime[6];
   trKL->Branch("KLMass"  ,&KLMass  ,"KLMass/D");
   trKL->Branch("KLChisq" ,&KLChisq ,"KLChisq/D");
   trKL->Branch("KLE"     ,&KLE     ,"KLE/D");
   trKL->Branch("KLPos"   ,KLPos    ,"KLPos[3]/D");
   trKL->Branch("GammaE"  ,GammaE   ,"GammaE[6]/D");
   trKL->Branch("GammaPos",GammaPos ,"GammaPos[6][3]/D");
+  trKL->Branch("GammaTime",GammaTime,"GammaTime[6]/D");
   trKL->Branch("KLMom"   ,KLMom    ,"KLMom[3]/D");
   std::cout<< ch->GetEntries() << std::endl;
   for( int ievent = 0; ievent < ch->GetEntries() ; ievent++){
@@ -119,7 +121,7 @@ Int_t main( int argc , char** argv ){
       GammaPos[GammaID][0] = (*itGamma).x();
       GammaPos[GammaID][1] = (*itGamma).y();
       GammaPos[GammaID][2] = (*itGamma).z();
-
+      GammaTime[GammaID]   = (*itGamma).t();
     }
     KLMass   = klVec[0].m();
     KLE      = klVec[0].e();

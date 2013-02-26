@@ -173,11 +173,18 @@ int main( int argc, char** argv) {
     hisGammaTimeResolution[i] = new TH2D(Form("hisGammaTimeResolution_%d",i),Form("hisGammaTimeResolution_%d",i),
 					 100,0,1000,400,-20,20);
   }
-  
+  double klmass = 497.648;
   for( int ievt = 0; ievt < nEntries; ievt++){
     trIn->GetEntry(ievt);
+    if( KlongMass < klmass -10  || KlongMass > klmass +10 ){ continue; }
     for( int iCluster = 0;iCluster < nCluster-1; iCluster++){
+      if( ClusterR[iCluster] < 250 ){ continue; }
+      if( abs(GammaPos[iCluster][1])>550){ continue;}
+      if( CrystalEnergy[iCluster][0] < 0.2*ClusterEnergy[iCluster] ){ continue;}
       for( int jCluster = iCluster+1; jCluster < nCluster; jCluster++){
+	if( ClusterR[jCluster] < 250 ){ continue; }
+	if( abs(GammaPos[jCluster][1])>550){ continue;}
+	if( CrystalEnergy[jCluster][0] < 0.2*ClusterEnergy[jCluster] ){ continue; }
 	Int_t histIndex  = -1;
 	if( GammaRID[iCluster] == 1 ){
 	  switch( GammaRID[jCluster] ){
@@ -269,8 +276,9 @@ int main( int argc, char** argv) {
       }
     }
   }  
+
   profGammaEET->Write();
-  for( int i = 0; i< 16; i++){
+  for( int i = 0; i< 10; i++){
     hisGammaTimeResolution[i]->Write();
   }
   tfout->Close();
