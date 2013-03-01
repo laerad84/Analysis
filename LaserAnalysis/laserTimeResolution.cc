@@ -29,14 +29,14 @@ int main( int argc, char** argv){
   TTree* trin = (TTree*)tfin->Get("Tree");
 
   const Int_t nCsI = 2716;
-  Int_t    CsiNumber;
+  Short_t    CsiNumber;
   Double_t CsiSignal[nCsI];//CsiNumber
   Double_t CsiTime[nCsI];//CsiNumber
   Int_t    CsiID[nCsI];//CsiNumber
   Int_t    LaserNumber;
   Double_t LaserSignal[5];//LaserNumber
   Double_t LaserTime[5];//LaserNumber
-  Int_t LaserID[5];//LaserNumber
+  Short_t LaserID[5];//LaserNumber
   trin->SetBranchAddress("CsiNumber"  ,&CsiNumber);
   trin->SetBranchAddress("CsiSignal"  ,CsiSignal);
   trin->SetBranchAddress("CsiTime"    ,CsiTime);
