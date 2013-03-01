@@ -47,6 +47,8 @@ int main( int argc, char** argv){
   trin->SetBranchAddress("LaserID"    ,LaserID);
 
   TFile* tfout= new TFile(Form(OutputFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber),"recreate");
+  TH1D* hisLaserTriggerSignal = new TH1D("hisLaserTriggerSignal","hisLaserTriggerSignal"
+					 160,0,16000);
   TH1D* hisCsILaserTime[nCsI];
   TH1D* hisCsILaserOutput[nCsI];
   for( int i = 0; i < 2716; i++){
@@ -61,8 +63,9 @@ int main( int argc, char** argv){
   Int_t nEntries = trin->GetEntries();
   for( int ievent = 0; ievent < nEntries; ievent++ ){
     trin->GetEntry(ievent);
+    std::cout << LaserSignal[0] << std::endl;
+    hisLaserTriggerSignal->Fill(LaserSignal[0]);
     if(LaserSignal[0]<100){ continue; }
-    
     // TimeDelta from CsITime ID == 0
     //Time of ID == 0;
     Double_t TimeDeltaBase = CsiTime[0];
