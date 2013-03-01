@@ -34,6 +34,9 @@ public :
    Double_t        CrystalPhi[120][120];   //[nCluster]
    Int_t           CrystalID[120][120];   //[nCluster]
    Double_t        CrystalSignal[120][120];//[nCluster]
+   Double_t        ClusterPos[120][3];//[nCluster]
+   Double_t        GammaPos[120][3];//[nCluster]
+   Double_t        KlongPos[3];
    // List of branches
    TBranch        *b_EventNumber;   //!
    TBranch        *b_nCluster;   //!
@@ -51,6 +54,9 @@ public :
    TBranch        *b_CrystalPhi;   //!
    TBranch        *b_CrystalID;  //!
    TBranch        *b_CrystalSignal; //!
+   TBranch        *b_ClusterPos; //!
+   TBranch        *b_GammaPos; //!
+   TBranch        *b_KlongPos; //!
 
    ClusterTimeReader(TTree *tree=0);
    virtual ~ClusterTimeReader();
@@ -130,6 +136,9 @@ void ClusterTimeReader::Init(TTree *tree)
    fChain->SetBranchAddress("CrystalPhi"   ,CrystalPhi   , &b_CrystalPhi);
    fChain->SetBranchAddress("CrystalID"    ,CrystalID    , &b_CrystalID);
    fChain->SetBranchAddress("CrystalSignal",CrystalSignal, &b_CrystalSignal);
+   fChain->SetBranchAddress("ClusterPos"   ,ClusterPos   , &b_ClusterPos);
+   fChain->SetBranchAddress("GammaPos"     ,GammaPos     , &b_GammaPos);
+   fChain->SetBranchAddress("KlongPos"     ,KlongPos     , &b_KlongPos);
    Notify();
 }
 
