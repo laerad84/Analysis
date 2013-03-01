@@ -29,10 +29,10 @@ int main( int argc, char** argv){
   TTree* trin = (TTree*)tfin->Get("Tree");
 
   const Int_t nCsI = 2716;
-  Short_t    CsiNumber;
+  Int_t    CsiNumber;
   Double_t CsiSignal[nCsI];//CsiNumber
   Double_t CsiTime[nCsI];//CsiNumber
-  Int_t    CsiID[nCsI];//CsiNumber
+  Short_t    CsiID[nCsI];//CsiNumber
   Int_t    LaserNumber;
   Double_t LaserSignal[5];//LaserNumber
   Double_t LaserTime[5];//LaserNumber
