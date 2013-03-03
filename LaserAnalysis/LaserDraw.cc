@@ -67,7 +67,7 @@ int main( int argc, char** argv ){
   for( int ievent  = 0; ievent < nEntries; ievent++){
     tr->GetEntry( ievent );
     if( LaserNumber < 5 ){ continue; }
-    if( LaserTime[0] < 20 ) {continue; }
+    if( LaserTime[0] < 100 ) {continue; }
     if( LaserSignal[0] < 200 ){ continue; }
     if( CsiID[0] != 0 ){ continue; }
     
@@ -82,6 +82,7 @@ int main( int argc, char** argv ){
   }
   
   tfOut->cd();
+
   for( int ich = 0; ich < 2716; ich++){
       hisTimeDeltaLaser[ich]->Write();
       hisTimeDelta[ich]->Write();
