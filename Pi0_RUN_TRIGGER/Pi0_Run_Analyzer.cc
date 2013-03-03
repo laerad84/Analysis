@@ -35,7 +35,7 @@ main(int argc, char** argv){
   std::string ROOTFILE_CONV;
   switch ( FileType ){
   case 0:
-    ROOTFILE_CONV = ROOTFILE_SUM.c_str();
+    ROOTFILE_CONV = ROOTFILE_SIM.c_str();
     InputFilename = "%s/Conv_e14_AL_Target.mac_1000000_%d.root";//ConvFileDir, RunNumber
     OutputFilename= "Pi0SIM.root";    
     break;
