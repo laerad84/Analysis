@@ -66,7 +66,7 @@ main( int argc ,char ** argv ){
     TempCorFactor = 1;
   }
   std::cout<< TempCorFactor << std::endl;
-
+  Double_t Pi0PeakCorFactor = 0.9932;
 
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
@@ -189,7 +189,7 @@ main( int argc ,char ** argv ){
       int CsiID        = reader->CsiID[ich];
       double CsiTime   = reader->CsiTime[ich];
       double CsiSignal = reader->CsiSignal[ich]; 
-      double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[ reader->CsiID[ich]]/TempCorFactor;      
+      double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[ reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;      
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];
       if( CsiTimeClusterID == 0){
@@ -205,7 +205,7 @@ main( int argc ,char ** argv ){
 
     nCSIDigi=0;
     for( int idigi = 0; idigi< nCsI; idigi++){
-      if( CsISignal[idigi] > 5 && CsIEnergy[idigi]>3){
+      if( CsISignal[idigi] > 5 && CsIEnergy[idigi]>0.5){
 	CSIDigiID[ nCSIDigi ]     = CsIID[idigi];
 	CSIDigiE[ nCSIDigi ]      = CsIEnergy[idigi];
 	CSIDigiTime[ nCSIDigi ]   = CsITime[idigi]-TimeDelta[CsIID[idigi]];
