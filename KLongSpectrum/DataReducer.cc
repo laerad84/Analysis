@@ -43,7 +43,8 @@ Int_t main( int argc , char** argv ){
   //std::string ROOTFILE_3PI0CALIBRATIONWAV = std::getenv("ROOTFILE_3PI0CALIBRATIONWAV");
   std::string ROOTFILE_3PI0CALIBRATIONWAV = std::getenv("ROOTFILE_WAV");
   std::string ROOTFILE_3PI0CALIBRATIONSUM = std::getenv("ROOTFILE_3PI0CALIBRATIONSUM");
-  std::string ROOTFILE_3PI0CALIBRATIONSIM = std::getenv("ROOTFILE_3PI0CALIBRATIONSIM");
+  //  std::string ROOTFILE_3PI0CALIBRATIONSIM = std::getenv("ROOTFILE_3PI0CALIBRATIONSIM");
+  std::string ROOTFILE_3PI0CALIBRATIONSIM = "/home/had/jwlee/workdir/RootFiles/Data/Simulation/KL_3pi0";
       
   TChain* ch;
   if( FileType != 1){ ch = new TChain("trCalibration");
@@ -51,8 +52,9 @@ Int_t main( int argc , char** argv ){
     ch = new TChain("T");
   }
   if( FileType == 0){
-    for( int i = 0; i< 400; i++){
-      ch->Add(Form("%s/Calibration_with_4e9/Calibration_%03d0_15.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+    for( int i = 0; i< 1000; i++){
+      //ch->Add(Form("%s/Calibration_with_4e9/Calibration_%03d0_15.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+      ch->Add(Form("%s/out_KL3pi0.mac_500000_%d_FEB_CL_KL.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
     }
   }else if( FileType == 1 ){
     std::string HOMEDIR = std::getenv("HOME");
