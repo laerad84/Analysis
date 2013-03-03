@@ -44,8 +44,7 @@ Int_t main( int argc , char** argv ){
   std::string ROOTFILE_3PI0CALIBRATIONWAV = std::getenv("ROOTFILE_WAV");
   std::string ROOTFILE_3PI0CALIBRATIONSUM = std::getenv("ROOTFILE_3PI0CALIBRATIONSUM");
   //  std::string ROOTFILE_3PI0CALIBRATIONSIM = std::getenv("ROOTFILE_3PI0CALIBRATIONSIM");
-  std::string ROOTFILE_3PI0CALIBRATIONSIM = "/home/had/jwlee/workdir/RootFiles/Data/Simulation/KL_3pi0";
-      
+  std::string ROOTFILE_3PI0CALIBRATIONSIM = "/group/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/KL_3pi0";  
   TChain* ch;
   if( FileType != 1){ ch = new TChain("trCalibration");
   }else{
