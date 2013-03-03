@@ -55,6 +55,19 @@ main( int argc ,char ** argv ){
   std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
 
+
+  std::string TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());  
+  TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str());
+  TTree* trTempCorr  =(TTree*)tfTempCorr->Get("TemperatureCorrectionCsI");
+  Double_t TempCorFactor=0;
+  trTempCorr->SetBranchAddress("CorrectionFactor",&TempCorFactor);
+  trTempCorr->GetEntry(RunNumber);
+  if( TempCorFactor == 0){
+    TempCorFactor = 1;
+  }
+  std::cout<< TempCorFactor << std::endl;
+
+
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber),"recreate");
@@ -70,7 +83,7 @@ main( int argc ,char ** argv ){
   trout->Branch("RunNumber"  ,&RunNumber   ,"RunNumber/I");
   trout->Branch("EventNumber",&EventNumber ,"EventNumber/I");
   trout->Branch("CsiNumber"  ,&nCSIDigi    ,"CsiNumber/I");
-  trout->Branch("CsiModID"   ,CSIDigiID    ,"CSIDigiID[CsiNumber]/I");//nCSIDigi
+  trout->Branch("CsiModID"   ,CSIDigiID    ,"CSIModID[CsiNumber]/I");//nCSIDigi
   trout->Branch("CsiEne"     ,CSIDigiE     ,"CsiEne[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiTime"    ,CSIDigiTime  ,"CsiTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiHHTime"  ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
@@ -176,7 +189,7 @@ main( int argc ,char ** argv ){
       int CsiID        = reader->CsiID[ich];
       double CsiTime   = reader->CsiTime[ich];
       double CsiSignal = reader->CsiSignal[ich]; 
-      double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[ reader->CsiID[ich] ];      
+      double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[ reader->CsiID[ich]]/TempCorFactor;      
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];
       if( CsiTimeClusterID == 0){
