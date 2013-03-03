@@ -66,7 +66,7 @@ main( int argc ,char ** argv ){
     TempCorFactor = 1;
   }
   std::cout<< TempCorFactor << std::endl;
-  Double_t Pi0PeakCorFactor = 0.9932;
+  Double_t Pi0PeakCorFactor = 0.9937;
 
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
