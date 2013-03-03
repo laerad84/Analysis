@@ -121,9 +121,7 @@ recVtxWithConstM( const Gamma& g1, const Gamma& g2, double Mass,
       recZsig2[1] = (-1./(2.*sqrt(dz2)))*(-1./(2.*sqrt(dz2)))*sig2_dz2;
     }
   }
-
 }
-
 
 std::list<Pi0>  
 recPi0withConstM( std::list<Gamma> glist, double mass )

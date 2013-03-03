@@ -11,7 +11,7 @@
 #include "cluster/ClusterFinder.h"
 #include "rec2g/Rec2g.h"
 #include "CLHEP/Vector/ThreeVector.h"
-#include "Pi0_RUN_TRIGGER/user_func.h"
+#include "user_func.h"
 
 //#include "E14ReadSumFile.h"
 #include <sstream>
@@ -29,55 +29,78 @@ main(int argc, char** argv){
   Int_t FileType = atoi(argv[0]);
   std::string InputFilename;
   std::string OutputFilename;
+  std::string ROOTFILE_SUM   = std::getenv("ROOTFILE_SUMUP");
+  std::string ROOTFILE_WAV   = std::getenv("ROOTFILE_WAV");
+  std::string ROOTFILE_SIM   = std::getenv("ROOTFILE_PI0SIMCONV");
+  std::string ROOTFILE_CONV;
   switch ( FileType ){
   case 0:
-    InputFilename = "%s/%d.root";//ConvFileDir, RunNumber
-    OutputFilename= "%s/%d.root";
+    ROOTFILE_CONV = ROOTFILE_SUM.c_str();
+    InputFilename = "%s/Conv_e14_AL_Target.mac_1000000_%d.root";//ConvFileDir, RunNumber
+    OutputFilename= "Pi0SIM.root";    
     break;
   case 1:
-    InputFilename = "%s/%d.root";
-    OutputFilename= "%s/%d.root";
+    ROOTFILE_CONV = ROOTFILE_SUM.c_str();
+    InputFilename = "%s/Sum%d.root";
+    OutputFilename= "Pi0SUM.root";
     break;
   case 2:
-    InputFilename = "%s/%d.root";
-    OutputFilename= "%s/%d.root";
+    ROOTFILE_CONV = ROOTFILE_WAV.c_str();
+    InputFilename = "%s/run_wav_%d_Cal_FNL_COS.root";
+    OutputFilename= "Pi0WAV.root";
     break;
   default:
     return -1;
   }
 
-  TFile* tfIn = new TFile(Form(InputFilename.c_str(),ROOTFILE_PI0CONV.c_str(),RunNumber));
-  TTree* trIn = (TTree*)trIn->Get("T");
   const Int_t nCsI = 2716;
   Int_t CsiNumber;
   Short_t CsiID[nCsI];
   Double_t CsiEne[nCsI];
   Double_t CsiTime[nCsI];
 
+  TChain* trIn = new TChain("T");
+  switch(FileType){
+  case 0:
+    for( int i = 0; i< 200; i++){
+      trIn->Add(Form(InputFilename.c_str(),ROOTFILE_CONV.c_str(),i));
+    }
+    break;
+  case 1:
+    for( int i = 4502; i < 4526; i++){
+      trIn->Add(Form(InputFilename.c_str(),ROOTFILE_CONV.c_str(),i));
+    }
+    break;
+  case 2:
+    for( int i = 4502; i< 4526; i++){
+      trIn->Add(Form(InputFilename.c_str(),ROOTFILE_CONV.c_str(),i));
+    }
+    break;
+  }
+  // Set Branch Address // 
   switch ( FileType ){
   case 0:
     trIn->SetBranchAddress("CsiNumber",&CsiNumber);
-    trIn->SetBranchAddress("CsiModID",CsiID);//CsiNumber
-    trIn->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
-    trin->SetBranchAddress("CsiTime",CsiTime);//CsiNumber
+    trIn->SetBranchAddress("CsiModID" ,CsiID);//CsiNumber
+    trIn->SetBranchAddress("CsiEne"   ,CsiEne);//CsiNumber
+    trIn->SetBranchAddress("CsiTime"  ,CsiTime);//CsiNumber
     break;
   case 1:
     trIn->SetBranchAddress("CsiNumber",&CsiNumber);
-    trIn->SetBranchAddress("CsiID",CsiID);//CsiNumber
-    trIn->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
-    trin->SetBranchAddress("CsiTime",CsiTime);//CsiNumber
+    trIn->SetBranchAddress("CsiModID" ,CsiID);//CsiNumber
+    trIn->SetBranchAddress("CsiEne"   ,CsiEne);//CsiNumber
+    trIn->SetBranchAddress("CsiTime"  ,CsiTime);//CsiNumber
     break;
   case 2:
     trIn->SetBranchAddress("CsiNumber",&CsiNumber);
     trIn->SetBranchAddress("CSIDigiID",CsiID);//CsiNumber
-    trIn->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
-    trin->SetBranchAddress("CsiTime",CsiTime);//CsiNumber
+    trIn->SetBranchAddress("CsiEne"   ,CsiEne);//CsiNumber
+    trIn->SetBranchAddress("CsiTime"  ,CsiTime);//CsiNumber
     break;
   }
-  
 
   // set output file
-  TFile *outputFile = new TFile(ofname.c_str(),"RECREATE");
+  TFile *outputFile = new TFile(Form(OutputFilename.c_str(),""),"RECREATE");
   TTree *outputTree = new TTree("Tree","output from e14g2ana");  
 
   // set Data file 
@@ -90,9 +113,10 @@ main(int argc, char** argv){
   GammaFinder gFinder;
 
   // set Variables
-  int nCSIDigi = 0;
-  int CSIDigiID[3000] = {0};
-  double CSIDigiE[3000]={0}, CSIDigiTime[3000]={0};
+  int    nCSIDigi          = 0;
+  int    CSIDigiID[3000]   = {0};
+  double CSIDigiE[3000]    = {0};
+  double CSIDigiTime[3000] = {0};
 
   /////////////////////////////////////////////////////////////////////////
   // loop
@@ -100,7 +124,7 @@ main(int argc, char** argv){
 
   std::cout<< "Pi0 Calibration" << std::endl;
   // loop analysis
-  int nloop = ReadSum->GetEntries();
+  int nloop = trIn->GetEntries();
   TH1D* hist = new TH1D("his","",1000,0,2000);  
   std::cout<<"start loop analysis"<<std::endl;
   std::cout<<"# of entry : "<<nloop<<std::endl;
@@ -115,14 +139,13 @@ main(int argc, char** argv){
     }
 
     // read data
-    ReadSum->GetEntry( ievt );
+    trIn->GetEntry( ievt );
     nCSIDigi = 0; 
     for( int ich = 0; ich < CsiNumber;ich++){
-	double Energy = CsiEne[ich];
-	if( Energy > 3 ){
-	  CSIDigiID[nCSIDigi]   = ReadSum->CsiModID[ich];
-	  CSIDigiE[nCSIDigi]    = Energy;
-	  CSIDigiTime[nCSIDigi] = ReadSum->CsiTime[ich];
+	if( CsiEne[ich] > 3 ){
+	  CSIDigiID[nCSIDigi]   = CsiID[ich];
+	  CSIDigiE[nCSIDigi]    = CsiEne[ich];
+	  CSIDigiTime[nCSIDigi] = CsiTime[ich];
 	  nCSIDigi++;
 	}
       }
@@ -163,9 +186,11 @@ main(int argc, char** argv){
 
   //TCanvas* can = new TCanvas("can","",800,800);
   //hist->Draw();
+  
   hist->Write();
   outputTree->Write();
   outputFile->Close();  
+  
   //app->Run();
 
 }

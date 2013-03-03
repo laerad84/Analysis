@@ -13,7 +13,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Pi0_RUN_TRIGGER/user_func.h"
+#include "user_func.h"
 
 #include "E14ReadSumFile.h"
 #include <sstream>
