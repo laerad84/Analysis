@@ -46,7 +46,8 @@ Int_t main( int argc , char** argv ){
   //  std::string ROOTFILE_3PI0CALIBRATIONSIM = std::getenv("ROOTFILE_3PI0CALIBRATIONSIM");
   std::string ROOTFILE_3PI0CALIBRATIONSIM = "/group/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/KL_3pi0";  
   TChain* ch;
-  if( FileType != 1){ ch = new TChain("trCalibration");
+  if( FileType =0 0 ){ ch = new TChain("Tree");
+  }else if( FileType != 1){ ch = new TChain("trCalibration");
   }else{
     ch = new TChain("T");
   }
