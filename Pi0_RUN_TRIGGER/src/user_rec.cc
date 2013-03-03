@@ -171,7 +171,7 @@ bool user_rec(std::list<Gamma> const &glist, std::list<Pi0>& piList,double &mass
   // reconstruction 
   
   mass = rec_mass2g( glist,recPosition);  
-  std::cout<< "user_rec : " << mass << std::endl;
+  //std::cout<< "user_rec : " << mass << std::endl;
   piList = recPi0withConstM(glist,mass);
   if(piList.size()!=1)   return false;
   

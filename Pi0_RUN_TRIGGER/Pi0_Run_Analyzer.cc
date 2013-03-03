@@ -140,6 +140,7 @@ main(int argc, char** argv){
 
     // read data
     trIn->GetEntry( ievt );
+    if( CsiNumber > 400 ){ continue; }
     nCSIDigi = 0; 
     for( int ich = 0; ich < CsiNumber;ich++){
 	if( CsiEne[ich] > 3 ){
@@ -150,14 +151,14 @@ main(int argc, char** argv){
 	}
       }
 
-    std::cout<< nCSIDigi << std::endl;
+    //std::cout<< nCSIDigi << std::endl;
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     clist = clusterFinder.findCluster(nCSIDigi, CSIDigiID, CSIDigiE, CSIDigiTime);
     for( std::list<Cluster>::iterator it  = clist.begin();
 	 it != clist.end();
 	 ++it){
-      std::cout<< (*it).e() << std::endl;
+      //std::cout<< (*it).e() << std::endl;
     }
     gFinder.findGamma(clist,glist);
 
@@ -173,7 +174,7 @@ main(int argc, char** argv){
     double position = 3526;//20120906
 
     if(!user_rec(glist,piList,mass,position)) continue;
-    std::cout<< mass << std::endl;
+    //std::cout<< mass << std::endl;
     hist->Fill(mass);
     // cuts
     //user_cut(data,piList);    
