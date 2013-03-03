@@ -100,7 +100,7 @@ main(int argc, char** argv){
   }
 
   // set output file
-  TFile *outputFile = new TFile(Form(OutputFilename.c_str(),""),"RECREATE");
+  TFile *outputFile = new TFile(OutputFilename.c_str(),"RECREATE");
   TTree *outputTree = new TTree("Tree","output from e14g2ana");  
 
   // set Data file 
