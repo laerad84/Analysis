@@ -64,7 +64,6 @@ void Pi0Mass(){
   //canvas->cd(2);
   hisSimGamma->Scale(hisBeamGamma->GetEntries()/hisSimGamma->GetEntries());
   hisSimGamma->Draw("same");
-
 }
   
   

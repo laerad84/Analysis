@@ -80,6 +80,7 @@ Int_t main( int argc , char** argv ){
       ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONSUM.c_str(),tmpRunNumber));
     }
   }
+
   std::cout<< "Total Event Number : " << ch->GetEntries() << std::endl;  
   E14GNAnaDataContainer data;
   data.setBranchAddress( ch );
@@ -105,6 +106,7 @@ Int_t main( int argc , char** argv ){
   trKL->Branch("GammaTime",GammaTime,"GammaTime[6]/D");
   trKL->Branch("KLMom"   ,KLMom    ,"KLMom[3]/D");
   std::cout<< ch->GetEntries() << std::endl;
+
   for( int ievent = 0; ievent < ch->GetEntries() ; ievent++){
     ch->GetEntry( ievent );
 
@@ -115,11 +117,13 @@ Int_t main( int argc , char** argv ){
     data.getData( clist );
     data.getData( glist );
     data.getData( klVec );
-    //std::cout<< clist.size() << std::endl;
+
+    //std::cout<< klVec.size() << "\t" << clist.size() << "\t" << glist.size() << std::endl;
     if( klVec.size() == 0 ){ continue; }
-    if( clist.size() == 0 ){ continue; }
+    //if( clist.size() == 0 ){ continue; }
     if( glist.size() <  6 ){ continue; }
     //if( glist.size() != 6 ){ continue; }
+    //std::cout<< clist.size() << std::endl;
     int GammaID = 0;
 
     for( std::list<Gamma>::iterator itGamma = glist.begin();itGamma != glist.end();itGamma++,GammaID++){
@@ -139,6 +143,7 @@ Int_t main( int argc , char** argv ){
     KLMom[0] = (klVec[0].p3()).x();
     KLMom[1] = (klVec[0].p3()).y();
     KLMom[2] = (klVec[0].p3()).z();
+    KLChisq  = (klVec[0]).chisqZ();
     trKL->Fill();
   }
   

@@ -26,14 +26,14 @@
 // Pi0_Run_Analyzer [Type:0(SIM),1(SUM),2(WAV)] RunNumber
 int 
 main(int argc, char** argv){
-  Int_t FileType = atoi(argv[0]);
+  Int_t FileType = atoi(argv[1]);
   std::string InputFilename;
   std::string OutputFilename;
   std::string ROOTFILE_SUM   = std::getenv("ROOTFILE_SUMUP");
   std::string ROOTFILE_WAV   = std::getenv("ROOTFILE_WAV");
   std::string ROOTFILE_SIM   = std::getenv("ROOTFILE_PI0SIMCONV");
   std::string ROOTFILE_CONV;
-  switch ( FileType ){
+  switch( FileType ){
   case 0:
     ROOTFILE_CONV = ROOTFILE_SIM.c_str();
     InputFilename = "%s/Conv_e14_AL_Target.mac_1000000_%d.root";//ConvFileDir, RunNumber
@@ -52,12 +52,14 @@ main(int argc, char** argv){
   default:
     return -1;
   }
-
+  std::cout<< ROOTFILE_CONV << std::endl;
+  std::cout<< InputFilename << std::endl;
+  std::cout<< OutputFilename<< std::endl;
   const Int_t nCsI = 2716;
   Int_t CsiNumber;
-  Short_t CsiID[nCsI];
-  Double_t CsiEne[nCsI];
-  Double_t CsiTime[nCsI];
+  Int_t CsiID[nCsI];//CsiNumber
+  Double_t CsiEne[nCsI];//CsiNumber
+  Double_t CsiTime[nCsI];//CsiNumber
 
   TChain* trIn = new TChain("T");
   switch(FileType){
@@ -93,7 +95,7 @@ main(int argc, char** argv){
     break;
   case 2:
     trIn->SetBranchAddress("CsiNumber",&CsiNumber);
-    trIn->SetBranchAddress("CSIDigiID",CsiID);//CsiNumber
+    trIn->SetBranchAddress("CsiModID" ,CsiID);//CsiNumber
     trIn->SetBranchAddress("CsiEne"   ,CsiEne);//CsiNumber
     trIn->SetBranchAddress("CsiTime"  ,CsiTime);//CsiNumber
     break;
@@ -144,6 +146,7 @@ main(int argc, char** argv){
     nCSIDigi = 0; 
     for( int ich = 0; ich < CsiNumber;ich++){
 	if( CsiEne[ich] > 3 ){
+	  //std::cout<< CsiID[ich] << std::endl;
 	  CSIDigiID[nCSIDigi]   = CsiID[ich];
 	  CSIDigiE[nCSIDigi]    = CsiEne[ich];
 	  CSIDigiTime[nCSIDigi] = CsiTime[ich];

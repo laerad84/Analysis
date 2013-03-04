@@ -110,7 +110,7 @@ main(int argc,char** argv){
     ReadSum->GetEntry( ievt );
     nCSIDigi = 0; 
     for( int ich = 0; ich < ReadSum->CsiNumber; ++ich){
-      double Energy = ReadSum->CsiEne[ich]*CSICalFactor[ReadSum->CsiModID[ich]]/0.99;
+      double Energy = ReadSum->CsiEne[ich];//*CSICalFactor[ReadSum->CsiModID[ich]]/0.99;
       //std::cout<< ReadSum->CsiModID[ich]  << " : " <<  Energy << std::endl;
       //double Energy = ReadSum->CsiEne[ich];
       if( Energy > 3 ){

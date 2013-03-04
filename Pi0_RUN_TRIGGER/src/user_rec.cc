@@ -32,7 +32,7 @@ void
 recVtxWithConstM( const Gamma& g1, const Gamma& g2, double Mass,
 		  double* recZ, double* recZsig2 )
 {
-  std::cout << "rec2g::recVtxWithConstM() : Mass=" << Mass << std::endl;
+  //std::cout << "rec2g::recVtxWithConstM() : Mass=" << Mass << std::endl;
 
   double r1 = g1.pos().perp2();
   double r2 = g2.pos().perp2();
