@@ -88,7 +88,7 @@ main( int argc ,char ** argv ){
    
   TChain* trin = new TChain("Tree");
   int fRunNumber = atoi(argv[1]);
-  int IterationNumber = atoi( argv[2]);  
+  int IterationNumber = atoi( argv[2]);
   std::cout << "////////////////////////////////////////////////////\n";
   std::cout << "RunNumber       : " << fRunNumber << "\n";
   std::cout << "IterationNumber : " << IterationNumber << "\n";
@@ -111,6 +111,9 @@ main( int argc ,char ** argv ){
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Time Offset 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /// Crystal Position Dep. is vanished 20130305 of clearance
+  /// 
+
   Double_t TimeOffsetTotal[2716] = {0};
   Double_t TimeOffsetTotalSigma[2716]= {0xFFFF};
 
@@ -136,6 +139,8 @@ main( int argc ,char ** argv ){
       TimeOffset[ tID ] = -384 ;
     }
   }
+
+
 
   ///////////////////////////////////////
   // Time offset from crystal position //
@@ -178,7 +183,7 @@ main( int argc ,char ** argv ){
 
   for( int idIndex  = 0; idIndex  < 2716; idIndex++){
     TimeOffsetTotal[idIndex] += TimeOffset[idIndex];
-    TimeOffsetTotal[idIndex] -= TimeOffsetCrystalPosition[idIndex];
+    //TimeOffsetTotal[idIndex] -= TimeOffsetCrystalPosition[idIndex];
     if( IterationNumber >0 ){
       if( ResolutionT[ idIndex ] > 0 && ResolutionT[ idIndex ] < 0xFFFF ){
 	TimeOffsetTotal[idIndex] += DeltaT[idIndex];
@@ -186,10 +191,18 @@ main( int argc ,char ** argv ){
       }
     }
   }
+
   for( int idIndex = 0; idIndex < 2716; idIndex++){
     std::cout<< idIndex << " : " << TimeOffset[idIndex] << " : " <<  TimeOffsetTotal[idIndex] << std::endl;
   }
   
+
+
+
+
+
+
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
