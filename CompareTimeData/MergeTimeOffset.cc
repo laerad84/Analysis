@@ -57,7 +57,7 @@ void MergeTimeOffset(){
   for( int i = 0 ;i< 2716; i++){
     if( TimeOffsetPi0Sigma[i]    < 0xFFFF && TimeOffsetPi0Sigma[i] >= 0  &&
 	TimeOffsetCosmicSigma[i] < 0xFFFF && TimeOffsetCosmicSigma[i] >= 0 ){
-      TimeOffsetTotal[i]       = TimeOffsetCosmic[i] + TimeOffsetPi0[i] - TimeOffsetCrystalPosition[i];
+      TimeOffsetTotal[i]       = TimeOffsetCosmic[i] + TimeOffsetPi0[i] ;//- TimeOffsetCrystalPosition[i];
       TimeOffsetTotalSigma[i]  = TimeOffsetCosmicSigma[i];
     }else{
       TimeOffsetTotal[i]       = 0; 
