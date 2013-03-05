@@ -91,6 +91,7 @@ Int_t main( int argc , char** argv ){
   TTree* trKL = new TTree("trKL","Klong Tree");
   Double_t KLMass;
   Double_t KLChisq;
+  Double_t KLSecChisq;
   Double_t KLE;
   Double_t KLPos[3];
   Double_t KLMom[3];
@@ -99,6 +100,7 @@ Int_t main( int argc , char** argv ){
   Double_t GammaTime[6];
   trKL->Branch("KLMass"  ,&KLMass  ,"KLMass/D");
   trKL->Branch("KLChisq" ,&KLChisq ,"KLChisq/D");
+  trKL->Branch("KLSecChisq",&KLSecChisq,"KLSecChisq/D");
   trKL->Branch("KLE"     ,&KLE     ,"KLE/D");
   trKL->Branch("KLPos"   ,KLPos    ,"KLPos[3]/D");
   trKL->Branch("GammaE"  ,GammaE   ,"GammaE[6]/D");
@@ -144,6 +146,11 @@ Int_t main( int argc , char** argv ){
     KLMom[1] = (klVec[0].p3()).y();
     KLMom[2] = (klVec[0].p3()).z();
     KLChisq  = (klVec[0]).chisqZ();
+    if( klVec.size()==2){
+      KLSecChisq = (klVec[1]).chisqZ();
+    }else{
+      KLSecChisq = 0xFFFF;
+    }
     trKL->Fill();
   }
   
