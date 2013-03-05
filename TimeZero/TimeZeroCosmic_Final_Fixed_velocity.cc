@@ -136,7 +136,7 @@ main( int argc ,char ** argv ){
     if( tOffsetSigma > 0 ){
       TimeOffset[ tID ] = tOffset;      
     }else{
-      TimeOffset[ tID ] = -384 ;
+      TimeOffset[ tID ] = 0;
     }
   }
 
