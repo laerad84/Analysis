@@ -79,8 +79,8 @@ int main( int argc, char** argv){
     // TimeDelta from CsITime ID == 0
     //Time of ID == 0;
     Double_t TimeDeltaBase = CsiTime[0];
-    if( CsiID[0] == 0 ){
-      TimeDeltaBase = CsiTime[0];	  
+    if( CsiID[1] == 1 ){
+      TimeDeltaBase = CsiTime[1];	  
     }else{ 
       continue;
     }
