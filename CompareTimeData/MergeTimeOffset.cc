@@ -42,7 +42,7 @@ void MergeTimeOffset(){
     TimeOffsetCrystalPosition[i] = (TMath::Sqrt(2624*2624+x*x+y*y)-2624)/299.7;
   }
   
-  std::ifstream ifsCosmicOffset("CosmicOutTimeDeltaResolution_19.dat");
+  std::ifstream ifsCosmicOffset("CosmicOutTimeDeltaResolution_15.dat");
   while( ifsCosmicOffset >> tID >> tOffset >> tOffsetSigma ){
     if( tOffsetSigma < 0xFFFF ){
       TimeOffsetCosmic[tID] = tOffset;
