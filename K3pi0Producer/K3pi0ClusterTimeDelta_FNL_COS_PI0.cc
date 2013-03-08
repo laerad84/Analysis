@@ -50,9 +50,10 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_Cal_FNL_COS.root";
+  std::string oFileForm="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root";
 
-  std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
+  //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
+  std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
 
 
@@ -208,7 +209,7 @@ main( int argc ,char ** argv ){
       if( CsISignal[idigi] > 5 && CsIEnergy[idigi]>0.5){
 	CSIDigiID[ nCSIDigi ]     = CsIID[idigi];
 	CSIDigiE[ nCSIDigi ]      = CsIEnergy[idigi];
-	CSIDigiTime[ nCSIDigi ]   = CsITime[idigi]-TimeDelta[CsIID[idigi]];
+	CSIDigiTime[ nCSIDigi ]   = CsITime[idigi]+TimeDelta[CsIID[idigi]];
 	CSIDigiHHTime[ nCSIDigi ] = CsIHHTime[idigi];
 	CSIDigiSignal[nCSIDigi]   = CsISignal[idigi];
 	nCSIDigi++;

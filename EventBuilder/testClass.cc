@@ -6,8 +6,8 @@
 #include "TApplication.h"
 #include "TPostScript.h"
 int
-main( int argc, char** argv ){
-  
+main( int argc, char** argv ){  
+
   int RunNumber;
   int EventNumber;
   RunNumber = atoi( argv[1] );
@@ -15,25 +15,28 @@ main( int argc, char** argv ){
 
   TFile* tfOut = new TFile("test.root","RECREATE");
   TTree* trOut = new TTree("trOut","");
-  //TApplication* app  = new TApplication("app", &argc, argv);
+  TApplication* app  = new TApplication("app", &argc, argv);
   TCanvas* can  = new TCanvas("can","",800,1200);
   E14EventBuilder_V0* test = new E14EventBuilder_V0(trOut,RunNumber);
   
   tfOut->cd();
   //test->LoopAll();
-
-  for( int ievent = 100; ievent < 200; ievent++){
+  
+  for( int ievent = EventNumber; ievent < 200; ievent++){
+    std::cout << "Analysis started" << std::endl;
     test->EventProcess(ievent);
+    std::cout<< "Draw result" << std::endl;
     test->DrawEvent(can);
     can->Update();
     can->Modified();
+    getchar();
   }
 
-  trOut->Write();
-  tfOut->Close();
+  //trOut->Write();
+  //tfOut->Close();
 
 
-  //app->Run();
+  app->Run();
 
 
 }

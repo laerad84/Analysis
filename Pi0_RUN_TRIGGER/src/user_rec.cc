@@ -4,7 +4,7 @@
 #include <iostream>
 #include <list>
 #include "TMath.h"
-
+#include "user_func.h"
 
 double rec_mass2g(std::list<Gamma> const &glist, double recPosition){
   double mass = 0;
@@ -169,25 +169,24 @@ recPi0withConstM( std::list<Gamma> glist, double mass )
 bool user_rec(std::list<Gamma> const &glist, std::list<Pi0>& piList,double &mass , double recPosition){
   //static Rec2g rec2g;        
   // reconstruction 
-  
-  mass = rec_mass2g( glist,recPosition);  
+  //if( glist.size() != 2 ){return false;}
   //std::cout<< "user_rec : " << mass << std::endl;
+  mass   = rec_mass2g(glist,recPosition);
   piList = recPi0withConstM(glist,mass);
-  if(piList.size()!=1)   return false;
-  
-  // position correction for angle dependency
+  if(piList.size()!=1)   return false;  
   E14GNAnaFunction::getFunction()->correctPosition(piList.front().g1());  
   E14GNAnaFunction::getFunction()->correctPosition(piList.front().g2());  
-  
-  // re-reconstruction with corrected gamma
+  E14GNAnaFunction::getFunction()->correctEnergyWithAngle(piList.front().g1());
+  E14GNAnaFunction::getFunction()->correctEnergyWithAngle(piList.front().g2());
   std::list<Gamma> glist2;
+
   glist2.push_back(piList.front().g1());
   glist2.push_back(piList.front().g2());
-
-  mass = rec_mass2g( glist2,recPosition);  
+  mass   = rec_mass2g(glist2,recPosition);
   piList = recPi0withConstM(glist2,mass);
+  //std::cout<< mass << std::endl;
+  //mass = rec_mass2g( glist2,recPosition);  
   if(piList.size()!=1)   return false;
-
   // shape chi2 evaluation 
   E14GNAnaFunction::getFunction()->shapeChi2(piList.front().g1());  
   E14GNAnaFunction::getFunction()->shapeChi2(piList.front().g2());  

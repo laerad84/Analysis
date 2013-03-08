@@ -64,6 +64,7 @@ main(int argc, char** argv){
   TChain* trIn = new TChain("T");
   switch(FileType){
   case 0:
+    //for( int i = 0; i< 10; i++){
     for( int i = 0; i< 200; i++){
       trIn->Add(Form(InputFilename.c_str(),ROOTFILE_CONV.c_str(),i));
     }
@@ -174,8 +175,8 @@ main(int argc, char** argv){
 
     //double position =3484.;
     //double position = 3534.;//shiomisan    
-    double position = 3526;//20120906
-
+    //double position = 3526;//20120906
+    double position = 3531;//20120906 change position to Middle of Al target
     if(!user_rec(glist,piList,mass,position)) continue;
     //std::cout<< mass << std::endl;
     hist->Fill(mass);

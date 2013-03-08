@@ -12,8 +12,7 @@
 #include "pi0/Pi0.h"
 #include "gamma/Gamma.h"
 
-double rec_mass2g(std::list<Gamma> const &glist, double recPosition);
-void recVtxWithConstM( const Gamma& g1, const Gamma& g2, double Mass,
-		       double* recZ, double* recZsig2 );
+double         rec_mass2g(std::list<Gamma> const &glist, double recPosition);
+void           recVtxWithConstM( const Gamma& g1, const Gamma& g2, double Mass,double* recZ, double* recZsig2 );
 std::list<Pi0> recPi0withConstM( std::list<Gamma> glist, double mass );
-bool user_rec(std::list<Gamma> const &glist, std::list<Pi0>& piList,double &mass , double recPosition);
+bool           user_rec(std::list<Gamma> const &glist, std::list<Pi0>& piList,double &mass , double recPosition);
