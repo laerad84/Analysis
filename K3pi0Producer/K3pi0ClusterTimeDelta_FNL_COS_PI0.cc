@@ -93,7 +93,7 @@ main( int argc ,char ** argv ){
   trout->Branch("CsiHHTime"  ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiSignal"  ,CSIDigiSignal,"CsiSignal[CsiNumber]/D");//nCSIDigi
 
-  trout->Branch("CsiL1nTrig",CSIL1nTrig,"CsiL1nTrig/I");
+  trout->Branch("CsiL1nTrig",&CSIL1nTrig,"CsiL1nTrig/I");
   trout->Branch("CsiL1TrigCount",CSIL1TrigCount,"CsiL1TrigCount[20]/D");
   /*
   trout->Branch("nCSIDigi",&nCSIDigi,"nCSIDigi/I");
@@ -172,6 +172,7 @@ main( int argc ,char ** argv ){
     nCsI = 0;
     nCSIDigi = 0;
     CSIL1nTrig=0;
+    l1->Reset();
     for( int ich = 0; ich < 2716; ich++){
       CsIID[ich]     = -1; 
       CsIEnergy[ich] = 0.;
@@ -214,12 +215,15 @@ main( int argc ,char ** argv ){
 	nCsI++;
       }
     }
-    std::vector<int> vecidTriggered = l1->GetTriggedCrate();
+    CSIL1nTrig = 0;
     std::vector<double> vecCount    = l1->GetCount(); 
     for( int i = 0; i< vecCount.size(); i++){
       CSIL1TrigCount[i] = vecCount.at(i);
+      if( vecCount.at(i) > 2000 ){ 
+	CSIL1nTrig++;
+      }
     }
-    CSIL1nTrig = vecidTriggered.size();
+    
     /// Adjustment ///
 
     nCSIDigi=0;
