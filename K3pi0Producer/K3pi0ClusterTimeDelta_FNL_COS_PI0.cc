@@ -39,6 +39,7 @@
 //#include "E14WavReader.h"
 #include "E14WavReader_V1.h"
 //#include "E14WaveReader_V2.h"
+#include "L1TrigCounter.h"
 
 
 int
@@ -81,15 +82,19 @@ main( int argc ,char ** argv ){
   double CSIDigiTime[2716] ;
   double CSIDigiHHTime[2716];
   double CSIDigiSignal[2716]={0};
+  double CSIL1TrigCount[20];
+  int    CSIL1nTrig;
   trout->Branch("RunNumber"  ,&RunNumber   ,"RunNumber/I");
   trout->Branch("EventNumber",&EventNumber ,"EventNumber/I");
   trout->Branch("CsiNumber"  ,&nCSIDigi    ,"CsiNumber/I");
-  trout->Branch("CsiModID"   ,CSIDigiID    ,"CSIModID[CsiNumber]/I");//nCSIDigi
+  trout->Branch("CsiModID"   ,CSIDigiID    ,"CsiModID[CsiNumber]/I");//nCSIDigi
   trout->Branch("CsiEne"     ,CSIDigiE     ,"CsiEne[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiTime"    ,CSIDigiTime  ,"CsiTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiHHTime"  ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiSignal"  ,CSIDigiSignal,"CsiSignal[CsiNumber]/D");//nCSIDigi
-  
+
+  trout->Branch("CsiL1nTrig",CSIL1nTrig,"CsiL1nTrig/I");
+  trout->Branch("CsiL1TrigCount",CSIL1TrigCount,"CsiL1TrigCount[20]/D");
   /*
   trout->Branch("nCSIDigi",&nCSIDigi,"nCSIDigi/I");
   trout->Branch("CSIDigiID",CSIDigiID,"CSIDigiID[nCSIDigi]/I");//nCSIDigi
@@ -140,6 +145,11 @@ main( int argc ,char ** argv ){
     TimeDeltaLength[i] = length/sol;
   }
 
+  L1TrigCounter* l1 = new L1TrigCounter();
+  l1->ReadMapFile();
+  l1->SetThreshold(2000);
+  l1->Reset();
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,6 +171,7 @@ main( int argc ,char ** argv ){
   for( int ievent  = 0; ievent < entries ; ievent++){
     nCsI = 0;
     nCSIDigi = 0;
+    CSIL1nTrig=0;
     for( int ich = 0; ich < 2716; ich++){
       CsIID[ich]     = -1; 
       CsIEnergy[ich] = 0.;
@@ -193,6 +204,7 @@ main( int argc ,char ** argv ){
       double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[ reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;      
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];
+      l1->Fill(CsiID, CsiSignal );
       if( CsiTimeClusterID == 0){
 	CsIID[nCsI]     =  CsiID;
 	CsISignal[nCsI] =  CsiSignal;
@@ -202,6 +214,12 @@ main( int argc ,char ** argv ){
 	nCsI++;
       }
     }
+    std::vector<int> vecidTriggered = l1->GetTriggedCrate();
+    std::vector<double> vecCount    = l1->GetCount(); 
+    for( int i = 0; i< vecCount.size(); i++){
+      CSIL1TrigCount[i] = vecCount.at(i);
+    }
+    CSIL1nTrig = vecidTriggered.size();
     /// Adjustment ///
 
     nCSIDigi=0;
