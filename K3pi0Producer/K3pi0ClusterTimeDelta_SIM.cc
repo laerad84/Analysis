@@ -70,7 +70,7 @@ main( int argc ,char ** argv ){
   Double_t Pi0PeakCorFactor = 0.9937;  
 
   TChain* trin = new TChain("T"); 
-  trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
+  trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMCONV.c_str(),RunNumber));
   int EventNumber;
   int CsiNumber;
   int CsiModID[2716];
