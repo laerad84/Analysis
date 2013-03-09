@@ -113,11 +113,13 @@ double EnergyConverter::ConvertToHeight       ( int channelNumber, double Energy
   double PeakHeight = 0;
   double CompensatedHeight = 0;
   if( Energy < 0 ) { return 0;}
+  if( this->GetCalibrationConstant( channelNumber ) <=0 ){ 
+    return 0;
+  }
   if( m_Compensater == NULL ){
     PeakHeight  = Energy/(this->GetCalibrationConstant( channelNumber ));
   }else{
     // In Case of CsI // 
-
     CompensatedHeight = Energy /(this->GetCalibrationConstant( channelNumber ));
     PeakHeight = m_Compensater->InvCompensate( channelNumber, CompensatedHeight);
     //std::cout<< CompensatedHeight << "\t" << PeakHeight << std::endl;
