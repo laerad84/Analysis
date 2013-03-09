@@ -82,7 +82,7 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("CsiEne",CsiEne);
   trin->SetBranchAddress("CsiTime",CsiTime);
 
-  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber),"recreate");
+  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIM3PI0.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("Tree", "Output from Time zero" );  
   
   int nCSIDigi = 0;
@@ -118,7 +118,7 @@ main( int argc ,char ** argv ){
   double tmpDeltaSig;
   double tmpCalFactor; 
 
-  //std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str()));
+  //std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",HOME.c_str()));
   std::ifstream ifsTCal(Form(TCalFile.c_str(),ANALYSISLIB.c_str()));
   if( !ifsTCal.is_open() ) { std::cerr <<"File does not exist."<< Form(TCalFile.c_str(),ANALYSISLIB.c_str())  << std::endl; return -1;}
   while( ifsTCal >> tmpID >> tmpDelta >> tmpDeltaSig ){
@@ -126,7 +126,7 @@ main( int argc ,char ** argv ){
     TimeDeltaSig[ tmpID ] = tmpDeltaSig; 
   }
 
-  std::ifstream ifsECal(Form(ECalFile.c_str(),ANAFILEDIR.c_str()));
+  std::ifstream ifsECal(Form(ECalFile.c_str(),HOME.c_str()));
   if( !ifsECal.is_open() ){ std::cerr << "File does not exist." << Form(ECalFile.c_str(),HOME.c_str()) << std::endl; return -1; }
   while( ifsECal >> tmpID >> tmpCalFactor ){
     CalibrationFactor[ tmpID ] = tmpCalFactor;
@@ -149,7 +149,8 @@ main( int argc ,char ** argv ){
   double CsIHHTime[2716] = {-1};
   
   std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
-  Long_t entries =  reader->fChain->GetEntries();
+  //Long_t entries =  reader->fChain->GetEntries();
+  long entries = trin->GetEntries();
   for( int ievent  = 0; ievent < entries ; ievent++){
     if( (ievent%100) ==0 && ievent ){ std::cout<< ievent << std::endl;}
     trin->GetEntry(ievent);
@@ -165,7 +166,7 @@ main( int argc ,char ** argv ){
       CsIHHTime[ich] = -1;
       CsISignal[ich] = 0.;
 
-      CSIDigiID[ich] = 0;
+      CSIDigiID[ich] = -1;
       CSIDigiE[ich] = 0;
       CSIDigiTime[ich]   = 0;
       CSIDigiHHTime[ich] = 0;
@@ -174,14 +175,13 @@ main( int argc ,char ** argv ){
     nCsI = 0; 
     nCSIDigi = 0;
     CSIL1nTrig = 0; 
-    l1->Reset();
-    EventNumber = EventNo;
+    l1->Reset();    
     nCSIDigi = 0;
     for( int ich = 0; ich < CsiNumber; ich++){
-      int tmpID = CsiID[ich];
+      int tmpID = CsiModID[ich];
       double tmpTime = CsiTime[ich];
       double tmpHHTime=CsiTime[ich]-50;// Just Set //       
-      double tmpSignal = Converter->ConvertToHeight(CsiID[ich],CsiEne[ich])/Pi0PeakCorFactor/CalibrationFactor[CsiID[ich]];
+      double tmpSignal = Converter->ConvertToHeight(CsiModID[ich],CsiEne[ich])/Pi0PeakCorFactor/CalibrationFactor[CsiModID[ich]];
       double tmpEne = CsiEne[ich];
       if( tmpSignal > 5 && tmpEne > 0.5 ){
 	CSIDigiID[nCSIDigi]     = tmpID;
