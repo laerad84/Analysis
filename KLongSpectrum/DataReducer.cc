@@ -55,7 +55,7 @@ Int_t main( int argc , char** argv ){
     for( int i = 0; i< 4000; i++){
       //ch->Add(Form("%s/Calibration_with_4e9/Calibration_%03d0_15.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
       //ch->Add(Form("%s/out_KL3pi0.mac_1000000_%d_FEB_CL_KL.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
-      ch->Add(Form("%s/Conv_KL3pi0.mac_1000000_%d.root",i));
+      ch->Add(Form("%s/Conv_KL3pi0.mac_1000000_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
     }
   }else if( FileType == 1 ){
     std::string HOMEDIR = std::getenv("HOME");

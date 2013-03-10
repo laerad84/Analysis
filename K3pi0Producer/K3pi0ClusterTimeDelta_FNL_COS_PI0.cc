@@ -16,8 +16,8 @@
 #include "gnana/E14GNAnaFunction.h"
 #include "gnana/E14GNAnaDataContainer.h"
 #include "klong/Klong.h"
-//#include "cluster/ClusterFinder.h"
-#include "ClusterFinder_EDIT.h"
+#include "cluster/ClusterFinder.h"
+//#include "ClusterFinder_EDIT.h"
 #include "rec2g/Rec2g.h"
 #include "gamma/GammaFinder.h"
 
@@ -157,7 +157,7 @@ main( int argc ,char ** argv ){
 
   E14WavReader_V1* reader = new E14WavReader_V1(trin);
   GammaFinder   gFinder;
-  ClusterFinder_EDIT clusterFinder;
+  ClusterFinder clusterFinder;
 
   int nCsI               = 0;
   int CsIID[2716]        = {-1};
