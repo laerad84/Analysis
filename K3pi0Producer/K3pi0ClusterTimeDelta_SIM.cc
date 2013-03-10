@@ -36,7 +36,7 @@
 #include "TChain.h"
 #include "TCanvas.h"
 #include "TROOT.h"
-
+#include "TMath.h"
 #include "IDHandler.h"
 
 //#include "E14WavReader.h"
@@ -69,8 +69,12 @@ main( int argc ,char ** argv ){
   Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",ANALYSISLIB.c_str()));
   Double_t Pi0PeakCorFactor = 0.9937;  
 
-  TChain* trin = new TChain("T"); 
-  trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMCONV.c_str(),RunNumber));
+  //TChain* trin = new TChain("T"); 
+  //trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMCONV.c_str(),RunNumber));
+  TFile* tfin = new TFile(Form(iFileForm.c_str(),ROOTFILE_SIMCONV.c_str(),RunNumber));
+  TTree* trin = (TTree*)tfin->Get("T");
+
+
   int EventNumber;
   int CsiNumber;
   int CsiModID[2716];
@@ -111,13 +115,16 @@ main( int argc ,char ** argv ){
   
   double TimeDelta[2716];
   double TimeDeltaSig[2716];
-  double CalibrationFactor[2716] = {1};
+  double CalibrationFactor[2716] = {1.};
   double TimeDeltaLength[2716]={0};
   int tmpID;
   double tmpDelta;
   double tmpDeltaSig;
   double tmpCalFactor; 
-
+  for( int i = 0; i< 2716; i++){
+    CalibrationFactor[i] = 1;
+  }
+  
   //std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",HOME.c_str()));
   std::ifstream ifsTCal(Form(TCalFile.c_str(),ANALYSISLIB.c_str()));
   if( !ifsTCal.is_open() ) { std::cerr <<"File does not exist."<< Form(TCalFile.c_str(),ANALYSISLIB.c_str())  << std::endl; return -1;}
@@ -149,15 +156,16 @@ main( int argc ,char ** argv ){
   double CsIHHTime[2716] = {-1};
   
   std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
+  std::cout<< "Start Loop" << std::endl;
+
   //Long_t entries =  reader->fChain->GetEntries();
   long entries = trin->GetEntries();
+  std::cout<< entries << std::endl;
   for( int ievent  = 0; ievent < entries ; ievent++){
-    if( (ievent%100) ==0 && ievent ){ std::cout<< ievent << std::endl;}
+    //for( int ievent  = 0; ievent < 100 ; ievent++){
     trin->GetEntry(ievent);
-    int CsiNumber;
-    int CsiModID[2716];
-    double CsiEne[2716];
-    double CsiTime[2716];
+    if( (ievent%1000) ==0 && ievent ){ std::cout<< ievent << std::endl;}
+    //std::cout<< ievent << std::endl;
     /////// Initialize data /////////
     for( int ich = 0; ich < 2716; ich++){
       CsIID[ich]     = -1; 
@@ -177,6 +185,7 @@ main( int argc ,char ** argv ){
     CSIL1nTrig = 0; 
     l1->Reset();    
     nCSIDigi = 0;
+    //std::cout<< __PRETTY_FUNCTION__ << std::endl;
     for( int ich = 0; ich < CsiNumber; ich++){
       int tmpID = CsiModID[ich];
       double tmpTime = CsiTime[ich];
@@ -190,6 +199,14 @@ main( int argc ,char ** argv ){
 	CSIDigiTime[nCSIDigi]   = tmpTime;
 	CSIDigiHHTime[nCSIDigi] = tmpHHTime;
 	nCSIDigi++;
+	if(tmpSignal == TMath::Infinity()){ 
+	  std::cout<< tmpID << "\t" 
+		   << tmpEne << "\t"
+		   << tmpSignal << "\t"
+		   << Converter->GetCalibrationConstant(tmpID) << "\t"	    
+		   << CalibrationFactor[CsiModID[ich]] << "\t"
+		   << std::endl;
+	}
 	l1->Fill(tmpID,tmpSignal);
       }
     }
@@ -202,6 +219,7 @@ main( int argc ,char ** argv ){
 	CSIL1nTrig++;
       }
     }
+    trout->Fill();
   }
   std::cout<< "End" << std::endl;
   trout->Write();
