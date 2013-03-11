@@ -71,7 +71,7 @@ main( int argc ,char ** argv ){
   //std::string iFileForm        = "%s/Conv_KL3pi0.mac_1000000_%d.root"; //ROOTFILE_SIMCONV
   //std::string oFileForm        = "%s/Sim3pi0_wav_%d.root";     //ROOTFILE_SIM3PI0
   std::string iFileForm          = "%s/Sim3pi0_wav_%d.root";    //ROOTFILE_SIM3PI0
-  std::string oFileForm          = "%s/Sim3pi0_wav_KL_RES_%d.root"; // ROOTFILE_SIM3PI0
+  std::string oFileForm          = "%s/Sim3pi0_wav_KL_RES_LY_%d.root"; // ROOTFILE_SIM3PI0
 
   TF1* func = new TF1("ResFunc", funcResolutionInvSq, 0, 10000,1);
   /*
