@@ -80,11 +80,12 @@ main( int argc ,char ** argv ){
   double CalFactor0 = 0.08485;// 14MeV/165Cnt;  
   */
   double RelativeLY[2716] = {0};
-  std::ifstream ifs("%s/local/Analysis/K3pi0Producer/Data/RelativeLY.txt");
+  std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/RelativeLY.txt",HOME.c_str()));
   int listID;
   double listLY;
   while( ifs >> listID >> listLY ){
     RelativeLY[listID] = listLY;
+    //std::cout<< listLY << std::endl;
   }
 
   /*
