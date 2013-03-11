@@ -103,6 +103,9 @@ main( int argc ,char ** argv ){
   trout->Branch("CSIDigiHHTime",CSIDigiHHTime,"CSIDigiHHTime[nCSIDigi]/D");//nCSIDigi
   */
 
+  double CSIL1TrigCountThreshold[20] = {1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
+					1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};
+
   E14GNAnaDataContainer data; 
 
   data.branchOfClusterList( trout );
@@ -147,7 +150,7 @@ main( int argc ,char ** argv ){
 
   L1TrigCounter* l1 = new L1TrigCounter();
   l1->ReadMapFile();
-  l1->SetThreshold(2000);
+  l1->SetThreshold(1800);
   l1->Reset();
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -217,13 +220,13 @@ main( int argc ,char ** argv ){
     }
     CSIL1nTrig = 0;
     std::vector<double> vecCount    = l1->GetCount(); 
-    for( int i = 0; i< vecCount.size(); i++){
+    if( vecCount.size() != 20 ){ std::cout << "Vector Size Error" << std::endl;}
+    for( int i = 0; i< 20; i++){
       CSIL1TrigCount[i] = vecCount.at(i);
-      if( vecCount.at(i) > 2000 ){ 
+      if(CSIL1TrigCount[i] > CSIL1TrigCountThreshold[i]){
 	CSIL1nTrig++;
       }
-    }
-    
+    }    
     /// Adjustment ///
 
     nCSIDigi=0;
@@ -267,10 +270,9 @@ main( int argc ,char ** argv ){
 	data.setData( glist );
 	user_cut( data, klVec );
 	data.setData(klVec);    
+	trout->Fill();
       }
     }
-
-    trout->Fill();
   }
   std::cout<< "End" << std::endl;
   trout->Write();

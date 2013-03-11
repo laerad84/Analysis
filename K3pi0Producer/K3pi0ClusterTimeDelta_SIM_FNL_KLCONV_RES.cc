@@ -44,12 +44,13 @@
 //#include "E14WaveReader_V2.h"
 #include "L1TrigCounter.h"
 #include "EnergyConverter.h"
+#include "TRandom.h"
+#include "TF1.h"
 
-double funcResolution( double* x, double* p){
-  // MeV
+double funcResolutionInvSq( double* x, double* p){
   double value = 0;
   if( x[0] >  0  && p[0] > 0){
-    value = TMath::Sqrt( 1.26*1.26/(x[0]*p[0]*1e3) + 0.13*0.13/(x[0]*x[0]*1e6) + 0.76*0.76);
+    value = 10000./(1.26*1.26*1e3/(x[0]*0.08485/p[0]) +16900/(x[0]*x[0]) + 0.76*0.76);
   }
   return value;
 }
@@ -70,8 +71,13 @@ main( int argc ,char ** argv ){
   //std::string iFileForm        = "%s/Conv_KL3pi0.mac_1000000_%d.root"; //ROOTFILE_SIMCONV
   //std::string oFileForm        = "%s/Sim3pi0_wav_%d.root";     //ROOTFILE_SIM3PI0
   std::string iFileForm          = "%s/Sim3pi0_wav_%d.root";    //ROOTFILE_SIM3PI0
-  std::string oFileForm          = "%s/Sim3pi0_wav_KL_%d.root"; // ROOTFILE_SIM3PI0
+  std::string oFileForm          = "%s/Sim3pi0_wav_KL_RES_%d.root"; // ROOTFILE_SIM3PI0
   
+  TF1* func = new TF1("ResFunc", funcResolutionInvSq, 0, 10000,1);
+  EnergyConverter* Converter = new EnergyConverter();
+  Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",ANALYSISLIB.c_str()));
+  double CalFactor0 = 0.08485;// 14MeV/165Cnt;  
+
   /*
   TFile* tfin = new TFile(Form(iFileForm.c_str(),ROOTFILE_SIM3PI0.c_str(),RunNumber));
   TTree* trin = (TTree*)tfin->Get("Tree");
@@ -165,7 +171,6 @@ main( int argc ,char ** argv ){
     //for( int ievent  = 0; ievent < 100 ; ievent++){
     trin->GetEntry(ievent);
     data.reset();
-
     if( (ievent%1000) ==0 && ievent ){ std::cout<< ievent << std::endl;}
     //std::cout<< ievent << std::endl;
     /////// Initialize data /////////
@@ -194,9 +199,13 @@ main( int argc ,char ** argv ){
       double tmpSignal = CsiSignal[ich];
       double tmpEne    = CsiEne[ich];
       if( tmpSignal > 5 && tmpEne > 0.5 ){
+	func->SetParameter(0,Converter->GetCalibrationConstant(tmpID));
+	double value = func->Eval(tmpEne);
+	double mont  = gRandom->PoissonD(value)/value;
+	
 	CSIDigiID[nCSIDigi]     = tmpID;
-	CSIDigiE[nCSIDigi]      = tmpEne;
-	CSIDigiSignal[nCSIDigi] = tmpSignal;
+	CSIDigiE[nCSIDigi]      = tmpEne*mont;
+	CSIDigiSignal[nCSIDigi] = tmpSignal*mont;
 	CSIDigiTime[nCSIDigi]   = tmpTime;
 	CSIDigiHHTime[nCSIDigi] = tmpHHTime;
 	nCSIDigi++;
