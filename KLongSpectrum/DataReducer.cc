@@ -42,20 +42,19 @@ Int_t main( int argc , char** argv ){
 
   //std::string ROOTFILE_3PI0CALIBRATIONWAV = std::getenv("ROOTFILE_3PI0CALIBRATIONWAV");
   std::string ROOTFILE_3PI0CALIBRATIONWAV = std::getenv("ROOTFILE_WAV");
-  std::string ROOTFILE_3PI0CALIBRATIONSUM = std::getenv("ROOTFILE_3PI0CALIBRATIONSUM");
-  //  std::string ROOTFILE_3PI0CALIBRATIONSIM = std::getenv("ROOTFILE_3PI0CALIBRATIONSIM");
-  std::string ROOTFILE_3PI0CALIBRATIONSIM = "/group/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run";  
+  std::string ROOTFILE_3PI0CALIBRATIONSIM = "/group/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";  
   TChain* ch;
-  if( FileType == 0 ){ ch = new TChain("T");
-  }else if( FileType != 1){ ch = new TChain("trCalibration");
+  if( FileType == 0 ){ 
+    ch = new TChain("T");
   }else{
     ch = new TChain("T");
   }
+
   if( FileType == 0){
-    for( int i = 0; i< 4000; i++){
+    for( int i = 0; i< 120; i++){
       //ch->Add(Form("%s/Calibration_with_4e9/Calibration_%03d0_15.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
       //ch->Add(Form("%s/out_KL3pi0.mac_1000000_%d_FEB_CL_KL.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
-      ch->Add(Form("%s/Conv_KL3pi0.mac_1000000_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+      ch->Add(Form("%s/SIM3pi0_wav_RES_LY_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
     }
   }else if( FileType == 1 ){
     std::string HOMEDIR = std::getenv("HOME");
@@ -67,22 +66,17 @@ Int_t main( int argc , char** argv ){
     int tmpRunNumber; 
     while( ifsRunNumber >> tmpRunNumber ){
       //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
-      ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
-    }
-  }else if( FileType ==2 ){
-    std::string HOMEDIR  =std::getenv("HOME");
-    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/KLRunList_2.txt",HOMEDIR.c_str()));
-    if( !ifsRunNumber.is_open() ){
-      std::cerr << "File dosen't exist" << std::endl;
-      return -1;
-    }
-    int tmpRunNumber;
-    while( ifsRunNumber >> tmpRunNumber ){
-      ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONSUM.c_str(),tmpRunNumber));
+      ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
     }
   }
 
   std::cout<< "Total Event Number : " << ch->GetEntries() << std::endl;  
+
+  int CsiL1nTrig;
+  double CsiL1TrigCount[20];
+  ch->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
+  ch->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
+
   E14GNAnaDataContainer data;
   data.setBranchAddress( ch );
 
