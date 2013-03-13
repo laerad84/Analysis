@@ -119,6 +119,9 @@ main( int argc ,char ** argv ){
   double TimeDelta[2716];
   double TimeDeltaSig[2716];
   double CalibrationFactor[2716] = {1};
+  for( int i = 0; i< 2716; i++){
+    CalibrationFactor[i] = 1;
+  }
   double TimeDeltaLength[2716]={0};
   int tmpID;
   double tmpDelta;
@@ -193,9 +196,9 @@ main( int argc ,char ** argv ){
     reader->GetEntry( ievent  );
     data.reset();
     EventNumber = reader->EventNo;
-    if(( reader->TrigFlag & 3 ) != 0 ){ continue; }
-    if( reader->CsinTimeCluster == 0 ){ continue; }
-    if( reader->CsinTimeCluster  > 2  ){ continue ;}    
+    //if(( reader->TrigFlag & 3 ) != 0 ){ continue; }
+    //if( reader->CsinTimeCluster == 0 ){ continue; }
+    //if( reader->CsinTimeCluster  > 2  ){ continue ;}    
     if( reader->CsinTimeCluster == 2 && reader->CsiTimeClusterHead[0] < 50 ){ continue; }
     //// assumption :: All REAL csi Event if TimeCluster #0 
     //    std::cout<< "Analysis" << std::endl;
@@ -205,7 +208,7 @@ main( int argc ,char ** argv ){
       int CsiID        = reader->CsiID[ich];
       double CsiTime   = reader->CsiTime[ich];
       double CsiSignal = reader->CsiSignal[ich]; 
-      double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[ reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;      
+      double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;      
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];
       l1->Fill(CsiID, CsiSignal );
@@ -261,9 +264,8 @@ main( int argc ,char ** argv ){
     */
     
     clist = clusterFinder.findCluster( nCSIDigi,CSIDigiID,CSIDigiE,CSIDigiTime);
-
     gFinder.findGamma( clist, glist );
-    //if( clist.size() < 6 ){ continue; }
+    if( clist.size() < 6 ){ continue; }
     if( glist.size() ==6 ){ 
       if( user_rec(glist,klVec)){
 	data.setData( clist );
