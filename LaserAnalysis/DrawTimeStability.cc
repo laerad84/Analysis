@@ -86,7 +86,7 @@ int main( int argc ,char** argv ){
     fTime->SetParLimits(1, hisTimeDelta[RunNumber]->GetMean()-3,hisTimeDelta[RunNumber]->GetMean()+3);
 
     hisTimeDelta[RunNumber]->Fit(fTime,"Q","",hisTimeDelta[RunNumber]->GetBinCenter(hisTimeDelta[RunNumber]->GetMaximumBin())-1,hisTimeDelta[RunNumber]->GetBinCenter(hisTimeDelta[RunNumber]->GetMaximumBin())+1);
-    grTimeDelta->SetPoint(grTimeDelta->GetN()  , RunNumber+StrRunNumber, fTime->GetParameter(1));
+    grTimeDelta->SetPoint(grTimeDelta->GetN()  , RunNumber+StrRunNumber, fTime->GetParameter(1)-funct->Eval(hisHeight[RunNumber]->GetMean()));
     grTimeDelta->SetPointError(grTimeDelta->GetN()-1,0,fTime->GetParameter(2));
     grHeight->SetPoint(grHeight->GetN(), RunNumber+StrRunNumber, hisHeight[RunNumber]->GetMean());
     grHeight->SetPointError(grHeight->GetN()-1, 0, hisHeight[RunNumber]->GetRMS());			
