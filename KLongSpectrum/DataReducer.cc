@@ -65,6 +65,8 @@ Int_t main( int argc , char** argv ){
     }
     int tmpRunNumber; 
     while( ifsRunNumber >> tmpRunNumber ){
+      if( tmpRunNumber < 4249 ){ continue; }
+      if( tmpRunNumber > 4624 ){ continue; }
       //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
       ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
     }
