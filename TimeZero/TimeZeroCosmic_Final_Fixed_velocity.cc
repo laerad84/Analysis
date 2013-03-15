@@ -126,6 +126,7 @@ main( int argc ,char ** argv ){
   ////////////////////////////
   // Time offset of Pi0Peak // 
   ////////////////////////////
+  /*
   std::ifstream ifs(Form("%s/Pi0Peak.dat",ROOTFILE_COSMIC.c_str()));
   if( !ifs.is_open()){ std::cout<< "Pi0Peak.dat is not existed" << std::endl; return -1;}
   Int_t tID;
@@ -139,8 +140,15 @@ main( int argc ,char ** argv ){
       TimeOffset[ tID ] = 0;
     }
   }
-
-
+  */
+  
+  for( int i = 0; i< 2716; i++){
+    if( i < 2240 ){
+      TimeOffset[tID] = 0.;
+    }else{
+      TimeOffset[tID] = 16;
+    }
+  }
 
   ///////////////////////////////////////
   // Time offset from crystal position //
