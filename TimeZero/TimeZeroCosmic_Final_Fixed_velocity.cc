@@ -144,9 +144,11 @@ main( int argc ,char ** argv ){
   
   for( int i = 0; i< 2716; i++){
     if( i < 2240 ){
-      TimeOffset[tID] = 0.;
+      TimeOffset[i] = 0.;
+      TimeOffsetSigma[i] = 1;
     }else{
-      TimeOffset[tID] = 16;
+      TimeOffset[i] = 16;
+      TimeOffsetSigma[i] = 1;
     }
   }
 
