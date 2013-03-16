@@ -52,7 +52,7 @@ Int_t main( int argc , char** argv ){
 
   if( FileType == 0){
     //for( int i = 0; i< 120; i++){
-    for( int i = 0; i< 20; i++){
+    for( int i = 0; i< 60; i++){
       //ch->Add(Form("%s/Calibration_with_4e9/Calibration_%03d0_15.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
       //ch->Add(Form("%s/out_KL3pi0.mac_1000000_%d_FEB_CL_KL.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
       //ch->Add(Form("%s/Sim3pi0_wav_KL_RES_LY_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
