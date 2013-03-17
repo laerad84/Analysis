@@ -238,7 +238,7 @@ main( int argc ,char ** argv ){
   }
   */
   
-  TFile* tfout = new TFile(Form("%s/CosmicOut_TimeCalibration_FNL_FIXV_%d_%d.root",ROOTFILE_COSMIC.c_str(),fRunNumber,IterationNumber),"RECREATE");
+  //  TFile* tfout = new TFile(Form("%s/CosmicOut_TimeCalibration_FNL_FIXV_%d_%d.root",ROOTFILE_COSMIC.c_str(),fRunNumber,IterationNumber),"RECREATE");
 
   E14WavReader* reader = new E14WavReader(trin);
   Long_t entries =  reader->fChain->GetEntries();
@@ -507,7 +507,7 @@ main( int argc ,char ** argv ){
       // restore error point // 
       grHeightTimeADJ->SetPointError( ipoint, 0, tmpErr);
     }
-    /*
+
     TLine* line  = new TLine(x0,y0,x1,y1);
     can->cd(1);
     TimeMap->Draw("col");
@@ -534,7 +534,6 @@ main( int argc ,char ** argv ){
     getchar();
     line->Delete();
 
-    */
 
     ///////////////////////////////////////////////////////////////////
     // Get Time Offset
@@ -555,9 +554,9 @@ main( int argc ,char ** argv ){
     grHeightTimeADJ->GetListOfFunctions()->Delete();
     trout->Fill();
   }
-  trout->Write();
-  stepHist->Write();
-  tfout->Close();
+  //trout->Write();
+  //stepHist->Write();
+  //tfout->Close();
   app->Run();
   return 0;
 }
