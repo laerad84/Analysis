@@ -390,6 +390,9 @@ main( int argc ,char ** argv ){
     const Double_t CosmicEventEnergyThreshold = 3.;
     const Double_t CosmicEventHeightThreshold = 5.;
     ////////////////////////////////////////////////////////////////////////////////////////
+    Double_t TrackY[2]={1000,-1000};
+    Double_t TrackX[2]={0,0};
+
     for( int ich = 0; ich < reader->CsiNumber; ich++){
       if( reader->CsiSignal[ich] < CosmicEventHeightThreshold ){ continue; }
       Double_t x,y;
@@ -397,8 +400,10 @@ main( int argc ,char ** argv ){
       if( Energy < CosmicEventEnergyThreshold ) { continue; }
       handler->GetMetricPosition( reader->CsiID[ich] , x, y );
       grTrack->SetPoint( grTrack->GetN(),x,y);
-
+      if( y < TrackY[0] ){ TrackY[0] = y ; TrackX[0] = x;} 
+      if( y > TrackY[1] ){ TrackY[1] = y ; TrackX[1] = x;}  
     }
+
     cosmicAnalyzer->GetResult( grTrack, Roh, Theta );    
     //std::cout<< Roh << "\t" << Theta << std::endl;
     Double_t c  = TMath::Cos(Theta/180*TMath::Pi());
@@ -407,7 +412,14 @@ main( int argc ,char ** argv ){
     Double_t x0 = ( Roh*c*c - s*(y0-Roh*s))/c;
     Double_t y1 = 1000;
     Double_t x1 = ( Roh*c*c - s*(y1-Roh*s))/c;
-
+    Double_t R[2];
+    R[0] = sqrt( TrackX[0]*TrackX[0] + TrackY[0]*TrackY[0]);
+    R[1] = sqrt( TrackX[1]*TrackX[1] + TrackY[1]*TrackY[1]);
+    bool fCosmicUp = false;
+    bool fCosmicDn = false;
+    if( R[0] > 800 || TrackY[0] < -500 ){ fCosmicDn = true; }
+    if( R[1] > 800 || TrackY[1] > 500 ){ fCosmicUp = true; }
+    if( !fCosmicDn || !fCosmicUp ){ continue; }
     ////////////////////////////////////////////////////////////////////////////////////////
     // For Analyzing Time-Track relation 
     ////////////////////////////////////////////////////////////////////////////////////////

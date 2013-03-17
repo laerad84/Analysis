@@ -395,6 +395,7 @@ main( int argc ,char ** argv ){
     bool fCosmicDn = false;
     if( R[0] > 800 || TrackY[0] < -500 ){ fCosmicDn = true; }
     if( R[1] > 800 || TrackY[1] > 500 ){ fCosmicUp = true; }
+    if( !fCosmicDn || !fCosmicUp ){ continue; }
 
     cosmicAnalyzer->GetResult( grTrack, Roh, Theta );    
     ////////////////////////////////////////////////////////////////////////////////////////
