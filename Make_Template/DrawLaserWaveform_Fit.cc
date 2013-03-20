@@ -23,7 +23,7 @@ double FuncsplCsi( double *x, double *par ){
   double x0 = x[0];
   double p0 = par[0];
   double p1 = par[1];
-  double value = spl->Eval(x0-p0)*p1;
+  double value = spl->Eval(x0-p0)*p1+par[2];
   return value;
 }
 double FuncsplLaser( double *x, double *par ){
@@ -150,7 +150,7 @@ int main(int argc, char** argv){
   Int_t DivStart = nEntries/8*DivNumber;
   Int_t DivEnd   = nEntries/8*(DivNumber+1);
   TGraph* grLaserEvent = new TGraph();
-  TF1* funcLaser = new TF1("funcLaser",FuncsplLaser,-100,200,2);
+  TF1* funcLaser = new TF1("funcLaser",FuncsplLaser,-100,200,3);
   
   TFile*   tfOut  = new TFile(Form("LaserTime_m100p50_%d.root",DivNumber),"recreate");
   Int_t    EventNumber;

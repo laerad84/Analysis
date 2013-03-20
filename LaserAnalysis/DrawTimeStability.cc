@@ -26,12 +26,18 @@ double laserTimeDelay( double* x , double* par ){
   return value;
 }
 
+double gausfunc( double *x, double* p ){
+  double value = 0;
+  value = p[0]*TMath::Gaus(x[0],p[1],p[2]);
+  return value;
+}
 int main( int argc ,char** argv ){
   TApplication* app = new TApplication("app",&argc,argv);
   const Int_t StrRunNumber = 4158;
   const Int_t EndRunNumber = 4738;
 
   TGraphErrors* grTimeDelta   = new TGraphErrors();
+  TGraphErrors* grTimeDelta1   = new TGraphErrors();
   TGraphErrors* grHeight      = new TGraphErrors();
   TGraphErrors* grTimeHeight  = new TGraphErrors();
   TGraphErrors* grTimeHeight1 = new TGraphErrors();
@@ -53,6 +59,7 @@ int main( int argc ,char** argv ){
     grChDelay->SetPoint( ip, grDel->GetX()[ip],grDel->GetY()[ip]);
     grChDelay->SetPointError( ip, 0,grDel->GetEY()[ip]);
   }
+
   funct->SetParameter(0,1);
   funct->SetParameter(1,0.001);
   funct->SetParameter(2,6000);
@@ -63,7 +70,7 @@ int main( int argc ,char** argv ){
   funct->SetParLimits(2,3000,16000);
   funct->SetParLimits(3,-0.5,0.5);
   grChDelay->Fit(funct,"","",0,16000); 
-  getchar();
+  //getchar();
 
   TCanvas* can            = new TCanvas("can","can",1200,800);   
 
@@ -76,18 +83,45 @@ int main( int argc ,char** argv ){
     hisHeight[RunNumber]    = (TH1D*)tf->Get(Form("hisHeight_%d_%d",ChannelNumber,RunNumber+StrRunNumber));
     if(hisTimeDelta[RunNumber] == NULL ){ continue; }
     if(hisTimeDelta[RunNumber]->Integral() < 100   ){ continue; }
-    if(hisTimeDelta[RunNumber]->GetMean()  > 14000 ){ continue; }
-    
+    if(hisHeight[RunNumber]->GetMean()  > 9000 ){ continue; }
+
     std::cout<< hisTimeDelta[RunNumber]->GetMean() << std::endl;
-    TF1* fTime = new TF1("funcGaus","[0]*TMath::Gaus(x,[1],[2])",-20,20);
+    TF1* fTime = new TF1("funcGaussian",gausfunc,-20,20,3);
+
     fTime->SetParameter(0, hisTimeDelta[RunNumber]->Integral());
-    fTime->SetParLimits(0, hisTimeDelta[RunNumber]->Integral()*0.5,hisTimeDelta[RunNumber]->Integral()*1.5);
+    fTime->SetParLimits(0, 0,hisTimeDelta[RunNumber]->Integral()*1.5);
     fTime->SetParameter(1, hisTimeDelta[RunNumber]->GetMean());
     fTime->SetParLimits(1, hisTimeDelta[RunNumber]->GetMean()-3,hisTimeDelta[RunNumber]->GetMean()+3);
+    fTime->SetParameter(2, hisTimeDelta[RunNumber]->GetRMS());
+    fTime->SetParLimits(2, 0, hisTimeDelta[RunNumber]->GetRMS()*2);
 
-    hisTimeDelta[RunNumber]->Fit(fTime,"Q","",hisTimeDelta[RunNumber]->GetBinCenter(hisTimeDelta[RunNumber]->GetMaximumBin())-1,hisTimeDelta[RunNumber]->GetBinCenter(hisTimeDelta[RunNumber]->GetMaximumBin())+1);
-    grTimeDelta->SetPoint(grTimeDelta->GetN()  , RunNumber+StrRunNumber, fTime->GetParameter(1)-funct->Eval(hisHeight[RunNumber]->GetMean()));
-    grTimeDelta->SetPointError(grTimeDelta->GetN()-1,0,fTime->GetParameter(2));
+    double minboundary = hisTimeDelta[RunNumber]->GetBinCenter(hisTimeDelta[RunNumber]->GetMaximumBin())-1;
+    double maxboundary = hisTimeDelta[RunNumber]->GetBinCenter(hisTimeDelta[RunNumber]->GetMaximumBin())+1;
+
+    hisTimeDelta[RunNumber]->Fit(fTime,"","",minboundary,maxboundary);
+    std::cout<< "FitResult" << std::endl;
+    std::cout<< fTime->GetParameter(0) << std::endl;
+    std::cout<< fTime->GetParameter(1) << std::endl;
+    std::cout<< fTime->GetParameter(2) << std::endl;
+    if( fTime->GetParError(2) > 0.2){ continue; }
+
+    /*
+    hisTimeDelta[RunNumber]->Draw();
+    can->Update();
+    can->Modified();
+    can->Update();
+    getchar();
+    */
+
+    grTimeDelta->SetPoint(grTimeDelta->GetN(), 
+			  RunNumber+StrRunNumber,
+			  fTime->GetParameter(1));//-funct->Eval(hisHeight[RunNumber]->GetMean()));
+    grTimeDelta->SetPointError(grTimeDelta->GetN()-1,0,fTime->GetParError(2));
+    grTimeDelta1->SetPoint(grTimeDelta->GetN(),
+			   RunNumber+StrRunNumber,
+			   fTime->GetParameter(1)-funct->Eval(hisHeight[RunNumber]->GetMean()));
+    grTimeDelta1->SetPointError(grTimeDelta->GetN()-1,0,fTime->GetParError(2));
+
     grHeight->SetPoint(grHeight->GetN(), RunNumber+StrRunNumber, hisHeight[RunNumber]->GetMean());
     grHeight->SetPointError(grHeight->GetN()-1, 0, hisHeight[RunNumber]->GetRMS());			
     
@@ -114,10 +148,16 @@ int main( int argc ,char** argv ){
   can->Update();
   can->Modified();
   can->Update();
-  getchar();
+  // getchar();
 
   can->cd(3);  
+  grTimeDelta->SetMarkerStyle(20);
+  grTimeDelta1->SetMarkerStyle(21);
+  grTimeDelta->SetMarkerSize(0.5);
+  grTimeDelta1->SetMarkerSize(0.5);
+  grTimeDelta1->SetMarkerColor(2);
   grTimeDelta->Draw("AP");  
+  grTimeDelta1->Draw("P");
   can->cd(4);
   grTimeHeight->SetMarkerStyle(21);
   grTimeHeight1->SetMarkerStyle(22);
@@ -126,6 +166,17 @@ int main( int argc ,char** argv ){
 
   grTimeHeight1->Draw("P");
   can->cd(5);
+  grHeight->Draw("AP");
+  TCanvas* can1  = new TCanvas("can1","can1",800,400);
+  can1->Draw();
+  TPad* pad1 = new TPad("pad1","pad1",0,0.45,1,1);
+  TPad* pad2 = new TPad("pad2","pad2",0,0,1,0.45);
+  pad1->Draw();
+  pad2->Draw();
+  pad1->cd();
+  grTimeDelta->Draw("AP");  
+  grTimeDelta1->Draw("P");
+  pad2->cd();  
   grHeight->Draw("AP");
   app->Run();
 }

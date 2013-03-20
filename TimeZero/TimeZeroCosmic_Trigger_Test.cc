@@ -74,12 +74,13 @@ main( int argc ,char ** argv ){
 
   std::string WAVFILE   = std::getenv("ROOTFILE_WAV");
   std::string ANALIBDIR = std::getenv("ANALYSISLIB");
-  std::string ANALYSISDIR = std::getenv("ANALYSISDIR");
+  //std::string ANALYSISDIR = std::getenv("ANALYSISDIR");
   std::string DIRNAME   = "TimeZero";
   std::string ROOTFILE_COSMIC= std::getenv("ROOTFILE_COSMIC");
   EnergyConverter *Converter = new EnergyConverter();  
   Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",
 					  ANALIBDIR.c_str()));
+  std::cout << __LINE__ << std::endl;
   TChain* trin = new TChain("Tree");
   int fRunNumber = atoi(argv[1]);
   int IterationNumber = atoi( argv[2]);  
@@ -101,7 +102,7 @@ main( int argc ,char ** argv ){
   grHeightTimeNoADJ->SetMarkerStyle( 6 );
   grHeightTimePi0->SetMarkerStyle( 6 );
   grHeightTimeADJ->SetMarkerStyle( 6 );
-
+  std::cout << __LINE__ << std::endl;
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Time Offset 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +118,7 @@ main( int argc ,char ** argv ){
   ////////////////////////////
   // Time offset of Pi0Peak // 
   ////////////////////////////
+  /*
   std::ifstream ifs(Form("%s/Pi0Peak.dat",ROOTFILE_COSMIC.c_str()));
   if( !ifs.is_open()){ std::cout<< "Pi0Peak.dat is not existed" << std::endl; return -1;}
   Int_t tID;
@@ -130,7 +132,7 @@ main( int argc ,char ** argv ){
       TimeOffset[ tID ] = -384 ;
     }
   }
-
+  */
   ///////////////////////////////////////
   // Time offset from crystal position //
   ///////////////////////////////////////
@@ -139,6 +141,17 @@ main( int argc ,char ** argv ){
     handler->GetMetricPosition( i, x, y );
     TimeOffsetCrystalPosition[i] = (TMath::Sqrt( 2624*2624 + x*x +y*y ) - 2624 )/ 299.7 ; // ns 
   }
+
+  for( int i = 0; i< 2716; i++){
+    if( i < 2240 ){
+      TimeOffset[i] = 0.;
+      TimeOffsetSigma[i] = 1;
+    }else{
+      TimeOffset[i] = 16;
+      TimeOffsetSigma[i] = 1;
+    }
+  }
+
 
   //////////////////////////////////////
   //Time Offset from iteration//
@@ -160,7 +173,7 @@ main( int argc ,char ** argv ){
     double tmpDelta;
     double tmpResolution;
     while( ifst >> tmpID >> tmpDelta >> tmpResolution ){
-      DeltaT[tmpID] = tmpDelta;
+      DeltaT[tmpID] += tmpDelta;
       ResolutionT[tmpID] = tmpResolution; 
       std::cout<< tmpID << " : " << tmpDelta << " : " << tmpResolution << std::endl;
     }
@@ -172,7 +185,7 @@ main( int argc ,char ** argv ){
 
   for( int idIndex  = 0; idIndex  < 2716; idIndex++){
     TimeOffsetTotal[idIndex] += TimeOffset[idIndex];
-    TimeOffsetTotal[idIndex] -= TimeOffsetCrystalPosition[idIndex];
+    //TimeOffsetTotal[idIndex] -= TimeOffsetCrystalPosition[idIndex];
     if( IterationNumber >0 ){
       if( ResolutionT[ idIndex ] > 0 && ResolutionT[ idIndex ] < 0xFFFF ){
 	TimeOffsetTotal[idIndex] += DeltaT[idIndex];
