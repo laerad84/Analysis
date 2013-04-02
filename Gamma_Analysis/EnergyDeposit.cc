@@ -29,7 +29,7 @@ int main( int argc, char** argv){
     OutputFilename = Form("%s/Cluster_Back_%dMeV_%ddeg-1E5-%d.root",
 			  ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
   }else{
-    OutputFilename = Form("%s/Cluster_%dMeV_%ddeg-1E5-%d_1.root",
+    OutputFilename = Form("%s/Cluster_%dMeV_%ddeg-1E5-%d.root",
 			  ROOTFILE_GAMMACLUS.c_str(),Energy, Degree, Index);
     std::cout << OutputFilename << std::endl;
   }
