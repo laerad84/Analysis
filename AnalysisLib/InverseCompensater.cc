@@ -23,6 +23,14 @@ int main( int argc, char** argv ){
   for( int i = 1; i< 160; i++){
     std::cout<< i*10 <<"\t" << conv->ConvertToHeight(0,i*10)<< std::endl;
   }
+  TApplication* app = new TApplication("app",&argc,argv);
+  
+  PeakCompensater* comp = new PeakCompensater();
+  comp->m_gr[0]->SetMarkerStyle(21);
+  comp->m_gr[0]->Draw("AP");
+  app->Run();
+
+
 }
 
 
