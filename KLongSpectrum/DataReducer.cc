@@ -35,6 +35,8 @@ Int_t main( int argc , char** argv ){
     std::cout<< "Read Data( Wave Analysis ) File" << std::endl;
   }else if( FileType == 2 ){
     std::cout<< "Read Data( Sumup ) File" << std::endl; 
+  }else if( FileType == 3 ){
+    std::cout<< "Read Data( SIMFast ) File" << std::endl; 
   }
 
   std::string ROOTFILE_SUMUP = std::getenv("ROOTFILE_SUMUP");
@@ -72,8 +74,11 @@ Int_t main( int argc , char** argv ){
       //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
       ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
     }
+  }else if(FileType == 3){ //Fsim event
+    for( int i = 0; i< 20; i++){
+      ch->Add(Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+    }
   }
-
   std::cout<< "Total Event Number : " << ch->GetEntries() << std::endl;  
 
   int CsiL1nTrig;
@@ -85,7 +90,7 @@ Int_t main( int argc , char** argv ){
   data.setBranchAddress( ch );
 
   //// Set Output File //// 
-  char *RunName[3] = {"SIM","WAV","SUM"};
+  char *RunName[4] = {"SIM","WAV","SUM","SIMFAST"};
   TFile* tfout = new TFile(Form("Kl_Total_%s.root",RunName[FileType]),"RECREATE");
   TTree* trKL = new TTree("trKL","Klong Tree");
   Double_t KLMass;
