@@ -69,8 +69,8 @@ main(int argc,char** argv)
     return -1;
   }
   
-  inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
-  inputFilename       = Form("%s/
+  //inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
+  inputFilename       = Form("%s/%d.root",ROOTFILE_SIMCONV.c_str(),runNumber);
   if( argc  == 3 ){
     outputFilename      = Form("%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
     calibrationFilename = Form("%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),iterationNumber);
@@ -106,26 +106,17 @@ main(int argc,char** argv)
   Double_t CsiEne[2716];//CsiNumber
   Double_t CsiTime[2716];//CsiNumber
   Int_t CsiModID[2716];//CsiNumber
-  ch->SetBranchAddress("CsiNumber", &CsiNumber );
-  ch->SetBranchAddress("CsiTime",CsiTime);//CsiNumber
-  ch->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
-  ch->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
+  ch->SetBranchAddress("CsiNumber",&CsiNumber );
+  ch->SetBranchAddress("CsiTime"  ,CsiTime);//CsiNumber
+  ch->SetBranchAddress("CsiModID" ,CsiModID);//CsiNumber
+  ch->SetBranchAddress("CsiEne"   ,CsiEne);//CsiNumber
   
-
   /*
-
   TChain* ch = new TChain("T");
   ch->Add( inputFilename.c_str());
-
   */
 
-
   //ReadWavAna *ReadSum = new ReadWavAna(ch);
-
-
-
-
-
   //ReadSum->Add(inputFilename.c_str());
 
   /*
