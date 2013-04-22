@@ -53,7 +53,7 @@ main(int argc,char** argv)
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
   std::string ROOTFILE_3PI0CALIBRATION = std::getenv( "ROOTFILE_3PI0CALIBRATION");
-  std::string ROOTFILE_SIMConvData = 
+  std::string ROOTFILE_SIMCONV = "";
   std::string path;
   if( argc == 3 ){
     runNumber = atoi(argv[1]);

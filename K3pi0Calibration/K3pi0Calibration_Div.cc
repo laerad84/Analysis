@@ -68,7 +68,7 @@ main(int argc,char** argv)
   path            = argv[3];
   nDiv            = atoi( argv[4]);
   iDiv            = atoi( argv[5]);
-  if( iDiv >= nDiv ){ ARGError(); return -1 }
+  if( iDiv >= nDiv ){ ARGError(); return -1;}
   if( iDiv <     0 ){ ARGError(); return -1;}
 
   inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
