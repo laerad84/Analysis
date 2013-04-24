@@ -23,6 +23,9 @@ void CalibrationTree::Branch(TTree* tr){
   m_Tree->Branch("GammaSigma"    ,GammaSigma    ,"GammaSigma[6]/D");
   m_Tree->Branch("chisq"         ,chisq         ,"chisq[6]/D");
   m_Tree->Branch("nCalibrated"   ,&nCalibrated  ,"nCalibrated/I");
+  m_Tree->Branch("LeadingChID"   ,LeadingChID   ,"LeadingChID[6]/I");
+  m_Tree->Branch("LeadingEnergy" ,LeadingEnergy ,"LeadingEnergy[6]/D");
+  m_Tree->Branch("LeadingHeight" ,LeadingHeight ,"LeadingHeight[6]/D");
 }
 void CalibrationTree::SetBranchAddress(TTree* tr){
   m_Tree = tr;
@@ -39,6 +42,9 @@ void CalibrationTree::SetBranchAddress(TTree* tr){
   m_Tree->SetBranchAddress("GammaSigma"    ,GammaSigma);
   m_Tree->SetBranchAddress("chisq"         ,chisq);
   m_Tree->SetBranchAddress("nCalibrated"   ,&nCalibrated);
+  m_Tree->SetBranchAddress("LeadingChID"   ,LeadingChID);
+  m_Tree->SetBranchAddress("LeadingEnergy" ,LeadingEnergy);
+  m_Tree->SetBranchAddress("LeadingHeight" ,LeadingHeight);
 }
 
 int CalibrationTree::GetEntries(){
@@ -64,6 +70,9 @@ int CalibrationTree::InitValue(){
     GammaEnergy[i] = 0.;
     GammaSigma[i]  = 0.;
     chisq[i]       = 0.;
+    LeadingChID[i] = -1;
+    LeadingEnergy[i] = 0;
+    LeadingHeight[i] = 0;
   }
   nCalibrated= 0;
   return 0;

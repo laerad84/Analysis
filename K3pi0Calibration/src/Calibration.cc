@@ -24,6 +24,9 @@ int Calibration::InitValue(){
     m_SecondRatio[i] = 0; 
     m_GammaEnergy[i] = 0; 
     m_GammaSigma[i]  = 0;
+    m_LeadingEnergy[i] = 0;
+    m_LeadingHeight[i] = 0;
+    m_LeadingChID[i] = -1;
     m_chisq[i]       = 0;
  }
   m_nCalibrated = 0;
@@ -44,6 +47,9 @@ int Calibration::InitValue(Klong &KL_init){
     m_SecondRatio[i] = 0; 
     m_GammaEnergy[i] = 0; 
     m_GammaSigma[i]  = 0;
+    m_LeadingEnergy[i] = 0;
+    m_LeadingHeight[i] = 0;
+    m_LeadingChID[i] = -1;
     m_chisq[i]       = 0;
  }
   m_nCalibrated = 0;
@@ -66,6 +72,8 @@ int Calibration::InitValue(std::vector<Klong> &KL_VecInit){
     m_SecondRatio[i] = 0; 
     m_GammaEnergy[i] = 0; 
     m_GammaSigma[i]  = 0;
+    m_LeadingEnergy[i] = 0;
+    m_LeadingChID[i] = -1;
     m_chisq[i]       = 0;
   }
   m_nCalibrated = 0;
@@ -85,6 +93,8 @@ void Calibration::GetResult(CalibrationTree &calib){
     calib.SecondRatio[i]    = m_SecondRatio[i];
     calib.GammaEnergy[i]    = m_GammaEnergy[i];
     calib.GammaSigma[i]     = m_GammaSigma[i];
+    calib.LeadingChID[i]    = m_LeadingChID[i];
+    calib.LeadingEnergy[i]  = m_LeadingEnergy[i];
     calib.chisq[i]          = m_chisq[i];
   }
   calib.nCalibrated         = m_nCalibrated;
@@ -291,6 +301,9 @@ int Calibration::SelectCluster( int idx , int GammaIndex){
 	  m_Ratio[idx*2  + GammaIndex] = *i_e / KL_prefit.pi0()[idx].g1().e();
 	  m_GammaEnergy[idx*2 + GammaIndex] = KL_prefit.pi0()[idx].g1().e();
 	  m_GammaSigma[idx*2 +GammaIndex]   = KL_prefit.pi0()[idx].g1().sigmaE();
+	  m_LeadingChID[idx*2+GammaIndex]   = (*i_id);
+	  m_LeadingEnergy[idx*2+GammaIndex] = (*i_e);
+
 	}else{
 	  Flag |= 4;
 	}
@@ -347,6 +360,8 @@ int Calibration::SelectCluster( int idx , int GammaIndex){
 	  //m_GammaEnergy[idx*2 + GammaIndex] = KL_prefit.pi0()[idx].g2().e();
 	  m_GammaEnergy[idx*2 + GammaIndex] = KL_prefit.pi0()[idx].g2().e();
 	  m_GammaSigma[idx*2 +GammaIndex]   = KL_prefit.pi0()[idx].g2().sigmaE();
+	  m_LeadingChID[idx*2+GammaIndex] = (*i_id);
+	  m_LeadingEnergy[idx*2+GammaIndex] = (*i_e);
 	  //std::cout<< *i_id << " : " << *i_e << std::endl; 
 
 	}else{

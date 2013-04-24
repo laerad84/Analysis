@@ -148,8 +148,10 @@ main(int argc,char** argv)
   // declare  ClusterFinder and variables
   int nCSIDigi=0;
   int CSIDigiID[3000]={0};
-  double CSIDigiE[3000]={0},CSIDigiTime[3000]={0};
+  double CSIDigiE[3000]={0};
+  double CSIDigiTime[3000]={0};
   double CSICalFactor[3000]={0};
+  double CSIDigiHeight[3000]={0};
   ClusterFinder clusterFinder;
   double CC03IntegratedADC[32];
 

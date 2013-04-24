@@ -70,6 +70,7 @@ main(int argc,char** argv)
   }
   
   inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
+  //inputFilename         = Form("%s/run_wav_%04d_Cal.root",ROOTFILE_WAV.c_str(),runNumber);
 
   if( argc  == 3 ){
     outputFilename      = Form("%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
@@ -105,29 +106,21 @@ main(int argc,char** argv)
   Int_t CsiNumber;
   Double_t CsiEne[2716];//CsiNumber
   Double_t CsiTime[2716];//CsiNumber
-  Int_t CsiModID[2716];//CsiNumber
+  Int_t    CsiModID[2716];//CsiNumber
+  Double_t CsiSignal[2716];//CsiNumber
+
   ch->SetBranchAddress("CsiNumber", &CsiNumber );
   ch->SetBranchAddress("CsiTime",CsiTime);//CsiNumber
   ch->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
   ch->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
-  
+  ch->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
 
   /*
-
   TChain* ch = new TChain("T");
   ch->Add( inputFilename.c_str());
-
   */
-
-
   //ReadWavAna *ReadSum = new ReadWavAna(ch);
-
-
-
-
-
   //ReadSum->Add(inputFilename.c_str());
-
   /*
   for( int i = 0; i< 20 ; i++){
     inputFilename       = Form("sumdata/Sum%04d.root",runNumber+i);
@@ -146,23 +139,25 @@ main(int argc,char** argv)
   data.branchOfDigi( trout );
   CalibrationTree calData;
   calData.Branch(trout);
-
+  
   //data.branchOfGammaList( trout );
   data.branchOfKlong( trout );
   GammaFinder gFinder;
   
   // declare  ClusterFinder and variables
-  int nCSIDigi=0;
-  int CSIDigiID[3000]={0};
-  double CSIDigiE[3000]={0},CSIDigiTime[3000]={0};
+  int nCSIDigi             =0;
+  int CSIDigiID[3000]      ={0};
+  double CSIDigiE[3000]    ={0};
+  double CSIDigiTime[3000] ={0};
   double CSICalFactor[3000]={0};
-  ClusterFinder clusterFinder;
+  double CSIHeight[3000]   ={0};
   double CC03IntegratedADC[32];
-
+  ClusterFinder clusterFinder;
+  
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // Read Calibration File
   /////////////////////////////////////////////////////////////////////////////////////////////////
-
+  
   std::cout<< "Read Calibration File " << std::endl;
   
   for(int  ich = 0; ich < 3000; ich++){
@@ -186,7 +181,7 @@ main(int argc,char** argv)
       }
     }    
   }
-
+  
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // Prepare Calibration
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -258,6 +253,7 @@ main(int argc,char** argv)
 	CSIDigiID[nCSIDigi]  = CsiModID[i];
 	CSIDigiE[nCSIDigi]   = Energy;
 	CSIDigiTime[nCSIDigi]= CsiTime[i];
+	CSIHeight[nCSIDigi]  = CsiSignal[i];
 	nCSIDigi++;
       }
       /*
@@ -313,8 +309,15 @@ main(int argc,char** argv)
 	if(result >= 1){
 	  nKL++;
 	  calibrator->GetResult(calData);
-	}
-	
+	  int tmpCnt = 0;
+	  for( int iDigi = 0; iDigi < nCSIDigi; iDigi++){
+	    for( int iGID = 0; iGID < 6; iGID++){
+	      if(CSIDigiID[iDigi] == calData.LeadingChID[iGID]){
+		calData.LeadingHeight[iGID]=CSIHeight[iDigi];
+	      }
+	    }
+	  }
+	}	
 	trout->Fill();	    
       }
     }else{
@@ -322,7 +325,6 @@ main(int argc,char** argv)
     }
     data.eventID++;    
   }
-
   // end of analysis
   /*
   for( int icsi = 0; icsi < N_CSI; ++icsi){

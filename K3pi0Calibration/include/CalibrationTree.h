@@ -18,6 +18,9 @@ class CalibrationTree {
   double GammaEnergy[6];
   double GammaSigma[6];
   double chisq[6];
+  double LeadingEnergy[6];
+  double LeadingHeight[6];
+  int    LeadingChID[6];
   int    nCalibrated;
   
  public:  

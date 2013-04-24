@@ -47,6 +47,9 @@ class Calibration {
   double m_SecondRatio[6];// Energy Ratio second leading Channel / Energy of Gamma
   double m_GammaEnergy[6];     // Energy of Gamma
   double m_GammaSigma[6]; // Sigma of Gamma Energy
+  double m_LeadingEnergy[6];// Most Energy Deposited Gamma
+  double m_LeadingHeight[6];// Height of Most Energy Deposited Gamma
+  Int_t  m_LeadingChID[6];// Height of Most Energy Deposited Gamma
   double m_chisq[6];      // Chisquare of Gamma
   int    m_nCalibrated;   // Number of Calibrated KL in 6 Gamma 
   Klong  KL;
