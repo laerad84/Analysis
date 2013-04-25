@@ -183,7 +183,7 @@ int main( int argc ,char** argv){
   TH2D* hisCalibrationFactorRatio[nCSI];
   TH2D* hisCalibrationFactorSecondRatio[nCSI];
   TH2D* hisCalibrationFactorSigma[nCSI];
-  
+  TH2D* hisCalibrationFactorHeight[nCSI];
   for( int i =0; i < nCSI; i++){
     
     hisCalibrationFactor[i]
@@ -206,6 +206,11 @@ int main( int argc ,char** argv){
       = new TH2D(Form("hisCalibrationSigma_%d",i),
 		 Form("hisCalibrationSigma_%d;Sigma of Gamma;CalibrationFactor",i),
 		 50,0,50,100,0,2);
+    hisCalibrationFactorHeight[i]
+      = new TH2D(Form("hisCalibrationFactorHeight_%d",i),
+		 Form("hisClaibrationFactorHeight_%d;Height_of_Channel;CalibrationFactor",i),
+		 160,0,16000,100,0,2);
+	       
   }  
   
 
@@ -235,6 +240,10 @@ int main( int argc ,char** argv){
   Int_t    FlagKL_prefit;
   Double_t chisq[6];
   
+  Int_t    LeadingChID[6];
+  Double_t LeadingHeight[6];
+  Double_t LeadingEnergy[6];
+
   Int_t    CutCondition;  
   Int_t    KlongNumber;
   Double_t KlongId[2];
@@ -256,6 +265,10 @@ int main( int argc ,char** argv){
   ch->SetBranchAddress("CorrID",CorrID);
   ch->SetBranchAddress("GammaSigma",GammaSigma);
   ch->SetBranchAddress("nCalibrated",&nCalibrated);
+  ch->SetBranchAddress("LeadingChID",LeadingChID);
+  ch->SetBranchAddress("LeadingHeight",LeadingHeight);
+  ch->SetBranchAddress("LeadingEnergy",LeadingEnergy);
+
 
   ch->SetBranchAddress("CutCondition",&CutCondition);
   ch->SetBranchAddress("KlongNumber",&KlongNumber);
@@ -321,7 +334,7 @@ int main( int argc ,char** argv){
 	hisCalibrationFactorRatio[CorrID[i]]->Fill(Ratio[i], Corr[i]);
 	hisCalibrationFactorSecondRatio[CorrID[i]]->Fill(SecondRatio[i],Corr[i]);
 	hisCalibrationFactorSigma[CorrID[i]]->Fill(GammaSigma[i],Corr[i]);;	
-	
+	hisCalibrationFactorHeight[LeadingChID[i]]->Fill(Ratio[i],LeadingHeight[i]);
 	hisChisq->Fill(chisq[i]);
 	hisChisqDof->Fill(chisq[i]/4);
       }

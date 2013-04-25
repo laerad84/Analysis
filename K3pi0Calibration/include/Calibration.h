@@ -45,7 +45,7 @@ class Calibration {
   double m_Corr[6];       // Calibration Factor of Each Gamma(Number of Gamma), Valid only if m_FlagXX == 0 
   double m_Ratio[6];      // Energy Raito leading channel / Energy of Gamma 
   double m_SecondRatio[6];// Energy Ratio second leading Channel / Energy of Gamma
-  double m_GammaEnergy[6];     // Energy of Gamma
+  double m_GammaEnergy[6];// Energy of Gamma
   double m_GammaSigma[6]; // Sigma of Gamma Energy
   double m_LeadingEnergy[6];// Most Energy Deposited Gamma
   double m_LeadingHeight[6];// Height of Most Energy Deposited Gamma
