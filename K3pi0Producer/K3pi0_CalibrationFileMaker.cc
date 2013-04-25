@@ -181,6 +181,7 @@ main( int argc ,char ** argv ){
     if( reader->CsinTimeCluster == 0 ){ continue; }
     if( reader->CsinTimeCluster  > 2  ){ continue ;}    
     if( reader->CsinTimeCluster == 2 && reader->CsiTimeClusterHead[0] < 50 ){ continue; }
+
     //// assumption :: All REAL csi Event if TimeCluster #0 
     //    std::cout<< "Analysis" << std::endl;
 
