@@ -334,7 +334,7 @@ int main( int argc ,char** argv){
 	hisCalibrationFactorRatio[CorrID[i]]->Fill(Ratio[i], Corr[i]);
 	hisCalibrationFactorSecondRatio[CorrID[i]]->Fill(SecondRatio[i],Corr[i]);
 	hisCalibrationFactorSigma[CorrID[i]]->Fill(GammaSigma[i],Corr[i]);;	
-	hisCalibrationFactorHeight[LeadingChID[i]]->Fill(Ratio[i],LeadingHeight[i]);
+	hisCalibrationFactorHeight[LeadingChID[i]]->Fill(LeadingHeight[i],Corr[i]);
 	hisChisq->Fill(chisq[i]);
 	hisChisqDof->Fill(chisq[i]/4);
       }
