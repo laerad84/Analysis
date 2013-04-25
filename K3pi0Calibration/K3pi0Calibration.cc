@@ -69,8 +69,8 @@ main(int argc,char** argv)
     return -1;
   }
   
-  inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
-  //inputFilename         = Form("%s/run_wav_%04d_Cal.root",ROOTFILE_WAV.c_str(),runNumber);
+  //inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
+  inputFilename         = Form("%s/run_wav_%04d_cl_noncal.root",ROOTFILE_WAV.c_str(),runNumber);
 
   if( argc  == 3 ){
     outputFilename      = Form("%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
@@ -314,8 +314,10 @@ main(int argc,char** argv)
 	    for( int iGID = 0; iGID < 6; iGID++){
 	      if(CSIDigiID[iDigi] == calData.LeadingChID[iGID]){
 		calData.LeadingHeight[iGID]=CSIHeight[iDigi];
+		tmpCnt++;
 	      }
 	    }
+	    if(tmpCnt==6 ){break;}
 	  }
 	}	
 	trout->Fill();	    

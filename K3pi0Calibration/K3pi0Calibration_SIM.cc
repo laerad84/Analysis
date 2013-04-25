@@ -53,7 +53,7 @@ main(int argc,char** argv)
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
   std::string ROOTFILE_3PI0CALIBRATION = std::getenv( "ROOTFILE_3PI0CALIBRATION");
-  std::string ROOTFILE_SIMCONV = "";
+  std::string ROOTFILE_SIMCONV = "/group/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";
   std::string path;
   if( argc == 3 ){
     runNumber = atoi(argv[1]);
@@ -70,7 +70,7 @@ main(int argc,char** argv)
   }
   
   //inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
-  inputFilename       = Form("%s/%d.root",ROOTFILE_SIMCONV.c_str(),runNumber);
+  inputFilename       = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root",ROOTFILE_SIMCONV.c_str(),runNumber);
   if( argc  == 3 ){
     outputFilename      = Form("%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
     calibrationFilename = Form("%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),iterationNumber);
@@ -105,12 +105,14 @@ main(int argc,char** argv)
   Int_t CsiNumber;
   Double_t CsiEne[2716];//CsiNumber
   Double_t CsiTime[2716];//CsiNumber
+  Double_t CsiSignal[2716];//CsiNumber
   Int_t CsiModID[2716];//CsiNumber
   ch->SetBranchAddress("CsiNumber",&CsiNumber );
   ch->SetBranchAddress("CsiTime"  ,CsiTime);//CsiNumber
   ch->SetBranchAddress("CsiModID" ,CsiModID);//CsiNumber
   ch->SetBranchAddress("CsiEne"   ,CsiEne);//CsiNumber
-  
+  ch->SetBranchAddress("CsiSingal",CsiSignal);//CsiNumber
+
   /*
   TChain* ch = new TChain("T");
   ch->Add( inputFilename.c_str());
@@ -145,7 +147,9 @@ main(int argc,char** argv)
   // declare  ClusterFinder and variables
   int nCSIDigi=0;
   int CSIDigiID[3000]={0};
-  double CSIDigiE[3000]={0},CSIDigiTime[3000]={0};
+  double CSIDigiE[3000]={0};
+  double CSIDigiTime[3000]={0};
+  double CSIHeight[3000]={0};
   double CSICalFactor[3000]={0};
   ClusterFinder clusterFinder;
   double CC03IntegratedADC[32];
@@ -249,6 +253,7 @@ main(int argc,char** argv)
 	CSIDigiID[nCSIDigi]  = CsiModID[i];
 	CSIDigiE[nCSIDigi]   = Energy;
 	CSIDigiTime[nCSIDigi]= CsiTime[i];
+	CSIHeight[nCSIDigi]  = CsiSignal[i];
 	nCSIDigi++;
       }
       /*
@@ -304,8 +309,17 @@ main(int argc,char** argv)
 	if(result >= 1){
 	  nKL++;
 	  calibrator->GetResult(calData);
-	}
-	
+	  int tmpCnt = 0; 
+	  for( int iDigi = 0; iDigi < nCSIDigi; iDigi++){
+	    for( int iGID = 0; iGID < 6; iGID++){
+	      if( CSIDigiID[iDigi] == calData.LeadingChID[iGID]){
+		calData.LeadingHeight[iGID]=CSIHeight[iDigi];
+		tmpCnt++;
+	      }
+	    }
+	    if(tmpCnt==6){break;}
+	  }
+	}	
 	trout->Fill();	    
       }
     }else{
