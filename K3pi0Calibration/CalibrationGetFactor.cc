@@ -375,7 +375,7 @@ int main( int argc ,char** argv){
     hisCalibrationFactorRatio[i]->Write();
     hisCalibrationFactorSecondRatio[i]->Write();
     hisCalibrationFactorSigma[i]->Write();
-
+    hisCalibrationFactorHeight[i]->Write();
     ofs1 << i << "\t" << hisCalibrationFactor[i]->Integral() << std::endl;
     if( hisCalibrationFactor[i]->Integral() < 144 ){
       continue;
