@@ -145,12 +145,12 @@ main(int argc,char** argv)
   GammaFinder gFinder;
   
   // declare  ClusterFinder and variables
-  int nCSIDigi=0;
-  int CSIDigiID[3000]={0};
-  double CSIDigiE[3000]={0};
-  double CSIDigiTime[3000]={0};
-  double CSIHeight[3000]={0};
-  double CSICalFactor[3000]={0};
+  int nCSIDigi              =0;
+  int CSIDigiID[3000]       ={0};
+  double CSIDigiE[3000]     ={0};
+  double CSIDigiTime[3000]  ={0};
+  double CSIHeight[3000]    ={0};
+  double CSICalFactor[3000] ={0};
   ClusterFinder clusterFinder;
   double CC03IntegratedADC[32];
 
