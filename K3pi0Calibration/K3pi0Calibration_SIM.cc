@@ -84,7 +84,7 @@ main(int argc,char** argv)
   std::cout<<"Calibration Number: "<< calibrationFilename  << std::endl;
 
   TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());
-  TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str());
+  TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str()); 
   TTree* trTempCorr  =(TTree*)tfTempCorr->Get("TemperatureCorrectionCsI");
   Double_t TempCorFactor=0;
   trTempCorr->SetBranchAddress("CorrectionFactor",&TempCorFactor);
@@ -256,12 +256,6 @@ main(int argc,char** argv)
 	CSIHeight[nCSIDigi]  = CsiSignal[i];
 	nCSIDigi++;
       }
-      /*
-      std::cout << CsiNumber << " : " << i << " : " 
-		<< CsiModID[i] << " : "
-		<< CsiEne[i] << " : "
-		<< CsiTime[i] << std::endl;
-      */
     }
 
     /*   
