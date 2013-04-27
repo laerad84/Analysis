@@ -91,7 +91,7 @@ main(int argc,char** argv)
   trTempCorr->GetEntry(runNumber);
   if( TempCorFactor == 0){
     TempCorFactor = 1;
-  }
+   }
   std::cout<< TempCorFactor << std::endl;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ main(int argc,char** argv)
   ch->SetBranchAddress("CsiTime"  ,CsiTime);//CsiNumber
   ch->SetBranchAddress("CsiModID" ,CsiModID);//CsiNumber
   ch->SetBranchAddress("CsiEne"   ,CsiEne);//CsiNumber
-  ch->SetBranchAddress("CsiSingal",CsiSignal);//CsiNumber
+  ch->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
 
   /*
   TChain* ch = new TChain("T");
@@ -254,6 +254,7 @@ main(int argc,char** argv)
 	CSIDigiE[nCSIDigi]   = Energy;
 	CSIDigiTime[nCSIDigi]= CsiTime[i];
 	CSIHeight[nCSIDigi]  = CsiSignal[i];
+	//std::cout << CSIHeight[nCSIDigi] <<"\t" << CsiSignal[nCSIDigi] << std::endl;
 	nCSIDigi++;
       }
     }
@@ -304,10 +305,12 @@ main(int argc,char** argv)
 	  nKL++;
 	  calibrator->GetResult(calData);
 	  int tmpCnt = 0; 
+	  std::cout<< std::endl;
 	  for( int iDigi = 0; iDigi < nCSIDigi; iDigi++){
 	    for( int iGID = 0; iGID < 6; iGID++){
 	      if( CSIDigiID[iDigi] == calData.LeadingChID[iGID]){
 		calData.LeadingHeight[iGID]=CSIHeight[iDigi];
+		//std::cout << iGID << "\t" << CSIHeight[iDigi] << "\t" << calData.LeadingHeight[iGID] << std::endl;
 		tmpCnt++;
 	      }
 	    }
