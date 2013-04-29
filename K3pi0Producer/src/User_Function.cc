@@ -211,6 +211,7 @@ void           user_cut(E14GNAnaDataContainer &data,std::vector<Klong> const &kl
   vCut += vetoCut(data);
   vCut += csiVetoCut(data,klVec);
 }
+/*
 bool           user_rec(std::list<Gamma> const &glist, std::vector<Klong> &klVec){
   static RecKlong recKl;      
   //// reconstruction
@@ -245,6 +246,40 @@ bool           user_rec(std::list<Gamma> const &glist, std::vector<Klong> &klVec
 
   return true;
 }
+*/
+bool user_rec(std::list<Gamma> const &glist, std::vector<Klong> &klVec){
+  static RecKlong recKl;      
+  //// reconstruction
+  //  klVec =  recKl.recK3pi0(glist,VERTEX_FIX_XYZERO) ;
+  klVec =  recKl.recK3pi0(glist) ;
+  
+  if(klVec.size()==0) {
+    return false;
+  }
+
+  //// gamma position & energy correction for angle dependency
+  E14GNAnaFunction::getFunction()->correctPosition(klVec[0]);  
+  E14GNAnaFunction::getFunction()->correctEnergyWithAngle(klVec[0]);  
+
+  //// re-reconstruction with corrected gamma
+  std::list<Gamma> glist2;
+  for( std::vector<Pi0>::iterator it=klVec[0].pi0().begin();
+       it!=klVec[0].pi0().end(); it++){
+    glist2.push_back(it->g1());
+    glist2.push_back(it->g2());
+  }
+  klVec =  recKl.recK3pi0(glist2) ;
+  if(klVec.size()==0)    return false;
+
+  //// shape chi2 evaluation
+  E14GNAnaFunction::getFunction()->shapeChi2(klVec[0]);  
+
+  return true;
+}
+
+
+
+
 double         rec_mass2g(std::list<Gamma> const &glist, double recPosition){
   double mass = 0;
   CLHEP::Hep3Vector Vtx(0,0,recPosition);
