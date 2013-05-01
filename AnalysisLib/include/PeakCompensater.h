@@ -22,7 +22,7 @@ class PeakCompensater
   TGraph*   m_grInv[3];
   PeakCompensater();
   PeakCompensater( int );
-  ~PeakCompensater();
+  virtual ~PeakCompensater();
   int     m_version;
   double  m_map[2716][4];
   virtual void   SetMap();
