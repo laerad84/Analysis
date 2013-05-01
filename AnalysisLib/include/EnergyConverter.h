@@ -17,12 +17,14 @@ class EnergyConverter {
   bool   m_fCalibrationConstant[4096];
   bool   m_fInit;
   bool   m_fRead;
+  int    m_version;
   std::string m_DetectorName;
   std::string m_CalFilename; 
 
  public:
   PeakCompensater* m_Compensater;  
   EnergyConverter();
+  EnergyConverter( int m_version);
   EnergyConverter( const char* DetectorName, int nChannel = 2716 ); 
   ~EnergyConverter();  
   virtual bool   ReadCalibrationTextFile( const char* );

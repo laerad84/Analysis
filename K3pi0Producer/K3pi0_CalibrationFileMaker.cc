@@ -39,7 +39,7 @@
 //#include "E14WavReader.h"
 #include "E14WavReader_V1.h"
 //#include "E14WaveReader_V2.h"
-
+#include "EnergyConverter.h"
 
 int
 main( int argc ,char ** argv ){
@@ -50,13 +50,12 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_cl_noncal.root";
+  std::string oFileForm="%s/run_wav_%d_cl_noncal_newCompensate.root";
 
   std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
-
-
   std::string TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());  
+
   TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str());
   TTree* trTempCorr  =(TTree*)tfTempCorr->Get("TemperatureCorrectionCsI");
   Double_t TempCorFactor=0;
@@ -66,8 +65,9 @@ main( int argc ,char ** argv ){
     TempCorFactor = 1;
   }
   std::cout<< TempCorFactor << std::endl;
-
-
+  EnergyConverter* Converter = new EnergyConverter( 1 );// 1=new version
+  Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",
+					  ANALYSISLIB.c_str()));
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber),"recreate");
@@ -188,10 +188,13 @@ main( int argc ,char ** argv ){
     nCsI = 0;
     for( int ich  = 0; ich < reader->CsiNumber; ich++){      
       int CsiID        = reader->CsiID[ich];
+
       double CsiTime   = reader->CsiTime[ich];
       double CsiSignal = reader->CsiSignal[ich]; 
       //double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[ reader->CsiID[ich]]/TempCorFactor;      
-      double CsiEnergy = reader->CsiEne[ich];
+      //double CsiEnergy = reader->CsiEne[ich]; oldinary
+      Double_t CsiEnergy = Converter->ConvertToEnergy( CsiID , CsiSignal);
+
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];
       if( CsiTimeClusterID == 0){

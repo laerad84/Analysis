@@ -9,7 +9,8 @@
 #include <cstdio>
 #include "TSpline.h"
 #include "TGraph.h"
-
+#include "TFile.h"
+#include <fstream>
 class PeakCompensater
 {
  private:
@@ -20,11 +21,16 @@ class PeakCompensater
   TSpline3* m_splInv[3];
   TGraph*   m_grInv[3];
   PeakCompensater();
+  PeakCompensater( int );
   ~PeakCompensater();
+  int     m_version;
+  double  m_map[2716][4];
+  virtual void   SetMap();
   virtual double Compensate( int, double );
   virtual double InvCompensate( int,double );
   virtual void   Draw(int ,char*);
+
  private:
-  virtual bool Init();
+  virtual bool Init( int version =0);
 };
 #endif //PEAKCOMPENSATER__H__

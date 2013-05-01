@@ -8,7 +8,20 @@ EnergyConverter::EnergyConverter(){
   Init();
   m_nChannel = 2716;
   m_DetectorName = "CsI";
-  m_Compensater  = new PeakCompensater();
+  m_version = 0;
+  m_Compensater  = new PeakCompensater(m_version);
+}
+EnergyConverter::EnergyConverter(int version){
+  // For CsI Main Detector // 
+  std::cerr << "Converter Build" << std::endl;
+  m_fInit = false;
+  m_fRead = false;
+  Init();
+  m_nChannel = 2716;
+  m_DetectorName = "CsI";
+  m_version = 0;
+  m_Compensater  = new PeakCompensater(m_version);
+
 }  
 EnergyConverter::EnergyConverter(const char* DetectorName , int nChannel ){
   // For Other Detector 
