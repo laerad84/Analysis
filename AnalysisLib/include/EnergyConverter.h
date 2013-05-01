@@ -26,7 +26,7 @@ class EnergyConverter {
   EnergyConverter();
   EnergyConverter( int m_version);
   EnergyConverter( const char* DetectorName, int nChannel = 2716 ); 
-  ~EnergyConverter();  
+  virtual ~EnergyConverter();  
   virtual bool   ReadCalibrationTextFile( const char* );
   virtual bool   ReadCalibrationRootFile( const char* );
   virtual bool   IsGoodChannel         ( int )         const ;

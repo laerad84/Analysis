@@ -24,7 +24,7 @@ class PeakCompensater
   PeakCompensater( int );
   virtual ~PeakCompensater();
   int     m_version;
-  double  m_map[2716][4];
+  int     m_map[2716][4];
   virtual void   SetMap();
   virtual double Compensate( int, double );
   virtual double InvCompensate( int,double );
