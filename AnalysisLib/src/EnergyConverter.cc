@@ -19,7 +19,7 @@ EnergyConverter::EnergyConverter(int version){
   Init();
   m_nChannel = 2716;
   m_DetectorName = "CsI";
-  m_version = 0;
+  m_version = version;
   m_Compensater  = new PeakCompensater(m_version);
 
 }  
