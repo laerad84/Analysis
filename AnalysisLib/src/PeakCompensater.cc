@@ -62,8 +62,23 @@ bool PeakCompensater::Init( int version ){
       for( int j = 0; j< 160; j++){
 	double x = j*100;
 	double y = m_spl[i]->Eval(x);
-	m_grInv[i]->SetPoint( m_grInv[i]->GetN(),x/y, x );
-	
+	m_grInv[i]->SetPoint( m_grInv[i]->GetN(),x/y, x );	
+      }
+      m_splInv[i] = new TSpline3(Form("LinearityInv%d",i),m_grInv[i]);
+    }
+  }else if ( version == 2 ){
+    //version 2 : no adjust // 
+    for( int ipoint =0 ;ipoint < 160; ipoint++){
+      m_gr[0]->SetPoint( ipoint , ipoint*100, 1);
+      m_gr[1]->SetPoint( ipoint , ipoint*100, 1);
+      m_gr[2]->SetPoint( ipoint , ipoint*100, 1);
+    }
+    for( int i = 0; i< 3; i++){
+      m_spl[i] = new TSpline3(Form("Linearity%d",i),m_gr[i]);
+      for( int j = 0; j< 160; j++){
+	double x = j*100;
+	double y = m_spl[i]->Eval(x);
+	m_grInv[i]->SetPoint( m_grInv[i]->GetN(),x/y, x );	
       }
       m_splInv[i] = new TSpline3(Form("LinearityInv%d",i),m_grInv[i]);
     }

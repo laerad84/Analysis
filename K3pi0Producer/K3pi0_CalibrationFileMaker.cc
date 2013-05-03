@@ -50,7 +50,7 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_cl_noncal_newCompensate.root";
+  std::string oFileForm="%s/run_wav_%d_cl_noncal_noCompensate.root";
 
   std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
@@ -65,7 +65,7 @@ main( int argc ,char ** argv ){
     TempCorFactor = 1;
   }
   std::cout<< TempCorFactor << std::endl;
-  EnergyConverter* Converter = new EnergyConverter( 1 );// 1=new version
+  EnergyConverter* Converter = new EnergyConverter(2);// 1=new version // non Height convertion
   Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",
 					  ANALYSISLIB.c_str()));
   TChain* trin = new TChain("Tree"); 
