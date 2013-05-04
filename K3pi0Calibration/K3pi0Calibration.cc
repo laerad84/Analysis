@@ -71,7 +71,8 @@ main(int argc,char** argv)
   
   //inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
   //inputFilename         = Form("%s/run_wav_%04d_cl_noncal.root",ROOTFILE_WAV.c_str(),runNumber);
-  inputFilename         = Form("%s/run_wav_%04d_cl_noncal_newCompensate.root",ROOTFILE_WAV.c_str(),runNumber);
+  //inputFilename         = Form("%s/run_wav_%04d_cl_noncal_newCompensate.root",ROOTFILE_WAV.c_str(),runNumber);
+  inputFilename         = Form("%s/run_wav_%04d_cl_noncal_noCompensate.root",ROOTFILE_WAV.c_str(),runNumber);
 
   if( argc  == 3 ){
     outputFilename      = Form("%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);

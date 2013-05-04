@@ -68,6 +68,10 @@ bool PeakCompensater::Init( int version ){
     }
   }else if ( version == 2 ){
     //version 2 : no adjust // 
+    for( int i = 0; i< 3; i++){
+      m_gr[i] = new TGraph();
+      m_grInv[i]= new TGraph();
+    }
     for( int ipoint =0 ;ipoint < 160; ipoint++){
       m_gr[0]->SetPoint( ipoint , ipoint*100, 1);
       m_gr[1]->SetPoint( ipoint , ipoint*100, 1);
