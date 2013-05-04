@@ -20,6 +20,7 @@ PeakCompensater::~PeakCompensater(){
 }
 bool PeakCompensater::Init( int version ){
   std::string ANALIBDIR = std::getenv("ANALYSISLIB");
+  SetMap();
   if( version == 0){ 
     std::ifstream ifs(Form("%s/Data/getLinearityFunction.dat",ANALIBDIR.c_str()));
     if( !ifs.is_open()){ return false; }
@@ -46,7 +47,6 @@ bool PeakCompensater::Init( int version ){
     }
     ifs.close();
   }else if ( version == 1 ){
-    SetMap();
     TFile* tf = new TFile(Form("%s/Data/HeightLinearity_Laser.root",ANALIBDIR.c_str()));
     m_gr[0] = (TGraph*)tf->Get("heightLinearity_0");//for most of Small 
     m_gr[1] = (TGraph*)tf->Get("heightLinearity_1");//for some of Small
@@ -120,6 +120,17 @@ double PeakCompensater::Compensate(int id , double Peak ){
       CompensateOut = Peak/m_spl[splID]->Eval(Peak);
     }
     break;
+  case 2 :
+    if( id =  -1  ){ splID = -1;}
+    if( id >= 2716){ splID = -1;}
+    splID = m_map[id][3];
+    if( Peak < 0. ){ CompensateOut =  0;}
+    else if( Peak > 15840 ){
+      CompensateOut = Peak/m_spl[splID]->Eval(15840);
+    }else{
+      CompensateOut = Peak/m_spl[splID]->Eval(Peak);
+    }
+    break;    
   default :
     CompensateOut = 0;
     break; 
