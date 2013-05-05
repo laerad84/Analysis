@@ -58,7 +58,8 @@ main( int argc ,char ** argv ){
   std::string ROOTFILE_SIMCONV = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/ConvFile";
   std::string ROOTFILE_SIM3PI0 = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";
   std::string iFileForm        = "%s/Conv_KL3pi0_FAST_REDUCED_5E6_%d.root"; //ROOTFILE_SIMCONV
-  std::string oFileForm        = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";     //ROOTFILE_SIM3PI0
+  //std::string oFileForm        = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";     //ROOTFILE_SIM3PI0
+  std::string oFileForm        = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration_mis.root";     //ROOTFILE_SIM3PI0
 
   //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
@@ -194,7 +195,8 @@ main( int argc ,char ** argv ){
       double tmpEne = CsiEne[ich];
       if( tmpSignal > 5 && tmpEne > 0.5 ){
 	CSIDigiID[nCSIDigi]     = tmpID;
-	CSIDigiE[nCSIDigi]      = tmpEne/CalibrationFactor[CsiModID[ich]];
+	//CSIDigiE[nCSIDigi]      = tmpEne/CalibrationFactor[CsiModID[ich]];
+	CSIDigiE[nCSIDigi]      = tmpEne/CalibrationFactor[CsiModID[ich]]*(1+0.02*(tmpSignal/10000)*(tmpSignal/10000));// For Calibration Reconstruction Test.
 	CSIDigiSignal[nCSIDigi] = tmpSignal;
 	CSIDigiTime[nCSIDigi]   = tmpTime;
 	CSIDigiHHTime[nCSIDigi] = tmpHHTime;
