@@ -183,8 +183,10 @@ int main( int argc ,char** argv){
   TH2D* hisCalibrationFactorRatio[nCSI];
   TH2D* hisCalibrationFactorSecondRatio[nCSI];
   TH2D* hisCalibrationFactorSigma[nCSI];
+
   TH2D* hisCalibrationFactorHeight[nCSI];
   TH2D* hisCalibrationFactorHeight_Weighted[nCSI];
+
   for( int i =0; i < nCSI; i++){
     
     hisCalibrationFactor[i]
@@ -210,11 +212,11 @@ int main( int argc ,char** argv){
     hisCalibrationFactorHeight[i]
       = new TH2D(Form("hisCalibrationFactorHeight_%d",i),
 		 Form("hisClaibrationFactorHeight_%d;Height_of_Channel;CalibrationFactor",i),
-		 160,0,16000,100,0,2);	       
+		 40,0,16000,100,0,2);	       
     hisCalibrationFactorHeight_Weighted[i]
       = new TH2D(Form("hisCalibrationFactorHeight_Weighted_%d",i),
 		 Form("hisClaibrationFactorHeight_Weighted_%d;Height_of_Channel;Weighted_CalibrationFactor",i),
-		 160,0,16000,100,0,2);
+		 40,0,16000,100,0,2);
 	       
   }  
   
