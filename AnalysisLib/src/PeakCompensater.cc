@@ -86,6 +86,31 @@ bool PeakCompensater::Init( int version ){
       }
       m_splInv[i] = new TSpline3(Form("LinearityInv%d",i),m_grInv[i]);
     }
+  }else if( version == 3){
+    //version 3 : using graph from Calibration 
+    TFile* tf0 = new TFile(Form("%s/Data/HeightLinearity_Calibration.root",ANALIBDIR.c_str()));
+    m_gr[0] = (TGraph*)tf0->Get("heightLinearityCal");
+    m_gr[1] = (TGraph*)tf0->Get("heightLinearityCal");
+
+    TFile* tf1 = new TFile(Form("%s/Data/HeightLinearity_Laser.root",ANALIBDIR.c_str()));
+    //m_gr[0] = (TGraph*)tf1->Get("heightLinearity_1");//for most of Small
+    //m_gr[1] = (TGraph*)tf1->Get("heightLinearity_1");//for some of Small
+    m_gr[2] = (TGraph*)tf1->Get("heightLinearity_2");//for All  of Large
+    m_grInv[0] = new TGraph();
+    m_grInv[2] = new TGraph();
+    m_grInv[1] = new TGraph();
+    m_grInv[0]->SetNameTitle("heigtLinearityInv_0","heigtLinearityInv_0");
+    m_grInv[1]->SetNameTitle("heigtLinearityInv_1","heigtLinearityInv_1");
+    m_grInv[2]->SetNameTitle("heigtLinearityInv_2","heigtLinearityInv_2");
+    for( int i = 0; i< 3; i++){
+      m_spl[i] = new TSpline3(Form("Linearity%d",i),m_gr[i]);      
+      for( int j = 0; j< 160; j++){
+	double x = j*100;
+	double y = m_spl[i]->Eval(x);
+	m_grInv[i]->SetPoint( m_grInv[i]->GetN(),x/y, x );	
+      }
+      m_splInv[i] = new TSpline3(Form("LinearityInv%d",i),m_grInv[i]);
+    }
   }else{ return false; }
  return true;
 }
