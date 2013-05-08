@@ -342,7 +342,7 @@ int main( int argc ,char** argv){
 	hisCalibrationFactorSecondRatio[CorrID[i]]->Fill(SecondRatio[i],Corr[i]);
 	hisCalibrationFactorSigma[CorrID[i]]->Fill(GammaSigma[i],Corr[i]);;	
 	hisCalibrationFactorHeight[LeadingChID[i]]->Fill(LeadingHeight[i],Corr[i]);
-	hisCalibrationFactorHeight_Weighted[LeadingChID[i]]->Fill(LeadingHeight[i],1+((Corr[i]-1)*GammaEnergy[i]/LeadingEnergy[i]));
+	hisCalibrationFactorHeight_Weighted[LeadingChID[i]]->Fill(LeadingHeight[i], 1./(1+((Corr[i]-1)*GammaEnergy[i]/LeadingEnergy[i])));
 	hisChisq->Fill(chisq[i]);
 	hisChisqDof->Fill(chisq[i]/4);
       }
