@@ -186,6 +186,7 @@ int main( int argc ,char** argv){
 
   TH2D* hisCalibrationFactorHeight[nCSI];
   TH2D* hisCalibrationFactorHeight_Weighted[nCSI];
+  TH2D* hisCalibrationFactorHeight_Weighted_INV[nCSI];
 
   for( int i =0; i < nCSI; i++){
     
@@ -217,7 +218,13 @@ int main( int argc ,char** argv){
       = new TH2D(Form("hisCalibrationFactorHeight_Weighted_%d",i),
 		 Form("hisClaibrationFactorHeight_Weighted_%d;Height_of_Channel;Weighted_CalibrationFactor",i),
 		 40,0,16000,100,0,2);
+    hisCalibrationFactorHeight_Weighted_INV[i]
+      = new TH2D(Form("hisCalibrationFactorHeight_Weighted_INV_%d",i),
+		 Form("hisClaibrationFactorHeight_Weighted_INV_%d;Height_of_Channel;Weighted_&_Inversed_CalibrationFactor",i),
+		 40,0,16000,100,0,2);
 	       
+
+
   }  
   
 
@@ -342,7 +349,8 @@ int main( int argc ,char** argv){
 	hisCalibrationFactorSecondRatio[CorrID[i]]->Fill(SecondRatio[i],Corr[i]);
 	hisCalibrationFactorSigma[CorrID[i]]->Fill(GammaSigma[i],Corr[i]);;	
 	hisCalibrationFactorHeight[LeadingChID[i]]->Fill(LeadingHeight[i],Corr[i]);
-	hisCalibrationFactorHeight_Weighted[LeadingChID[i]]->Fill(LeadingHeight[i], 1./(1+((Corr[i]-1)*GammaEnergy[i]/LeadingEnergy[i])));
+	hisCalibrationFactorHeight_Weighted[LeadingChID[i]]->Fill(LeadingHeight[i],(1+((Corr[i]-1)*GammaEnergy[i]/LeadingEnergy[i])));
+	hisCalibrationFactorHeight_Weighted_INV[LeadingChID[i]]->Fill(LeadingHeight[i], 1./(1+((Corr[i]-1)*GammaEnergy[i]/LeadingEnergy[i])));
 	hisChisq->Fill(chisq[i]);
 	hisChisqDof->Fill(chisq[i]/4);
       }
@@ -385,6 +393,7 @@ int main( int argc ,char** argv){
     hisCalibrationFactorSigma[i]->Write();
     hisCalibrationFactorHeight[i]->Write();
     hisCalibrationFactorHeight_Weighted[i]->Write();
+    hisCalibrationFactorHeight_Weighted_INV[i]->Write();
     ofs1 << i << "\t" << hisCalibrationFactor[i]->Integral() << std::endl;
     if( hisCalibrationFactor[i]->Integral() < 144 ){
       continue;
