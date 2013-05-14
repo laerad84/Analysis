@@ -241,7 +241,7 @@ int main( int argc ,char** argv){
       if( LeadingHeight[i*2]<5000){ 
 	hisPi0DeltaZ[0]->Fill(klVec[0].pi0()[i].g1().e(),klVec[0].pi0()[i].recZ()-klVec[0].pi0()[i].vz());
       }else{
-	hisPi0DeltaZ[0]->Fill(klVec[0].pi0()[i].g1().e(),klVec[0].pi0()[i].recZ()-klVec[0].pi0()[i].vz());
+	hisPi0DeltaZ[1]->Fill(klVec[0].pi0()[i].g1().e(),klVec[0].pi0()[i].recZ()-klVec[0].pi0()[i].vz());
       }
     }
   }
