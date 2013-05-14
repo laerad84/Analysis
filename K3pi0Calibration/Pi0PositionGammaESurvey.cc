@@ -238,9 +238,9 @@ int main( int argc ,char** argv){
     data.getData( klVec );
     
     if( LeadingHeight[i*2]<5000){ 
-      hisPi0DeltaZ[0]->Fill(klVec[0].pi0()[0].g1().e(),klVec[0].pi0()[i].recZ()-klVec[0].pi0()[0].vz());
+      hisPi0DeltaZ[0]->Fill(klVec[0].pi0()[0].g1().e(),klVec[0].pi0()[0].recZ()-klVec[0].pi0()[0].vz());
     }else{
-      hisPi0DeltaZ[1]->Fill(klVec[0].pi0()[0].g1().e(),klVec[0].pi0()[i].recZ()-klVec[0].pi0()[0].vz());
+      hisPi0DeltaZ[1]->Fill(klVec[0].pi0()[0].g1().e(),klVec[0].pi0()[0].recZ()-klVec[0].pi0()[0].vz());
     }
   }
 
