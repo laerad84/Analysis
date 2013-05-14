@@ -237,12 +237,10 @@ int main( int argc ,char** argv){
     data.getData( plist );
     data.getData( klVec );
     
-    for( int i = 0; i< 3; i++){
-      if( LeadingHeight[i*2]<5000){ 
-	hisPi0DeltaZ[0]->Fill(klVec[0].pi0()[i].g1().e(),klVec[0].pi0()[i].recZ()-klVec[0].pi0()[i].vz());
-      }else{
-	hisPi0DeltaZ[1]->Fill(klVec[0].pi0()[i].g1().e(),klVec[0].pi0()[i].recZ()-klVec[0].pi0()[i].vz());
-      }
+    if( LeadingHeight[i*2]<5000){ 
+      hisPi0DeltaZ[0]->Fill(klVec[0].pi0()[0].g1().e(),klVec[0].pi0()[i].recZ()-klVec[0].pi0()[0].vz());
+    }else{
+      hisPi0DeltaZ[1]->Fill(klVec[0].pi0()[0].g1().e(),klVec[0].pi0()[i].recZ()-klVec[0].pi0()[0].vz());
     }
   }
 
