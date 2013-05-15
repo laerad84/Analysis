@@ -215,6 +215,7 @@ int main( int argc ,char** argv){
 
 
   TH2D* hisPi0DeltaZ[2];
+  TH2D* hisPi0Corr;
   char* Name[2]={"LowHeight","HighHeight"};
   for( int i = 0 ; i < 5; i++){
     hisPi0DeltaZ[i] = new TH2D(Form("hisPi0DeltaZ_%d",i),Form("hisPi0DeltaZ_%s",Name[i]),40,0,2000,240,-300,300);
