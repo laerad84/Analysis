@@ -52,11 +52,10 @@ main( int argc ,char ** argv ){
   std::string ROOTFILE_SIMCONV  = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/ConvFile";
   std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";
 
-  std::string iFileForm;
-  std::string oFileForm;
+  std::string iFileForm = "%s/Conv_e14_AL_Target.mac_1000000_%d.root"; //ROOTFILE_SIMCONV
+  std::string oFileForm = "%s/SimPi0_1E6_%d.root";                     //ROOTFILE_SIMPI0
   
-  iFileForm = "%s/Conv_e14_AL_Target.mac_1000000_%d.root"; //ROOTFILE_SIMCONV
-  oFileForm = "%s/SimPi0_1E6_%d.root";                     //ROOTFILE_SIMPI0
+
 
   // In case of Data, Appling Temperature & Calibration is applied //
   // No Need to apply Temperature & Calibration constant //
@@ -90,11 +89,11 @@ main( int argc ,char ** argv ){
   
 
   int    nTrack;
-  short  track[200];
+  UShort_t  track[200];
   int    pid[200];
-  double mass[200];
-  double ek[200];
-  double end_ek[200];
+  float mass[200];
+  float ek[200];
+  float end_ek[200];
   double p[200][3];
   double end_p[200][3];
   double v[200][3];
@@ -157,16 +156,16 @@ main( int argc ,char ** argv ){
   trin->Branch("end_v",end_V,"end_v[nTrack]/D");//NTrack
   */
 
-  trin->Branch("nTrack",&nTrack,"nTrack/I");
-  trin->Branch("track",track,"track[nTrack]/S");//nTrack
-  trin->Branch("pid",pid,"pid[nTrack]/F");//nTrack
-  trin->Branch("mass",mass,"mass[nTrack]/F");//nTrack
-  trin->Branch("ek",ek,"ek[nTrack]/F");//nTrack
-  trin->Branch("end_ek",end_ek,"end_ek[nTrack]/F");//nTrack
-  trin->Branch("p",p,"p[nTrack]/D");//nTrack
-  trin->Branch("end_p",end_p,"end_p[nTrack]/D");//nTrack
-  trin->Branch("v",v,"v[nTrack]/D");//nTrack
-  trin->Branch("end_v",end_v,"end_v[nTrack]/D");//nTrack
+  trout->Branch("nTrack",&nTrack,"nTrack/I");
+  trout->Branch("track",track,"track[nTrack]/S");//nTrack
+  trout->Branch("pid",pid,"pid[nTrack]/F");//nTrack
+  trout->Branch("mass",mass,"mass[nTrack]/F");//nTrack
+  trout->Branch("ek",ek,"ek[nTrack]/F");//nTrack
+  trout->Branch("end_ek",end_ek,"end_ek[nTrack]/F");//nTrack
+  trout->Branch("p",p,"p[nTrack][3]/D");//nTrack
+  trout->Branch("end_p",end_p,"end_p[nTrack][3]/D");//nTrack
+  trout->Branch("v",v,"v[nTrack][3]/D");//nTrack
+  trout->Branch("end_v",end_v,"end_v[nTrack][3]/D");//nTrack
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -283,6 +282,7 @@ main( int argc ,char ** argv ){
     trout->Fill();
   }
   std::cout<< "End" << std::endl;
+  tfout->cd();
   trout->Write();
   std::cout<< "Write" << std::endl;
   tfout->Close();
