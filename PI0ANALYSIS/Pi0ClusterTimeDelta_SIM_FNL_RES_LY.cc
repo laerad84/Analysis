@@ -277,7 +277,8 @@ main( int argc ,char ** argv ){
     if( glist.size() != 2 ){ continue; }
     if( user_rec( glist,plist)){
 	std::list<Pi0>::iterator it = plist.begin();
-	(*it).setVtx(0,0,AlzPosition);
+	(*it).setVtx(0,0,AlzPosition);	
+	(*it).updateVars();	
 	user_cut(data,plist);
 	data.setData(plist);	
 	trout->Fill();
