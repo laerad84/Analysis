@@ -20,12 +20,10 @@
 #include "gnana/E14GNAnaDataContainer.h"
 #include "klong/Klong.h"
 //#include "cluster/ClusterFinder.h"
-#include "ClusterFinder_EDIT.h"
 #include "rec2g/Rec2g.h"
 #include "gamma/GammaFinder.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "User_Function.h"
 
 #include "TTree.h"
 #include "TFile.h"
@@ -39,9 +37,6 @@
 #include "TMath.h"
 #include "IDHandler.h"
 
-//#include "E14WavReader.h"
-#include "E14WavReader_V1.h"
-//#include "E14WaveReader_V2.h"
 #include "L1TrigCounter.h"
 #include "EnergyConverter.h"
 
