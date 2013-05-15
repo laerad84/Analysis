@@ -42,26 +42,24 @@
 
 int
 main( int argc ,char ** argv ){
-  
   int RunNumber = atoi( argv[1]);
-  std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
+
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
   std::string HOME         = std::getenv("HOME");
-  
-  //std::string iFileForm="%s/run_wav_%d.root";
-  //std::string oFileForm="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root";
-  //std::string ROOTFILE_SIMCONV = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/ConvFile";
-  //std::string ROOTFILE_SIM3PI0 = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";
-  //std::string iFileForm        = "%s/Conv_KL3pi0_FAST_REDUCED_5E6_%d.root"; //ROOTFILE_SIMCONV
-  //std::string oFileForm        = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";     //ROOTFILE_SIM3PI0
-  //std::string oFileForm        = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration_mis_1.root";     //ROOTFILE_SIM3PI0
 
-
+  std::string ROOTFILE_DATACONV = std::getenv("ROOTFILE_WAV");
+  std::string ROOTFILE_DATAPI0  = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/2012_FEB/Pi0_data";
   std::string ROOTFILE_SIMCONV  = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/ConvFile";
   std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";
-  std::string iFileForm         = "%s/Conv_e14_AL_Target.mac_1000000_%d.root"; //ROOTFILE_SIMCONV
-  std::string oFileForm         = "%s/SimPi0_1E6_%d.root";                     //ROOTFILE_SIMPI0
 
+  std::string iFileForm;
+  std::string oFileForm;
+  
+  iFileForm = "%s/Conv_e14_AL_Target.mac_1000000_%d.root"; //ROOTFILE_SIMCONV
+  oFileForm = "%s/SimPi0_1E6_%d.root";                     //ROOTFILE_SIMPI0
+
+  // In case of Data, Appling Temperature & Calibration is applied //
+  // No Need to apply Temperature & Calibration constant //
   //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
@@ -69,7 +67,7 @@ main( int argc ,char ** argv ){
 
   EnergyConverter* Converter = new EnergyConverter();
   Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",ANALYSISLIB.c_str()));
-  Double_t Pi0PeakCorFactor = 0.9937;  
+  Double_t Pi0PeakCorFactor = 0.9937;
 
   //TChain* trin = new TChain("T"); 
   //trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMCONV.c_str(),RunNumber));
