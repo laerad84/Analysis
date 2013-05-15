@@ -74,6 +74,8 @@ main( int argc ,char ** argv ){
   TFile* tfin = new TFile(Form(iFileForm.c_str(),ROOTFILE_SIMCONV.c_str(),RunNumber));
   TTree* trin = (TTree*)tfin->Get("T");
 
+  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),RunNumber),"recreate");
+  TTree* trout = new TTree("Tree", "Output from Time zero" );
 
   int EventNumber;
   int CsiNumber;
@@ -110,8 +112,6 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("end_v",end_v);
 
 
-  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),RunNumber),"recreate");
-  TTree* trout = new TTree("Tree", "Output from Time zero" );
   
   int nCSIDigi = 0;
   int CSIDigiID[2716]={-1};
