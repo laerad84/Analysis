@@ -158,7 +158,7 @@ main( int argc ,char ** argv ){
 
   trout->Branch("nTrack",&nTrack,"nTrack/I");
   trout->Branch("track",track,"track[nTrack]/S");//nTrack
-  trout->Branch("pid",pid,"pid[nTrack]/F");//nTrack
+  trout->Branch("pid",pid,"pid[nTrack]/I");//nTrack
   trout->Branch("mass",mass,"mass[nTrack]/F");//nTrack
   trout->Branch("ek",ek,"ek[nTrack]/F");//nTrack
   trout->Branch("end_ek",end_ek,"end_ek[nTrack]/F");//nTrack
