@@ -75,7 +75,7 @@ main( int argc ,char ** argv ){
 		  4514,4515,4516,4517,4518,4519,4520,4521,4522,4523,4524,4525};
   TChain* trin = new TChain("T");
   for( int i = 0; i < 12; i++){
-    trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunN));
+    trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunN[i]));
   }
 
   int    RunNo;
