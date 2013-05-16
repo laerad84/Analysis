@@ -63,15 +63,21 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
   
   std::string ROOTFILE_SIMCONV  = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/ConvFile";
-  std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";
-  //std::string ROOTFILE_SIMPI0   = "/Volume0/Simulation/Pi0Run/NewPi0Data_2013";
-  std::string iFileForm          = "%s/SimPi0_1E6_LYRES_%d.root";        // ROOTFILE_SIMCONV
-  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged.root"; // ROOTFILE_SIM3PI0
+  std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";//kekcc
+  //std::string ROOTFILE_SIMPI0   = "/Volume0/Simulation/Pi0Run/NewPi0Data_2013";//local
+  //std::string iFileForm          = "%s/SimPi0_1E6_LYRES_%d.root";     // ROOTFILE_SIMCONV
+  //std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged.root"; // ROOTFILE_SIM3PI0
 
+  std::string iFileForm          = "%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0.root";
+  std::string oFileForm          = "%s/Pi0_wav_Merged_Data.root";
+
+  Int_t RunN[24]={4502,4503,4504,4505,4506,4507,4508,4509,4510,4511,4512,4513,
+		  4514,4515,4516,4517,4518,4519,4520,4521,4522,4523,4524,4525};
   TChain* trin = new TChain("T");
-  for( int i = 0; i < 5; i++){
-    trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),i));
+  for( int i = 0; i < 12; i++){
+    trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunN));
   }
+
   int    RunNo;
   int    EventNumber;
   int    CsiNumber;
@@ -130,8 +136,8 @@ main( int argc ,char ** argv ){
 
   E14GNAnaDataContainer data; 
   data.setBranchAddress(trin);
-  const int nHist  =5;
-  char* Name[nHist] = {"Neutron","Gamma","KL","KLBG","ETC"};
+  const int nHist  =1;
+  char* Name[nHist] = {"Data"};
 
   TH1D* hisPi0[nHist];
   TH1D* hisPi0Trigged[nHist];
@@ -141,22 +147,23 @@ main( int argc ,char ** argv ){
   TH1D* hisPi0RecZSig2[nHist];
   TH1D* hisCosTheta[nHist];
   TH1D* hisPi0CutMass[nHist];
+
   for( int i = 0; i< nHist; i++){
 
-    hisPi0[i] = new TH1D(Form("hisPi0_%d",i),Form("hisPi0_%s",Name[i]),150,0,300 );
-    hisPi0Trigged[i] = new TH1D(Form("hisPi0Trigged_%d",i),Form("hisPi0Trigged_%s",Name[i]),150,0,300 );
-    hisPi0RecZ[i]    = new TH1D(Form("hisPi0RecZ_%d",i),Form("hisPi0RecZ_%s",Name[i]),60,-300,300);
-    hisPi0RecZSig2[i] = new TH1D(Form("hisPi0RecZSig2_%d",i),Form("hisPi0RecZSig2_%s",Name[i]),100,0,10000);
-    hisGammaE[i]     = new TH1D(Form("hisGammaE_%d",i),
+    hisPi0[i] = new TH1D(Form("hisPi0Data_%d",i),Form("hisPi0_%s",Name[i]),150,0,300 );
+    hisPi0Trigged[i] = new TH1D(Form("hisPi0TriggedData_%d",i),Form("hisPi0Trigged_%s",Name[i]),150,0,300 );
+    hisPi0RecZ[i]    = new TH1D(Form("hisPi0RecZData_%d",i),Form("hisPi0RecZ_%s",Name[i]),60,-300,300);
+    hisPi0RecZSig2[i] = new TH1D(Form("hisPi0RecZSig2Data_%d",i),Form("hisPi0RecZSig2_%s",Name[i]),100,0,10000);
+    hisGammaE[i]     = new TH1D(Form("hisGammaEData_%d",i),
 				Form("hisGammaE_%s;GammaEnergy[MeV]",Name[i]),
 				100,0,1000);
-    hisGammaChi2[i]  = new TH1D(Form("hisGammaChi2_%d",i),
+    hisGammaChi2[i]  = new TH1D(Form("hisGammaChi2Data_%d",i),
 				Form("hisGammaChi2_%s;GammaChi2[MeV]",Name[i]),
 				100,0,100);
-    hisCosTheta[i]   = new TH1D(Form("hisCosTheta_%d",i),
+    hisCosTheta[i]   = new TH1D(Form("hisCosThetaData_%d",i),
 				Form("hisCosTheta_%s;CosTheta",Name[i]),
 				100,0,1);
-    hisPi0CutMass[i] = new TH1D(Form("hisPi0CutMass_%d",i),
+    hisPi0CutMass[i] = new TH1D(Form("hisPi0CutMassData_%d",i),
 				Form("hisPi0CutMass_%s;Pi0RecMass[MeV]",Name[i]),150,0,300);
   }
 
@@ -164,9 +171,9 @@ main( int argc ,char ** argv ){
   TH1D* hisL1TrigCount[11];
   for( int i = 0; i < 11 ; i++){
     if( i == 0){
-      hisL1TrigCount[i] = new TH1D(Form("hisL1nTrig"),"hisL1nTrig",15,0,15);
+      hisL1TrigCount[i] = new TH1D(Form("hisL1nTrigData"),"hisL1nTrigData",15,0,15);
     }else{
-      hisL1TrigCount[i] = new TH1D(Form("hisL1TrigCount_%d",i),Form("hisL1TrigCount_%d",i),100,0,50000);    
+      hisL1TrigCount[i] = new TH1D(Form("hisL1TrigCountData_%d",i),Form("hisL1TrigCountData_%d",i),100,0,50000);    
     }
   }
 
@@ -175,7 +182,7 @@ main( int argc ,char ** argv ){
     if( i == 0){
       hisL1TrigCountTrigged[i] = new TH1D(Form("hisL1nTrigTrigged"),"hisL1nTrigTrigged",15,0,15);
     }else{
-      hisL1TrigCountTrigged[i] = new TH1D(Form("hisL1TrigCountTrigged_%d",i),Form("hisL1TrigCountTrigged_%d",i),100,0,50000);    
+      hisL1TrigCountTrigged[i] = new TH1D(Form("hisL1TrigCountTriggedData_%d",i),Form("hisL1TrigCountTriggedData_%d",i),100,0,50000);    
     }
   }
 
@@ -194,6 +201,8 @@ main( int argc ,char ** argv ){
 
     data.getData(plist);
 
+    Int_t hisID = -1;
+    /*
     bool bnEvent  = false;
     bool bkEvent  = false;
     bool bgEvent  = false;
@@ -241,8 +250,7 @@ main( int argc ,char ** argv ){
     }else{
       bETC = true;
     }
-    std::list<Pi0>::iterator pit = plist.begin();
-    Int_t hisID = -1;
+
     if( bnreact ){
       hisID = 0;
     }else if( bgreact ){
@@ -258,7 +266,9 @@ main( int argc ,char ** argv ){
     if( hisID >= 0 ){
       hisPi0[hisID]->Fill((*pit).m());    
     }
-
+    */
+    std::list<Pi0>::iterator pit = plist.begin();
+    hisID = 0;
     int nTrig = 0; 
     for( int i = 1; i< 11; i++){
       if( CsiL1TrigCount[i] > CsiL1TrigCountThreshold[i]  &&
