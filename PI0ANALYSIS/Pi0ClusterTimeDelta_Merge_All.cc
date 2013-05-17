@@ -315,11 +315,12 @@ main( int argc ,char ** argv ){
 	    pi0pt  > 50  &&
 	    cosTheta < 0.9 ){
 	  hisPi0CutMass[hisID]->Fill((*pit).m());
-	  hisPi0E[hisID]->Fill((*pit).e());
+	  if( TMath::Abs((*pit).m()-135)< 10 ){
+	    hisPi0E[hisID]->Fill((*pit).e());
+	  }
 	}
-
-
-      }      
+      }  
+    
       hisL1TrigCountTrigged[0]->Fill(nTrig);
       for( int i = 1; i< 11; i++){
 	hisL1TrigCountTrigged[i]->Fill(CsiL1TrigCount[i]);
