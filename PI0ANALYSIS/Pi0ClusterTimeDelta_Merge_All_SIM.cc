@@ -69,7 +69,7 @@ main( int argc ,char ** argv ){
   std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged.root"; // ROOTFILE_SIM3PI0
 
   TChain* trin = new TChain("T");
-  for( int i = 0; i < 5; i++){
+  for( int i = 0; i < 20; i++){
     trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),i));
   }
   int    RunNo;
