@@ -100,7 +100,7 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   trin->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
 
-
+  /*
   int    nTrack;
   UShort_t  track[200];
   int    pid[200];
@@ -122,6 +122,7 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("end_p",end_p);
   trin->SetBranchAddress("v",v);
   trin->SetBranchAddress("end_v",end_v);
+  */
 
   //double CsiL1TrigCountThreshold[20] = {1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
   //					1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};

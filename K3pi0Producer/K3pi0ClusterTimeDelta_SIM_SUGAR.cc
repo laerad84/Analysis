@@ -87,6 +87,29 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("CsiEne",CsiEne);
   trin->SetBranchAddress("CsiTime",CsiTime);
 
+
+  int    nTrack;
+  UShort_t  track[200];
+  int    pid[200];
+  float mass[200];
+  float ek[200];
+  float end_ek[200];
+  double p[200][3];
+  double end_p[200][3];
+  double v[200][3];
+  double end_v[200][3];
+
+  trin->SetBranchAddress("nTrack",&nTrack);
+  trin->SetBranchAddress("track",track);
+  trin->SetBranchAddress("pid",pid);
+  trin->SetBranchAddress("mass",mass);
+  trin->SetBranchAddress("ek",ek);
+  trin->SetBranchAddress("end_ek",end_ek);
+  trin->SetBranchAddress("p",p);
+  trin->SetBranchAddress("end_p",end_p);
+  trin->SetBranchAddress("v",v);
+  trin->SetBranchAddress("end_v",end_v);
+
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIM3PI0.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("Tree", "Output from Time zero" );  
   
@@ -109,6 +132,17 @@ main( int argc ,char ** argv ){
   trout->Branch("CsiSignal"     ,CSIDigiSignal ,"CsiSignal[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiL1nTrig"    ,&CSIL1nTrig   ,"CsiL1nTrig/I");
   trout->Branch("CsiL1TrigCount",CSIL1TrigCount,"CsiL1TrigCount[20]/D");
+
+  trout->Branch("nTrack",&nTrack,"nTrack/I");
+  trout->Branch("track",track,"track[nTrack]/S");//nTrack
+  trout->Branch("pid",pid,"pid[nTrack]/I");//nTrack
+  trout->Branch("mass",mass,"mass[nTrack]/F");//nTrack
+  trout->Branch("ek",ek,"ek[nTrack]/F");//nTrack
+  trout->Branch("end_ek",end_ek,"end_ek[nTrack]/F");//nTrack
+  trout->Branch("p",p,"p[nTrack][3]/D");//nTrack
+  trout->Branch("end_p",end_p,"end_p[nTrack][3]/D");//nTrack
+  trout->Branch("v",v,"v[nTrack][3]/D");//nTrack
+  trout->Branch("end_v",end_v,"end_v[nTrack][3]/D");//nTrack
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
