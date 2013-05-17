@@ -149,9 +149,10 @@ main( int argc ,char ** argv ){
   TH1D* hisCosTheta[nHist];
   TH1D* hisPi0CutMass[nHist];
   TH1D* hisPi0E[nHist];
-
+  TH1D* hisPi0ECut[nHist];
   for( int i = 0; i< nHist; i++){
 
+    hisPi0ECut[i] = new TH1D(Form("hisPi0ECutData_%d",i),Form("hisPi0CutE_%s",Name[i]),200,0,5000 );
     hisPi0E[i] = new TH1D(Form("hisPi0EData_%d",i),Form("hisPi0E_%s",Name[i]),200,0,5000 );
     hisPi0[i] = new TH1D(Form("hisPi0Data_%d",i),Form("hisPi0_%s",Name[i]),150,0,300 );
     hisPi0Trigged[i] = new TH1D(Form("hisPi0TriggedData_%d",i),Form("hisPi0Trigged_%s",Name[i]),150,0,300 );
@@ -315,8 +316,9 @@ main( int argc ,char ** argv ){
 	    pi0pt  > 50  &&
 	    cosTheta < 0.9 ){
 	  hisPi0CutMass[hisID]->Fill((*pit).m());
+	  hisPi0E[hisID]->Fill((*pit).e());
 	  if( TMath::Abs((*pit).m()-135)< 10 ){
-	    hisPi0E[hisID]->Fill((*pit).e());
+	    hisPi0ECut[hisID]->Fill((*pit).e());
 	  }
 	}
       }  
@@ -337,6 +339,9 @@ main( int argc ,char ** argv ){
   }
   for( int i = 0; i < nHist; i++){
     hisPi0E[i]->Write();
+  }
+  for( int i = 0; i < nHist; i++){
+    hisPi0ECut[i]->Write();
   }
 
   for( int i = 0; i< nHist; i++){
