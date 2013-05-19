@@ -310,6 +310,23 @@ main( int argc ,char ** argv ){
 	double y[2]; 
 	y[0] = (*pit).g1().y();
 	y[1] = (*pit).g2().y();
+	// Gamma Position Cut 
+	double R[2];
+	
+	bool bPosition = true;
+	if( TMath::Abs(y[0])> 550  ||
+	    TMath::Abs(y[1])> 550  ){ 
+	  bPosition = false;
+	}
+	for( int ig = 0; ig < 2; ig++){
+	  R[ig] = TMath::Sqrt( x[ig]*x[ig] + y[ig]*y[ig]);
+	  if( R[ig] > 850){ bPosition = false; }
+	  if( TMath::Abs(y[ig]) < 150 && TMath::Abs(x[ig])< 150 ){
+	    bPosition = false;
+	  }	  
+	}
+	if( !bPosition ){ continue; }
+
 	double cosTheta = TMath::Abs( x[0]*x[1]+y[0]*y[1] )/TMath::Sqrt((x[0]*x[0]+y[0]*y[1])*(x[1]*x[1]+y[1]*y[1]));
 	hisCosTheta[hisID]->Fill(cosTheta);
 	double Eg1 = (*pit).g1().e();
