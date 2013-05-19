@@ -143,6 +143,8 @@ main( int argc ,char ** argv ){
   TH1D* hisPi0[nHist];
   TH1D* hisPi0Trigged[nHist];
   TH1D* hisGammaE[nHist];
+  TH1D* hisGammaECutHigh[nHist];
+  TH1D* hisGammaECutLow[nHist];
   TH1D* hisGammaChi2[nHist];
   TH1D* hisPi0RecZ[nHist];
   TH1D* hisPi0RecZSig2[nHist];
@@ -160,6 +162,12 @@ main( int argc ,char ** argv ){
     hisPi0RecZSig2[i] = new TH1D(Form("hisPi0RecZSig2Data_%d",i),Form("hisPi0RecZSig2_%s",Name[i]),100,0,10000);
     hisGammaE[i]     = new TH1D(Form("hisGammaEData_%d",i),
 				Form("hisGammaE_%s;GammaEnergy[MeV]",Name[i]),
+				100,0,1000);
+    hisGammaECutHigh[i]     = new TH1D(Form("hisGammaECutHighData_%d",i),
+				Form("hisGammaECutHigh_%s;GammaEnergy[MeV]",Name[i]),
+				100,0,1000);
+    hisGammaECutLow[i]     = new TH1D(Form("hisGammaECutLowData_%d",i),
+				Form("hisGammaECutLow_%s;GammaEnergy[MeV]",Name[i]),
 				100,0,1000);
     hisGammaChi2[i]  = new TH1D(Form("hisGammaChi2Data_%d",i),
 				Form("hisGammaChi2_%s;GammaChi2[MeV]",Name[i]),
@@ -317,6 +325,9 @@ main( int argc ,char ** argv ){
 	    cosTheta < 0.9 ){
 	  hisPi0CutMass[hisID]->Fill((*pit).m());
 	  hisPi0E[hisID]->Fill((*pit).e());
+	  hisGammaECutHigh[hisID]->Fill((*pit).g1().e());
+	  hisGammaECutLow[hisID]->Fill((*pit).g2().e());
+
 	  if( TMath::Abs((*pit).m()-135)< 10 ){
 	    hisPi0ECut[hisID]->Fill((*pit).e());
 	  }
@@ -356,6 +367,13 @@ main( int argc ,char ** argv ){
   for( int i = 0; i< nHist; i++){
     hisGammaE[i]->Write();
   }
+  for( int i = 0; i< nHist; i++){
+    hisGammaECutHigh[i]->Write();
+  }
+  for( int i = 0; i< nHist; i++){
+    hisGammaECutLow[i]->Write();
+  }
+
   for( int i = 0; i< nHist; i++){
     hisGammaChi2[i]->Write();
   }

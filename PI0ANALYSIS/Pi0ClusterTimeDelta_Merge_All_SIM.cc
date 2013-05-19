@@ -136,6 +136,8 @@ main( int argc ,char ** argv ){
   TH1D* hisPi0[nHist];
   TH1D* hisPi0Trigged[nHist];
   TH1D* hisGammaE[nHist];
+  TH1D* hisGammaECutHigh[nHist];
+  TH1D* hisGammaECutLow[nHist];
   TH1D* hisGammaChi2[nHist];
   TH1D* hisPi0RecZ[nHist];
   TH1D* hisPi0RecZSig2[nHist];
@@ -143,6 +145,7 @@ main( int argc ,char ** argv ){
   TH1D* hisPi0CutMass[nHist];
   TH1D* hisPi0E[nHist];
   TH1D* hisPi0ECut[nHist];
+
   for( int i = 0; i< nHist; i++){
     
 
@@ -155,6 +158,12 @@ main( int argc ,char ** argv ){
     hisGammaE[i]     = new TH1D(Form("hisGammaE_%d",i),
 				Form("hisGammaE_%s;GammaEnergy[MeV]",Name[i]),
 				100,0,1000);
+    hisGammaECutHigh[i]     = new TH1D(Form("hisGammaECutHigh_%d",i),
+				       Form("hisGammaECutHigh_%s;GammaEnergy[MeV]",Name[i]),
+				       100,0,1000);
+    hisGammaECutLow[i]     = new TH1D(Form("hisGammaECutLow_%d",i),
+				      Form("hisGammaECutLow_%s;GammaEnergy[MeV]",Name[i]),
+				      100,0,1000);
     hisGammaChi2[i]  = new TH1D(Form("hisGammaChi2_%d",i),
 				Form("hisGammaChi2_%s;GammaChi2[MeV]",Name[i]),
 				100,0,100);
@@ -183,9 +192,6 @@ main( int argc ,char ** argv ){
       hisL1TrigCountTrigged[i] = new TH1D(Form("hisL1TrigCountTrigged_%d",i),Form("hisL1TrigCountTrigged_%d",i),100,0,50000);    
     }
   }
-
-
-
 
   std::cout<< "LOOP" << std::endl;
   long entries = trin->GetEntries();
@@ -308,6 +314,8 @@ main( int argc ,char ** argv ){
 	    cosTheta < 0.9 ){
 	  hisPi0CutMass[hisID]->Fill((*pit).m());
 	  hisPi0E[hisID]->Fill((*pit).e());
+	  hisGammaECutHigh[hisID]->Fill((*pit).g1().e());
+	  hisGammaECutLow[hisID]->Fill((*pit).g2().e());
 	  if( TMath::Abs((*pit).m()-135) < 10 ){
 	    hisPi0ECut[hisID]->Fill((*pit).e());
 	  }
@@ -346,6 +354,12 @@ main( int argc ,char ** argv ){
   }
   for( int i = 0; i< nHist; i++){
     hisGammaE[i]->Write();
+  }
+  for( int i = 0; i< nHist; i++){
+    hisGammaECutHigh[i]->Write();
+  }
+  for( int i = 0; i< nHist; i++){
+    hisGammaECutLow[i]->Write();
   }
   for( int i = 0; i< nHist; i++){
     hisGammaChi2[i]->Write();
