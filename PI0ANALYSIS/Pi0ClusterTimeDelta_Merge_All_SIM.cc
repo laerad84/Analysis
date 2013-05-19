@@ -157,13 +157,13 @@ main( int argc ,char ** argv ){
     hisPi0RecZSig2[i] = new TH1D(Form("hisPi0RecZSig2_%d",i),Form("hisPi0RecZSig2_%s",Name[i]),100,0,10000);
     hisGammaE[i]     = new TH1D(Form("hisGammaE_%d",i),
 				Form("hisGammaE_%s;GammaEnergy[MeV]",Name[i]),
-				100,0,1000);
+				150,0,3000);
     hisGammaECutHigh[i]     = new TH1D(Form("hisGammaECutHigh_%d",i),
 				       Form("hisGammaECutHigh_%s;GammaEnergy[MeV]",Name[i]),
-				       100,0,1000);
+				       150,0,3000);
     hisGammaECutLow[i]     = new TH1D(Form("hisGammaECutLow_%d",i),
 				      Form("hisGammaECutLow_%s;GammaEnergy[MeV]",Name[i]),
-				      100,0,1000);
+				      150,0,3000);
     hisGammaChi2[i]  = new TH1D(Form("hisGammaChi2_%d",i),
 				Form("hisGammaChi2_%s;GammaChi2[MeV]",Name[i]),
 				100,0,100);
