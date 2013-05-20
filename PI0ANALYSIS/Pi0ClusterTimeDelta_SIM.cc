@@ -87,6 +87,27 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("CsiEne",CsiEne);
   trin->SetBranchAddress("CsiTime",CsiTime);
   
+  int     CVNumber      = 0;
+  Short_t CVModID[100]  = {-1};
+  double  CVEne[100] = {0};
+  double  CVTime[100]   = {0};
+  int     SciNumber = 0;
+  double  SciEne[1] ={0};
+
+  trin->SetBranchAddress("CVNumber" ,&CVNumber);
+  trin->SetBranchAddress("CVModID"  ,CVModID  );//CVNumber
+  trin->SetBranchAddress("CVEne"    ,CVEne );//CVNumber
+  trin->SetBranchAddress("CVTime"   ,CVTime   );//CVNumber
+  trin->SetBranchAddress("SciNumber",&SciNumber);
+  trin->SetBranchAddress("SciEne"   ,SciEne);//SciNumber
+
+  trout->Branch("CVNumber" ,&CVNumber ,"CVNumber/I");
+  trout->Branch("CVModID"  ,CVModID   ,"CVModID[CVNumber]/D");//CVNumber
+  trout->Branch("CVEne"    ,CVEne     ,"CVEne[CVNumber]/D");//CVNumber
+  trout->Branch("CVTime"   ,CVTime    ,"CVTime[CVNumber]/D");//CVNumber
+  trout->Branch("SciNumber",&SciNumber,"SciNumber/I");
+  trout->Branch("SciEne"   ,SciEne    ,"SciEne[SciNumber]/D");//SciNumber
+  
 
   int    nTrack;
   UShort_t  track[200];
@@ -270,6 +291,7 @@ main( int argc ,char ** argv ){
 	l1->Fill(tmpID,tmpSignal);
       }
     }
+    
 
     CSIL1nTrig = 0;
     std::vector<double> vecCount    = l1->GetCount(); 
@@ -279,6 +301,7 @@ main( int argc ,char ** argv ){
 	CSIL1nTrig++;
       }
     }
+
     trout->Fill();
   }
   std::cout<< "End" << std::endl;

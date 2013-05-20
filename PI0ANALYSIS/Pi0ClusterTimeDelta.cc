@@ -95,6 +95,22 @@ main( int argc ,char ** argv ){
 
   trout->Branch("CsiL1nTrig",&CSIL1nTrig,"CsiL1nTrig/I");
   trout->Branch("CsiL1TrigCount",CSIL1TrigCount,"CsiL1TrigCount[20]/D");
+
+  int     CVNumber      = 0;
+  Short_t CVModID[100]  = {-1};
+  double  CVEne[100] = {0};
+  double  CVTime[100]   = {0};
+  int    SciNumber;
+  double SciEne[1];
+
+  trout->Branch("SciNumber",&SciNumber,"SciNumber/I");
+  trout->Branch("SciEne",&SciEne,"SciEne/D");//SciNumber
+  trout->Branch("CVNumber",&CVNumber,"CVNumber/I");
+  trout->Branch("CVModID" ,CVModID  ,"CVModID[CVNumber]/D");//CVNumber
+  trout->Branch("CVEne"   ,CVEne    ,"CVEne[CVNumber]/D");//CVNumber
+  trout->Branch("CVTime"  ,CVTime   ,"CVTime[CVNumber]/D");//CVNumber
+
+
   /*
   trout->Branch("nCSIDigi",&nCSIDigi,"nCSIDigi/I");
   trout->Branch("CSIDigiID",CSIDigiID,"CSIDigiID[nCSIDigi]/I");//nCSIDigi
@@ -183,7 +199,8 @@ main( int argc ,char ** argv ){
       CSIDigiTime[ich]   = 0;
       CSIDigiHHTime[ich] = 0;
       CSIDigiSignal[ich] = 0.;
-    }    
+    }
+
     if( (ievent%100) ==0 && ievent ){ std::cout<< ievent << std::endl;}
     reader->GetEntry( ievent  );
     data.reset();
@@ -236,6 +253,7 @@ main( int argc ,char ** argv ){
       }
     }
     
+    
     if( nCSIDigi<5){ continue;}
 
     std::list<Cluster> clist;
@@ -245,7 +263,34 @@ main( int argc ,char ** argv ){
     gFinder.findGamma( clist, glist );
     if( clist.size() < 2 ){ continue; }
     if( glist.size() != 2 ){ continue; }
-    
+
+
+
+    /////////////////////////////////////////////////////////////
+    // Copy CV & Sci Data
+    /////////////////////////////////////////////////////////////
+    for( int icv = 0; icv < 100; icv++){
+      CVModID[icv] = -1;
+      CVEne[icv] = 0; 
+      CVTime[icv] = 0;
+    }
+    CVNumber  = 0;
+    SciNumber = 0;
+    SciEne[0] = 0;
+
+    for( int icv  =0; icv < reader->CVNumber; icv++){
+      CVTime[icv]   = reader->CVTime[icv];
+      CVEne[icv]    = reader->CVSignal[icv];
+      CVModID[icv]  = reader->CVID[icv];
+      CVNumber++;
+    }
+    if( reader->EtcID[0]==0 ){
+      SciNumber = 1;
+      SciEne[0] = reader->EtcSignal[0];
+    }
+    ////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
+
     if( user_rec(glist,plist)){
       std::list<Pi0>::iterator it = plist.begin();
       (*it).setVtx(0,0,AlzPosition);

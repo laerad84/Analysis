@@ -138,6 +138,22 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("v",v);
   trin->SetBranchAddress("end_v",end_v);
 
+
+  int     CVNumber      = 0;
+  Short_t CVModID[100]  = {-1};
+  double  CVEne[100] = {0};
+  double  CVTime[100]   = {0};
+  int     SciNumber = 0;
+  double  SciEne[1] ={0};
+
+  trin->SetBranchAddress("CVNumber" ,&CVNumber);
+  trin->SetBranchAddress("CVModID"  ,CVModID  );//CVNumber
+  trin->SetBranchAddress("CVEne"    ,CVEne );//CVNumber
+  trin->SetBranchAddress("CVTime"   ,CVTime   );//CVNumber
+  trin->SetBranchAddress("SciNumber",&SciNumber);
+  trin->SetBranchAddress("SciEne"   ,SciEne);//SciNumber
+
+  
   double CsiL1TrigCountThreshold[20] = {1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
 					1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};
 
@@ -178,6 +194,14 @@ main( int argc ,char ** argv ){
   trout->Branch("end_p" ,end_p  ,"end_p[nTrack][3]/D");//nTrack
   trout->Branch("v"     ,v      ,"v[nTrack][3]/D"    );//nTrack
   trout->Branch("end_v" ,end_v  ,"end_v[nTrack][3]/D");//nTrack
+
+  trout->Branch("CVNumber" ,&CVNumber ,"CVNumber/I");
+  trout->Branch("CVModID"  ,CVModID   ,"CVModID[CVNumber]/D");//CVNumber
+  trout->Branch("CVEne"    ,CVEne     ,"CVEne[CVNumber]/D");//CVNumber
+  trout->Branch("CVTime"   ,CVTime    ,"CVTime[CVNumber]/D");//CVNumber
+  trout->Branch("SciNumber",&SciNumber,"SciNumber/I");
+  trout->Branch("SciEne"   ,SciEne    ,"SciEne[SciNumber]/D");//SciNumber
+  
 
   E14GNAnaDataContainer data; 
   data.branchOfClusterList(trout);
