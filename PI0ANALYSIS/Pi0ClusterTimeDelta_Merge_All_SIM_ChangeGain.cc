@@ -58,7 +58,7 @@ double funcResolutionInvSq( double* x, double* p){
 int
 main( int argc ,char ** argv ){
   
-  int Gain  = atoi(argv[0]);  
+  int Gain  = atoi(argv[1]);  
 
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
@@ -68,7 +68,7 @@ main( int argc ,char ** argv ){
   std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";
   //std::string ROOTFILE_SIMPI0   = "/Volume0/Simulation/Pi0Run/NewPi0Data_2013";
   std::string iFileForm          = "%s/SimPi0_1E6_LYRES_%d.root";        // ROOTFILE_SIMCONV
-  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged_Gain__%d.root"; // ROOTFILE_SIM3PI0
+  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged_Gain_%d.root"; // ROOTFILE_SIM3PI0
   TF1* func = new TF1("ResFunc", funcResolutionInvSq, 0, 10000,1);
 
   double RelativeLY[2716] = {0};
