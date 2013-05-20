@@ -532,6 +532,7 @@ main( int argc ,char ** argv ){
     hisL1TrigCountTrigged[i]->Write();
   }
     
+  trout->Write();
   tfout->Close();
   return 0;
 }
