@@ -284,9 +284,12 @@ main( int argc ,char ** argv ){
       CVModID[icv]  = reader->CVID[icv];
       CVNumber++;
     }
-    if( reader->EtcID[0]==0 ){
-      SciNumber = 1;
-      SciEne[0] = reader->EtcSignal[0];
+    for( int ir = 0; ir < reader->EtcNumber; ir++){
+      if( reader->EtcID[ir]==1 ){
+	SciNumber = 1;
+	SciEne[0] = reader->EtcSignal[0];
+      }
+      break;
     }
     ////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////
