@@ -287,7 +287,7 @@ main( int argc ,char ** argv ){
     for( int ir = 0; ir < reader->EtcNumber; ir++){
       if( reader->EtcID[ir]==1 ){
 	SciNumber = 1;
-	SciEne[0] = reader->EtcSignal[1];
+	SciEne[0] = reader->EtcSignal[ir];
       }
       break;
     }
