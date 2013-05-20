@@ -60,8 +60,8 @@ int kinematicCut( std::vector<Klong> const &klVec){
   //Two gamma distance
   for(int i=0; i<nPi0*2; i++){
     for(int j=i+1; j<nPi0*2; j++){
-      double dist = sqrt( pow(clusterPos[i][0]-clusterPos[i][1],2)
-			  + pow(clusterPos[i][0]-clusterPos[i][1],2) );
+      double dist = sqrt( pow(clusterPos[i][0]-clusterPos[j][1],2)
+			  + pow(clusterPos[i][0]-clusterPos[j][1],2) );
       if ( dist < gDist_Min ) iCut = ( iCut | 1<<DISTANCE_CUT );      
     }
   }
