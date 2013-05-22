@@ -57,10 +57,6 @@ main(int argc,char** argv)
   std::string path;
 
   Int_t ScaleFactor = 1;
-  //inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
-  inputFilename       = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root",ROOTFILE_SIMCONV.c_str(),runNumber);
-  //inputFilename       = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root",ROOTFILE_SIMCONV.c_str(),runNumber);// Test MisCalibration
-
   if( argc == 3 ){
     runNumber = atoi(argv[1]);
     iterationNumber = atoi(argv[2]);
@@ -85,6 +81,10 @@ main(int argc,char** argv)
 	      << " : [runNumber] [iterationNumber]" << std::endl;
     return -1;
   }
+  //inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
+  inputFilename         = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root",ROOTFILE_SIMCONV.c_str(),runNumber);
+  //inputFilename       = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root",ROOTFILE_SIMCONV.c_str(),runNumber);// Test MisCalibration
+
 
 
   std::cout<<"Input file        : "<< inputFilename        << std::endl;
