@@ -55,30 +55,37 @@ main(int argc,char** argv)
   std::string ROOTFILE_3PI0CALIBRATION = std::getenv( "ROOTFILE_3PI0CALIBRATION");
   std::string ROOTFILE_SIMCONV = "/group/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";
   std::string path;
+
+  Int_t ScaleFactor = 1;
+  inputFilename       = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root",ROOTFILE_SIMCONV.c_str(),runNumber);// Test MisCalibration
+
   if( argc == 3 ){
     runNumber = atoi(argv[1]);
     iterationNumber = atoi(argv[2]);
+    outputFilename      = Form("%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
+    calibrationFilename = Form("%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),iterationNumber);
   }else if(argc == 4 ){
-    runNumber = atoi(argv[1]);
-    iterationNumber = atoi(argv[2]);
-    path = argv[3];
+    runNumber           = atoi(argv[1]);
+    iterationNumber     = atoi(argv[2]);
+    path                = argv[3];
+    outputFilename      = Form("%s/%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
+    calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),iterationNumber);
+  }else if( argc  == 5 ){
+    runNumber           = atoi(argv[1]);
+    iterationNumber     = atoi(argv[2]);
+    path                = argv[3];
+    ScaleFactor         = atoi(argv[4]);    
+    outputFilename      = Form("%s/%s_%d/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),ScaleFactor,runNumber,iterationNumber);
+    calibrationFilename = Form("%s/%s_%d/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),ScaleFactor,iterationNumber);
   }else{
     std::cerr << "<<<>>>Arguement Error<<<>>>" <<"\n"
 	      << "Usage:: " << argv[0] 
 	      << " : [runNumber] [iterationNumber]" << std::endl;
     return -1;
   }
-  
+
   //inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
   //inputFilename       = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root",ROOTFILE_SIMCONV.c_str(),runNumber);
-  inputFilename       = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root",ROOTFILE_SIMCONV.c_str(),runNumber);// Test MisCalibration
-  if( argc  == 3 ){
-    outputFilename      = Form("%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
-    calibrationFilename = Form("%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),iterationNumber);
-  }else if( argc == 4 ){
-    outputFilename      = Form("%s/%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
-    calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),iterationNumber);
-  }
 
   std::cout<<"Input file        : "<< inputFilename        << std::endl;
   std::cout<<"Output file       : "<< outputFilename       << std::endl;
@@ -249,7 +256,7 @@ main(int argc,char** argv)
     calData.InitValue();
     //std::cout<< "loop" << std::endl;
     for( int i = 0; i< CsiNumber; i++){
-      Double_t Energy = CsiEne[i]*CSICalFactor[ (CsiModID[i]) ]/TempCorFactor;      
+      Double_t Energy = CsiEne[i]*CSICalFactor[ (CsiModID[i]) ]/TempCorFactor*(1+0.01*ScaleFactor);      
       if( Energy > 3 ){
 	CSIDigiID[nCSIDigi]  = CsiModID[i];
 	CSIDigiE[nCSIDigi]   = Energy;
