@@ -106,7 +106,7 @@ main( int argc ,char ** argv ){
 
   trout->Branch("SciNumber",&SciNumber,"SciNumber/I");
   trout->Branch("SciEne",&SciEne,"SciEne/D");//SciNumber
-  trout->Branch("SciTime",&SciTime,"SciTime/D")//SciNumber
+  trout->Branch("SciTime",&SciTime,"SciTime/D");//SciNumber
   trout->Branch("CVNumber",&CVNumber,"CVNumber/I");
   trout->Branch("CVModID" ,CVModID  ,"CVModID[CVNumber]/S");//CVNumber
   trout->Branch("CVEne"   ,CVEne    ,"CVEne[CVNumber]/D");//CVNumber
