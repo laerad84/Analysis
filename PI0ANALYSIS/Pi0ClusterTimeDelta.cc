@@ -102,11 +102,13 @@ main( int argc ,char ** argv ){
   double  CVTime[100]   = {0};
   int    SciNumber;
   double SciEne[1];
+  double SciTime[1];
 
   trout->Branch("SciNumber",&SciNumber,"SciNumber/I");
   trout->Branch("SciEne",&SciEne,"SciEne/D");//SciNumber
+  trout->Branch("SciTime",&SciTime,"SciTime/D")//SciNumber
   trout->Branch("CVNumber",&CVNumber,"CVNumber/I");
-  trout->Branch("CVModID" ,CVModID  ,"CVModID[CVNumber]/D");//CVNumber
+  trout->Branch("CVModID" ,CVModID  ,"CVModID[CVNumber]/S");//CVNumber
   trout->Branch("CVEne"   ,CVEne    ,"CVEne[CVNumber]/D");//CVNumber
   trout->Branch("CVTime"  ,CVTime   ,"CVTime[CVNumber]/D");//CVNumber
 
@@ -277,7 +279,7 @@ main( int argc ,char ** argv ){
     CVNumber  = 0;
     SciNumber = 0;
     SciEne[0] = 0;
-
+    SciTime[0] = 0;
     for( int icv  =0; icv < reader->CVNumber; icv++){
       CVTime[icv]   = reader->CVTime[icv];
       CVEne[icv]    = reader->CVSignal[icv];
@@ -288,6 +290,7 @@ main( int argc ,char ** argv ){
       if( reader->EtcID[ir]==1 ){
 	SciNumber = 1;
 	SciEne[0] = reader->EtcSignal[ir];
+	SciTime[0] = reader->EtcSignal[ir];
       }
       break;
     }
