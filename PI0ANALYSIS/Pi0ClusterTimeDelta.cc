@@ -45,14 +45,21 @@
 int
 main( int argc ,char ** argv ){
   
-  int RunNumber = atoi( argv[1]);
+  int RunNumber = atoi(argv[1]);
+  int Types     = atoi(argv[2]);
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0.root";
-
+  std::string oFileForm;
+  if( Types == 0 ){
+    oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0_nocal_nopi0peak_notempcorr.root";
+  }else if( Types == 1 ){
+    oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0_nopi0peak_notempcorr.root";
+  }else if( Types == 2 ){
+    oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0.root";
+  }
   //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
@@ -219,7 +226,17 @@ main( int argc ,char ** argv ){
       int CsiID        = reader->CsiID[ich];
       double CsiTime   = reader->CsiTime[ich];
       double CsiSignal = reader->CsiSignal[ich]; 
-      double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;      
+      double CsiEnergy =0;
+      if( Types == 0 ){ 
+	CsiEnergy = reader->CsiEne[ich];
+      }else if( Types ==1 ){
+	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]];//TempCorFactor*Pi0PeakCorFactor;      
+      }else if ( Types == 2 ){
+	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;      
+      }
+
+
+
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];
       l1->Fill(CsiID, CsiSignal );
