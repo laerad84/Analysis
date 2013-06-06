@@ -307,7 +307,7 @@ main( int argc ,char ** argv ){
       if( reader->EtcID[ir]==1 ){
 	SciNumber = 1;
 	SciEne[0] = reader->EtcSignal[ir];
-	SciTime[0] = reader->EtcSignal[ir];
+	SciTime[0] = reader->EtcTime[ir];
       }
       break;
     }
