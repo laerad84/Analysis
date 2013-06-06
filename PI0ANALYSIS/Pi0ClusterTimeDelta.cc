@@ -53,12 +53,24 @@ main( int argc ,char ** argv ){
 
   std::string iFileForm="%s/run_wav_%d.root";
   std::string oFileForm;
-  if( Types == 0 ){
+  switch( Types ){
+  case 0:
     oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0_nocal_nopi0peak_notempcorr.root";
-  }else if( Types == 1 ){
+    break;
+  case 1:
     oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0_nopi0peak_notempcorr.root";
-  }else if( Types == 2 ){
+    break;
+  case 2:
     oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0.root";
+    break;
+  case 3:
+    oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0_nocal.root";
+    break;
+  case 4:
+    oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0_nopi0peak.root";
+    break;
+  default : 
+    return -1;
   }
   //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
@@ -227,15 +239,25 @@ main( int argc ,char ** argv ){
       double CsiTime   = reader->CsiTime[ich];
       double CsiSignal = reader->CsiSignal[ich]; 
       double CsiEnergy =0;
-      if( Types == 0 ){ 
+      switch( Types ){
+      case 0:
 	CsiEnergy = reader->CsiEne[ich];
-      }else if( Types ==1 ){
+	break;
+      case 1:
 	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]];//TempCorFactor*Pi0PeakCorFactor;      
-      }else if ( Types == 2 ){
+	break;
+      case 2:
 	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;      
+	break;
+      case 3:
+	CsiEnergy = reader->CsiEne[ich]/TempCorFactor*Pi0PeakCorFactor;
+	break;
+      case 4:
+	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor;
+	break;
+      default :
+	return -1;
       }
-
-
 
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];
