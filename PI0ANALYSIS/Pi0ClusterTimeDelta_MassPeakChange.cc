@@ -87,6 +87,10 @@ main( int argc ,char ** argv ){
     iFileForm = "%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0_nocal.root";
     oFileForm = "%s/Pi0Mass_nocal.root";
     break;
+  case 4:
+    iFileForm = "%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0_nopi0peak.root";
+    oFileForm = "%s/Pi0Mass_nopi0peak.root";
+    break;
   default :
     return -1;
   }
