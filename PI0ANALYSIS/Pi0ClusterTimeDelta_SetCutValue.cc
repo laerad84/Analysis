@@ -153,11 +153,11 @@ main( int argc ,char ** argv ){
   TH1D* hisPi0E[nHist];
   TH1D* hisPi0ECut[nHist];
 
-  TH2D* hisGammaEHPi0Mass = new TH2D("hisGammaEHPi0Mass","GammaE[High] vs Pi0Mass;Gamma Energy[MeV];Pi0Mass[MeV]",200,0,2000,200,0,400);
-  TH2D* hisGammaELPi0Mass = new TH2D("hisGammaELPi0Mass","GammaE[Low] vs Pi0Mass;Gamma Energy[MeV];Pi0Mass[MeV]",200,0,2000,200,0,400);
-  TH2D* hisGammaChi2Pi0Mass = new TH2D("hisGammaChi2Pi0Mass","GammaChi2 vs Pi0Mass;Gamma Chisquare;Pi0Mass[MeV]",50,0,50,200,0,400);
-  TH2D* hisCosThetaPi0Mass  = new TH2D("hisCosThetaPi0Mass","CosTheta vs Pi0Mass;CosTheta;Pi0Mass[MeV]",100,0,1,200,0,400);
-  TH2D* hisPi0PtPi0Mass     = new TH2D("hisPi0PtPi0Mass","Pi0Pt vs Pi0Mass",200,0,800,200,0,400);
+  TH2D* hisGammaEHPi0Mass = new TH2D("hisGammaEHPi0Mass","GammaE[High] vs Pi0Mass;Gamma Energy[MeV];Pi0Mass[MeV]",50,0,2000,50,0,400);
+  TH2D* hisGammaELPi0Mass = new TH2D("hisGammaELPi0Mass","GammaE[Low] vs Pi0Mass;Gamma Energy[MeV];Pi0Mass[MeV]",50,0,2000,50,0,400);
+  TH2D* hisGammaChi2Pi0Mass = new TH2D("hisGammaChi2Pi0Mass","GammaChi2 vs Pi0Mass;Gamma Chisquare;Pi0Mass[MeV]",50,0,50,50,0,400);
+  TH2D* hisCosThetaPi0Mass  = new TH2D("hisCosThetaPi0Mass","CosTheta vs Pi0Mass;CosTheta;Pi0Mass[MeV]",50,0,1,50,0,400);
+  TH2D* hisPi0PtPi0Mass     = new TH2D("hisPi0PtPi0Mass","Pi0Pt vs Pi0Mass",50,0,800,50,0,400);
   
   TH1D* hisGammaEH[2];
   TH1D* hisGammaEL[2];
