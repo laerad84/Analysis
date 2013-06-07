@@ -152,6 +152,27 @@ main( int argc ,char ** argv ){
   TH1D* hisPi0CutMass[nHist];
   TH1D* hisPi0E[nHist];
   TH1D* hisPi0ECut[nHist];
+
+  TH2D* hisGammaEHPi0Mass = new TH2D("hisGammaEHPi0Mass","GammaE[High] vs Pi0Mass;Gamma Energy[MeV];Pi0Mass[MeV]",200,0,2000,200,0,400);
+  TH2D* hisGammaELPi0Mass = new TH2D("hisGammaELPi0Mass","GammaE[Low] vs Pi0Mass;Gamma Energy[MeV];Pi0Mass[MeV]",200,0,2000,200,0,400);
+  TH2D* hisGammaChi2Pi0Mass = new TH2D("hisGammaChi2Pi0Mass","GammaChi2 vs Pi0Mass;Gamma Chisquare;Pi0Mass[MeV]",50,0,50,200,0,400);
+  TH2D* hisCosThetaPi0Mass  = new TH2D("hisCosThetaPi0Mass","CosTheta vs Pi0Mass;CosTheta;Pi0Mass[MeV]",100,0,1,200,0,400);
+  TH2D* hisPi0PtPi0Mass     = new TH2D("hisPi0PtPi0Mass","Pi0Pt vs Pi0Mass",200,0,800,200,0,400);
+  
+  TH1D* hisGammaEH[2];
+  TH1D* hisGammaEL[2];
+  TH1D* hisGammaChi2Cut[2];
+  TH1D* hisCosThetaCut[2];
+  TH1D* hisPi0Pt[2];
+  char* CutName[2]={"Peak","SideBand"};
+  for( int i = 0; i<2; i++){
+    hisGammaEH[i]  = new TH1D(Form("hisGammaEH_%d",i),Form("hisGammaEH_%s",CutName[i]),200,0,2000);
+    hisGammaEL[i]  = new TH1D(Form("hisGammaEL_%d",i),Form("hisGammaEL_%s",CutName[i]),200,0,2000);
+    hisGammaChi2Cut[i]= new TH1D(Form("hisGammaChi2_%d",i),Form("hisGammaChi2_%s",CutName[i]),200,0,2000);
+    hisCosThetaCut[i] = new TH1D(Form("hisCosTheta_%d",i),Form("hisCosTheta_%s",CutName[i]),100,0,1);
+    hisPi0Pt[i]    = new TH1D(Form("hisPi0Pt_%d",i),Form("hisPi0Pt_%s",CutName[i]),200,0,800);
+  }
+
   for( int i = 0; i< nHist; i++){
 
     hisPi0ECut[i] = new TH1D(Form("hisPi0ECutData_%d",i),Form("hisPi0CutE_%s",Name[i]),200,0,5000 );
@@ -334,6 +355,33 @@ main( int argc ,char ** argv ){
 	double gchisq_1 = (*pit).g1().chisq();
 	double gchisq_2 = (*pit).g2().chisq();
 	double pi0pt    = TMath::Sqrt((*pit).p3()[0]*(*pit).p3()[0]+ (*pit).p3()[1]*(*pit).p3()[1]);
+	double pi0mass  = (*pit).m();
+	
+	hisGammaEHPi0Mass->Fill(Eg1,pi0mass);
+	hisGammaELPi0Mass->Fill(Eg2,pi0mass);
+	hisGammaChi2Pi0Mass->Fill(gchisq_1,pi0mass);
+	hisGammaChi2Pi0Mass->Fill(gchisq_2,pi0mass);
+	hisCosThetaPi0Mass->Fill(cosTheta,pi0mass);
+	hisPi0PtPi0Mass->Fill(pi0pt,pi0mass);
+
+	if(TMath::Abs(pi0mass-135)<10){
+	  hisGammaEH[0]->Fill(Eg1);
+	  hisGammaEL[0]->Fill(Eg2);
+	  hisGammaChi2Cut[0]->Fill(gchisq_1);
+	  hisGammaChi2Cut[0]->Fill(gchisq_2);
+	  hisCosThetaCut[0]->Fill(cosTheta);
+	  hisPi0Pt[0]->Fill(pi0pt);
+	}else{
+	  hisGammaEH[1]->Fill(Eg1);
+	  hisGammaEL[1]->Fill(Eg2);
+	  hisGammaChi2Cut[1]->Fill(gchisq_1);
+	  hisGammaChi2Cut[1]->Fill(gchisq_2);
+	  hisCosThetaCut[1]->Fill(cosTheta);
+	  hisPi0Pt[1]->Fill(pi0pt);
+	}
+
+
+
 	if( Eg1 > 350 &&
 	    Eg2 > 150 &&
 	    gchisq_1 < 5 && 
@@ -403,6 +451,22 @@ main( int argc ,char ** argv ){
   for( int i = 0; i < 11; i++){
     hisL1TrigCountTrigged[i]->Write();
   }
+
+
+  hisGammaEHPi0Mass->Write();
+  hisGammaELPi0Mass->Write();
+  hisGammaChi2Pi0Mass->Write();
+  hisCosThetaPi0Mass->Write();
+  hisPi0PtPi0Mass->Write();
+  for( int i = 0; i<2 ; i++){
+    hisGammaEH[i]->Write();
+    hisGammaEL[i]->Write();
+    hisGammaChi2Cut[i]->Write();
+    hisCosThetaCut[i]->Write();
+    hisPi0Pt[i]->Write();
+    
+  }
+
     
   tfout->Close();
   return 0;

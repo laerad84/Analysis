@@ -337,7 +337,7 @@ main( int argc ,char ** argv ){
 	    hisPi0ECut[hisID]->Fill((*pit).e());
 	  }
 	}
-      }      
+      }
       hisL1TrigCountTrigged[0]->Fill(nTrig);
       for( int i = 1; i< 11; i++){
 	hisL1TrigCountTrigged[i]->Fill(CsiL1TrigCount[i]);
