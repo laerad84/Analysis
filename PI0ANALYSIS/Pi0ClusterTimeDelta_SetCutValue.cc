@@ -381,12 +381,20 @@ main( int argc ,char ** argv ){
 	  hisGammaEL[1]->Fill(Eg2);
 	  hisGammaChi2Cut[1]->Fill(gchisq_1);
 	  hisGammaChi2Cut[1]->Fill(gchisq_2);
-	  hisCosThetaCut[1]->Fill(cosTheta);
-	  hisPi0Pt[1]->Fill(pi0pt);
 	}
 
-
-
+	if( Eg1 > 350 &&
+	    Eg2 > 150 &&
+	    gchisq_1 < 5 && 
+	    gchisq_2 < 5 ){	      
+	      if( TMath::Abs(pi0mass-135)<10){
+		hisCosThetaCut[0]->Fill(cosTheta);
+		hisPi0Pt[0]->Fill(pi0pt);
+	      }else{
+		hisCosThetaCut[1]->Fill(cosTheta);
+		hisPi0Pt[1]->Fill(pi0pt);		
+	      }
+	    }
 	if( Eg1 > 350 &&
 	    Eg2 > 150 &&
 	    gchisq_1 < 5 && 
