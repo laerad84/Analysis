@@ -346,9 +346,14 @@ main( int argc ,char ** argv ){
 	    bPosition = false;
 	  }	  
 	}
+	
+	double dist = sqrt((x[0]-x[1])*(x[0]-x[1])+(y[0]-y[1])*(y[0]-y[1]));
+	if( dist < 200 ){ bPosition = false;}
+
 	if( !bPosition ){ continue; }
 
 	double cosTheta = TMath::Abs( x[0]*x[1]+y[0]*y[1] )/TMath::Sqrt((x[0]*x[0]+y[0]*y[1])*(x[1]*x[1]+y[1]*y[1]));
+
 	hisCosTheta[hisID]->Fill(cosTheta);
 	double Eg1 = (*pit).g1().e();
 	double Eg2 = (*pit).g2().e();
