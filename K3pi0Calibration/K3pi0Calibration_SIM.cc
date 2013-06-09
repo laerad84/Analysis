@@ -100,8 +100,8 @@ main(int argc,char** argv)
   if( TempCorFactor == 0){
     TempCorFactor = 1;
    }
-  std::cout<< TempCorFactor << std::endl;
-
+  std::cout<< "TempCorFactor :" << TempCorFactor << std::endl;
+  std::cout<< "ScaleFactor   :" << ScaleFactor << std::endl;
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // Input RootFile
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -313,7 +313,6 @@ main(int argc,char** argv)
 	  nKL++;
 	  calibrator->GetResult(calData);
 	  int tmpCnt = 0; 
-	  std::cout<< std::endl;
 	  for( int iDigi = 0; iDigi < nCSIDigi; iDigi++){
 	    for( int iGID = 0; iGID < 6; iGID++){
 	      if( CSIDigiID[iDigi] == calData.LeadingChID[iGID]){
