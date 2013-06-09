@@ -291,7 +291,7 @@ main(int argc,char** argv)
     if( glist.size() == 6 ){
       if(user_rec(glist,klVec)){
 	data.setData( clist );
-	//data.setData( glist );    
+	data.setData( glist );    
 	data.setData(klVec);    
 	user_cut(data,klVec);
 	///change here JWLEE
@@ -329,7 +329,7 @@ main(int argc,char** argv)
     }else{
       data.CutCondition = -1;
     }
-    data.eventID++;    
+    data.eventID++;
   }
 
   // end of analysis
