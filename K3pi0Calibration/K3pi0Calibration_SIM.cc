@@ -56,7 +56,7 @@ main(int argc,char** argv)
   std::string ROOTFILE_SIMCONV = "/group/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";
   std::string path;
 
-  Int_t ScaleFactor = 1;
+  Int_t ScaleFactor = 5;
   if( argc == 3 ){
     runNumber = atoi(argv[1]);
     iterationNumber = atoi(argv[2]);
