@@ -183,13 +183,13 @@ main( int argc ,char ** argv ){
 				100,0,1);
     hisPi0CutMass[i] = new TH1D(Form("hisPi0CutMassData_%d",i),
 				Form("hisPi0CutMass_%s;Pi0RecMass[MeV]",Name[i]),150,0,300);
-    hisPi0MassGammaEH[i] = new TH2D(Form("hisPi0MassGammaEH_%d",i),
+    hisPi0MassGammaEH[i] = new TH2D(Form("hisPi0MassGammaEHData_%d",i),
 				    Form("hisPi0MassGammaEH_%s;GammaE[MeV]",Name[i]),100,0,4000,150,0,300);
-    hisPi0MassGammaEL[i] = new TH2D(Form("hisPi0MassGammaEL_%d",i),
+    hisPi0MassGammaEL[i] = new TH2D(Form("hisPi0MassGammaELData_%d",i),
 				    Form("hisPi0MassGammaEL_%s;GammaE[MeV]",Name[i]),100,0,4000,150,0,300);
-    hisPi0MassHeight[i] = new TH2D(Form("hisPi0MassHeight_%d",i),
+    hisPi0MassHeight[i] = new TH2D(Form("hisPi0MassHeightData_%d",i),
 				Form("hisPi0MassHeight_%s;Height[cnt]",Name[i]),160,0,16000,150,0,300);
-    hisPi0MassCenterE[i] = new TH2D(Form("hisPi0MassCenterE_%d",i),
+    hisPi0MassCenterE[i] = new TH2D(Form("hisPi0MassCenterEData_%d",i),
 				    Form("hisPi0MassCenterE_%s",Name[i]),100,0,2000,150,0,300);    
   }
 

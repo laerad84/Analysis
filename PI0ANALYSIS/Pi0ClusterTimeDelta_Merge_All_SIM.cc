@@ -145,7 +145,10 @@ main( int argc ,char ** argv ){
   TH1D* hisPi0CutMass[nHist];
   TH1D* hisPi0E[nHist];
   TH1D* hisPi0ECut[nHist];
-
+  TH2D* hisPi0MassGammaEH[nHist];
+  TH2D* hisPi0MassGammaEL[nHist];
+  TH2D* hisPi0MassCenterE[nHist];
+  TH2D* hisPi0MassHeight[nHist];
   for( int i = 0; i< nHist; i++){
     
 
@@ -172,6 +175,14 @@ main( int argc ,char ** argv ){
 				100,0,1);
     hisPi0CutMass[i] = new TH1D(Form("hisPi0CutMass_%d",i),
 				Form("hisPi0CutMass_%s;Pi0RecMass[MeV]",Name[i]),150,0,300);
+    hisPi0MassGammaEH[i] = new TH2D(Form("hisPi0MassGammaEH_%d",i),
+				    Form("hisPi0MassGammaEH_%s;GammaE[MeV]",Name[i]),100,0,4000,150,0,300);
+    hisPi0MassGammaEL[i] = new TH2D(Form("hisPi0MassGammaEL_%d",i),
+				    Form("hisPi0MassGammaEL_%s;GammaE[MeV]",Name[i]),100,0,4000,150,0,300);
+    hisPi0MassHeight[i] = new TH2D(Form("hisPi0MassHeight_%d",i),
+				Form("hisPi0MassHeight_%s;Height[cnt]",Name[i]),160,0,16000,150,0,300);
+    hisPi0MassCenterE[i] = new TH2D(Form("hisPi0MassCenterE_%d",i),
+				    Form("hisPi0MassCenterE_%s",Name[i]),100,0,2000,150,0,300);    
   }
 
 
@@ -316,6 +327,32 @@ main( int argc ,char ** argv ){
 	}
 	if( !bPosition ){ continue; }
 
+
+	int    ClusterID[2] ={0};
+	double ClusterHeight[2] ={0};
+	double MaximumHeight=0;
+	ClusterID[0] = (*pit).g1().clusterIdVec()[0];
+	ClusterID[1] = (*pit).g2().clusterIdVec()[0];
+	Int_t nMatched  = 0;
+	for( int iCsi  =0; iCsi < CsiNumber; iCsi++){	  
+	  //std::cout << CsiModID[iCsi] << "\t" << CsiSignal[iCsi] << "\t" << ClusterID[0] << "\t" << ClusterID[1] << std::endl;
+	  if( CsiModID[iCsi] == ClusterID[0] ){
+	    ClusterHeight[0] = CsiSignal[iCsi];
+	    nMatched++;
+	  }
+	  if(CsiModID[iCsi] == ClusterID[1] ){
+	    ClusterHeight[1] = CsiSignal[iCsi];
+	    nMatched++;
+	  }
+	  if( nMatched == 2 ){
+	    break;
+	  }
+	}
+	if( ClusterHeight[0] > ClusterHeight[1] ){
+	  MaximumHeight = ClusterHeight[0];
+	}else{
+	  MaximumHeight = ClusterHeight[1];
+	}
 	double cosTheta = TMath::Abs( x[0]*x[1]+y[0]*y[1] )/TMath::Sqrt((x[0]*x[0]+y[0]*y[1])*(x[1]*x[1]+y[1]*y[1]));
 	hisCosTheta[hisID]->Fill(cosTheta);
 	double Eg1 = (*pit).g1().e();
@@ -323,8 +360,9 @@ main( int argc ,char ** argv ){
 	double gchisq_1 = (*pit).g1().chisq();
 	double gchisq_2 = (*pit).g2().chisq();
 	double pi0pt    = TMath::Sqrt((*pit).p3()[0]*(*pit).p3()[0]+ (*pit).p3()[1]*(*pit).p3()[1]);
+	double pi0Mass  = (*pit).m();
 	if( Eg1 > 350 &&
-	    Eg2 > 150 &&
+	    Eg2 > 200 &&
 	    gchisq_1 < 5 && 
 	    gchisq_2 < 5 &&
 	    pi0pt  > 50  &&
@@ -333,6 +371,13 @@ main( int argc ,char ** argv ){
 	  hisPi0E[hisID]->Fill((*pit).e());
 	  hisGammaECutHigh[hisID]->Fill((*pit).g1().e());
 	  hisGammaECutLow[hisID]->Fill((*pit).g2().e());
+
+	  hisPi0MassGammaEH[hisID]->Fill( Eg1, pi0Mass );
+	  hisPi0MassGammaEL[hisID]->Fill( Eg2, pi0Mass );
+	  hisPi0MassHeight[hisID]->Fill( MaximumHeight, pi0Mass);
+	  hisPi0MassCenterE[hisID]->Fill( (*pit).g1().clusterEVec()[0], pi0Mass);
+	  hisPi0MassCenterE[hisID]->Fill( (*pit).g2().clusterEVec()[0], pi0Mass);
+
 	  if( TMath::Abs((*pit).m()-135) < 10 ){
 	    hisPi0ECut[hisID]->Fill((*pit).e());
 	  }
@@ -391,6 +436,12 @@ main( int argc ,char ** argv ){
     hisL1TrigCountTrigged[i]->Write();
   }
     
+  for( int i = 0; i< nHist; i++){
+    hisPi0MassGammaEH[i]->Write();
+    hisPi0MassGammaEL[i]->Write();
+    hisPi0MassHeight[i]->Write();
+    hisPi0MassCenterE[i]->Write();
+  }
   tfout->Close();
   return 0;
 }
