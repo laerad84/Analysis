@@ -81,9 +81,9 @@ main( int argc ,char ** argv ){
   int    RunNo;
   int    EventNumber;
   int    CsiNumber;
-  int    CsiModID[2716];
 
   double CsiEne[2716];
+  int    CsiModID[2716];
   double CsiTime[2716];
   double CsiHHTime[2716];
   double CsiSignal[2716];
@@ -156,6 +156,7 @@ main( int argc ,char ** argv ){
   TH1D* hisPi0ECut[nHist];
   TH2D* hisPi0MassGammaEH[nHist];
   TH2D* hisPi0MassGammaEL[nHist];
+  TH2D* hisPi0MassCenterE[nHist];
   TH2D* hisPi0MassHeight[nHist];
   for( int i = 0; i< nHist; i++){
 
@@ -188,6 +189,8 @@ main( int argc ,char ** argv ){
 				    Form("hisPi0MassGammaEL_%s;GammaE[MeV]",Name[i]),100,0,4000,150,0,300);
     hisPi0MassHeight[i] = new TH2D(Form("hisPi0MassHeight_%d",i),
 				Form("hisPi0MassHeight_%s;Height[cnt]",Name[i]),160,0,16000,150,0,300);
+    hisPi0MassCenterE[i] = new TH2D(Form("hisPi0MassCenterE_%d",i);
+				    Form("hisPi0MassCenterE_%s",Name[i]),100,0,2000,150,0,300);    
   }
 
   TH1D* hisL1TrigCount[11];
@@ -391,6 +394,8 @@ main( int argc ,char ** argv ){
 	  hisPi0MassGammaEH[hisID]->Fill( Eg1, pi0Mass );
 	  hisPi0MassGammaEL[hisID]->Fill( Eg2, pi0Mass );
 	  hisPi0MassHeight[hisID]->Fill( MaximumHeight, pi0Mass);
+	  hisPi0MassCenterE[hisID]->Fill( (*pit).g1().clusterEVec()[0], pi0Mass);
+	  hisPi0MassCenterE[hisID]->Fill( (*pit).g2().clusterEVec()[0], pi0Mass);
 	  if( TMath::Abs((*pit).m()-135)< 10 ){
 	    hisPi0ECut[hisID]->Fill((*pit).e());
 	  }
@@ -447,6 +452,7 @@ main( int argc ,char ** argv ){
     hisPi0MassGammaEH[i]->Write();
     hisPi0MassGammaEL[i]->Write();
     hisPi0MassHeight[i]->Write();
+    hisPi0MassCenterE[i]->Write();
   }
 
   for( int i = 0; i < 11; i++){
