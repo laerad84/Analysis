@@ -72,6 +72,7 @@ main( int argc ,char ** argv ){
     break;
   case 5:
     oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newCompensate_pi0.root";
+    break;
   default : 
     return -1;
   }
