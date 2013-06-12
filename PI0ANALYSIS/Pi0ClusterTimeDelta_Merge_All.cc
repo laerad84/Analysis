@@ -359,10 +359,12 @@ main( int argc ,char ** argv ){
 	}else{
 	  MaximumHeight = ClusterHeight[1];
 	}
+	/*
 	std::cout<< "ID Height" << std::endl;
 	std::cout<< ClusterID[0] << "\t" << ClusterHeight[0] << std::endl;
 	std::cout<< ClusterID[1] << "\t" << ClusterHeight[1] << std::endl;
 	std::cout<< MaximumHeight << std::end;
+	*/
 
 	double cosTheta = TMath::Abs( x[0]*x[1]+y[0]*y[1] )/TMath::Sqrt((x[0]*x[0]+y[0]*y[1])*(x[1]*x[1]+y[1]*y[1]));
 	hisCosTheta[hisID]->Fill(cosTheta);
