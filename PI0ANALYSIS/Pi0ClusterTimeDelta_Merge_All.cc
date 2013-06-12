@@ -339,7 +339,7 @@ main( int argc ,char ** argv ){
 	double ClusterHeight[2] ={0};
 	double MaximumHeight=0;
 	ClusterID[0] = (*pit).g1().clusterIdVec()[0];
-	ClusterID[1] = (*pit).g2().clusterIdVec()[1];
+	ClusterID[1] = (*pit).g2().clusterIdVec()[0];
 	Int_t nMatched  = 0;
 	for( int iCsi  =0; iCsi < CsiNumber; iCsi++){	  
 	  if( CsiModID[iCsi] == ClusterID[0] ){
@@ -359,6 +359,11 @@ main( int argc ,char ** argv ){
 	}else{
 	  MaximumHeight = ClusterHeight[1];
 	}
+	std::cout<< "ID Height" << std::endl;
+	std::cout<< ClusterID[0] << "\t" << ClusterHeight[0] << std::endl;
+	std::cout<< ClusterID[1] << "\t" << ClusterHeight[1] << std::endl;
+	std::cout<< MaximumHeight << std::end;
+
 	double cosTheta = TMath::Abs( x[0]*x[1]+y[0]*y[1] )/TMath::Sqrt((x[0]*x[0]+y[0]*y[1])*(x[1]*x[1]+y[1]*y[1]));
 	hisCosTheta[hisID]->Fill(cosTheta);
 	double Eg1 = (*pit).g1().e();
