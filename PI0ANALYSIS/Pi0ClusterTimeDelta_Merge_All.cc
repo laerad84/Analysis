@@ -68,8 +68,8 @@ main( int argc ,char ** argv ){
   //std::string iFileForm          = "%s/SimPi0_1E6_LYRES_%d.root";     // ROOTFILE_SIMCONV
   //std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged.root"; // ROOTFILE_SIM3PI0
 
-  std::string iFileForm          = "%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0_nopi0peak.root";
-  std::string oFileForm          = "%s/Pi0_wav_Merged_Data_nopi0peak.root";
+  std::string iFileForm          = "%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0.root";
+  std::string oFileForm          = "%s/Pi0_wav_Merged_Data.root";
 
   Int_t RunN[24]={4502,4503,4504,4505,4506,4507,4508,4509,4510,4511,4512,4513,
 		  4514,4515,4516,4517,4518,4519,4520,4521,4522,4523,4524,4525};
@@ -152,23 +152,26 @@ main( int argc ,char ** argv ){
   TH1D* hisPi0CutMass[nHist];
   TH1D* hisPi0E[nHist];
   TH1D* hisPi0ECut[nHist];
+  TH2D* hisPi0MassGammaEH[nHist];
+  TH2D* hisPi0MassGammaEL[nHist];
+  TH2D* hisPi0MassHeight[nHist];
   for( int i = 0; i< nHist; i++){
 
-    hisPi0ECut[i] = new TH1D(Form("hisPi0ECutData_%d",i),Form("hisPi0CutE_%s",Name[i]),200,0,5000 );
-    hisPi0E[i] = new TH1D(Form("hisPi0EData_%d",i),Form("hisPi0E_%s",Name[i]),200,0,5000 );
-    hisPi0[i] = new TH1D(Form("hisPi0Data_%d",i),Form("hisPi0_%s",Name[i]),150,0,300 );
+    hisPi0ECut[i]    = new TH1D(Form("hisPi0ECutData_%d",i),Form("hisPi0CutE_%s",Name[i]),200,0,5000 );
+    hisPi0E[i]       = new TH1D(Form("hisPi0EData_%d",i),Form("hisPi0E_%s",Name[i]),200,0,5000 );
+    hisPi0[i]        = new TH1D(Form("hisPi0Data_%d",i),Form("hisPi0_%s",Name[i]),150,0,300 );
     hisPi0Trigged[i] = new TH1D(Form("hisPi0TriggedData_%d",i),Form("hisPi0Trigged_%s",Name[i]),150,0,300 );
     hisPi0RecZ[i]    = new TH1D(Form("hisPi0RecZData_%d",i),Form("hisPi0RecZ_%s",Name[i]),60,-300,300);
-    hisPi0RecZSig2[i] = new TH1D(Form("hisPi0RecZSig2Data_%d",i),Form("hisPi0RecZSig2_%s",Name[i]),100,0,10000);
+    hisPi0RecZSig2[i]= new TH1D(Form("hisPi0RecZSig2Data_%d",i),Form("hisPi0RecZSig2_%s",Name[i]),100,0,10000);
     hisGammaE[i]     = new TH1D(Form("hisGammaEData_%d",i),
 				Form("hisGammaE_%s;GammaEnergy[MeV]",Name[i]),
 				150,0,3000);
-    hisGammaECutHigh[i]     = new TH1D(Form("hisGammaECutHighData_%d",i),
-				       Form("hisGammaECutHigh_%s;GammaEnergy[MeV]",Name[i]),
-				       150,0,3000);
-    hisGammaECutLow[i]     = new TH1D(Form("hisGammaECutLowData_%d",i),
-				      Form("hisGammaECutLow_%s;GammaEnergy[MeV]",Name[i]),
-				      150,0,3000);
+    hisGammaECutHigh[i] = new TH1D(Form("hisGammaECutHighData_%d",i),
+				   Form("hisGammaECutHigh_%s;GammaEnergy[MeV]",Name[i]),
+				   150,0,3000);
+    hisGammaECutLow[i]  = new TH1D(Form("hisGammaECutLowData_%d",i),
+				   Form("hisGammaECutLow_%s;GammaEnergy[MeV]",Name[i]),
+				   150,0,3000);
     hisGammaChi2[i]  = new TH1D(Form("hisGammaChi2Data_%d",i),
 				Form("hisGammaChi2_%s;GammaChi2[MeV]",Name[i]),
 				100,0,100);
@@ -177,8 +180,11 @@ main( int argc ,char ** argv ){
 				100,0,1);
     hisPi0CutMass[i] = new TH1D(Form("hisPi0CutMassData_%d",i),
 				Form("hisPi0CutMass_%s;Pi0RecMass[MeV]",Name[i]),150,0,300);
+    hisPi0MassGammaEH[i] = new TH2D(Form("hisPi0MassGammaEH_%d",i),
+				    Form("hisPi0MassGammaEH_%s;GammaE[MeV]",Name[i]),100,0,4000,150,0,300);
+    hisPi0MassGammaEL[i] = new TH2D(Form("hisPi0MassGammaEL_%d",i),
+				    Form("hisPi0MassGammaEL_%s;GammaE[MeV]",Name[i]),100,0,4000,150,0,300);
   }
-
 
   TH1D* hisL1TrigCount[11];
   for( int i = 0; i < 11 ; i++){
@@ -334,8 +340,9 @@ main( int argc ,char ** argv ){
 	double gchisq_1 = (*pit).g1().chisq();
 	double gchisq_2 = (*pit).g2().chisq();
 	double pi0pt    = TMath::Sqrt((*pit).p3()[0]*(*pit).p3()[0]+ (*pit).p3()[1]*(*pit).p3()[1]);
+	double pi0Mass  = (*pit).m();
 	if( Eg1 > 350 &&
-	    Eg2 > 150 &&
+	    Eg2 > 200 &&
 	    gchisq_1 < 5 && 
 	    gchisq_2 < 5 &&
 	    pi0pt  > 50  &&
@@ -344,6 +351,9 @@ main( int argc ,char ** argv ){
 	  hisPi0E[hisID]->Fill((*pit).e());
 	  hisGammaECutHigh[hisID]->Fill((*pit).g1().e());
 	  hisGammaECutLow[hisID]->Fill((*pit).g2().e());
+
+	  hisPi0MassGammaEH[hisID]->Fill( Eg1, pi0Mass );
+	  hisPi0MassGammaEL[hisID]->Fill( Eg2, pi0Mass );
 
 	  if( TMath::Abs((*pit).m()-135)< 10 ){
 	    hisPi0ECut[hisID]->Fill((*pit).e());
@@ -397,13 +407,18 @@ main( int argc ,char ** argv ){
   for( int i = 0; i< nHist; i++){
     hisCosTheta[i]->Write();
   }
+  for( int i = 0; i< nHist; i++){
+    hisPi0MassGammaEH[i]->Write();
+    hisPi0MassGammaEL[i]->Write();
+  }
+
   for( int i = 0; i < 11; i++){
     hisL1TrigCount[i]->Write();
   }
   for( int i = 0; i < 11; i++){
     hisL1TrigCountTrigged[i]->Write();
   }
-    
+  
   tfout->Close();
   return 0;
 }
