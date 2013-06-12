@@ -344,7 +344,7 @@ main( int argc ,char ** argv ){
 	ClusterID[1] = (*pit).g2().clusterIdVec()[0];
 	Int_t nMatched  = 0;
 	for( int iCsi  =0; iCsi < CsiNumber; iCsi++){	  
-	  std::cout << CsiModID[iCsi] << "\t" << CsiSignal[iCsi] << "\t" << ClusterID[0] << "\t" << ClusterID[1] << std::endl;
+	  //std::cout << CsiModID[iCsi] << "\t" << CsiSignal[iCsi] << "\t" << ClusterID[0] << "\t" << ClusterID[1] << std::endl;
 	  if( CsiModID[iCsi] == ClusterID[0] ){
 	    ClusterHeight[0] = CsiSignal[iCsi];
 	    nMatched++;
@@ -363,10 +363,10 @@ main( int argc ,char ** argv ){
 	  MaximumHeight = ClusterHeight[1];
 	}
 
-	std::cout<< "ID Height" << std::endl;
-	std::cout<< ClusterID[0] << "\t" << ClusterHeight[0] << std::endl;
-	std::cout<< ClusterID[1] << "\t" << ClusterHeight[1] << std::endl;
-	std::cout<< MaximumHeight << std::endl;
+	//std::cout<< "ID Height" << std::endl;
+	//std::cout<< ClusterID[0] << "\t" << ClusterHeight[0] << std::endl;
+	//std::cout<< ClusterID[1] << "\t" << ClusterHeight[1] << std::endl;
+	//std::cout<< MaximumHeight << std::endl;
 
 
 	double cosTheta = TMath::Abs( x[0]*x[1]+y[0]*y[1] )/TMath::Sqrt((x[0]*x[0]+y[0]*y[1])*(x[1]*x[1]+y[1]*y[1]));
