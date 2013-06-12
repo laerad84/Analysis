@@ -40,6 +40,7 @@
 #include "E14WavReader_V1.h"
 //#include "E14WaveReader_V2.h"
 #include "L1TrigCounter.h"
+#include "EnergyConverter.h"
 
 
 int
@@ -69,14 +70,14 @@ main( int argc ,char ** argv ){
   case 4:
     oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0_nopi0peak.root";
     break;
+  case 5:
+    oFileForm ="%s/run_wav_%d_Cal_FNL_COS_newCompensate_pi0.root";
   default : 
     return -1;
   }
   //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
-
-
   std::string TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());  
   TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str());
   TTree* trTempCorr  =(TTree*)tfTempCorr->Get("TemperatureCorrectionCsI");
@@ -88,6 +89,8 @@ main( int argc ,char ** argv ){
   }
   std::cout<< TempCorFactor << std::endl;
   Double_t Pi0PeakCorFactor = 0.9937;
+
+  EnergyConverter* Converter = new EnergyConverter(1);
 
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
@@ -244,7 +247,7 @@ main( int argc ,char ** argv ){
 	CsiEnergy = reader->CsiEne[ich];
 	break;
       case 1:
-	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]];//TempCorFactor*Pi0PeakCorFactor;      
+	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]];//TempCorFactor*Pi0PeakorFactor;      
 	break;
       case 2:
 	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;      
@@ -254,6 +257,9 @@ main( int argc ,char ** argv ){
 	break;
       case 4:
 	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor;
+	break;
+      case 5:
+	CsiEnergy =  Converter->ConvertToEnergy( CsiID, CsiSignal)*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor;
 	break;
       default :
 	return -1;
