@@ -82,6 +82,7 @@ main( int argc ,char ** argv ){
   int    EventNumber;
   int    CsiNumber;
   int    CsiModID[2716];
+
   double CsiEne[2716];
   double CsiTime[2716];
   double CsiHHTime[2716];
@@ -92,8 +93,9 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("RunNumber",&RunNo);
   trin->SetBranchAddress("EventNumber",&EventNumber);
   trin->SetBranchAddress("CsiNumber",&CsiNumber);
-  trin->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
+
   trin->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
+  trin->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
   trin->SetBranchAddress("CsiTime",CsiTime);//CsiNumber
   trin->SetBranchAddress("CsiHHTime",CsiHHTime);//CsiNumber
   trin->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
