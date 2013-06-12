@@ -166,7 +166,19 @@ double PeakCompensater::Compensate(int id , double Peak ){
   case 1 :
     if( id ==  -1  ){ splID = -1;}
     if( id >= 2716){ splID = -1;}
-    splID = m_map[id][3];
+    if( id < 2240 ){ 
+      if( m_map[id][0] == 7 ){
+	splID = 1;
+      }else{
+	splID = 0;
+      }
+    }else{
+      splID = 2;
+    }
+    //splID = m_map[id][3];    
+    if( splID <0 || splID > 2 ){ 
+      CompensateOut = 0;
+    }
     if( Peak < 0. ){ CompensateOut =  0;}
     else if( Peak > 15840 ){
       CompensateOut = Peak/m_spl[splID]->Eval(15840);
@@ -177,7 +189,19 @@ double PeakCompensater::Compensate(int id , double Peak ){
   case 2 :
     if( id ==  -1  ){ splID = -1;}
     if( id >= 2716){ splID = -1;}
-    splID = m_map[id][3];
+    if( id < 2240 ){ 
+      if( m_map[id][0] == 7 ){
+	splID = 1;
+      }else{
+	splID = 0;
+      }
+    }else{
+      splID = 2;
+    }
+    //splID = m_map[id][3];    
+    if( splID <0 || splID > 2 ){ 
+      CompensateOut = 0;
+    }
     if( Peak < 0. ){ CompensateOut =  0;}
     else if( Peak > 15840 ){
       CompensateOut = Peak/m_spl[splID]->Eval(15840);
