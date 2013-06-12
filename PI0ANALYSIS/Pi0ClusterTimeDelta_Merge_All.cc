@@ -335,7 +335,7 @@ main( int argc ,char ** argv ){
 	}
 	if( !bPosition ){ continue; }
 
-	double ClusterID[2] ={0};
+	int    ClusterID[2] ={0};
 	double ClusterHeight[2] ={0};
 	double MaximumHeight=0;
 	ClusterID[0] = (*pit).g1().clusterIdVec()[0];
