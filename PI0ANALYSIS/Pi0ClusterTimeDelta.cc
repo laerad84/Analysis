@@ -260,7 +260,8 @@ main( int argc ,char ** argv ){
 	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor;
 	break;
       case 5:
-	CsiEnergy =  Converter->ConvertToEnergy( CsiID, CsiSignal)*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor;
+	CsiEnergy =  Converter->ConvertToEnergy( CsiID, CsiSignal)/TempCorFactor*Pi0PeakCorFactor;
+	std::cout << CsiEnergy << std::endl;
 	break;
       default :
 	return -1;
