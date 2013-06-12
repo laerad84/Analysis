@@ -189,7 +189,7 @@ main( int argc ,char ** argv ){
 				    Form("hisPi0MassGammaEL_%s;GammaE[MeV]",Name[i]),100,0,4000,150,0,300);
     hisPi0MassHeight[i] = new TH2D(Form("hisPi0MassHeight_%d",i),
 				Form("hisPi0MassHeight_%s;Height[cnt]",Name[i]),160,0,16000,150,0,300);
-    hisPi0MassCenterE[i] = new TH2D(Form("hisPi0MassCenterE_%d",i);
+    hisPi0MassCenterE[i] = new TH2D(Form("hisPi0MassCenterE_%d",i),
 				    Form("hisPi0MassCenterE_%s",Name[i]),100,0,2000,150,0,300);    
   }
 
