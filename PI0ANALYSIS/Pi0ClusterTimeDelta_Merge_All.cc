@@ -342,6 +342,7 @@ main( int argc ,char ** argv ){
 	ClusterID[1] = (*pit).g2().clusterIdVec()[0];
 	Int_t nMatched  = 0;
 	for( int iCsi  =0; iCsi < CsiNumber; iCsi++){	  
+	  std::cout << CsiModID[iCsi] << "\t" << CsiSignal[iCsi] << "\t" << ClusterID[0] << "\t" << ClusterID[1] << std::endl;
 	  if( CsiModID[iCsi] == ClusterID[0] ){
 	    ClusterHeight[0] = CsiSignal[iCsi];
 	    nMatched++;
