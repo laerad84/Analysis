@@ -391,6 +391,13 @@ main( int argc ,char ** argv ){
 	  hisPi0E[hisID]->Fill((*pit).e());
 	  hisGammaECutHigh[hisID]->Fill((*pit).g1().e());
 	  hisGammaECutLow[hisID]->Fill((*pit).g2().e());
+
+	  hisPi0MassGammaEH[hisID]->Fill(Eg1,pi0Mass);
+	  hisPi0MassGammaEL[hisID]->Fill(Eg2,pi0Mass);
+	  hisPi0MassHeight[hisID]->Fill(MaximumHeight, pi0Mass);
+	  hisPi0MassCenterE[hisID]->Fill((*pit).g1().clusterEVec()[0], pi0Mass);
+	  hisPi0MassCenterE[hisID]->Fill((*pit).g2().clusterEVec()[0], pi0Mass);
+
 	  if( TMath::Abs((*pit).m()-135)< 10 ){
 	    hisPi0ECut[hisID]->Fill((*pit).e());
 	  }
