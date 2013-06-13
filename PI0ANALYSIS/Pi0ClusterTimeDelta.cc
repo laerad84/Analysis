@@ -128,12 +128,12 @@ main( int argc ,char ** argv ){
   double SciTime[1];
 
   trout->Branch("SciNumber",&SciNumber,"SciNumber/I");
-  trout->Branch("SciEne",&SciEne,"SciEne/D");//SciNumber
-  trout->Branch("SciTime",&SciTime,"SciTime/D");//SciNumber
-  trout->Branch("CVNumber",&CVNumber,"CVNumber/I");
-  trout->Branch("CVModID" ,CVModID  ,"CVModID[CVNumber]/S");//CVNumber
-  trout->Branch("CVEne"   ,CVEne    ,"CVEne[CVNumber]/D");//CVNumber
-  trout->Branch("CVTime"  ,CVTime   ,"CVTime[CVNumber]/D");//CVNumber
+  trout->Branch("SciEne"   ,&SciEne,"SciEne/D");//SciNumber
+  trout->Branch("SciTime"  ,&SciTime,"SciTime/D");//SciNumber
+  trout->Branch("CVNumber" ,&CVNumber,"CVNumber/I");
+  trout->Branch("CVModID"  ,CVModID  ,"CVModID[CVNumber]/S");//CVNumber
+  trout->Branch("CVEne"    ,CVEne    ,"CVEne[CVNumber]/D");//CVNumber
+  trout->Branch("CVTime"   ,CVTime   ,"CVTime[CVNumber]/D");//CVNumber
 
 
   /*
@@ -260,7 +260,7 @@ main( int argc ,char ** argv ){
 	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor;
 	break;
       case 5:
-	CsiEnergy =  Converter->ConvertToEnergy( CsiID, CsiSignal)/TempCorFactor*Pi0PeakCorFactor;
+	CsiEnergy =  Converter->ConvertToEnergy( CsiID, CsiSignal)/TempCorFactor*Pi0PeakCorFactor*CalibrationFactor[reader->CsiID[ich]];
 	//std::cout << CsiID << "\t" << CsiSignal << "\t " << CsiEnergy << std::endl;
 	break;
       default :
@@ -270,14 +270,14 @@ main( int argc ,char ** argv ){
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];
       l1->Fill(CsiID, CsiSignal );
-      if( CsiTimeClusterID == 0){
-	CsIID[nCsI]     =  CsiID;
-	CsISignal[nCsI] =  CsiSignal;
-	CsIEnergy[nCsI] =  CsiEnergy;
-	CsITime[nCsI]   =  CsiTime;
-	CsIHHTime[nCsI] =  CsiHHTime;
-	nCsI++;
-      }
+      //if( CsiTimeClusterID == 0){
+      CsIID[nCsI]     =  CsiID;
+      CsISignal[nCsI] =  CsiSignal;
+      CsIEnergy[nCsI] =  CsiEnergy;
+      CsITime[nCsI]   =  CsiTime;
+      CsIHHTime[nCsI] =  CsiHHTime;
+      nCsI++;
+      //}
     }
     CSIL1nTrig = 0;
     std::vector<double> vecCount    = l1->GetCount(); 
@@ -299,6 +299,7 @@ main( int argc ,char ** argv ){
 	CSIDigiHHTime[ nCSIDigi ] = CsIHHTime[idigi];
 	CSIDigiSignal[nCSIDigi]   = CsISignal[idigi];
 	nCSIDigi++;
+	std::cout<< CSIDigiID[nCSIDigi-1]  << "\t" << CSIDigiE[nCSIDigi-1] << std::endl;
       }
     }
     
