@@ -77,6 +77,8 @@ main( int argc ,char ** argv ){
   for( int i = 0; i < 24; i++){
     trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunN[i]));
   }
+  E14GNAnaDataContainer data; 
+  data.setBranchAddress(trin);
 
   int    RunNo;
   int    EventNumber;
@@ -137,8 +139,6 @@ main( int argc ,char ** argv ){
 
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIMPI0.c_str()),"recreate");
 
-  E14GNAnaDataContainer data; 
-  data.setBranchAddress(trin);
   const int nHist  =1;
   char* Name[nHist] = {"Data"};
 

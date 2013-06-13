@@ -110,11 +110,11 @@ main( int argc ,char ** argv ){
   trout->Branch("RunNumber"  ,&RunNumber   ,"RunNumber/I");
   trout->Branch("EventNumber",&EventNumber ,"EventNumber/I");
   trout->Branch("CsiNumber"  ,&nCSIDigi    ,"CsiNumber/I");
-  trout->Branch("CsiModID"   ,CSIDigiID    ,"CsiModID[CsiNumber]/I");//nCSIDigi
-  trout->Branch("CsiEne"     ,CSIDigiE     ,"CsiEne[CsiNumber]/D");//nCSIDigi
-  trout->Branch("CsiTime"    ,CSIDigiTime  ,"CsiTime[CsiNumber]/D");//nCSIDigi
-  trout->Branch("CsiHHTime"  ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
-  trout->Branch("CsiSignal"  ,CSIDigiSignal,"CsiSignal[CsiNumber]/D");//nCSIDigi
+  trout->Branch("CsiModID"   ,CSIDigiID    ,"CsiModID[CsiNumber]/I");//CsiNumber
+  trout->Branch("CsiEne"     ,CSIDigiE     ,"CsiEne[CsiNumber]/D");//CsiNumber
+  trout->Branch("CsiTime"    ,CSIDigiTime  ,"CsiTime[CsiNumber]/D");//CsiNumber
+  trout->Branch("CsiHHTime"  ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//CsiNumber
+  trout->Branch("CsiSignal"  ,CSIDigiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
 
   trout->Branch("CsiL1nTrig",&CSIL1nTrig,"CsiL1nTrig/I");
   trout->Branch("CsiL1TrigCount",CSIL1TrigCount,"CsiL1TrigCount[20]/D");
@@ -299,7 +299,7 @@ main( int argc ,char ** argv ){
 	CSIDigiHHTime[ nCSIDigi ] = CsIHHTime[idigi];
 	CSIDigiSignal[nCSIDigi]   = CsISignal[idigi];
 	nCSIDigi++;
-	std::cout<< CSIDigiID[nCSIDigi-1]  << "\t" << CSIDigiE[nCSIDigi-1] << std::endl;
+	//std::cout<< CSIDigiID[nCSIDigi-1]  << "\t" << CSIDigiE[nCSIDigi-1] << std::endl;
       }
     }
     
