@@ -56,7 +56,7 @@ main(int argc,char** argv)
   std::string ROOTFILE_SIMCONV = "/group/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";
   std::string path;
 
-  Int_t ScaleFactor = 5;
+  Double_t ScaleFactor = 0;
   if( argc == 3 ){
     runNumber = atoi(argv[1]);
     iterationNumber = atoi(argv[2]);
@@ -72,9 +72,9 @@ main(int argc,char** argv)
     runNumber           = atoi(argv[1]);
     iterationNumber     = atoi(argv[2]);
     path                = argv[3];
-    ScaleFactor         = atoi(argv[4]);    
-    outputFilename      = Form("%s/%s_%d/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),ScaleFactor,runNumber,iterationNumber);
-    calibrationFilename = Form("%s/%s_%d/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),ScaleFactor,iterationNumber);
+    ScaleFactor         = atof(argv[4]);    
+    outputFilename      = Form("%s/%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),(int)ScaleFactor,runNumber,iterationNumber);
+    calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),(int)ScaleFactor,iterationNumber);
   }else{
     std::cerr << "<<<>>>Arguement Error<<<>>>" <<"\n"
 	      << "Usage:: " << argv[0] 
@@ -100,8 +100,10 @@ main(int argc,char** argv)
   if( TempCorFactor == 0){
     TempCorFactor = 1;
    }
+
   std::cout<< "TempCorFactor :" << TempCorFactor << std::endl;
   std::cout<< "ScaleFactor   :" << ScaleFactor << std::endl;
+
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // Input RootFile
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -230,6 +232,7 @@ main(int argc,char** argv)
 
   std::cout << "End Prepare Calibration" << std::endl;
   std::cout << "ScaleFactor: "<<  ScaleFactor << std::endl;
+  double Scale = 1+0.01*ScaleFactor;
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // loop
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -256,7 +259,7 @@ main(int argc,char** argv)
     calData.InitValue();
     //std::cout<< "loop" << std::endl;
     for( int i = 0; i< CsiNumber; i++){
-      Double_t Energy = CsiEne[i]*CSICalFactor[ (CsiModID[i]) ]/TempCorFactor*(1+0.01*ScaleFactor);      
+      Double_t Energy = CsiEne[i]*CSICalFactor[(CsiModID[i])]/TempCorFactor*Scale;      
       if( Energy > 3 ){
 	CSIDigiID[nCSIDigi]  = CsiModID[i];
 	CSIDigiE[nCSIDigi]   = Energy;

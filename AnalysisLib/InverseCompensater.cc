@@ -16,7 +16,7 @@
 
 int main( int argc, char** argv ){
   std::string ANALYSISLIB = std::getenv("ANALYSISLIB");
-  EnergyConverter* conv = new EnergyConverter();
+  EnergyConverter* conv = new EnergyConverter(1);
   conv->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",ANALYSISLIB.c_str()));
  
   std::cout<< conv->GetCalibrationConstant(0) << std::endl;
@@ -25,7 +25,9 @@ int main( int argc, char** argv ){
   }
   TApplication* app = new TApplication("app",&argc,argv);
   
-  PeakCompensater* comp = new PeakCompensater();
+  PeakCompensater* comp = new PeakCompensater(1);
+  std::cout << conv->ConvertToEnergy( 0, 1000 ) << std::endl;
+
   comp->m_gr[0]->SetMarkerStyle(21);
   comp->m_gr[0]->Draw("AP");
   app->Run();

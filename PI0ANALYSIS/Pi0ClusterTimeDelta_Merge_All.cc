@@ -68,8 +68,8 @@ main( int argc ,char ** argv ){
   //std::string iFileForm          = "%s/SimPi0_1E6_LYRES_%d.root";     // ROOTFILE_SIMCONV
   //std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged.root"; // ROOTFILE_SIM3PI0
 
-  std::string iFileForm          = "%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0.root";
-  std::string oFileForm          = "%s/Pi0_wav_Merged_Data.root";
+  std::string iFileForm          = "%s/run_wav_%d_Cal_FNL_COS_newCompensate_pi0.root";
+  std::string oFileForm          = "%s/Pi0_wav_Merged_Data_LaserComp.root";
 
   Int_t RunN[24]={4502,4503,4504,4505,4506,4507,4508,4509,4510,4511,4512,4513,
 		  4514,4515,4516,4517,4518,4519,4520,4521,4522,4523,4524,4525};
@@ -223,7 +223,7 @@ main( int argc ,char ** argv ){
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::list<Pi0>     plist;
-
+    if((ievent % 1000)== 0){ std::cout<< ievent << "/" << entries << std::endl; }
     data.getData(plist);
 
     Int_t hisID = -1;
@@ -306,9 +306,9 @@ main( int argc ,char ** argv ){
     for( int i = 1; i< 11; i++){
       hisL1TrigCount[i]->Fill(CsiL1TrigCount[i]);
     }
-
     if( nTrig >=2 ){
       if( hisID >= 0){      
+
 	hisPi0Trigged[hisID]->Fill((*pit).m());          
 	hisPi0RecZ[hisID]->Fill((*pit).recZ()-(*pit).vz());
 	hisPi0RecZSig2[hisID]->Fill((*pit).recZsig2());
@@ -380,6 +380,7 @@ main( int argc ,char ** argv ){
 	double gchisq_2 = (*pit).g2().chisq();
 	double pi0pt    = TMath::Sqrt((*pit).p3()[0]*(*pit).p3()[0]+ (*pit).p3()[1]*(*pit).p3()[1]);
 	double pi0Mass  = (*pit).m();
+	//std::cout<< pi0Mass << std::endl;
 	if( Eg1 > 350 &&
 	    Eg2 > 200 &&
 	    gchisq_1 < 5 && 
@@ -390,7 +391,6 @@ main( int argc ,char ** argv ){
 	  hisPi0E[hisID]->Fill((*pit).e());
 	  hisGammaECutHigh[hisID]->Fill((*pit).g1().e());
 	  hisGammaECutLow[hisID]->Fill((*pit).g2().e());
-
 	  if( TMath::Abs((*pit).m()-135)< 10 ){
 	    hisPi0ECut[hisID]->Fill((*pit).e());
 	  }

@@ -92,7 +92,7 @@ main( int argc ,char ** argv ){
   Double_t Pi0PeakCorFactor = 0.9937;
 
   EnergyConverter* Converter = new EnergyConverter(1);
-
+  Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",ANALYSISLIB.c_str()));
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber),"recreate");
@@ -261,7 +261,7 @@ main( int argc ,char ** argv ){
 	break;
       case 5:
 	CsiEnergy =  Converter->ConvertToEnergy( CsiID, CsiSignal)/TempCorFactor*Pi0PeakCorFactor;
-	std::cout << CsiEnergy << std::endl;
+	//std::cout << CsiID << "\t" << CsiSignal << "\t " << CsiEnergy << std::endl;
 	break;
       default :
 	return -1;
