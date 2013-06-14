@@ -72,6 +72,9 @@ main( int argc ,char ** argv ){
   for( int i = 0; i < 20; i++){
     trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),i));
   }
+  E14GNAnaDataContainer data; 
+  data.setBranchAddress(trin);
+
   int    RunNo;
   int    EventNumber;
   int    CsiNumber;
@@ -128,8 +131,6 @@ main( int argc ,char ** argv ){
 
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIMPI0.c_str()),"recreate");
 
-  E14GNAnaDataContainer data; 
-  data.setBranchAddress(trin);
   const int nHist  =5;
   char* Name[nHist] = {"Neutron","Gamma","KL","KLBG","ETC"};
 
