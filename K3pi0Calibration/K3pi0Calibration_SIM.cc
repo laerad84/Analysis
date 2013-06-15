@@ -73,8 +73,8 @@ main(int argc,char** argv)
     iterationNumber     = atoi(argv[2]);
     path                = argv[3];
     ScaleFactor         = atof(argv[4]);    
-    outputFilename      = Form("%s/%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),(int)ScaleFactor,runNumber,iterationNumber);
-    calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),(int)ScaleFactor,iterationNumber);
+    outputFilename      = Form("%s/%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
+    calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),iterationNumber);
   }else{
     std::cerr << "<<<>>>Arguement Error<<<>>>" <<"\n"
 	      << "Usage:: " << argv[0] 
@@ -85,14 +85,19 @@ main(int argc,char** argv)
   inputFilename         = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root",ROOTFILE_SIMCONV.c_str(),runNumber);
   //inputFilename       = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root",ROOTFILE_SIMCONV.c_str(),runNumber);// Test MisCalibration
 
-
-
-  std::cout<<"Input file        : "<< inputFilename        << std::endl;
-  std::cout<<"Output file       : "<< outputFilename       << std::endl;
-  std::cout<<"Calibration Number: "<< calibrationFilename  << std::endl;
+  std::cout<<"********************************************************\n";
+  std::cout<<"Input file        : "<< inputFilename        <<"\n";
+  std::cout<<"Output file       : "<< outputFilename       <<"\n";
+  std::cout<<"RunNumber         : "<< runNumber            <<"\n";
+  std::cout<<"IterationNumber   : "<< iterationNumber      <<"\n";
+  std::cout<<"Calibration Number: "<< calibrationFilename  <<"\n";
+  std::cout<<"Path              : "<< path                 <<"\n";
+  std::cout<<"ScaleFactor       : "<< ScaleFactor          <<"%\n";
+  std::cout<<"********************************************************\n" << std::endl;
 
   TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());
   TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str()); 
+  if( !tfTempCorr->IsOpen() ){ std::cout<< Form("%s is not opened",tfTempCorr->GetName()) << std::endl; return -1;}
   TTree* trTempCorr  =(TTree*)tfTempCorr->Get("TemperatureCorrectionCsI");
   Double_t TempCorFactor=0;
   trTempCorr->SetBranchAddress("CorrectionFactor",&TempCorFactor);
@@ -100,6 +105,7 @@ main(int argc,char** argv)
   if( TempCorFactor == 0){
     TempCorFactor = 1;
    }
+
 
   std::cout<< "TempCorFactor :" << TempCorFactor << std::endl;
   std::cout<< "ScaleFactor   :" << ScaleFactor << std::endl;
@@ -110,6 +116,8 @@ main(int argc,char** argv)
     
   //E14ReadSumFile* ReadSum = new  E14ReadSumFile();
   TFile* tfinput = new TFile(inputFilename.c_str());
+  if(!tfinput->IsOpen()){ std::cout<< Form("%s is not opened",tfinput->GetName()) << std::endl; return -1;}
+
   TTree* ch = (TTree*)tfinput->Get("T");
 
   Int_t CsiNumber;
@@ -142,6 +150,7 @@ main(int argc,char** argv)
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   TFile *fout = new TFile(outputFilename.c_str(),"RECREATE");  
+  if( !fout->IsOpen() ){ std::cout<< Form("%s is not opened",fout->GetName()) << std::endl; return -1; }
   TTree *trout = new TTree("trCalibration","output from E14_CALIBRTION_CULSTER_BUILDER"); 
   Calibration* calibrator  = new Calibration();  
   E14GNAnaDataContainer data;
@@ -176,9 +185,11 @@ main(int argc,char** argv)
   if( iterationNumber  != 0){
     std::ifstream ifs(calibrationFilename.c_str());
     if(!ifs.is_open()){
+      std::cerr << Form("%s is ont opened", calibrationFilename.c_str()) << std::endl;
       std::cerr <<"File is not Exist" << std::endl;
       return -1;
     }
+
     int    id;
     double CalibrationFactor;;
     while( !ifs.eof() ){
