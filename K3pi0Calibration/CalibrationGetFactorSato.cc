@@ -62,7 +62,7 @@ int main( int argc ,char** argv){
   //////////////////////////////////////////////////////////////////////////////
   // Set initial CalibrationFactor and Files 
   //////////////////////////////////////////////////////////////////////////////
-  Ke3Calibrator* calibke3 = new Ke3Calibrator(10);
+  Ke3Calibrator calibke3(10);
   
   std::vector<int> VecRunNum;
   std::ifstream ifsList(runListFile.c_str());
@@ -271,9 +271,6 @@ int main( int argc ,char** argv){
     if(rst ==0 ) {std::cout << Filename << std::endl; }
   }
 
-  E14GNAnaDataContainer data;
-  data.setBranchAddress(ch);
-  
 
   Double_t GammaEnergy[6];
   Double_t Ratio[6];
@@ -326,6 +323,9 @@ int main( int argc ,char** argv){
   ch->SetBranchAddress("KlongDeltaZ",KlongDeltaZ);//KlongNumber
   ch->SetBranchAddress("KlongChisqZ",KlongChisqZ);//KlongNumber
   ch->SetBranchAddress("KlongE",KlongE);//KlongNumber  
+  E14GNAnaDataContainer data;
+  data.setBranchAddress(ch);
+  
 
 
   long Entries = ch->GetEntries();
@@ -390,16 +390,35 @@ int main( int argc ,char** argv){
 	hisChisqDof->Fill(chisq[i]/4);
       }
     }
-    
+    std::cout<< "Fill Gamma" << std::endl;
     for( int i = 0; i< 6; i++){
+      std::cout<< klVec[0].m() << std::endl;
       if( FlagCalibrated[i] == 0 ){
-	if(i%2==0){
-	  calibke3->fillGamma(klVec[0].pi0()[i/2].g1(),klVec[0].pi0()[i/2].g1().e()*Corr[i]);
-	}else{
-	  calibke3->fillGamma(klVec[0].pi0()[i/2].g2(),klVec[0].pi0()[i/2].g2().e()*Corr[i]);
+	switch(i){
+	case 0:
+	  calibke3.fillGamma(klVec[0].pi0()[0].g1(),klVec[0].pi0()[0].g1().e()*Corr[i]);
+	  break;
+	case 2:
+	  calibke3.fillGamma(klVec[0].pi0()[1].g1(),klVec[0].pi0()[1].g1().e()*Corr[i]);
+	  break;
+	case 4:
+	  calibke3.fillGamma(klVec[0].pi0()[2].g1(),klVec[0].pi0()[2].g1().e()*Corr[i]);
+	  break;
+	case 1:
+	  calibke3.fillGamma(klVec[0].pi0()[0].g2(),klVec[0].pi0()[0].g2().e()*Corr[i]);
+	  break;
+	case 3:
+	  calibke3.fillGamma(klVec[0].pi0()[1].g2(),klVec[0].pi0()[1].g2().e()*Corr[i]);
+	  break;
+	case 5:
+	  calibke3.fillGamma(klVec[0].pi0()[2].g2(),klVec[0].pi0()[2].g2().e()*Corr[i]);
+	  break;
+	default:
+	  break;
 	}
       }
     }
+    std::cout<< "Fill Gamma Succeed" << std::endl;
   }
 			
   hisKLMassRaw->Write();
@@ -468,7 +487,7 @@ int main( int argc ,char** argv){
   hisCalFactorSigmaTotal->Write();  
 
   bool CalibrationSucceed = true;
-  CalibrationSucceed = calibke3->gaussianElimination();
+  CalibrationSucceed = calibke3.gaussianElimination();
   if( CalibrationSucceed ){ 
     std::cout<< "Calibration Succeed" << std::endl;
   }else{
@@ -476,7 +495,7 @@ int main( int argc ,char** argv){
     return -1; 
   }
   double CalibrationResult[3000]={0};
-  calibke3->getCalibrationFactors(CalibrationResult);
+  calibke3.getCalibrationFactors(CalibrationResult);
   TH1D* hisReNormCalSato = new TH1D("hisReNormCalSato","hisReNormCalSato",60,0.7,1.3);
   for( int i = 0; i< 2716; i++){
     if( CalibrationResult[i] == 0 ){ 
