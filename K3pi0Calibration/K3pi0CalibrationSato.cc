@@ -76,10 +76,10 @@ main(int argc,char** argv)
   //inputFilename         = Form("%s/run_wav_%04d_cl_CalCompensate.root",ROOTFILE_WAV.c_str(),runNumber);
 
   if( argc  == 3 ){
-    outputFilename      = Form("%s/CalibrationADVSato_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
+    outputFilename      = Form("%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
     calibrationFilename = Form("%s/CalibrationFactorADVSato_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),iterationNumber);
   }else if( argc == 4 ){
-    outputFilename      = Form("%s/%s/CalibrationADVSato_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
+    outputFilename      = Form("%s/%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
     calibrationFilename = Form("%s/%s/CalibrationFactorADVSato_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),iterationNumber);
   }
 
