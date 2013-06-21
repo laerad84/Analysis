@@ -62,7 +62,7 @@ int main( int argc ,char** argv){
   //////////////////////////////////////////////////////////////////////////////
   // Set initial CalibrationFactor and Files 
   //////////////////////////////////////////////////////////////////////////////
-  Ke3Calibrator calibke3(10);
+  Ke3Calibrator calibke3(20);
   
   std::vector<int> VecRunNum;
   std::ifstream ifsList(runListFile.c_str());
@@ -160,6 +160,79 @@ int main( int argc ,char** argv){
 
   std::string listFilename=runListFile.substr(runListFile.find_last_of('/')+1);
   std::cout<< listFilename << std::endl;
+
+
+  TChain* ch = new TChain("trCalibration");
+  std::vector<int>::iterator iRun;
+
+  for( iRun  = VecRunNum.begin();
+       iRun != VecRunNum.end();
+       ++iRun){
+    std::string Filename = Form(InputRootFile.c_str(), *iRun, CalibrationNumber);
+    int rst = ch->Add(Filename.c_str());
+    if(rst ==0 ) {std::cout << Filename << std::endl; }
+  }
+  //ch->Add(Form(InputRootFile.c_str(),4200,CalibrationNumber));
+  E14GNAnaDataContainer data;
+  data.setBranchAddress(ch);
+
+  Double_t GammaEnergy[6];
+  Double_t Ratio[6];
+  Double_t SecondRatio[6];
+  Double_t Corr[6];
+  Int_t    FlagCalibrated[6];
+  Int_t    CorrID[6];
+  Double_t GammaSigma[6];
+  Int_t    nCalibrated;
+  Int_t    FlagKL_prefit;
+  Double_t chisq[6];
+  
+  Int_t    LeadingChID[6];
+  Double_t LeadingHeight[6];
+  Double_t LeadingEnergy[6];
+
+  Int_t    CutCondition;  
+  Int_t    KlongNumber;
+  Double_t KlongId[2];
+  Double_t KlongMass[2];
+  Double_t KlongE[2];
+  Double_t KlongPos[2][3];
+  Double_t KlongMom[2][3];
+  Double_t KlongPt[2];
+  Double_t KlongDeltaZ[2];
+  Double_t KlongChisqZ[2];
+
+
+
+  ch->SetBranchAddress("FlagKL_prefit",&FlagKL_prefit);
+  //ch->SetBranchAddress("GammaEnergy",GammaEnergy);
+  ch->SetBranchAddress("Ratio",Ratio);
+  ch->SetBranchAddress("chisq",chisq);
+  ch->SetBranchAddress("SecondRatio",SecondRatio);
+  ch->SetBranchAddress("Corr",Corr);
+  ch->SetBranchAddress("FlagCalibrated", FlagCalibrated);
+  ch->SetBranchAddress("CorrID",CorrID);
+  //ch->SetBranchAddress("GammaSigma",GammaSigma);
+  ch->SetBranchAddress("nCalibrated",&nCalibrated);
+  ch->SetBranchAddress("LeadingChID",LeadingChID);
+  ch->SetBranchAddress("LeadingHeight",LeadingHeight);
+  ch->SetBranchAddress("LeadingEnergy",LeadingEnergy);
+
+  //ch->SetBranchAddress("CutCondition",&CutCondition);
+  //ch->SetBranchAddress("KlongNumber",&KlongNumber);
+  //ch->SetBranchAddress("KlongId",KlongId);//KlongNumber
+  //ch->SetBranchAddress("KlongMass",KlongMass);//KlongNumber
+  //ch->SetBranchAddress("KlongPos",KlongPos);//KlongNumber
+  //ch->SetBranchAddress("KlongPt",KlongPt);//KlongNumber
+  //ch->SetBranchAddress("KlongMom",KlongMom);//KlongNumber
+  //ch->SetBranchAddress("KlongDeltaZ",KlongDeltaZ);//KlongNumber
+  //  ch->SetBranchAddress("KlongChisqZ",KlongChisqZ);//KlongNumber
+  //ch->SetBranchAddress("KlongE",KlongE);//KlongNumber  
+
+
+
+
+
   TFile* tfOut 
     = new TFile(Form(OutputCalHist.c_str(),
 		     listFilename.substr(0,-4).c_str(),
@@ -260,74 +333,7 @@ int main( int argc ,char** argv){
   ///////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////
-  TChain* ch = new TChain("trCalibration");
-  std::vector<int>::iterator iRun;
-
-  for( iRun  = VecRunNum.begin();
-       iRun != VecRunNum.end();
-       ++iRun){
-    std::string Filename = Form(InputRootFile.c_str(), *iRun, CalibrationNumber);
-    int rst = ch->Add(Filename.c_str());
-    if(rst ==0 ) {std::cout << Filename << std::endl; }
-  }
-
-
-  Double_t GammaEnergy[6];
-  Double_t Ratio[6];
-  Double_t SecondRatio[6];
-  Double_t Corr[6];
-  Int_t    FlagCalibrated[6];
-  Int_t    CorrID[6];
-  Double_t GammaSigma[6];
-  Int_t    nCalibrated;
-  Int_t    FlagKL_prefit;
-  Double_t chisq[6];
   
-  Int_t    LeadingChID[6];
-  Double_t LeadingHeight[6];
-  Double_t LeadingEnergy[6];
-
-  Int_t    CutCondition;  
-  Int_t    KlongNumber;
-  Double_t KlongId[2];
-  Double_t KlongMass[2];
-  Double_t KlongE[2];
-  Double_t KlongPos[2][3];
-  Double_t KlongMom[2][3];
-  Double_t KlongPt[2];
-  Double_t KlongDeltaZ[2];
-  Double_t KlongChisqZ[2];
-
-  ch->SetBranchAddress("FlagKL_prefit",&FlagKL_prefit);
-  ch->SetBranchAddress("GammaEnergy",GammaEnergy);
-  ch->SetBranchAddress("Ratio",Ratio);
-  ch->SetBranchAddress("chisq",chisq);
-  ch->SetBranchAddress("SecondRatio",SecondRatio);
-  ch->SetBranchAddress("Corr",Corr);
-  ch->SetBranchAddress("FlagCalibrated", FlagCalibrated);
-  ch->SetBranchAddress("CorrID",CorrID);
-  ch->SetBranchAddress("GammaSigma",GammaSigma);
-  ch->SetBranchAddress("nCalibrated",&nCalibrated);
-  ch->SetBranchAddress("LeadingChID",LeadingChID);
-  ch->SetBranchAddress("LeadingHeight",LeadingHeight);
-  ch->SetBranchAddress("LeadingEnergy",LeadingEnergy);
-
-
-  ch->SetBranchAddress("CutCondition",&CutCondition);
-  ch->SetBranchAddress("KlongNumber",&KlongNumber);
-  ch->SetBranchAddress("KlongId",KlongId);//KlongNumber
-  ch->SetBranchAddress("KlongMass",KlongMass);//KlongNumber
-  ch->SetBranchAddress("KlongPos",KlongPos);//KlongNumber
-  ch->SetBranchAddress("KlongPt",KlongPt);//KlongNumber
-  ch->SetBranchAddress("KlongMom",KlongMom);//KlongNumber
-  ch->SetBranchAddress("KlongDeltaZ",KlongDeltaZ);//KlongNumber
-  ch->SetBranchAddress("KlongChisqZ",KlongChisqZ);//KlongNumber
-  ch->SetBranchAddress("KlongE",KlongE);//KlongNumber  
-  E14GNAnaDataContainer data;
-  data.setBranchAddress(ch);
-  
-
-
   long Entries = ch->GetEntries();
   std::cout<< "Nentries:" << Entries  << std::endl;
 
@@ -339,12 +345,19 @@ int main( int argc ,char** argv){
     if( ievet %1000  == 0 ){
       std::cout << ievet << "/" << Entries << std::endl;
     }
-    
+
     ch->GetEntry(ievet);
-
     std::vector<Klong> klVec;
-    data.setData(klVec);
+    data.getData(klVec);
+    //std::cout<< klVec.size() << std::endl;
 
+    if( nCalibrated == 0 ){ continue; } 
+    if( klVec.size()== 0 ){ continue; }
+    /*
+    std::cout<< __LINE__ << std::endl;
+    std::cout<< nCalibrated << std::endl;
+    std::cout<< "KLSize:" << klVec.size() << std::endl;
+    */
     /*
       std::cout<< nCalibrated << std::endl;
       for( int i = 0; i< 6; i++ ) {
@@ -352,29 +365,30 @@ int main( int argc ,char** argv){
       }
     */
     //- Fill Calibration Sample
-    hisKLMassRaw->Fill(KlongMass[0]);    
-    hisChisqZ->Fill(KlongChisqZ[0]);
+
+    hisKLMassRaw->Fill(klVec[0].m());    
+    hisChisqZ->Fill(klVec[0].chisqZ());
     if( KlongNumber >1){
-      hisChisqZ_2nd->Fill(KlongChisqZ[1]);
+      hisChisqZ_2nd->Fill(klVec[1].chisqZ());
     }
     
-    if((CutCondition & (1+8)) != 0){continue;}
+    if((data.CutCondition & (1+8)) != 0){continue;}
     hisKlongPt->Fill(KlongPt[0]);
-    hisKlongPz->Fill(KlongMom[0][2]);
-    hisKlongVz->Fill(KlongPos[0][2]);
+    hisKlongPz->Fill(klVec[0].p3()[2]);
+    hisKlongVz->Fill(klVec[0].vz());
     
     if( FlagKL_prefit != 0){continue;}
-    hisKLMassBefore->Fill(KlongMass[0]);
+    hisKLMassBefore->Fill(klVec[0].m());
 
     if( nCalibrated  == 0 ){continue;} 
-    hisKLMassAfter->Fill(KlongMass[0]);
-    hisChisqZ_Cal->Fill(KlongChisqZ[0]);
+    hisKLMassAfter->Fill(klVec[0].m());
+    hisChisqZ_Cal->Fill(klVec[0].chisqZ());
     if( KlongNumber >1 ){
-      hisChisqZ_Cal_2nd->Fill(KlongChisqZ[1]);
+      hisChisqZ_Cal_2nd->Fill(klVec[1].chisqZ());
     }
     hisKlongPt_Cal->Fill(KlongPt[0]);
-    hisKlongPz_Cal->Fill(KlongMom[0][2]);
-    hisKlongVz_Cal->Fill(KlongPos[0][2]);
+    hisKlongPz_Cal->Fill(klVec[0].p3()[2]);
+    hisKlongVz_Cal->Fill(klVec[0].vz());
     
     for( int i = 0; i< 6; i++){
       if( FlagCalibrated[i] == 0 ){
@@ -390,9 +404,7 @@ int main( int argc ,char** argv){
 	hisChisqDof->Fill(chisq[i]/4);
       }
     }
-    std::cout<< "Fill Gamma" << std::endl;
     for( int i = 0; i< 6; i++){
-      std::cout<< klVec[0].m() << std::endl;
       if( FlagCalibrated[i] == 0 ){
 	switch(i){
 	case 0:
@@ -418,7 +430,6 @@ int main( int argc ,char** argv){
 	}
       }
     }
-    std::cout<< "Fill Gamma Succeed" << std::endl;
   }
 			
   hisKLMassRaw->Write();
@@ -495,10 +506,12 @@ int main( int argc ,char** argv){
     return -1; 
   }
   double CalibrationResult[3000]={0};
-  calibke3.getCalibrationFactors(CalibrationResult);
+  for( int i = 0; i< 3000; i++){
+    CalibrationResult[i] = calibke3.getCalibrationFactor(i);
+  }
   TH1D* hisReNormCalSato = new TH1D("hisReNormCalSato","hisReNormCalSato",60,0.7,1.3);
   for( int i = 0; i< 2716; i++){
-    if( CalibrationResult[i] == 0 ){ 
+    if( CalibrationResult[i] < 0.5 || CalibrationResult[i]>1.5){ 
       continue;
     }else{
       hisReNormCalSato->Fill(CalibrationResult[i]);
@@ -506,13 +519,15 @@ int main( int argc ,char** argv){
   }
 
   for( int i = 0; i< 2716; i++){
-    if( CalibrationResult[i] == 0 ){
+    if( CalibrationResult[i] < 0.5 || CalibrationResult[i] > 1.5 ){
       CalibrationResult[i] = 1; 
+      ofsSato << i << "\t" << 1 << std::endl;
+    }else{
+      ofsSato << i << "\t" << CalibrationResult[i]*preCalFactorSato[i]/hisReNormCalSato->GetMean()<< std::endl;
     }
-    ofsSato << i << "\t" << CalFactor[i]*preCalFactorSato[i]/hisReNormCalSato->GetMean()<< std::endl;
   }
 
-
+  calibke3.~Ke3Calibrator();
   tfOut->Close();
   ofs.close();      
   ofs1.close();
