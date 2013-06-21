@@ -33,7 +33,7 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include "Ke3Calibrator.h"
-
+#include "IDHandler.h"
 
 int main( int argc ,char** argv){
   
@@ -135,16 +135,26 @@ int main( int argc ,char** argv){
 	preCalFactor[id] = precal;
       }
     }
+    ifs.close();
   }
   
   if( CalibrationNumber != 0 ){
     std::ifstream ifsSato(Form(InputCalDataSato.c_str(), CalibrationNumber));
-    if( !ifsSato.is_open()){ return -1; }
     Int_t id;
     Double_t precal;
-    while( ifsSato >> id >> precal ){
-      preCalFactorSato[id] = precal;
+    if( !ifsSato.is_open()){
+      std::cout<< Form("There is no Sato-Calibration method Calibration File : %s",InputCalDataSato.c_str()) << std::endl;
+      std::cout<< "Using Normal Calibration method result as Initial Calibration Factor." << std::endl;
+      std::ifstream ifst( Form(InputCalData.c_str(),CalibrationNumber));      
+      while( ifst >> id >> precal ){
+	preCalFactorSato[id] = precal;
+      }
+    }else{
+      while( ifsSato >> id >> precal ){
+	preCalFactorSato[id] = precal;
+      }
     }
+    ifsSato.close();
   }
 
 
@@ -161,7 +171,7 @@ int main( int argc ,char** argv){
   std::string listFilename=runListFile.substr(runListFile.find_last_of('/')+1);
   std::cout<< listFilename << std::endl;
 
-
+  IDHandler* handler = new IDHandler();
   TChain* ch = new TChain("trCalibration");
   std::vector<int>::iterator iRun;
 
@@ -509,9 +519,20 @@ int main( int argc ,char** argv){
   for( int i = 0; i< 3000; i++){
     CalibrationResult[i] = calibke3.getCalibrationFactor(i);
   }
+
+  Double_t x,y;
   TH1D* hisReNormCalSato = new TH1D("hisReNormCalSato","hisReNormCalSato",60,0.7,1.3);
   for( int i = 0; i< 2716; i++){
-    if( CalibrationResult[i] < 0.5 || CalibrationResult[i]>1.5){ 
+    handler->GetMetricPosition( i , x, y);
+    bool OutofRegion = false;
+    if( CalibrationResult[i] < 0.5 || CalibrationResult[i]>1.5 ){
+      OutofRegion = true;
+    }
+    if( abs(x) < 150 && abs(y) < 150 ){ OutofRegion = true;}
+    if( abs(y) > 550 ) { OutofRegion = true; }
+    if( sqrt(x*x+y*y) > 850 ){ OutofRegion = true;}
+
+    if( OutofRegion ){
       continue;
     }else{
       hisReNormCalSato->Fill(CalibrationResult[i]);
@@ -519,7 +540,16 @@ int main( int argc ,char** argv){
   }
 
   for( int i = 0; i< 2716; i++){
-    if( CalibrationResult[i] < 0.5 || CalibrationResult[i] > 1.5 ){
+    handler->GetMetricPosition( i , x, y);
+    bool OutofRegion = false;
+    if( CalibrationResult[i] < 0.5 || CalibrationResult[i]>1.5 ){
+      OutofRegion = true;
+    }
+    if( abs(x) < 150 && abs(y) < 150 ){ OutofRegion = true;}
+    if( abs(y) > 550 ) { OutofRegion = true; }
+    if( sqrt(x*x+y*y) > 850 ){ OutofRegion = true;}
+
+    if( OutofRegion ){
       CalibrationResult[i] = 1; 
       ofsSato << i << "\t" << 1 << std::endl;
     }else{
