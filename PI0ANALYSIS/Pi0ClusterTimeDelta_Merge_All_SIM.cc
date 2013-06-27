@@ -150,6 +150,8 @@ main( int argc ,char ** argv ){
   TH2D* hisPi0MassGammaEL[nHist];
   TH2D* hisPi0MassCenterE[nHist];
   TH2D* hisPi0MassHeight[nHist];
+  TH2D* hisGammaECompare[nHist];
+
   for( int i = 0; i< nHist; i++){
     
 
@@ -184,6 +186,9 @@ main( int argc ,char ** argv ){
 				Form("hisPi0MassHeight_%s;Height[cnt]",Name[i]),160,0,16000,150,0,300);
     hisPi0MassCenterE[i] = new TH2D(Form("hisPi0MassCenterE_%d",i),
 				    Form("hisPi0MassCenterE_%s",Name[i]),100,0,2000,150,0,300);    
+
+    hisGammaECompare[i] = new TH2D(Form("hisGammaECompare_%d",i),
+				   Form("hisGammaECompare_%s",Name[i]),100,0,2000,200,0.5,1.5);
   }
 
 
@@ -329,6 +334,40 @@ main( int argc ,char ** argv ){
 	if( !bPosition ){ continue; }
 
 
+	Double_t GammaEnergy[100];
+	Double_t GammaX[100];
+	Double_t GammaY[100];
+	int nTotalGamma = 0;
+	for( int ip = 0; ip < nTrack; ip++){
+	  if( nTotalGamma >= 2 ){ continue; }
+	  if( pid[ip] == 11 ){
+	    GammaEnergy[nTotalGamma] = ek[ip];
+	    GammaX[nTotalGamma]      = end_v[ip][0];
+	    GammaY[nTotalGamma]      = end_v[ip][1];
+	    nTotalGamma++;
+	  }
+	}
+
+	int GammaIndex[2] = {-1,-1};
+	Double_t Dist[2][2] = {{0}};
+	if( nTotalGamma == 2 ){
+	  for( int isg = 0; isg< 2; isg++){
+	    for( int ig = 0; ig < 2; ig++){
+	      Dist[isg][ig] = sqrt((GammaX[isg]-x[ig])*(GammaX[isg]-x[ig])+(GammaY[isg]-y[ig])*(GammaY[isg]-y[ig]));
+	    }
+	  }
+	  if( Dist[0][0]*Dist[1][1] < Dist[0][1]*Dist[1][0] ){
+	    hisGammaECompare[hisID]->Fill((*pit).g1().e()/GammaEnergy[0]);
+	    hisGammaECompare[hisID]->Fill((*pit).g2().e()/GammaEnergy[1]);
+	  }else{
+	    hisGammaECompare[hisID]->Fill((*pit).g1().e()/GammaEnergy[1]);
+	    hisGammaECompare[hisID]->Fill((*pit).g2().e()/GammaEnergy[0]);
+	  }
+	}
+
+	  
+
+
 	int    ClusterID[2] ={0};
 	double ClusterHeight[2] ={0};
 	double MaximumHeight=0;
@@ -389,6 +428,10 @@ main( int argc ,char ** argv ){
 	hisL1TrigCountTrigged[i]->Fill(CsiL1TrigCount[i]);
       }
     }    
+
+    
+
+
   }
 
   std::cout<< "Write" << std::endl;
@@ -429,6 +472,9 @@ main( int argc ,char ** argv ){
   }
   for( int i = 0; i< nHist; i++){
     hisCosTheta[i]->Write();
+  }
+  for( int i = 0; i< nHist; i++){
+    hisGammaECompare[i]->Write();
   }
   for( int i = 0; i < 11; i++){
     hisL1TrigCount[i]->Write();
