@@ -252,7 +252,7 @@ main( int argc ,char ** argv ){
     
     if( bnEvent ){
       //if( nPi0 ==1 ){ bnreact = true; }
-      if( abs(end_v[0][2]-3536) < 10 ){
+      if( TMath::Abs(end_v[0][2]-3536) < 10 ){
 	bnreact = true;
       }else{
 	bETC = true;
@@ -261,7 +261,7 @@ main( int argc ,char ** argv ){
       if( nPi0 == 1 ){ bgreact = true; }
       else{bETC = true;}
     }else if( bkEvent ){
-      if( abs(end_v[0][2]-3536) < 10 ){
+      if( TMath::Abs(end_v[0][2]-3536) < 10 ){
 	bkreact = true;
       }else{
 	bkdecay = true; 
