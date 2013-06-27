@@ -357,11 +357,11 @@ main( int argc ,char ** argv ){
 	    }
 	  }
 	  if( Dist[0][0]*Dist[1][1] < Dist[0][1]*Dist[1][0] ){
-	    hisGammaECompare[hisID]->Fill((*pit).g1().e()/GammaEnergy[0]);
-	    hisGammaECompare[hisID]->Fill((*pit).g2().e()/GammaEnergy[1]);
+	    hisGammaECompare[hisID]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[0]);
+	    hisGammaECompare[hisID]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[1]);
 	  }else{
-	    hisGammaECompare[hisID]->Fill((*pit).g1().e()/GammaEnergy[1]);
-	    hisGammaECompare[hisID]->Fill((*pit).g2().e()/GammaEnergy[0]);
+	    hisGammaECompare[hisID]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[1]);
+	    hisGammaECompare[hisID]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[0]);
 	  }
 	}
 
