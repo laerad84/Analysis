@@ -339,7 +339,7 @@ main( int argc ,char ** argv ){
 	Double_t GammaY[100];
 	int nTotalGamma = 0;
 	for( int ip = 0; ip < nTrack; ip++){
-	  if( pid[ip] == 11 ){
+	  if( pid[ip] == 22 ){
 	    GammaEnergy[nTotalGamma] = ek[ip];
 	    GammaX[nTotalGamma]      = end_v[ip][0];
 	    GammaY[nTotalGamma]      = end_v[ip][1];
