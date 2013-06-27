@@ -14,8 +14,8 @@ Ke3Calibrator::Ke3Calibrator(int numRequest)
 }
 
 Ke3Calibrator::~Ke3Calibrator(){
-  delete m_calibFactor;
-  for(int i=0;i<s_maxArrSize;i++)  delete m_matrix[i];
+  //delete m_calibFactor;
+  //for(int i=0;i<s_maxArrSize;i++)  delete m_matrix[i];
 }
 
 
