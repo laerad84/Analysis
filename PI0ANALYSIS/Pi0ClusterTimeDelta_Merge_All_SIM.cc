@@ -337,34 +337,40 @@ main( int argc ,char ** argv ){
 	Double_t GammaEnergy[100];
 	Double_t GammaX[100];
 	Double_t GammaY[100];
+	Double_t GammaProductZ[100];
 	int nTotalGamma = 0;
+	bool bAlProductedGamma = false;
 	for( int ip = 0; ip < nTrack; ip++){
 	  if( pid[ip] == 22 ){
 	    GammaEnergy[nTotalGamma] = ek[ip];
 	    GammaX[nTotalGamma]      = end_v[ip][0];
 	    GammaY[nTotalGamma]      = end_v[ip][1];
+	    GammaProductZ[nTotalGamma]= v[ip][2];	    
 	    nTotalGamma++;
 	  }
 	}
 
 	int GammaIndex[2] = {-1,-1};
 	Double_t Dist[2][2] = {{0}};
-	if( nTotalGamma == 2 ){
-	  for( int isg = 0; isg< 2; isg++){
-	    for( int ig = 0; ig < 2; ig++){
-	      Dist[isg][ig] = sqrt((GammaX[isg]-x[ig])*(GammaX[isg]-x[ig])+(GammaY[isg]-y[ig])*(GammaY[isg]-y[ig]));
+	if( nTotalGamma == 2){
+	  if( TMath::Abs(GammaProductZ[0]-3536)<10  &&
+	      TMath::Abs(GammaProductZ[1]-3536)<10 ){
+	    for( int isg = 0; isg< 2; isg++){
+	      for( int ig = 0; ig < 2; ig++){
+		Dist[isg][ig] = sqrt((GammaX[isg]-x[ig])*(GammaX[isg]-x[ig])+(GammaY[isg]-y[ig])*(GammaY[isg]-y[ig]));
+	      }
+	    }	  
+	    if( Dist[0][0]*Dist[1][1] < Dist[0][1]*Dist[1][0] ){
+	      hisGammaECompare[hisID]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[0]);
+	      hisGammaECompare[hisID]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[1]);
+	    }else{
+	      hisGammaECompare[hisID]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[1]);
+	      hisGammaECompare[hisID]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[0]);
 	    }
 	  }
-	  if( Dist[0][0]*Dist[1][1] < Dist[0][1]*Dist[1][0] ){
-	    hisGammaECompare[hisID]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[0]);
-	    hisGammaECompare[hisID]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[1]);
-	  }else{
-	    hisGammaECompare[hisID]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[1]);
-	    hisGammaECompare[hisID]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[0]);
-	  }
 	}
-
-	  
+      
+	
 
 
 	int    ClusterID[2] ={0};
