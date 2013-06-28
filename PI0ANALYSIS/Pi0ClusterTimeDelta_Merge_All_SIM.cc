@@ -356,7 +356,13 @@ main( int argc ,char ** argv ){
 	Double_t Dist[2][2] = {{0}};
 	if( nTotalGamma == 2){
 	  if( GammaZ[0] > 6148 && GammaZ[1] < 6648 &&
-	      GammaZ[1] > 6148 && GammaZ[2] < 6648 ){
+	      GammaZ[1] > 6148 && GammaZ[2] < 6648 &&
+	      TMath::Abs(GammaY[0]) < 600 && 
+	      TMath::Abs(GammaY[1]) < 600 &&
+	      GammaX[0]*GammaX[0]+GammaY[0]*GammaY[0] < 850*850 &&
+	      GammaX[1]*GammaX[1]+GammaY[1]*GammaY[1] < 850*850 ){
+	      
+		       
 	    if( TMath::Abs(GammaProductZ[0]-3536)<10  &&
 		TMath::Abs(GammaProductZ[1]-3536)<10 ){
 	      for( int isg = 0; isg< 2; isg++){
