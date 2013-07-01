@@ -1,3 +1,9 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// CalibrationGetFactorSato // 
+// [CalibrationGetFactorSato] [CalibrationNumber] [runListFile] {path}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
@@ -82,11 +88,6 @@ int main( int argc ,char** argv){
   double CalFactor[nCSI];
   double CalRMS[nCSI];
   double preCalFactor[nCSI];  
-  double preCalFactorSato[nCSI];
-  for( int i = 0; i< nCSI; i++){
-    preCalFactor[i] = 1;
-    preCalFactorSato[i] = 1;
-  }
   
   std::string CalibrationDataPath=std::getenv("ROOTFILE_3PI0CALIBRATION");
   if( argc ==4){
@@ -103,9 +104,6 @@ int main( int argc ,char** argv){
 
   std::string InputCalDataSato  = CalibrationDataPath.c_str();
   std::string OutputCalDataSato = CalibrationDataPath.c_str();
-  std::string OutputCalStatDataSato = CalibrationDataPath.c_str();
-  
-
 
   InputCalData      += "/CalibrationFactorADV_%d.dat";
   InputRootFile     += "/CalibrationADV_%d_%d.root";
@@ -113,61 +111,36 @@ int main( int argc ,char** argv){
   OutputCalStatData += "/CalibrationStaticsADV_%d.dat";
   OutputCalHist     += "/CalhistListADV_%s_%d.root";
   
-  InputCalDataSato      += "/CalibrationFactorADVSato_%d.dat";
-  OutputCalDataSato     += "/CalibrationFactorADVSato_%d.dat";
-  OutputCalStatDataSato += "/CalibrationStaticsADVSato_%d.dat";
-
-
-  std::cout<< InputCalData      << std::endl;
-  std::cout<< OutputCalData     << std::endl;
+  std::cout<< InputCalDataSato  << std::endl;
+  std::cout<< OutputCalDataSato << std::endl;
   std::cout<< OutputCalStatData << std::endl;
   std::cout<< OutputCalHist     << std::endl;
   
   //CalibrationDataPath+="/CalibrationFactorADV_%d.dat";
+
+
+  // Using Output of Sato Calibration method as calibration factor//
+  // Initialize Initial preCalFactor(Calibration Result of front Calibration)// 
+  for( int i = 0; i< nCSI; i++){
+    preCalFactor[i] = 1;
+  }
   if( CalibrationNumber!=0 ){
-    std::ifstream ifs(Form(InputCalData.c_str(),
+    std::ifstream ifsInit(Form(InputCalData.c_str(),
 			   CalibrationNumber));
-    if(!ifs.is_open()){ return -1;}
+    if(!ifsInit.is_open()){ return -1;}
     Int_t id;
     Double_t precal;
-    while( !ifs.eof() ){
-      if( ifs >> id >> precal){
+    if( !ifsInit.eof() ){
+      while( ifsInit >> id >> precal){
 	preCalFactor[id] = precal;
       }
-    }
-    ifs.close();
+    }// If IfsInit dosen't exist, 
+    ifsInit.close();
   }
   
-  if( CalibrationNumber != 0 ){
-    std::ifstream ifsSato(Form(InputCalDataSato.c_str(), CalibrationNumber));
-    Int_t id;
-    Double_t precal;
-    if( !ifsSato.is_open()){
-      std::cout<< Form("There is no Sato-Calibration method Calibration File : %s",InputCalDataSato.c_str()) << std::endl;
-      std::cout<< "Using Normal Calibration method result as Initial Calibration Factor." << std::endl;
-      std::ifstream ifst( Form(InputCalData.c_str(),CalibrationNumber));      
-      while( ifst >> id >> precal ){
-	preCalFactorSato[id] = precal;
-      }
-    }else{
-      while( ifsSato >> id >> precal ){
-	preCalFactorSato[id] = precal;
-      }
-    }
-    ifsSato.close();
-  }
-
-
-
-  int initialRunNumber;
-  int finalRunNumber;
   Int_t nextCalNum = CalibrationNumber +1;
   std::ofstream ofs(Form(OutputCalData.c_str(),
 			 nextCalNum));
-  std::ofstream ofs1(Form(OutputCalStatData.c_str(),
-			  nextCalNum));
-  std::ofstream ofsSato(Form(OutputCalDataSato.c_str(),nextCalNum));
-
   std::string listFilename=runListFile.substr(runListFile.find_last_of('/')+1);
   std::cout<< listFilename << std::endl;
 
@@ -202,16 +175,18 @@ int main( int argc ,char** argv){
   Double_t LeadingEnergy[6];
 
   Int_t    CutCondition;  
+
+  /*
   Int_t    KlongNumber;
   Double_t KlongId[2];
   Double_t KlongMass[2];
   Double_t KlongE[2];
   Double_t KlongPos[2][3];
   Double_t KlongMom[2][3];
-  Double_t KlongPt[2];
   Double_t KlongDeltaZ[2];
   Double_t KlongChisqZ[2];
-
+  */
+  Double_t KlongPt[2];
 
 
   ch->SetBranchAddress("FlagKL_prefit",&FlagKL_prefit);
@@ -233,7 +208,7 @@ int main( int argc ,char** argv){
   //ch->SetBranchAddress("KlongId",KlongId);//KlongNumber
   //ch->SetBranchAddress("KlongMass",KlongMass);//KlongNumber
   //ch->SetBranchAddress("KlongPos",KlongPos);//KlongNumber
-  //ch->SetBranchAddress("KlongPt",KlongPt);//KlongNumber
+  ch->SetBranchAddress("KlongPt",KlongPt);//KlongNumber
   //ch->SetBranchAddress("KlongMom",KlongMom);//KlongNumber
   //ch->SetBranchAddress("KlongDeltaZ",KlongDeltaZ);//KlongNumber
   //  ch->SetBranchAddress("KlongChisqZ",KlongChisqZ);//KlongNumber
@@ -378,7 +353,8 @@ int main( int argc ,char** argv){
 
     hisKLMassRaw->Fill(klVec[0].m());    
     hisChisqZ->Fill(klVec[0].chisqZ());
-    if( KlongNumber >1){
+    //if( KlongNumber >1){
+    if( klVec.size()>1){
       hisChisqZ_2nd->Fill(klVec[1].chisqZ());
     }
     
@@ -393,7 +369,8 @@ int main( int argc ,char** argv){
     if( nCalibrated  == 0 ){continue;} 
     hisKLMassAfter->Fill(klVec[0].m());
     hisChisqZ_Cal->Fill(klVec[0].chisqZ());
-    if( KlongNumber >1 ){
+    //if( KlongNumber >1 ){
+    if( klVec.size() > 1 ){
       hisChisqZ_Cal_2nd->Fill(klVec[1].chisqZ());
     }
     hisKlongPt_Cal->Fill(KlongPt[0]);
@@ -402,7 +379,8 @@ int main( int argc ,char** argv){
     
     for( int i = 0; i< 6; i++){
       if( FlagCalibrated[i] == 0 ){
-	hisCalibrationFactor[CorrID[i]]->Fill(Corr[i]);
+
+	hisCalibrationFactor[CorrID[i]]->Fill(Corr[i]);	
 	hisCalibrationFactorEne[CorrID[i]]->Fill(GammaEnergy[i],Corr[i]);
 	hisCalibrationFactorRatio[CorrID[i]]->Fill(Ratio[i], Corr[i]);
 	hisCalibrationFactorSecondRatio[CorrID[i]]->Fill(SecondRatio[i],Corr[i]);
@@ -479,7 +457,6 @@ int main( int argc ,char** argv){
     hisCalibrationFactorHeight[i]->Write();
     hisCalibrationFactorHeight_Weighted[i]->Write();
     hisCalibrationFactorHeight_Weighted_INV[i]->Write();
-    ofs1 << i << "\t" << hisCalibrationFactor[i]->Integral() << std::endl;
     if( hisCalibrationFactor[i]->Integral() < 144 ){
       continue;
     }           
@@ -494,13 +471,15 @@ int main( int argc ,char** argv){
   }
 
   // Renomalize Calibration Factor, Mean -> 1
+  /*
   for( int i = 0; i< 2716; ++i ){
     if( hisCalibrationFactor[i]->Integral() < 144 ){continue;}
     ofs << i << "\t" 
 	<< CalFactor[i]*preCalFactor[i]/hisReNormCal->GetMean()
 	<< std::endl;
   }
-  
+  */
+
   hisCalSigmaTotal->Write();
   hisCalFactorRatioTotal->Write();
   hisCalFactorSecondRatioTotal->Write();
@@ -551,15 +530,12 @@ int main( int argc ,char** argv){
 
     if( OutofRegion ){
       CalibrationResult[i] = 1; 
-      ofsSato << i << "\t" << 1 << std::endl;
+      ofs << i << "\t" << 1 << std::endl;
     }else{
-      ofsSato << i << "\t" << CalibrationResult[i]*preCalFactorSato[i]/hisReNormCalSato->GetMean()<< std::endl;
+      ofs << i << "\t" << CalibrationResult[i]*preCalFactor[i]/hisReNormCalSato->GetMean()<< std::endl;
     }
   }
-
   calibke3.~Ke3Calibrator();
   tfOut->Close();
   ofs.close();      
-  ofs1.close();
-  ofsSato.close();
 }
