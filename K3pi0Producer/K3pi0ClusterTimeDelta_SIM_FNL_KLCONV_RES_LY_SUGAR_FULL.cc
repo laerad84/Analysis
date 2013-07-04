@@ -1,5 +1,6 @@
 /// Convert simulation data with trigger simulation.
-
+/// Calibration With Full CsI Calorimeter
+/// 
 
 #include <iostream>
 #include <sstream>
@@ -74,21 +75,24 @@ main( int argc ,char ** argv ){
   //std::string oFileForm        = "%s/Sim3pi0_wav_%d.root";     //ROOTFILE_SIM3PI0
   //std::string iFileForm          = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";    //ROOTFILE_SIM3PI0
   //std::string oFileForm          = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root"; // ROOTFILE_SIM3PI0
-  std::string iFileForm          = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration_mis_1.root";    //ROOTFILE_SIM3PI0
-  std::string oFileForm          = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root"; // ROOTFILE_SIM3PI0
+  //std::string iFileForm          = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration_mis_1.root";    //ROOTFILE_SIM3PI0
+  //std::string oFileForm          = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root"; // ROOTFILE_SIM3PI0
 
-  //std::string iFileForm = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";
-  //std::string oFileForm = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_%s.root";
-
+  std::string iFileForm = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";
+  std::string oFileForm = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_FULL.root";
 
   TF1* func = new TF1("ResFunc", funcResolutionInvSq, 0, 10000,1);
+
   /*
   EnergyConverter* Converter = new EnergyConverter();
   Converter->ReadCalibrationRootFile(Form("%s/Data/Cosmic_Calibration_File/CosmicResult_20120209.root",ANALYSISLIB.c_str()));
   double CalFactor0 = 0.08485;// 14MeV/165Cnt;  
   */
   double RelativeLY[2716] = {0};
-  std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/RelativeLY.txt",HOME.c_str()));
+  //////////////////////////////////////////////////////////////
+  // Using Gain with 10% RMS File for Setting LY Distribution //  
+  //////////////////////////////////////////////////////////////
+  std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/GainRMS_10.txt",HOME.c_str()));
   int listID;
   double listLY;
   while( ifs >> listID >> listLY ){
@@ -116,15 +120,15 @@ main( int argc ,char ** argv ){
   int    CsiL1nTrig;
   double CsiL1TrigCount[20];
   
-  trin->SetBranchAddress("RunNumber",&RunNo);
-  trin->SetBranchAddress("EventNumber",&EventNumber);
-  trin->SetBranchAddress("CsiNumber",&CsiNumber);
-  trin->SetBranchAddress("CsiModID",CsiModID);
-  trin->SetBranchAddress("CsiEne",CsiEne);
-  trin->SetBranchAddress("CsiTime",CsiTime);
-  trin->SetBranchAddress("CsiHHTime",CsiHHTime);
-  trin->SetBranchAddress("CsiSignal",CsiSignal);
-  trin->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
+  trin->SetBranchAddress("RunNumber"     ,&RunNo);
+  trin->SetBranchAddress("EventNumber"   ,&EventNumber);
+  trin->SetBranchAddress("CsiNumber"     ,&CsiNumber);
+  trin->SetBranchAddress("CsiModID"      ,CsiModID);
+  trin->SetBranchAddress("CsiEne"        ,CsiEne);
+  trin->SetBranchAddress("CsiTime"       ,CsiTime);
+  trin->SetBranchAddress("CsiHHTime"     ,CsiHHTime);
+  trin->SetBranchAddress("CsiSignal"     ,CsiSignal);
+  trin->SetBranchAddress("CsiL1nTrig"    ,&CsiL1nTrig);
   trin->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
 
 
