@@ -55,26 +55,31 @@ main(int argc,char** argv)
   std::string ROOTFILE_3PI0CALIBRATION = std::getenv( "ROOTFILE_3PI0CALIBRATION");
   std::string ROOTFILE_SIMCONV = "/group/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";
   std::string path;
-  std::string InitalCalibrationFilename;
+  std::string InitialCalibrationFilename;
+  
+  
 
 
   Double_t ScaleFactor = 0;
-  if( argc == 3 ){
-    runNumber = atoi(argv[1]);
-    iterationNumber = atoi(argv[2]);
+  if( argc == 4 ){
+    runNumber                  = atoi(argv[1]);
+    iterationNumber            = atoi(argv[2]);
+    InitialCalibrationFilename = argv[3];
     outputFilename      = Form("%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
     calibrationFilename = Form("%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),iterationNumber);
-  }else if(argc == 4 ){
+  }else if(argc == 5 ){
     runNumber           = atoi(argv[1]);
     iterationNumber     = atoi(argv[2]);
     path                = argv[3];
+    InitialCalibrationFilename = argv[4];
     outputFilename      = Form("%s/%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
     calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),iterationNumber);
-  }else if( argc  == 5 ){
+  }else if( argc  == 6 ){
     runNumber           = atoi(argv[1]);
     iterationNumber     = atoi(argv[2]);
     path                = argv[3];
     ScaleFactor         = atof(argv[4]);    
+    InitialCalibrationFilename = argv[4];
     outputFilename      = Form("%s/%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
     calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),iterationNumber);
   }else{
@@ -84,9 +89,9 @@ main(int argc,char** argv)
     return -1;
   }
   //inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
-  inputFilename         = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root",ROOTFILE_SIMCONV.c_str(),runNumber);
+  //inputFilename         = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root",ROOTFILE_SIMCONV.c_str(),runNumber);
   //inputFilename       = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root",ROOTFILE_SIMCONV.c_str(),runNumber);// Test MisCalibration
-
+  inputFilename       = Form("%s/Sim3pi0_wav_fast_5E6_%d.root",ROOTFILE_SIMCONV.c_str(),runNumber);
   std::cout<<"********************************************************\n";
   std::cout<<"Input file        : "<< inputFilename        <<"\n";
   std::cout<<"Output file       : "<< outputFilename       <<"\n";
@@ -101,16 +106,68 @@ main(int argc,char** argv)
   TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str()); 
   if( !tfTempCorr->IsOpen() ){ std::cout<< Form("%s is not opened",tfTempCorr->GetName()) << std::endl; return -1;}
   TTree* trTempCorr  =(TTree*)tfTempCorr->Get("TemperatureCorrectionCsI");
-  Double_t TempCorFactor=0;
+  
+  Double_t TempCorFactor=1;
+  /*
   trTempCorr->SetBranchAddress("CorrectionFactor",&TempCorFactor);
   trTempCorr->GetEntry(runNumber);
   if( TempCorFactor == 0){
     TempCorFactor = 1;
    }
+  */
 
 
   std::cout<< "TempCorFactor :" << TempCorFactor << std::endl;
   std::cout<< "ScaleFactor   :" << ScaleFactor << std::endl;
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Read Initial Calibration Factor File
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  double CsICalFactor[2716];
+  double CsIInitCalFactor[2716];
+
+  std::cout<< "Set Initial Calibration Factor" << std::endl;
+  int tmpID;
+  double tmpCalFactor;
+  for( int ich = 0; ich <3000; ich++){
+    CsIInitCalFactor[ich] = 1;
+  }
+  if( argc >=4 ){
+    std::ifstream ifsinitCal(InitialCalibrationFilename.c_str());
+    if( !(ifsinitCal.is_open()) ){ std::cout<< InitialCalibrationFilename << " can't open" << std::endl; return -1; }
+    while(ifsinitCal >> tmpID >> tmpCalFactor ){
+      CsIInitCalFactor[tmpID] = tmpCalFactor;
+    }
+  }
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Read Calibration File
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  std::cout<< "Read Calibration File " << std::endl;
+  
+  for(int  ich = 0; ich < 2716; ich++){
+    CsICalFactor[ich] = 1;
+  }
+  if( iterationNumber  != 0){
+    std::ifstream ifs(calibrationFilename.c_str());
+    if(!ifs.is_open()){
+      std::cerr << Form("%s is ont opened", calibrationFilename.c_str()) << std::endl;
+      std::cerr <<"File is not Exist" << std::endl;
+      return -1;
+    }
+
+    int    id;
+    double CalibrationFactor;;
+    while(ifs >> id >> CalibrationFactor){
+      if( !(CalibrationFactor==0 ) ){
+	CsICalFactor[id] = CalibrationFactor;
+      }else{
+	CsICalFactor[id] = 1;
+      }
+    }
+  }    
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // Input RootFile
@@ -120,13 +177,13 @@ main(int argc,char** argv)
   TFile* tfinput = new TFile(inputFilename.c_str());
   if(!tfinput->IsOpen()){ std::cout<< Form("%s is not opened",tfinput->GetName()) << std::endl; return -1;}
 
-  TTree* ch = (TTree*)tfinput->Get("T");
+  TTree* ch = (TTree*)tfinput->Get("Tree");
 
   Int_t CsiNumber;
   Double_t CsiEne[2716];//CsiNumber
   Double_t CsiTime[2716];//CsiNumber
   Double_t CsiSignal[2716];//CsiNumber
-  Int_t CsiModID[2716];//CsiNumber
+  Int_t    CsiModID[2716];//CsiNumber
   ch->SetBranchAddress("CsiNumber",&CsiNumber );
   ch->SetBranchAddress("CsiTime"  ,CsiTime);//CsiNumber
   ch->SetBranchAddress("CsiModID" ,CsiModID);//CsiNumber
@@ -171,39 +228,8 @@ main(int argc,char** argv)
   double CSIDigiE[3000]     ={0};
   double CSIDigiTime[3000]  ={0};
   double CSIHeight[3000]    ={0};
-  double CSICalFactor[3000] ={0};
   ClusterFinder clusterFinder;
   double CC03IntegratedADC[32];
-
-  /////////////////////////////////////////////////////////////////////////////////////////////////
-  // Read Calibration File
-  /////////////////////////////////////////////////////////////////////////////////////////////////
-
-  std::cout<< "Read Calibration File " << std::endl;
-  
-  for(int  ich = 0; ich < 3000; ich++){
-    CSICalFactor[ich] = 1;
-  }
-  if( iterationNumber  != 0){
-    std::ifstream ifs(calibrationFilename.c_str());
-    if(!ifs.is_open()){
-      std::cerr << Form("%s is ont opened", calibrationFilename.c_str()) << std::endl;
-      std::cerr <<"File is not Exist" << std::endl;
-      return -1;
-    }
-
-    int    id;
-    double CalibrationFactor;;
-    while( !ifs.eof() ){
-      if(ifs >> id >> CalibrationFactor){
-	if( !(CalibrationFactor==0 ) ){
-	  CSICalFactor[id] = CalibrationFactor;
-	}else{
-	  CSICalFactor[id] = 1;
-	}
-      }
-    }    
-  }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // Prepare Calibration
@@ -272,7 +298,7 @@ main(int argc,char** argv)
     calData.InitValue();
     //std::cout<< "loop" << std::endl;
     for( int i = 0; i< CsiNumber; i++){
-      Double_t Energy = CsiEne[i]*CSICalFactor[(CsiModID[i])]/TempCorFactor*Scale;      
+      Double_t Energy = CsiEne[i]*CsICalFactor[(CsiModID[i])]/TempCorFactor/CsIInitCalFactor[(CsiModID[i])];   
       if( Energy > 3 ){
 	CSIDigiID[nCSIDigi]  = CsiModID[i];
 	CSIDigiE[nCSIDigi]   = Energy;

@@ -81,11 +81,11 @@ int main(int argc, char** argv){
     if( nGamma != 6 ){ 
       continue; 
     }
-
+    
     std::list<Cluster> clist; 
     std::list<Gamma>   glist;    
     std::vector<Klong> klVec;
-
+    
     clist = clusterFinder.findCluster(nCSIDigi, CsiID, CsiEne, CsiTime );
     gFinder.findGamma( clist, glist );
     if( glist.size() != 6 ){ continue; }
@@ -146,7 +146,7 @@ int main(int argc, char** argv){
       (*it).setEnergy(InitialEnergy);
       (*it).setSigmaE(InitialSigma);
     }
-	   std::cout << calibrator->GetNCalibrated() << std::endl;
+    std::cout << calibrator->GetNCalibrated() << std::endl;
     for( int iGamma = 0; iGamma < 6; iGamma++){
     grChisquareTest[iGamma]->GetYaxis()->SetRangeUser(0,4);
     can->cd(iGamma+1);

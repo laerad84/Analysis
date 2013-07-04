@@ -527,7 +527,7 @@ double Calibration::Calibrate(){
 
   //=============================================================
   // start minizing loop
-
+  //chisq_keep_v = HUGE;
   int it,it_v;
   for(it=0;it<MAX_ITERACTIONS;it++) {		// Global minizing loop
 
