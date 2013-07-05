@@ -129,7 +129,7 @@ main(int argc,char** argv)
   std::cout<< "Set Initial Calibration Factor" << std::endl;
   int tmpID;
   double tmpCalFactor;
-  for( int ich = 0; ich <3000; ich++){
+  for( int ich = 0; ich <2716; ich++){
     CsIInitCalFactor[ich] = 1;
   }
   if( argc >=4 ){
@@ -174,12 +174,17 @@ main(int argc,char** argv)
   /////////////////////////////////////////////////////////////////////////////////////////////////
     
   //E14ReadSumFile* ReadSum = new  E14ReadSumFile();
-  TFile* tfinput = new TFile(inputFilename.c_str());
-  if(!tfinput->IsOpen()){ std::cout<< Form("%s is not opened",tfinput->GetName()) << std::endl; return -1;}
 
-  TTree* ch = (TTree*)tfinput->Get("Tree");
+  //TFile* tfinput = new TFile(inputFilename.c_str());
+  //if(!tfinput->IsOpen()){ std::cout<< Form("%s is not opened",tfinput->GetName()) << std::endl; return -1;}
+  //TTree* ch = (TTree*)tfinput->Get("Tree");
+  TChain* ch = new TChain("Tree");
+  for( int i = 0; i< 25;i++){
+    inputFilename       = Form("%s/Sim3pi0_wav_fast_5E6_%d.root",ROOTFILE_SIMCONV.c_str(),runNumber*25+i);
+    ch->Add(inputFilename.c_str());
+  }
 
-  Int_t CsiNumber;
+  Int_t    CsiNumber;
   Double_t CsiEne[2716];//CsiNumber
   Double_t CsiTime[2716];//CsiNumber
   Double_t CsiSignal[2716];//CsiNumber
