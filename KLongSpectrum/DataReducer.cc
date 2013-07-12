@@ -88,7 +88,7 @@ Int_t main( int argc , char** argv ){
 
   E14GNAnaDataContainer data;
   data.setBranchAddress( ch );
-
+  
   //// Set Output File //// 
   char *RunName[4] = {"SIM","WAV","SUM","SIMFAST"};
   TFile* tfout = new TFile(Form("Kl_Total_%s.root",RunName[FileType]),"RECREATE");
@@ -104,7 +104,8 @@ Int_t main( int argc , char** argv ){
   Double_t GammaTime[6];
   trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
   trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
-  data.branchOfKlong(trKL);
+  E14GNAnaDataContainer dataCopy;
+  dataCopy.branchOfKlong(trKL);
   /*
   trKL->Branch("KLMass"  ,&KLMass  ,"KLMass/D");
   trKL->Branch("KLChisq" ,&KLChisq ,"KLChisq/D");
@@ -123,13 +124,17 @@ Int_t main( int argc , char** argv ){
     ch->GetEntry( ievent );
     data.reset();
     //if(ievent > 1000){ break; }
+    
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
     data.getData( clist );
     data.getData( glist );
     data.getData( klVec );
-
+    dataCopy.setData( clist );
+    dataCopy.setData( glist );
+    dataCopy.setData( klVec );
+    
     //std::cout<< klVec.size() << "\t" << clist.size() << "\t" << glist.size() << std::endl;
     if( klVec.size() == 0 ){ continue; }
     //if( clist.size() == 0 ){ continue; }
