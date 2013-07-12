@@ -122,7 +122,8 @@ Int_t main( int argc , char** argv ){
 
   for( int ievent = 0; ievent < ch->GetEntries() ; ievent++){
     ch->GetEntry( ievent );
-    data.reset();
+    //data.reset();
+    dataCopy.reset();
     //if(ievent > 1000){ break; }
     
     std::list<Cluster> clist;
