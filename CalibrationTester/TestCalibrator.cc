@@ -22,9 +22,35 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "TApplication.h"
 #include "TCanvas.h"
+
+#include "TFrame.h"
+#include "TThread.h"
+#include "TSystem.h"
+TCanvas* can;
+TThread* t;
+TGraph* grChisquareTest[6];
+TGraph* grCorrTest[6];
+
+void * handle( void *ptr){
+  can->SetEditable(kTRUE);
+  for( int iGamma = 0; iGamma < 6; iGamma++){
+    grChisquareTest[iGamma]->GetYaxis()->SetRangeUser(0,4);
+    can->cd(iGamma+1);
+    gPad->SetGridx();
+    gPad->SetGridy();
+    grChisquareTest[iGamma]->Draw("AP");
+    grCorrTest[iGamma]->Draw("P");
+  }
+  can->Update();
+  can->Modified();
+  can->Update();
+  gSystem->ProcessEvents();
+}
+
 int main(int argc, char** argv){
 
   TApplication* app = new TApplication("app",&argc, argv);
+
   std::string filename = "/Volume0/Simulation/Conv_KL3pi0_FAST_REDUCED_5E6_0.root";
   TFile* tf = new TFile(filename.c_str());
   TTree* tr = (TTree*)tf->Get("T");
@@ -44,16 +70,20 @@ int main(int argc, char** argv){
   ClusterFinder clusterFinder;
   GammaFinder   gFinder;
 
-  TGraph* grChisquareTest[6];
-  TGraph* grCorrTest[6];
+
+
   for( int i = 0; i< 6; i++){
     grChisquareTest[i] = new TGraph();
-    grChisquareTest[i]->SetNameTitle(Form("ChisquareTest_%d",i),Form("ChisquareTest_%d;Energy[Mev];#Chi^{2}",i));
+    grChisquareTest[i]->SetNameTitle(Form("ChisquareTest_%d",i),Form("ChisquareTest_%d;Calibrated Gamma Energy/Initial Gamma Energy;#Chi^{2}",i));
+    grChisquareTest[i]->SetMarkerColor(1);
+    grChisquareTest[i]->SetMarkerStyle(20);
     grCorrTest[i] = new TGraph();
     grCorrTest[i]->SetMarkerColor(2);
+    grCorrTest[i]->SetMarkerStyle(20);    
   }
 
-  TCanvas* can = new TCanvas("can","",1200,800);
+  can = new TCanvas("can","",1200,800);
+
   can->Divide(3,2);
   for( int ievt = 0; ievt < 2000; ievt++){
     tr->GetEntry(ievt);
@@ -85,7 +115,6 @@ int main(int argc, char** argv){
     std::list<Cluster> clist; 
     std::list<Gamma>   glist;    
     std::vector<Klong> klVec;
-    
     clist = clusterFinder.findCluster(nCSIDigi, CsiID, CsiEne, CsiTime );
     gFinder.findGamma( clist, glist );
     if( glist.size() != 6 ){ continue; }
@@ -101,8 +130,11 @@ int main(int argc, char** argv){
 	(*it).setSigmaE(TestSigma);
 
 	if( user_rec( glist,klVec)){
+
 	  bool GammaFlag = false; 
 	  for( unsigned int i = 0; i< klVec[0].pi0().size(); i++){
+	  std::cout<< klVec[0].pi0()[i].m() << std::endl;
+
 	    Double_t x,y;
 	    x = klVec[0].pi0()[i].g1().x();
 	    y = klVec[0].pi0()[i].g1().y();
@@ -116,7 +148,7 @@ int main(int argc, char** argv){
 	  if( GammaFlag ){continue;}
 	  //std::cout<<"EventNumber" <<  ievt << std::endl;
 	  int result = calibrator->CalEnergy_idv(klVec);
-	  std::cout<< calibrator->GetChisq(grIndex)  << "\t" <<  calibrator->GetCorr(grIndex) << std::endl;
+	  //std::cout<< calibrator->GetChisq(grIndex)  << "\t" <<  calibrator->GetCorr(grIndex) << std::endl;
 	  grChisquareTest[grIndex]->SetPoint( grChisquareTest[grIndex]->GetN(),
 					      (1-0.1*(1-0.1*iCalIndex)),
 					      calibrator->GetFirstChisq(grIndex));
@@ -147,21 +179,18 @@ int main(int argc, char** argv){
       (*it).setSigmaE(InitialSigma);
     }
     std::cout << calibrator->GetNCalibrated() << std::endl;
-    for( int iGamma = 0; iGamma < 6; iGamma++){
-    grChisquareTest[iGamma]->GetYaxis()->SetRangeUser(0,4);
-    can->cd(iGamma+1);
-    grChisquareTest[iGamma]->Draw("AP");
-    grCorrTest[iGamma]->Draw("P");
-    }
-    can->Update();
-    can->Modified();
-    can->Update();
+    t = new TThread("t",handle, (void*) 0 );
+    t->Run();    
+    TThread::Ps();
     getchar();
-
+    t->Join();
+    TThread::Ps();
+    t->Delete();
+    
   }
    
 
-
   app->Run();
+
   return 0; 
 }

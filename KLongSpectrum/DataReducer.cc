@@ -104,6 +104,8 @@ Int_t main( int argc , char** argv ){
   Double_t GammaTime[6];
   trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
   trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
+  data.BranchOfKlong(trKL);
+  /*
   trKL->Branch("KLMass"  ,&KLMass  ,"KLMass/D");
   trKL->Branch("KLChisq" ,&KLChisq ,"KLChisq/D");
   trKL->Branch("KLSecChisq",&KLSecChisq,"KLSecChisq/D");
@@ -113,11 +115,13 @@ Int_t main( int argc , char** argv ){
   trKL->Branch("GammaPos",GammaPos ,"GammaPos[6][3]/D");
   trKL->Branch("GammaTime",GammaTime,"GammaTime[6]/D");
   trKL->Branch("KLMom"   ,KLMom    ,"KLMom[3]/D");
+  */
+
   std::cout<< ch->GetEntries() << std::endl;
 
   for( int ievent = 0; ievent < ch->GetEntries() ; ievent++){
     ch->GetEntry( ievent );
-
+    data.reset();
     //if(ievent > 1000){ break; }
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
@@ -132,6 +136,7 @@ Int_t main( int argc , char** argv ){
     if( glist.size() <  6 ){ continue; }
     //if( glist.size() != 6 ){ continue; }
     //std::cout<< clist.size() << std::endl;
+    /*
     int GammaID = 0;
 
     for( std::list<Gamma>::iterator itGamma = glist.begin();itGamma != glist.end();itGamma++,GammaID++){
@@ -157,6 +162,7 @@ Int_t main( int argc , char** argv ){
     }else{
       KLSecChisq = 0xFFFF;
     }
+    */
     trKL->Fill();
   }
   
