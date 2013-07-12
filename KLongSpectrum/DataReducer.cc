@@ -104,7 +104,7 @@ Int_t main( int argc , char** argv ){
   Double_t GammaTime[6];
   trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
   trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
-  data.BranchOfKlong(trKL);
+  data.branchOfKlong(trKL);
   /*
   trKL->Branch("KLMass"  ,&KLMass  ,"KLMass/D");
   trKL->Branch("KLChisq" ,&KLChisq ,"KLChisq/D");
