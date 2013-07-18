@@ -37,6 +37,8 @@ Int_t main( int argc , char** argv ){
     std::cout<< "Read Data( Sumup ) File" << std::endl; 
   }else if( FileType == 3 ){
     std::cout<< "Read Data( SIMFast ) File" << std::endl; 
+  }else if( FileType == 4 ){
+    std::cout<< "Read Data( Wave Analysis:W/O CV) File" << std::endl;
   }
 
   std::string ROOTFILE_SUMUP = std::getenv("ROOTFILE_SUMUP");
@@ -78,6 +80,20 @@ Int_t main( int argc , char** argv ){
     for( int i = 0; i< 20; i++){
       ch->Add(Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
     }
+  }else if(FileType == 4){
+    std::string HOMEDIR = std::getenv("HOME");
+    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/3pi0WOCVRunList.txt",HOMEDIR.c_str()));
+    if( !ifsRunNumber.is_open() ){ 
+      std::cerr << "File dosen't exist" << std::endl;
+      return -1; 
+    }
+    int tmpRunNumber; 
+    while( ifsRunNumber >> tmpRunNumber ){
+      //if( tmpRunNumber < 4249 ){ continue; }
+      //if( tmpRunNumber > 4624 ){ continue; }
+      //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+      ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+    }    
   }
   std::cout<< "Total Event Number : " << ch->GetEntries() << std::endl;  
 
@@ -90,7 +106,7 @@ Int_t main( int argc , char** argv ){
   data.setBranchAddress( ch );
   
   //// Set Output File //// 
-  char *RunName[4] = {"SIM","WAV","SUM","SIMFAST"};
+  char *RunName[5] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV"};
   TFile* tfout = new TFile(Form("Kl_Total_%s.root",RunName[FileType]),"RECREATE");
   TTree* trKL = new TTree("trKL","Klong Tree");
   Double_t KLMass;
