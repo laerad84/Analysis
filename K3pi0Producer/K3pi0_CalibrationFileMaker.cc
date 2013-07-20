@@ -162,7 +162,7 @@ main( int argc ,char ** argv ){
     double length = TMath::Sqrt( AlzPosition*AlzPosition + x*x + y*y );
     TimeDeltaLength[i] = length/sol;
   }
-
+  Double_t Pi0PeakCorFactor = 0.9937;
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -224,7 +224,7 @@ main( int argc ,char ** argv ){
       double CsiSignal = reader->CsiSignal[ich]; 
       //double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[ reader->CsiID[ich]]/TempCorFactor;      
       //double CsiEnergy = reader->CsiEne[ich]; oldinary
-      Double_t CsiEnergy = Converter->ConvertToEnergy( CsiID , CsiSignal);
+      Double_t CsiEnergy = Converter->ConvertToEnergy( CsiID , CsiSignal)*CalibrationFactor[CsiID]/TempCorFactor*Pi0PeakCorFactor;
 
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];
