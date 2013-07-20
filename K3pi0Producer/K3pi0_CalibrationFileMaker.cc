@@ -74,6 +74,7 @@ main( int argc ,char ** argv ){
     break;
   default:
     return -1;
+    break;
   }
 
   TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str());
