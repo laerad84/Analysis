@@ -65,10 +65,13 @@ main( int argc ,char ** argv ){
   switch( TypeIndex ){
   case 0:
     EnergyConvInt = 0; 
+    break;
   case 1:
     EnergyConvInt = 1;
+    break;
   case 2:
     EnergyConvInt = 3;
+    break;
   default:
     return -1;
   }
