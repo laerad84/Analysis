@@ -40,7 +40,7 @@ Int_t main( int argc , char** argv ){
   }else if( FileType == 4 ){
     std::cout<< "Read Data( Wave Analysis:W/O CV) File" << std::endl;
   }else if( FileType == 5 ){
-    std::cout<< "Read Data( Wave Analysis:New Compensated) File" << std::endl;
+    std::cout<< "Read Data( Wave Analysis:Old Compensated) File" << std::endl;
   }
 
   std::string ROOTFILE_SUMUP = std::getenv("ROOTFILE_SUMUP");
@@ -98,17 +98,17 @@ Int_t main( int argc , char** argv ){
     }    
   }else if(FileType == 5){
     std::string HOMEDIR = std::getenv("HOME");
-    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/3pi0WOCVRunList.txt",HOMEDIR.c_str()));
+    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/KLRunList_2.txt",HOMEDIR.c_str()));
     if( !ifsRunNumber.is_open() ){ 
       std::cerr << "File dosen't exist" << std::endl;
       return -1; 
     }
     int tmpRunNumber; 
     while( ifsRunNumber >> tmpRunNumber ){
-      //if( tmpRunNumber < 4249 ){ continue; }
-      //if( tmpRunNumber > 4624 ){ continue; }
+      if( tmpRunNumber < 4249 ){ continue; }
+      if( tmpRunNumber > 4624 ){ continue; }
       //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
-      ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+      ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
     }
   }
   std::cout<< "Total Event Number : " << ch->GetEntries() << std::endl;  

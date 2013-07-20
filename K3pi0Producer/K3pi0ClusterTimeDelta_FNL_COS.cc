@@ -49,6 +49,8 @@ main( int argc ,char ** argv ){
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
   std::string HOME         = std::getenv("HOME");
 
+  //std::string iFileForm="%s/run_wav_%d.root";
+  //std::string oFileForm="%s/run_wav_%d_Cal_FNL_COS.root";
   std::string iFileForm="%s/run_wav_%d.root";
   std::string oFileForm="%s/run_wav_%d_Cal_FNL_COS.root";
 
