@@ -232,6 +232,7 @@ main( int argc ,char ** argv ){
 
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];
+      l1->Fill(CsiID,CsiSignal);
       if( CsiTimeClusterID == 0){
 	CsIID[nCsI]     =  CsiID;
 	CsISignal[nCsI] =  CsiSignal;

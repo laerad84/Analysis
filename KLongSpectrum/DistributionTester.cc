@@ -41,7 +41,7 @@ int main( int argc, char** argv){
   const int nFile = 3;
   TFile* tf[nFile]; 
   TTree* tr[nFile];  
-  char* name[nFile] = {"SIMFAST","WAV","WAVNOCV"};
+  char* name[nFile] = {"SIMFAST","3pi0_LaserComp","WAVNOCV"};
   
   for( int i = 0; i < nFile; i++){
     tf[i] = new TFile(Form("Kl_Total_%s.root",name[i]));
