@@ -103,7 +103,7 @@ main( int argc ,char ** argv ){
   double CsiSignal[2716];
   int    CsiL1nTrig;
   double CsiL1TrigCount[20];
-  
+
   trin->SetBranchAddress("RunNumber",&RunNo);
   trin->SetBranchAddress("EventNumber",&EventNumber);
   trin->SetBranchAddress("CsiNumber",&CsiNumber);

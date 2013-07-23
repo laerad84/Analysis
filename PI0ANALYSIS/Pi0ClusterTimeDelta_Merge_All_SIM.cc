@@ -86,6 +86,11 @@ main( int argc ,char ** argv ){
   int    CsiL1nTrig;
   double CsiL1TrigCount[20];
   
+  int CVNumber;
+  int CVModID[256];
+  Double_t CVEne[256];
+  int SciNumber;
+  Double_t SciEne[1];
   trin->SetBranchAddress("RunNumber",&RunNo);
   trin->SetBranchAddress("EventNumber",&EventNumber);
   trin->SetBranchAddress("CsiNumber",&CsiNumber);
@@ -96,7 +101,10 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("CsiSignal",CsiSignal);
   trin->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   trin->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
-
+  trin->SetBranchAddress("CVNumber",&CVNumber);
+  trin->SetBranchAddress("CVModID",CVModID);
+  trin->SetBranchAddress("CVEne",CVEne);
+  trin->SetBranchAddress("SciEne",SciEne);
 
   int    nTrack;
   UShort_t  track[200];
@@ -231,6 +239,15 @@ main( int argc ,char ** argv ){
     bool bkdecay  = false;
     bool bksdecay = false;
     bool bETC     = false;
+    
+    if(SciEne[0] < 3.86 ){ continue; }
+    double CVMax = 0;
+    for( int icv  =0; icv < CVNumber; icv++){
+      if(CVEne[icv] > CVMax ){
+	CVMax = CVEne[icv];
+      }
+    }
+    if( CVMax > 0.4 ){ continue; }
 
     if( pid[0] == 2112 ){
       bnEvent = true;

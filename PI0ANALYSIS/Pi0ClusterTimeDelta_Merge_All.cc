@@ -94,7 +94,13 @@ main( int argc ,char ** argv ){
   double CsiSignal[2716];
   int    CsiL1nTrig;
   double CsiL1TrigCount[20];
-  
+
+  int CVNumber;
+  int CVModID[256];
+  Double_t CVEne[256];
+  int SciNumber;
+  Double_t SciEne;
+
   trin->SetBranchAddress("RunNumber",&RunNo);
   trin->SetBranchAddress("EventNumber",&EventNumber);
   trin->SetBranchAddress("CsiNumber",&CsiNumber);
@@ -106,7 +112,11 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
   trin->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   trin->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
-
+  trin->SetBranchAddress("CVNumber",&CVNumber);
+  trin->SetBranchAddress("CVModID",CVModID);//CVNumber
+  trin->SetBranchAddress("CVEne",CVEne);//CVNumber
+  trin->SetBranchAddress("SciNumber",&SciNumber);
+  trin->SetBranchAddress("SciEne",&SciEne);//SciNumber
   /*
   int    nTrack;
   UShort_t  track[200];
@@ -136,6 +146,7 @@ main( int argc ,char ** argv ){
   double CsiL1TrigCountThreshold[20] = {1000,3000,3000,3400,3400,3400,2200,2200,2400,2400,
 					2400,1000,1000,1000,1000,1000,1000,1000,1000,1000};
   double CsiL1TrigHighThreshold = 50000;
+  double CVThreshold[10] = {700,600,600,600,500,600,600,550,600,600};
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -295,6 +306,15 @@ main( int argc ,char ** argv ){
       hisPi0[hisID]->Fill((*pit).m());    
     }
     */
+    if(SciEne < 164 ){ continue; }
+    bool CVTrig = false;
+    for( int icv = 0; icv <CVNumber; icv++){
+      if( CVEne[icv] > CVThreshold[CVModID[icv]]){
+	CVTrig = true;
+      }
+    }
+    if(CVTrig){continue;}
+
     std::list<Pi0>::iterator pit = plist.begin();
     hisID = 0;
     int nTrig = 0; 

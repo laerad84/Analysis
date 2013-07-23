@@ -38,10 +38,10 @@ int main( int argc, char** argv){
   soltFunc->SetParameters(soltPar);
   sugarFunc->SetParameters(sugarPar);
 
-  const int nFile = 3;
+  const int nFile = 6;
   TFile* tf[nFile]; 
   TTree* tr[nFile];  
-  char* name[nFile] = {"SIMFAST","3pi0_LaserComp","WAVNOCV"};
+  char* name[nFile] = {"SIMFAST","3pi0_LaserComp","WAV","SIM","3pi0_OldComp","WAVNOCV"};
   
   for( int i = 0; i < nFile; i++){
     tf[i] = new TFile(Form("Kl_Total_%s.root",name[i]));
@@ -142,12 +142,12 @@ int main( int argc, char** argv){
 	if( TMath::Sqrt((*git).x()*(*git).x()+(*git).y()*(*git).y()) > 850 ){
 	  bOuterGamma = true;
 	}
-	  if( TMath::Abs((*git).y())>575){ bOuterGamma = true; }
+	if( TMath::Abs((*git).y())>575){ bOuterGamma = true; }
       }
 
       if( nEGamma < 6 ){ continue; }
       if( bInnerGamma ){ continue; }
-      //if( bOuterGamma ){ continue; }
+      if( bOuterGamma ){ continue; }
       //if( bInnerGamma || bOuterGamma ) { continue; }
 
       /*
@@ -229,7 +229,11 @@ int main( int argc, char** argv){
       Double_t KLECutMin = 2700;
       Double_t KLECutMax = 3300;
       */
-      hisKLP[iFile]->Fill(klMom);
+      if( klVec[0].vz() < 5000 && klVec[0].vz() > 3000){
+	if(TMath::Abs(klVec[0].m()-KLMass )< 10 ){
+	  hisKLP[iFile]->Fill(klMom);
+	}
+      }
       hisKLE[iFile]->Fill(klVec[0].e());
       hisKLZ[iFile]->Fill(klVec[0].vz());
       /*
@@ -306,7 +310,7 @@ int main( int argc, char** argv){
   hisGammaE[0]->Draw();
   hisGammaE[1]->Scale(ScaleFactor);
   hisGammaE[1]->Draw("same");
-
+  /*
   hisKLE[0]->Write();
   hisKLE[1]->Write();
   hisKLP[0]->Write();
@@ -317,6 +321,14 @@ int main( int argc, char** argv){
   hisKLZPosition[1]->Write();
   hisKLMass[0]->Write();
   hisKLMass[1]->Write();
+  */
+  for( int i = 0; i < nFile; i++){
+    hisKLE[i]->Write();
+    hisKLP[i]->Write();
+    hisKLZ[i]->Write();
+    hisKLZPosition[i]->Write();
+    hisKLMass[i]->Write();
+  }
   for( int i = 0; i< nFile-1; i++){
     for( int j = 0; j< 10; j++){
       hisKLZAcceptance[i][j]->Write();
