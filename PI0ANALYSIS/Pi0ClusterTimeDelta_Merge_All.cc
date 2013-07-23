@@ -72,7 +72,7 @@ main( int argc ,char ** argv ){
   //std::string oFileForm          = "%s/Pi0_wav_Merged_Data_LaserComp.root";
 
   std::string iFileForm          = "%s/run_wav_%d_Cal_FNL_COS_newTimeOffset_pi0.root";
-  std::string oFileForm          = "%s/Pi0_wav_Merged_Data_IwaiSato.root";
+  std::string oFileForm          = "%s/Pi0_wav_Merged_Data_IwaiSato_NEW.root";
 
   Int_t RunN[24]={4502,4503,4504,4505,4506,4507,4508,4509,4510,4511,4512,4513,
 		  4514,4515,4516,4517,4518,4519,4520,4521,4522,4523,4524,4525};
