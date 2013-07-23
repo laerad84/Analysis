@@ -96,7 +96,7 @@ main( int argc ,char ** argv ){
   double CsiL1TrigCount[20];
 
   int CVNumber;
-  int CVModID[256];
+  Short_t CVModID[256];
   Double_t CVEne[256];
   int SciNumber;
   Double_t SciEne;
