@@ -406,8 +406,8 @@ main( int argc ,char ** argv ){
 	//std::cout<< pi0Mass << std::endl;
 	if( Eg1 > 350 &&
 	    Eg2 > 200 &&
-	    gchisq_1 < 5 && 
-	    gchisq_2 < 5 &&
+	    //gchisq_1 < 5 && 
+	    //gchisq_2 < 5 &&
 	    pi0pt  > 50  &&
 	    cosTheta < 0.9 ){
 	  hisPi0CutMass[hisID]->Fill((*pit).m());
