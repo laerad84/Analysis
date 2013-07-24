@@ -52,8 +52,8 @@ main( int argc ,char ** argv ){
   std::string ROOTFILE_SIMCONV  = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/ConvFile";
   std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";
 
-  std::string iFileForm = "%s/Conv_e14_AL_Target.mac_1000000_%d.root"; //ROOTFILE_SIMCONV
-  std::string oFileForm = "%s/SimPi0_1E6_%d.root";                     //ROOTFILE_SIMPI0
+  std::string iFileForm = "%s/Conv_e14_AL_Target_KL.mac_1000000_%d.root"; //ROOTFILE_SIMCONV
+  std::string oFileForm = "%s/SimPi0_1E6_KLBEAM_%d.root";                     //ROOTFILE_SIMPI0
   
 
 

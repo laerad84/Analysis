@@ -65,8 +65,8 @@ main( int argc ,char ** argv ){
   
   std::string ROOTFILE_SIMCONV  = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/ConvFile";
   std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";
-  std::string iFileForm          = "%s/SimPi0_1E6_%d.root";        // ROOTFILE_SIMCONV
-  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_%d.root"; // ROOTFILE_SIM3PI0
+  std::string iFileForm          = "%s/SimPi0_1E6_KLBEAM_%d.root";        // ROOTFILE_SIMCONV
+  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_KLBEAM_%d.root"; // ROOTFILE_SIM3PI0
 
   TF1* func = new TF1("ResFunc", funcResolutionInvSq, 0, 10000,1);
   /*
