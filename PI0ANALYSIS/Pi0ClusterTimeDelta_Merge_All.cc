@@ -172,6 +172,9 @@ main( int argc ,char ** argv ){
   TH2D* hisPi0MassGammaEL[nHist];
   TH2D* hisPi0MassCenterE[nHist];
   TH2D* hisPi0MassHeight[nHist];
+
+
+
   for( int i = 0; i< nHist; i++){
 
     hisPi0ECut[i]    = new TH1D(Form("hisPi0ECutData_%d",i),Form("hisPi0CutE_%s",Name[i]),200,0,5000 );
@@ -225,8 +228,14 @@ main( int argc ,char ** argv ){
     }
   }
 
-
-
+  TH1D* hisCVEneDistrib[20];
+  TH1D* hisCVEneDistribTrigged[20];
+  for( int i = 0; i< 20; i++){
+    hisCVEneDistrib[i] = new TH1D(Form("hisCVEneDistrib_%d",i),Form("hisCVEneDistrib_%d",i),400,0,4000);
+    hisCVEneDistribTrigged[i] = new TH1D(Form("hisCVEneDistribTrigged_%d",i),Form("hisCVEneDistribTrigged_%d",i),400,0,4000);
+  }
+  TH1D* hisSciEneDistrib = new TH1D("hisSciEneDistrib","hisSciEneDistrib",400,0,4000);
+  TH1D* hisSciEneDistribTrigged = new TH1D("hisSciEneDistribTrigged","hisSciEneDistribTrigged",400,0,4000);
 
   std::cout<< "LOOP" << std::endl;
   long entries = trin->GetEntries();
@@ -306,12 +315,14 @@ main( int argc ,char ** argv ){
       hisPi0[hisID]->Fill((*pit).m());    
     }
     */
+    hisSciEneDistrib->Fill(SciEne);
     if(SciEne < 164 ){ continue; }
     bool CVTrig = false;
     for( int icv = 0; icv <CVNumber; icv++){
       if( CVEne[icv] > CVThreshold[CVModID[icv]]){
 	CVTrig = true;
       }
+      hisCVEneDistrib[CVModID[icv]]->Fill(CVEne[icv]);
     }
     if(CVTrig){continue;}
 
@@ -331,6 +342,11 @@ main( int argc ,char ** argv ){
     }
     if( nTrig >=2 ){
       if( hisID >= 0){      
+	hisSciEneDistribTrigged->Fill(SciEne);
+	for( int icv = 0; icv < CVNumber; icv++){
+	  hisCVEneDistribTrigged[CVModID[icv]]->Fill(CVEne[icv]);
+	}
+
 
 	hisPi0Trigged[hisID]->Fill((*pit).m());          
 	hisPi0RecZ[hisID]->Fill((*pit).recZ()-(*pit).vz());
@@ -486,7 +502,12 @@ main( int argc ,char ** argv ){
   for( int i = 0; i < 11; i++){
     hisL1TrigCountTrigged[i]->Write();
   }
-  
+  for( int i =0; i< 20; i++){
+    hisCVEneDistrib[i]->Write();
+    hisCVEneDistribTrigged[i]->Write();
+  }
+  hisSciEneDistrib->Write();
+  hisSciEneDistribTrigged->Write();
   tfout->Close();
   return 0;
-  }
+}

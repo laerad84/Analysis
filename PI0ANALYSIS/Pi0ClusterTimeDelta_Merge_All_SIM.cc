@@ -163,39 +163,39 @@ main( int argc ,char ** argv ){
   for( int i = 0; i< nHist; i++){
     
 
-    hisPi0ECut[i] = new TH1D(Form("hisPi0ECut_%d",i),Form("hisPi0ECut_%s",Name[i]),200,0,5000);
-    hisPi0E[i] = new TH1D(Form("hisPi0E_%d",i),Form("hisPi0E_%s",Name[i]),200,0,5000);
-    hisPi0[i] = new TH1D(Form("hisPi0_%d",i),Form("hisPi0_%s",Name[i]),150,0,300 );
-    hisPi0Trigged[i] = new TH1D(Form("hisPi0Trigged_%d",i),Form("hisPi0Trigged_%s",Name[i]),150,0,300 );
-    hisPi0RecZ[i]    = new TH1D(Form("hisPi0RecZ_%d",i),Form("hisPi0RecZ_%s",Name[i]),60,-300,300);
-    hisPi0RecZSig2[i] = new TH1D(Form("hisPi0RecZSig2_%d",i),Form("hisPi0RecZSig2_%s",Name[i]),100,0,10000);
-    hisGammaE[i]     = new TH1D(Form("hisGammaE_%d",i),
+    hisPi0ECut[i]      = new TH1D(Form("hisPi0ECut_%d",i),Form("hisPi0ECut_%s",Name[i]),200,0,5000);
+    hisPi0E[i]         = new TH1D(Form("hisPi0E_%d",i),Form("hisPi0E_%s",Name[i]),200,0,5000);
+    hisPi0[i]          = new TH1D(Form("hisPi0_%d",i),Form("hisPi0_%s",Name[i]),150,0,300 );
+    hisPi0Trigged[i]   = new TH1D(Form("hisPi0Trigged_%d",i),Form("hisPi0Trigged_%s",Name[i]),150,0,300 );
+    hisPi0RecZ[i]      = new TH1D(Form("hisPi0RecZ_%d",i),Form("hisPi0RecZ_%s",Name[i]),60,-300,300);
+    hisPi0RecZSig2[i]  = new TH1D(Form("hisPi0RecZSig2_%d",i),Form("hisPi0RecZSig2_%s",Name[i]),100,0,10000);
+    hisGammaE[i]       = new TH1D(Form("hisGammaE_%d",i),
 				Form("hisGammaE_%s;GammaEnergy[MeV]",Name[i]),
 				150,0,3000);
-    hisGammaECutHigh[i]     = new TH1D(Form("hisGammaECutHigh_%d",i),
+    hisGammaECutHigh[i]= new TH1D(Form("hisGammaECutHigh_%d",i),
 				       Form("hisGammaECutHigh_%s;GammaEnergy[MeV]",Name[i]),
 				       150,0,3000);
-    hisGammaECutLow[i]     = new TH1D(Form("hisGammaECutLow_%d",i),
+    hisGammaECutLow[i] = new TH1D(Form("hisGammaECutLow_%d",i),
 				      Form("hisGammaECutLow_%s;GammaEnergy[MeV]",Name[i]),
 				      150,0,3000);
-    hisGammaChi2[i]  = new TH1D(Form("hisGammaChi2_%d",i),
+    hisGammaChi2[i]    = new TH1D(Form("hisGammaChi2_%d",i),
 				Form("hisGammaChi2_%s;GammaChi2[MeV]",Name[i]),
 				100,0,100);
-    hisCosTheta[i]   = new TH1D(Form("hisCosTheta_%d",i),
+    hisCosTheta[i]     = new TH1D(Form("hisCosTheta_%d",i),
 				Form("hisCosTheta_%s;CosTheta",Name[i]),
 				100,0,1);
-    hisPi0CutMass[i] = new TH1D(Form("hisPi0CutMass_%d",i),
+    hisPi0CutMass[i]   = new TH1D(Form("hisPi0CutMass_%d",i),
 				Form("hisPi0CutMass_%s;Pi0RecMass[MeV]",Name[i]),150,0,300);
     hisPi0MassGammaEH[i] = new TH2D(Form("hisPi0MassGammaEH_%d",i),
 				    Form("hisPi0MassGammaEH_%s;GammaE[MeV]",Name[i]),100,0,4000,150,0,300);
     hisPi0MassGammaEL[i] = new TH2D(Form("hisPi0MassGammaEL_%d",i),
 				    Form("hisPi0MassGammaEL_%s;GammaE[MeV]",Name[i]),100,0,4000,150,0,300);
-    hisPi0MassHeight[i] = new TH2D(Form("hisPi0MassHeight_%d",i),
+    hisPi0MassHeight[i]  = new TH2D(Form("hisPi0MassHeight_%d",i),
 				Form("hisPi0MassHeight_%s;Height[cnt]",Name[i]),160,0,16000,150,0,300);
     hisPi0MassCenterE[i] = new TH2D(Form("hisPi0MassCenterE_%d",i),
 				    Form("hisPi0MassCenterE_%s",Name[i]),100,0,2000,150,0,300);    
 
-    hisGammaECompare[i] = new TH2D(Form("hisGammaECompare_%d",i),
+    hisGammaECompare[i]  = new TH2D(Form("hisGammaECompare_%d",i),
 				   Form("hisGammaECompare_%s",Name[i]),100,0,2000,200,0.5,1.5);
   }
 
@@ -216,6 +216,21 @@ main( int argc ,char ** argv ){
     }else{
       hisL1TrigCountTrigged[i] = new TH1D(Form("hisL1TrigCountTrigged_%d",i),Form("hisL1TrigCountTrigged_%d",i),100,0,50000);    
     }
+  }
+
+  TH1D* hisCVEne[128];
+  TH1D* hisCVEneTrig[128];
+  for( int i = 0; i< 128; i++){
+    hisCVEne[i] = new TH1D(Form("hisCVEne_%d",i),Form("hisCVEne_%d",i),400,0,4000);
+    hisCVEneTrig[i] = new TH1D(Form("hisCVEneTrig_%d",i),Form("hisCVEneTrig_%d",i),400,0,4000);
+  }
+  TH1D* hisSciEne = new TH1D("hisSciEne","hisSciEne",400,0,4000);
+  TH1D* hisSciEneTrig = new TH1D("hisSciEneTrig","hisSciEneTrig",400,0,4000);
+  TH1D* hisSciEneTrigDist[nHist];
+  TH1D* hisCVEneTrigMaximum[nHist];
+  for( int i = 0; i< nHist; i++){
+    hisSciEneTrigDist[i] = new TH1D(Form("hisSciEneTrigDist_%d",i),Form("hisSciEneTrigDist_%s",Name[i]),400,0,4000);
+    hisCVEneTrigMaximum[i] = new TH1D(Form("hisCVEneTrigMaximum_%d",i),Form("hisCVEneTrigMaximum_%s",Name[i]),400,0,4000);
   }
 
   std::cout<< "LOOP" << std::endl;
@@ -239,13 +254,14 @@ main( int argc ,char ** argv ){
     bool bkdecay  = false;
     bool bksdecay = false;
     bool bETC     = false;
-    
+    hisSciEne->Fill(SciEne[0]);
     if(SciEne[0] < 3.86 ){ continue; }
     double CVMax = 0;
     for( int icv  =0; icv < CVNumber; icv++){
       if(CVEne[icv] > CVMax ){
 	CVMax = CVEne[icv];
       }
+      hisCVEne[CVModID[icv]]->Fill(CVEne[icv]);
     }
     if( CVMax > 0.4 ){ continue; }
 
@@ -300,6 +316,12 @@ main( int argc ,char ** argv ){
       hisID = 4;
     }
       
+    hisSciEneTrig->Fill(SciEne[0]);
+    for( int icv  =0; icv < CVNumber; icv++){
+      hisCVEneTrig[CVModID[icv]]->Fill(CVEne[icv]);
+    }
+
+
     if( hisID >= 0 ){
       hisPi0[hisID]->Fill((*pit).m());    
     }
@@ -440,6 +462,17 @@ main( int argc ,char ** argv ){
 	    //gchisq_2 < 5 &&
 	    pi0pt  > 50  &&
 	    cosTheta < 0.9 ){
+
+	  hisSciEneTrigDist[hisID]->Fill(SciEne[0]);
+	  double MaximumCV = 0; 
+	  for( int icv  =0; icv < CVNumber; icv++){
+	    if( MaximumCV < CVEne[icv] ){
+	      MaximumCV = CVEne[icv];
+	    }
+	  }
+	  
+	  hisCVEneTrigMaximum[hisID]->Fill(MaximumCV);
+
 	  hisPi0CutMass[hisID]->Fill((*pit).m());
 	  hisPi0E[hisID]->Fill((*pit).e());
 	  hisGammaECutHigh[hisID]->Fill((*pit).g1().e());
@@ -522,6 +555,20 @@ main( int argc ,char ** argv ){
     hisPi0MassHeight[i]->Write();
     hisPi0MassCenterE[i]->Write();
   }
+
+  for( int icv  =0; icv < 128; icv++){
+
+    hisCVEne[icv]->Write();
+    hisCVEneTrig[icv]->Write();
+  }
+
+  hisSciEne->Write();
+  hisSciEneTrig->Write();
+  for( int i = 0; i< nHist; i++){
+    hisSciEneTrigDist[i]->Write();
+    hisCVEneTrigMaximum[i]->Write();
+  }
+
   tfout->Close();
   return 0;
 }
