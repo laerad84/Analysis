@@ -65,7 +65,7 @@ main( int argc ,char ** argv ){
   std::string ROOTFILE_SIMCONV  = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/ConvFile";
   std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";
   //std::string ROOTFILE_SIMPI0   = "/Volume0/Simulation/Pi0Run/NewPi0Data_2013";
-  std::string iFileForm          = "%s/SimPi0_1E6_LYRES_KLBEAM%d.root";        // ROOTFILE_SIMCONV
+  std::string iFileForm          = "%s/SimPi0_1E6_LYRES_KLBEAM_%d.root";        // ROOTFILE_SIMCONV
   std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged_NEW_KLBEAM.root"; // ROOTFILE_SIM3PI0
 
   TChain* trin = new TChain("T");
@@ -256,7 +256,7 @@ main( int argc ,char ** argv ){
     bool bksdecay = false;
     bool bETC     = false;
     hisSciEne->Fill(SciEne[0]);
-    //if(SciEne[0] < 3.86 ){ continue; }
+    if(SciEne[0] < 4.01 ){ continue; }
     double CVMax = 0;
     for( int icv  =0; icv < CVNumber; icv++){
       if(CVEne[icv] > CVMax ){
@@ -264,7 +264,7 @@ main( int argc ,char ** argv ){
       }
       hisCVEne[CVModID[icv]]->Fill(CVEne[icv]);
     }
-    //if( CVMax > 0.4 ){ continue; }
+    if( CVMax > 1.97/2 ){ continue; }
 
     if( pid[0] == 2112 ){
       bnEvent = true;
