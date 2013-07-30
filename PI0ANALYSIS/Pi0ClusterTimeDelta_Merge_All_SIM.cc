@@ -221,16 +221,16 @@ main( int argc ,char ** argv ){
   TH1D* hisCVEne[128];
   TH1D* hisCVEneTrig[128];
   for( int i = 0; i< 128; i++){
-    hisCVEne[i] = new TH1D(Form("hisCVEne_%d",i),Form("hisCVEne_%d",i),400,0,4000);
-    hisCVEneTrig[i] = new TH1D(Form("hisCVEneTrig_%d",i),Form("hisCVEneTrig_%d",i),400,0,4000);
+    hisCVEne[i] = new TH1D(Form("hisCVEne_%d",i),Form("hisCVEne_%d",i),400,0,800);
+    hisCVEneTrig[i] = new TH1D(Form("hisCVEneTrig_%d",i),Form("hisCVEneTrig_%d",i),400,0,800);
   }
-  TH1D* hisSciEne = new TH1D("hisSciEne","hisSciEne",400,0,4000);
-  TH1D* hisSciEneTrig = new TH1D("hisSciEneTrig","hisSciEneTrig",400,0,4000);
+  TH1D* hisSciEne = new TH1D("hisSciEne","hisSciEne",400,0,800);
+  TH1D* hisSciEneTrig = new TH1D("hisSciEneTrig","hisSciEneTrig",400,0,800);
   TH1D* hisSciEneTrigDist[nHist];
   TH1D* hisCVEneTrigMaximum[nHist];
   for( int i = 0; i< nHist; i++){
-    hisSciEneTrigDist[i] = new TH1D(Form("hisSciEneTrigDist_%d",i),Form("hisSciEneTrigDist_%s",Name[i]),400,0,4000);
-    hisCVEneTrigMaximum[i] = new TH1D(Form("hisCVEneTrigMaximum_%d",i),Form("hisCVEneTrigMaximum_%s",Name[i]),400,0,4000);
+    hisSciEneTrigDist[i] = new TH1D(Form("hisSciEneTrigDist_%d",i),Form("hisSciEneTrigDist_%s",Name[i]),400,0,800);
+    hisCVEneTrigMaximum[i] = new TH1D(Form("hisCVEneTrigMaximum_%d",i),Form("hisCVEneTrigMaximum_%s",Name[i]),400,0,800);
   }
 
   std::cout<< "LOOP" << std::endl;
@@ -255,7 +255,7 @@ main( int argc ,char ** argv ){
     bool bksdecay = false;
     bool bETC     = false;
     hisSciEne->Fill(SciEne[0]);
-    if(SciEne[0] < 3.86 ){ continue; }
+    //if(SciEne[0] < 3.86 ){ continue; }
     double CVMax = 0;
     for( int icv  =0; icv < CVNumber; icv++){
       if(CVEne[icv] > CVMax ){
@@ -263,7 +263,7 @@ main( int argc ,char ** argv ){
       }
       hisCVEne[CVModID[icv]]->Fill(CVEne[icv]);
     }
-    if( CVMax > 0.4 ){ continue; }
+    //if( CVMax > 0.4 ){ continue; }
 
     if( pid[0] == 2112 ){
       bnEvent = true;
