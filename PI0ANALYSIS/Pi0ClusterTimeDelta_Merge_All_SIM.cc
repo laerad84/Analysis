@@ -65,12 +65,12 @@ main( int argc ,char ** argv ){
   std::string ROOTFILE_SIMCONV  = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/ConvFile";
   std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";
   //std::string ROOTFILE_SIMPI0   = "/Volume0/Simulation/Pi0Run/NewPi0Data_2013";
-  std::string iFileForm          = "%s/SimPi0_1E6_LYRES_%d.root";        // ROOTFILE_SIMCONV
-  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged_NEW.root"; // ROOTFILE_SIM3PI0
+  std::string iFileForm          = "%s/SimPi0_1E6_LYRES_KLBEAM%d.root";        // ROOTFILE_SIMCONV
+  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged_NEW_KLBEAM.root"; // ROOTFILE_SIM3PI0
 
   TChain* trin = new TChain("T");
-  for( int i = 0; i < 50; i++){
-    //for( int i = 0; i < 2; i++){
+  //for( int i = 0; i < 50; i++){
+  for( int i = 0; i < 2; i++){
     trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),i));
   }
   E14GNAnaDataContainer data; 
@@ -222,16 +222,16 @@ main( int argc ,char ** argv ){
   TH1D* hisCVEne[128];
   TH1D* hisCVEneTrig[128];
   for( int i = 0; i< 128; i++){
-    hisCVEne[i] = new TH1D(Form("hisCVEne_%d",i),Form("hisCVEne_%d",i),400,0,800);
-    hisCVEneTrig[i] = new TH1D(Form("hisCVEneTrig_%d",i),Form("hisCVEneTrig_%d",i),400,0,800);
+    hisCVEne[i] = new TH1D(Form("hisCVEne_%d",i),Form("hisCVEne_%d",i),800,0,800);
+    hisCVEneTrig[i] = new TH1D(Form("hisCVEneTrig_%d",i),Form("hisCVEneTrig_%d",i),800,0,400);
   }
-  TH1D* hisSciEne = new TH1D("hisSciEne","hisSciEne",400,0,800);
-  TH1D* hisSciEneTrig = new TH1D("hisSciEneTrig","hisSciEneTrig",400,0,800);
+  TH1D* hisSciEne = new TH1D("hisSciEne","hisSciEne",800,0,400);
+  TH1D* hisSciEneTrig = new TH1D("hisSciEneTrig","hisSciEneTrig",800,0,400);
   TH1D* hisSciEneTrigDist[nHist];
   TH1D* hisCVEneTrigMaximum[nHist];
   for( int i = 0; i< nHist; i++){
-    hisSciEneTrigDist[i] = new TH1D(Form("hisSciEneTrigDist_%d",i),Form("hisSciEneTrigDist_%s",Name[i]),400,0,800);
-    hisCVEneTrigMaximum[i] = new TH1D(Form("hisCVEneTrigMaximum_%d",i),Form("hisCVEneTrigMaximum_%s",Name[i]),400,0,800);
+    hisSciEneTrigDist[i] = new TH1D(Form("hisSciEneTrigDist_%d",i),Form("hisSciEneTrigDist_%s",Name[i]),800,0,400);
+    hisCVEneTrigMaximum[i] = new TH1D(Form("hisCVEneTrigMaximum_%d",i),Form("hisCVEneTrigMaximum_%s",Name[i]),800,0,400);
   }
 
   std::cout<< "LOOP" << std::endl;
