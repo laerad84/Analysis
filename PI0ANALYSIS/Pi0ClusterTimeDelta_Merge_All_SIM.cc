@@ -70,7 +70,7 @@ main( int argc ,char ** argv ){
 
   TChain* trin = new TChain("T");
   //for( int i = 0; i < 50; i++){
-  for( int i = 0; i < 2; i++){
+  for( int i = 0; i < 20; i++){
     trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),i));
   }
   E14GNAnaDataContainer data; 
