@@ -65,8 +65,8 @@ main( int argc ,char ** argv ){
   std::string ROOTFILE_SIMCONV  = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/ConvFile";
   std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";
   //std::string ROOTFILE_SIMPI0   = "/Volume0/Simulation/Pi0Run/NewPi0Data_2013";
-  std::string iFileForm          = "%s/SimPi0_1E6_LYRES_KLBEAM_%d.root";        // ROOTFILE_SIMCONV
-  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Merged_NEW_KLBEAM.root"; // ROOTFILE_SIM3PI0
+  std::string iFileForm          = "%s/SimPi0_1E6_LYRES_Fe_KLBEAM_%d.root";        // ROOTFILE_SIMCONV
+  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Fe_Merged_NEW_KLBEAM.root"; // ROOTFILE_SIM3PI0
 
   TChain* trin = new TChain("T");
   //for( int i = 0; i < 50; i++){
