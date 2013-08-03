@@ -57,6 +57,12 @@ double funcResolutionInvSq( double* x, double* p){
 
 int
 main( int argc ,char ** argv ){
+  int targetTypeIndex = atoi(argv[1]);//0:Al 1:Fe
+  int fileTypeIndex   = atoi(argv[2]);//0:KLBEAM 1:BEAMSEED
+  char* targetType[2]= {"Al","Fe"};
+  char* fileType[2]  = {"KLBEAM","BS"};
+  int   nFile[2]     = {2,20};
+  std::cout<< targetType[targetTypeIndex] << "\t" << fileType[fileTypeIndex] << std::endl;
   
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
@@ -65,13 +71,16 @@ main( int argc ,char ** argv ){
   std::string ROOTFILE_SIMCONV  = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/ConvFile";
   std::string ROOTFILE_SIMPI0   = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/Pi0Run/SIMPI0";
   //std::string ROOTFILE_SIMPI0   = "/Volume0/Simulation/Pi0Run/NewPi0Data_2013";
-  std::string iFileForm          = "%s/SimPi0_1E6_LYRES_%d.root";        // ROOTFILE_SIMCONV
-  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Al_Merged_NEW_BS.root"; // ROOTFILE_SIM3PI0
+
+
+  std::string iFileForm          = "%s/SimPi0_1E6_LYRES_%s_%s_%d.root";        // ROOTFILE_SIMCONV
+  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_%s_Merged_NEW_%s.root"; // ROOTFILE_SIM3PI0
+
 
   TChain* trin = new TChain("T");
   //for( int i = 0; i < 50; i++){
-  for( int i = 0; i < 20; i++){
-    trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),i));
+  for( int i = 0; i < nFile[fileTypeIndex]; i++){
+    trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),targetType[targetTypeIndex],fileType[fileTypeIndex],i));
   }
   E14GNAnaDataContainer data; 
   data.setBranchAddress(trin);
@@ -138,10 +147,10 @@ main( int argc ,char ** argv ){
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIMPI0.c_str()),"recreate");
+  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),targetType[targetTypeIndex],fileType[fileTypeIndex]),"recreate");
 
-  const int nHist  =5;
-  char* Name[nHist] = {"Neutron","Gamma","KL","KLBG","ETC"};
+  const int nHist  =6;
+  char* Name[nHist] = {"Neutron","Gamma","KL","KLBG","ETC","ALL"};
 
   TH1D* hisPi0[nHist];
   TH1D* hisPi0Trigged[nHist];
@@ -160,10 +169,15 @@ main( int argc ,char ** argv ){
   TH2D* hisPi0MassCenterE[nHist];
   TH2D* hisPi0MassHeight[nHist];
   TH2D* hisGammaECompare[nHist];
+  TH2D* hisPi0EntriesWithCut[nHist];
 
+  TH1D* hisPi0EntriesSci[nHist];
+  TH1D* hisPi0EntriesSciCVCut[nHist];
+  TH1D* hisPi0EntriesCV[nHist];
+  TH1D* hisPi0EntriesCVSciCut[nHist];
+  
   for( int i = 0; i< nHist; i++){
     
-
     hisPi0ECut[i]      = new TH1D(Form("hisPi0ECut_%d",i),Form("hisPi0ECut_%s",Name[i]),200,0,5000);
     hisPi0E[i]         = new TH1D(Form("hisPi0E_%d",i),Form("hisPi0E_%s",Name[i]),200,0,5000);
     hisPi0[i]          = new TH1D(Form("hisPi0_%d",i),Form("hisPi0_%s",Name[i]),150,0,300 );
@@ -198,8 +212,14 @@ main( int argc ,char ** argv ){
 
     hisGammaECompare[i]  = new TH2D(Form("hisGammaECompare_%d",i),
 				   Form("hisGammaECompare_%s",Name[i]),100,0,2000,200,0.5,1.5);
-  }
+    hisPi0EntriesWithCut[i]= new TH2D(Form("hisPi0EntriesWithCut_%d",i),
+				      Form("hisPi0EntriesWithCut_%s;SciEne;CVMaxEne",Name[i]),400,0,200,400,0,40);
+    hisPi0EntriesSci[i] = new TH1D(Form("hisPi0EntriesSci_%d",i),Form("hisPi0EntriesSci_%s",Name[i]),400,0,200);
+    hisPi0EntriesSciCVCut[i]= new TH1D(Form("hisPi0EntriesSciCVCut_%d",i),Form("hisPi0EntriesSci_CVCut_%s",Name[i]),400,0,200);
+    hisPi0EntriesCV[i]= new TH1D(Form("hisPi0EntriesCV_%d",i),Form("hisPi0EntriesCV_%s",Name[i]),400,0,40);
+    hisPi0EntriesCVSciCut[i]= new TH1D(Form("hisPi0EntriesCV_SciCut_%d",i),Form("hisPi0EntriesCV_SciCut_%s",Name[i]),400,0,40);
 
+  }
 
   TH1D* hisL1TrigCount[11];
   for( int i = 0; i < 11 ; i++){
@@ -219,9 +239,9 @@ main( int argc ,char ** argv ){
     }
   }
 
-  TH1D* hisCVEne[128];
-  TH1D* hisCVEneTrig[128];
-  for( int i = 0; i< 128; i++){
+  TH1D* hisCVEne[10];
+  TH1D* hisCVEneTrig[10];
+  for( int i = 0; i< 10; i++){
     hisCVEne[i] = new TH1D(Form("hisCVEne_%d",i),Form("hisCVEne_%d",i),800,0,800);
     hisCVEneTrig[i] = new TH1D(Form("hisCVEneTrig_%d",i),Form("hisCVEneTrig_%d",i),800,0,400);
   }
@@ -230,8 +250,8 @@ main( int argc ,char ** argv ){
   TH1D* hisSciEneTrigDist[nHist];
   TH1D* hisCVEneTrigMaximum[nHist];
   for( int i = 0; i< nHist; i++){
-    hisSciEneTrigDist[i] = new TH1D(Form("hisSciEneTrigDist_%d",i),Form("hisSciEneTrigDist_%s",Name[i]),800,0,400);
-    hisCVEneTrigMaximum[i] = new TH1D(Form("hisCVEneTrigMaximum_%d",i),Form("hisCVEneTrigMaximum_%s",Name[i]),800,0,400);
+    hisSciEneTrigDist[i] = new TH1D(Form("hisSciEneTrigDist_%d",i),Form("hisSciEneTrigDist_%s",Name[i]),400,0,40);
+    hisCVEneTrigMaximum[i] = new TH1D(Form("hisCVEneTrigMaximum_%d",i),Form("hisCVEneTrigMaximum_%s",Name[i]),400,0,40);
   }
 
   std::cout<< "LOOP" << std::endl;
@@ -246,6 +266,11 @@ main( int argc ,char ** argv ){
 
     data.getData(plist);
 
+    ///////////////////////////////////////////////////////////////////////////////////
+    ///// Particle ID /////
+    ///////////////////////////////////////////////////////////////////////////////////
+    Int_t hisID = -1;
+
     bool bnEvent  = false;
     bool bkEvent  = false;
     bool bgEvent  = false;
@@ -255,16 +280,6 @@ main( int argc ,char ** argv ){
     bool bkdecay  = false;
     bool bksdecay = false;
     bool bETC     = false;
-    hisSciEne->Fill(SciEne[0]);
-    if(SciEne[0] < 4.01 ){ continue; }
-    double CVMax = 0;
-    for( int icv  =0; icv < CVNumber; icv++){
-      if(CVEne[icv] > CVMax ){
-	CVMax = CVEne[icv];
-      }
-      hisCVEne[CVModID[icv]]->Fill(CVEne[icv]);
-    }
-    if( CVMax > 1.97/2 ){ continue; }
 
     if( pid[0] == 2112 ){
       bnEvent = true;
@@ -304,7 +319,6 @@ main( int argc ,char ** argv ){
       bETC = true;
     }
     std::list<Pi0>::iterator pit = plist.begin();
-    Int_t hisID = -1;
     if( bnreact ){
       hisID = 0;
     }else if( bgreact ){
@@ -316,21 +330,66 @@ main( int argc ,char ** argv ){
     }else if( bETC ){
       hisID = 4;
     }
-      
-    hisSciEneTrig->Fill(SciEne[0]);
-    for( int icv  =0; icv < CVNumber; icv++){
-      hisCVEneTrig[CVModID[icv]]->Fill(CVEne[icv]);
-    }
 
+    ///////////////////////////////////////////////////////////////////////////////////
+    /////// End particle ID 
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    /////// Trigger Dicision
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    bool CVTrig=false;
+    bool SciTrig = false;
+
+    //double SciThreshold = 5;
+    double SciThreshold = 10;
+    double CVThreshold  = 1.5;
+
+    hisSciEne->Fill(SciEne[0]);
+    if(SciEne[0] > SciThreshold ){ SciTrig = true; }
+    double CVMax = 0;
+    for( int icv  =0; icv < CVNumber; icv++){
+      if(CVEne[icv] > CVMax ){
+	CVMax = CVEne[icv];
+      }
+      hisCVEne[CVModID[icv]]->Fill(CVEne[icv]);
+    }
+    if( CVMax > CVThreshold ){ CVTrig = true; }
+
+    if( SciTrig && (!CVTrig) ){
+      hisSciEneTrig->Fill(SciEne[0]);
+      for( int icv  =0; icv < CVNumber; icv++){
+	hisCVEneTrig[CVModID[icv]]->Fill(CVEne[icv]);
+      }
+    }
 
     if( hisID >= 0 ){
       hisPi0[hisID]->Fill((*pit).m());    
+      hisPi0[5]->Fill((*pit).m());    
     }
+
+    double MaximumCV = 0; 
+    for( int icv  =0; icv < CVNumber; icv++){
+      if( MaximumCV < CVEne[icv] ){
+	MaximumCV = CVEne[icv];
+      }
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////////////
+    /////// Trigger Dicision End
+    ///////////////////////////////////////////////////////////////////////////////////
+    
+    ///////////////////////////////////////////////////////////////////////////////////
+    /////// L1 Trigger Dicision
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    bool bL1Trig = false;
 
     int nTrig = 0; 
     for( int i = 1; i< 11; i++){
-      if( CsiL1TrigCount[i] > CsiL1TrigCountThreshold[i]  &&
-	  CsiL1TrigCount[i] < CsiL1TrigHighThreshold ){
+      if( CsiL1TrigCount[i] > CsiL1TrigCountThreshold[i] ){
+	//&& CsiL1TrigCount[i] < CsiL1TrigHighThreshold ){
 	nTrig++;
       }
     }
@@ -340,154 +399,217 @@ main( int argc ,char ** argv ){
       hisL1TrigCount[i]->Fill(CsiL1TrigCount[i]);
     }
 
-    if( nTrig >=2 ){
-      if( hisID >= 0){      
-	hisPi0Trigged[hisID]->Fill((*pit).m());          
-	hisPi0RecZ[hisID]->Fill((*pit).recZ()-(*pit).vz());
-	hisPi0RecZSig2[hisID]->Fill((*pit).recZsig2());
-	hisGammaE[hisID]->Fill((*pit).g1().e());
-	hisGammaE[hisID]->Fill((*pit).g2().e());
-	hisGammaChi2[hisID]->Fill((*pit).g1().chisq());
-	hisGammaChi2[hisID]->Fill((*pit).g2().chisq());
+    if( nTrig > 1 ){ bL1Trig = true; }
 
-	double x[2]; 
-	x[0] = (*pit).g1().x();
-	x[1] = (*pit).g2().x();
-	double y[2]; 
-	y[0] = (*pit).g1().y();
-	y[1] = (*pit).g2().y();
+    ///////////////////////////////////////////////////////////////////////////////////
+    /////// Trigger Dicision
+    ///////////////////////////////////////////////////////////////////////////////////
 
-	double R[2];
-	
-	bool bPosition = true;
-	if( TMath::Abs(y[0])> 550  ||
-	    TMath::Abs(y[1])> 550  ){ 
-	  bPosition = false;
+    ///////////////////////////////////////////////////////////////////////////////////
+    /////// Gamma Position
+    ///////////////////////////////////////////////////////////////////////////////////
+    bool bPosition = true;
+    
+    double x[2]; 
+    x[0] = (*pit).g1().x();
+    x[1] = (*pit).g2().x();
+    double y[2]; 
+    y[0] = (*pit).g1().y();
+    y[1] = (*pit).g2().y();
+    
+    double R[2];
+    
+    if( TMath::Abs(y[0])> 550  ||
+	TMath::Abs(y[1])> 550  ){ 
+      bPosition = false;
+    }
+    for( int ig = 0; ig < 2; ig++){
+      R[ig] = TMath::Sqrt( x[ig]*x[ig] + y[ig]*y[ig]);
+      if( R[ig] > 850){ bPosition = false; }
+      if( TMath::Abs(y[ig]) < 150 && TMath::Abs(x[ig])< 150 ){
+	bPosition = false;
+      }	  
+    }
+    double cosTheta = TMath::Abs( x[0]*x[1]+y[0]*y[1] )/TMath::Sqrt((x[0]*x[0]+y[0]*y[1])*(x[1]*x[1]+y[1]*y[1]));
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    /////// Gamma Position
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    /////// Trigger Dicision
+    ///////////////////////////////////////////////////////////////////////////////////
+    bool  bCut = false;
+    
+    double Eg1 = (*pit).g1().e();
+    double Eg2 = (*pit).g2().e();
+    double gchisq_1 = (*pit).g1().chisq();
+    double gchisq_2 = (*pit).g2().chisq();
+    double pi0pt    = TMath::Sqrt((*pit).p3()[0]*(*pit).p3()[0]+ (*pit).p3()[1]*(*pit).p3()[1]);
+    double pi0Mass  = (*pit).m();
+
+    if( Eg1 > 350 && Eg2 > 200 && pi0pt  > 50 && cosTheta < 0.9 ){
+      bCut = true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    /////// Trigger Dicision
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    if( nTrig >=2 && bL1Trig && bCut ){
+      hisPi0EntriesWithCut[hisID]->Fill(SciEne[0],MaximumCV);
+
+      hisPi0EntriesSci[hisID]->Fill(SciEne[0]);
+      if(!CVTrig){
+	hisPi0EntriesSciCVCut[hisID]->Fill(SciEne[0]);
+      }
+      hisPi0EntriesCV[hisID]->Fill(MaximumCV);
+      if(SciTrig){
+	hisPi0EntriesCVSciCut[hisID]->Fill(MaximumCV);
+      }
+    }
+
+    if( nTrig >= 2 && bL1Trig && (!CVTrig) && SciTrig ){
+
+      hisPi0Trigged[hisID]->Fill((*pit).m());          
+      hisPi0RecZ[hisID]->Fill((*pit).recZ()-(*pit).vz());
+      hisPi0RecZSig2[hisID]->Fill((*pit).recZsig2());
+      hisGammaE[hisID]->Fill((*pit).g1().e());
+      hisGammaE[hisID]->Fill((*pit).g2().e());
+      hisGammaChi2[hisID]->Fill((*pit).g1().chisq());
+      hisGammaChi2[hisID]->Fill((*pit).g2().chisq());
+      
+      hisPi0Trigged[5]->Fill((*pit).m());          
+      hisPi0RecZ[5]->Fill((*pit).recZ()-(*pit).vz());
+      hisPi0RecZSig2[5]->Fill((*pit).recZsig2());
+      hisGammaE[5]->Fill((*pit).g1().e());
+      hisGammaE[5]->Fill((*pit).g2().e());
+      hisGammaChi2[5]->Fill((*pit).g1().chisq());
+      hisGammaChi2[5]->Fill((*pit).g2().chisq());
+      
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /// meaningless codes /// 
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      Double_t GammaEnergy[100];
+      Double_t GammaX[100];
+      Double_t GammaY[100];
+      Double_t GammaZ[100];
+      Double_t GammaProductZ[100];
+      int nTotalGamma = 0;
+      bool bAlProductedGamma = false;
+      for( int ip = 0; ip < nTrack; ip++){
+	if( pid[ip] == 22 ){
+	  GammaEnergy[nTotalGamma] = ek[ip];
+	  GammaX[nTotalGamma]      = end_v[ip][0];
+	  GammaY[nTotalGamma]      = end_v[ip][1];
+	  GammaZ[nTotalGamma]      = end_v[ip][2];
+	  GammaProductZ[nTotalGamma]= v[ip][2];	    
+	  nTotalGamma++;
 	}
-	for( int ig = 0; ig < 2; ig++){
-	  R[ig] = TMath::Sqrt( x[ig]*x[ig] + y[ig]*y[ig]);
-	  if( R[ig] > 850){ bPosition = false; }
-	  if( TMath::Abs(y[ig]) < 150 && TMath::Abs(x[ig])< 150 ){
-	    bPosition = false;
-	  }	  
-	}
-	if( !bPosition ){ continue; }
-
-
-	Double_t GammaEnergy[100];
-	Double_t GammaX[100];
-	Double_t GammaY[100];
-	Double_t GammaZ[100];
-	Double_t GammaProductZ[100];
-	int nTotalGamma = 0;
-	bool bAlProductedGamma = false;
-	for( int ip = 0; ip < nTrack; ip++){
-	  if( pid[ip] == 22 ){
-	    GammaEnergy[nTotalGamma] = ek[ip];
-	    GammaX[nTotalGamma]      = end_v[ip][0];
-	    GammaY[nTotalGamma]      = end_v[ip][1];
-	    GammaZ[nTotalGamma]      = end_v[ip][2];
-	    GammaProductZ[nTotalGamma]= v[ip][2];	    
-	    nTotalGamma++;
-	  }
-	}
-
-	int GammaIndex[2] = {-1,-1};
-	Double_t Dist[2][2] = {{0}};
-	if( nTotalGamma == 2){
-	  if( GammaZ[0] > 6148 && GammaZ[1] < 6648 &&
-	      GammaZ[1] > 6148 && GammaZ[2] < 6648 &&
-	      TMath::Abs(GammaY[0]) < 600 && 
-	      TMath::Abs(GammaY[1]) < 600 &&
-	      GammaX[0]*GammaX[0]+GammaY[0]*GammaY[0] < 850*850 &&
-	      GammaX[1]*GammaX[1]+GammaY[1]*GammaY[1] < 850*850 ){
-	      
-		       
-	    if( TMath::Abs(GammaProductZ[0]-3536)<10  &&
-		TMath::Abs(GammaProductZ[1]-3536)<10 ){
-	      for( int isg = 0; isg< 2; isg++){
-		for( int ig = 0; ig < 2; ig++){
-		  Dist[isg][ig] = sqrt((GammaX[isg]-x[ig])*(GammaX[isg]-x[ig])+(GammaY[isg]-y[ig])*(GammaY[isg]-y[ig]));
+      }
+      
+      int GammaIndex[2] = {-1,-1};
+      Double_t Dist[2][2] = {{0}};
+      if( nTotalGamma == 2){
+	if( GammaZ[0] > 6148 && GammaZ[1] < 6648 &&
+	    GammaZ[1] > 6148 && GammaZ[2] < 6648 &&
+	    TMath::Abs(GammaY[0]) < 600 && 
+	    TMath::Abs(GammaY[1]) < 600 &&
+	    GammaX[0]*GammaX[0]+GammaY[0]*GammaY[0] < 850*850 &&
+	    GammaX[1]*GammaX[1]+GammaY[1]*GammaY[1] < 850*850 ){
+	  
+	  
+	  if( TMath::Abs(GammaProductZ[0]-3536)<10  &&
+	      TMath::Abs(GammaProductZ[1]-3536)<10 ){
+	    for( int isg = 0; isg< 2; isg++){
+	      for( int ig = 0; ig < 2; ig++){
+		Dist[isg][ig] = sqrt((GammaX[isg]-x[ig])*(GammaX[isg]-x[ig])+(GammaY[isg]-y[ig])*(GammaY[isg]-y[ig]));
 	      }
-	      }	  
-	      if( Dist[0][0]*Dist[1][1] < Dist[0][1]*Dist[1][0] ){
+	    }	  
+	    if( Dist[0][0]*Dist[1][1] < Dist[0][1]*Dist[1][0] ){
 	      hisGammaECompare[hisID]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[0]);
 	      hisGammaECompare[hisID]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[1]);
-	      }else{
-		hisGammaECompare[hisID]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[1]);
-		hisGammaECompare[hisID]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[0]);
-	      }
+	      hisGammaECompare[5]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[0]);
+	      hisGammaECompare[5]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[1]);
+	    }else{
+	      hisGammaECompare[hisID]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[1]);
+	      hisGammaECompare[hisID]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[0]);
+	      
+	      hisGammaECompare[5]->Fill(GammaEnergy[0],(*pit).g1().e()/GammaEnergy[1]);
+	      hisGammaECompare[5]->Fill(GammaEnergy[1],(*pit).g2().e()/GammaEnergy[0]);
 	    }
 	  }
 	}
+      }
       
-	
-
-
-	int    ClusterID[2] ={0};
-	double ClusterHeight[2] ={0};
-	double MaximumHeight=0;
-	ClusterID[0] = (*pit).g1().clusterIdVec()[0];
-	ClusterID[1] = (*pit).g2().clusterIdVec()[0];
-	Int_t nMatched  = 0;
-	for( int iCsi  =0; iCsi < CsiNumber; iCsi++){	  
-	  //std::cout << CsiModID[iCsi] << "\t" << CsiSignal[iCsi] << "\t" << ClusterID[0] << "\t" << ClusterID[1] << std::endl;
-	  if( CsiModID[iCsi] == ClusterID[0] ){
-	    ClusterHeight[0] = CsiSignal[iCsi];
-	    nMatched++;
-	  }
-	  if(CsiModID[iCsi] == ClusterID[1] ){
-	    ClusterHeight[1] = CsiSignal[iCsi];
-	    nMatched++;
-	  }
-	  if( nMatched == 2 ){
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /// End meaning less codes 
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      
+      
+      int    ClusterID[2] ={0};
+      double ClusterHeight[2] ={0};
+      double MaximumHeight=0;
+      ClusterID[0] = (*pit).g1().clusterIdVec()[0];
+      ClusterID[1] = (*pit).g2().clusterIdVec()[0];
+      Int_t nMatched  = 0;
+      for( int iCsi  =0; iCsi < CsiNumber; iCsi++){	  
+	//std::cout << CsiModID[iCsi] << "\t" << CsiSignal[iCsi] << "\t" << ClusterID[0] << "\t" << ClusterID[1] << std::endl;
+	if( CsiModID[iCsi] == ClusterID[0] ){
+	  ClusterHeight[0] = CsiSignal[iCsi];
+	  nMatched++;
+	}
+	if(CsiModID[iCsi] == ClusterID[1] ){
+	  ClusterHeight[1] = CsiSignal[iCsi];
+	  nMatched++;
+	}
+	if( nMatched == 2 ){
 	    break;
-	  }
 	}
-	if( ClusterHeight[0] > ClusterHeight[1] ){
-	  MaximumHeight = ClusterHeight[0];
-	}else{
-	  MaximumHeight = ClusterHeight[1];
-	}
-	double cosTheta = TMath::Abs( x[0]*x[1]+y[0]*y[1] )/TMath::Sqrt((x[0]*x[0]+y[0]*y[1])*(x[1]*x[1]+y[1]*y[1]));
-	hisCosTheta[hisID]->Fill(cosTheta);
-	double Eg1 = (*pit).g1().e();
-	double Eg2 = (*pit).g2().e();
-	double gchisq_1 = (*pit).g1().chisq();
-	double gchisq_2 = (*pit).g2().chisq();
-	double pi0pt    = TMath::Sqrt((*pit).p3()[0]*(*pit).p3()[0]+ (*pit).p3()[1]*(*pit).p3()[1]);
-	double pi0Mass  = (*pit).m();
-	if( Eg1 > 350 &&
-	    Eg2 > 200 &&
-	    //gchisq_1 < 5 && 
-	    //gchisq_2 < 5 &&
-	    pi0pt  > 50  &&
-	    cosTheta < 0.9 ){
-
-	  hisSciEneTrigDist[hisID]->Fill(SciEne[0]);
-	  double MaximumCV = 0; 
-	  for( int icv  =0; icv < CVNumber; icv++){
-	    if( MaximumCV < CVEne[icv] ){
-	      MaximumCV = CVEne[icv];
-	    }
-	  }
-	  
-	  hisCVEneTrigMaximum[hisID]->Fill(MaximumCV);
-
-	  hisPi0CutMass[hisID]->Fill((*pit).m());
-	  hisPi0E[hisID]->Fill((*pit).e());
-	  hisGammaECutHigh[hisID]->Fill((*pit).g1().e());
-	  hisGammaECutLow[hisID]->Fill((*pit).g2().e());
-
-	  hisPi0MassGammaEH[hisID]->Fill( Eg1, pi0Mass );
-	  hisPi0MassGammaEL[hisID]->Fill( Eg2, pi0Mass );
-	  hisPi0MassHeight[hisID]->Fill( MaximumHeight, pi0Mass);
-	  hisPi0MassCenterE[hisID]->Fill( (*pit).g1().clusterEVec()[0], pi0Mass);
-	  hisPi0MassCenterE[hisID]->Fill( (*pit).g2().clusterEVec()[0], pi0Mass);
-
-	  if( TMath::Abs((*pit).m()-135) < 10 ){
-	    hisPi0ECut[hisID]->Fill((*pit).e());
-	  }
+      }
+      if( ClusterHeight[0] > ClusterHeight[1] ){
+	MaximumHeight = ClusterHeight[0];
+      }else{
+	MaximumHeight = ClusterHeight[1];
+      }
+      
+      hisCosTheta[hisID]->Fill(cosTheta);
+      hisCosTheta[5]->Fill(cosTheta);
+      
+      if( bCut ){
+	hisSciEneTrigDist[hisID]->Fill(SciEne[0]);
+	hisSciEneTrigDist[5]->Fill(SciEne[0]);
+	
+	hisCVEneTrigMaximum[hisID]->Fill(MaximumCV);
+	
+	hisPi0CutMass[hisID]->Fill((*pit).m());
+	hisPi0E[hisID]->Fill((*pit).e());
+	hisGammaECutHigh[hisID]->Fill((*pit).g1().e());
+	hisGammaECutLow[hisID]->Fill((*pit).g2().e());
+	
+	hisPi0MassGammaEH[hisID]->Fill( Eg1, pi0Mass );
+	hisPi0MassGammaEL[hisID]->Fill( Eg2, pi0Mass );
+	hisPi0MassHeight[hisID]->Fill( MaximumHeight, pi0Mass);
+	hisPi0MassCenterE[hisID]->Fill( (*pit).g1().clusterEVec()[0], pi0Mass);
+	hisPi0MassCenterE[hisID]->Fill( (*pit).g2().clusterEVec()[0], pi0Mass);
+	
+	hisCVEneTrigMaximum[5]->Fill(MaximumCV);
+	
+	hisPi0CutMass[5]->Fill((*pit).m());
+	hisPi0E[5]->Fill((*pit).e());
+	hisGammaECutHigh[5]->Fill((*pit).g1().e());
+	hisGammaECutLow[5]->Fill((*pit).g2().e());
+	
+	hisPi0MassGammaEH[5]->Fill( Eg1, pi0Mass );
+	hisPi0MassGammaEL[5]->Fill( Eg2, pi0Mass );
+	hisPi0MassHeight[5]->Fill( MaximumHeight, pi0Mass);
+	hisPi0MassCenterE[5]->Fill( (*pit).g1().clusterEVec()[0], pi0Mass);
+	hisPi0MassCenterE[5]->Fill( (*pit).g2().clusterEVec()[0], pi0Mass);
+	
+	if( TMath::Abs((*pit).m()-135) < 10 ){
+	  hisPi0ECut[hisID]->Fill((*pit).e());
+	    hisPi0ECut[5]->Fill((*pit).e());
 	}
       }
       hisL1TrigCountTrigged[0]->Fill(nTrig);
@@ -495,10 +617,6 @@ main( int argc ,char ** argv ){
 	hisL1TrigCountTrigged[i]->Fill(CsiL1TrigCount[i]);
       }
     }    
-
-    
-
-
   }
 
   std::cout<< "Write" << std::endl;
@@ -568,6 +686,11 @@ main( int argc ,char ** argv ){
   for( int i = 0; i< nHist; i++){
     hisSciEneTrigDist[i]->Write();
     hisCVEneTrigMaximum[i]->Write();
+    hisPi0EntriesWithCut[i]->Write();
+    hisPi0EntriesSci[i]->Write();
+    hisPi0EntriesSciCVCut[i]->Write();
+    hisPi0EntriesCV[i]->Write();
+    hisPi0EntriesCVSciCut[i]->Write();    
   }
 
   tfout->Close();

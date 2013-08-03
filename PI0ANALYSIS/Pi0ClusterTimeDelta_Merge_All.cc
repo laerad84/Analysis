@@ -145,7 +145,7 @@ main( int argc ,char ** argv ){
   //					1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};
   double CsiL1TrigCountThreshold[20] = {1000,3000,3000,3400,3400,3400,2200,2200,2400,2400,
 					2400,1000,1000,1000,1000,1000,1000,1000,1000,1000};
-  double CsiL1TrigHighThreshold = 50000;
+  //double CsiL1TrigHighThreshold = 50000;
   double CVThreshold[10] = {700,600,600,600,500,600,600,550,600,600};
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +246,7 @@ main( int argc ,char ** argv ){
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::list<Pi0>     plist;
-    if((ievent % 1000)== 0){ std::cout<< ievent << "/" << entries << std::endl; }
+    //if((ievent % 1000)== 0){ std::cout<< ievent << "/" << entries << std::endl; }
     data.getData(plist);
 
     Int_t hisID = -1;
@@ -310,13 +310,15 @@ main( int argc ,char ** argv ){
     }else if( bETC ){
       hisID = 4;
     }
-      
+    */
+    std::list<Pi0>::iterator pit = plist.begin();
+
     if( hisID >= 0 ){
       hisPi0[hisID]->Fill((*pit).m());    
     }
-    */
+
     hisSciEneDistrib->Fill(SciEne);
-    if(SciEne < 164 ){ continue; }
+    if(SciEne < 425 ){ continue; }
     bool CVTrig = false;
     for( int icv = 0; icv <CVNumber; icv++){
       if( CVEne[icv] > CVThreshold[CVModID[icv]]){
@@ -326,12 +328,11 @@ main( int argc ,char ** argv ){
     }
     if(CVTrig){continue;}
 
-    std::list<Pi0>::iterator pit = plist.begin();
     hisID = 0;
     int nTrig = 0; 
     for( int i = 1; i< 11; i++){
-      if( CsiL1TrigCount[i] > CsiL1TrigCountThreshold[i]  &&
-	  CsiL1TrigCount[i] < CsiL1TrigHighThreshold ){
+      if( CsiL1TrigCount[i] > CsiL1TrigCountThreshold[i] ){
+	//&&CsiL1TrigCount[i] < CsiL1TrigHighThreshold ){
 	nTrig++;
       }
     }
