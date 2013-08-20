@@ -22,10 +22,11 @@ main( int argc, char** argv ){
   tfOut->cd();
   //test->LoopAll();
   
-  for( int ievent = EventNumber; ievent < 200; ievent++){
-    std::cout << "Analysis started" << std::endl;
+  for( int ievent = EventNumber; ievent < EventNumber+100; ievent++){
+    std::cout << "Analysis started : " << ievent  << std::endl;
     test->EventProcess(ievent);
     std::cout<< "Draw result" << std::endl;
+    can->Clear();
     test->DrawEvent(can);
     can->Update();
     can->Modified();
