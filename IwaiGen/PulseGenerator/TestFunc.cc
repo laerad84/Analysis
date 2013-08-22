@@ -43,10 +43,7 @@ int main( int argc, char** argv ){
 	     << func1->GetMaximumX( 0, 500 ) << "  "
 	     << func2->GetMaximumX( 0, 500 ) << std::endl;
     */
-    delete func;
-    delete func1;
-    delete func2;
-    /*
+
     func->Draw("C");
     func1->Draw("same C");
     can->cd(2);
@@ -56,7 +53,10 @@ int main( int argc, char** argv ){
     can->Update();
     can->Modified();
     getchar();
-    */
+
+    delete func;
+    delete func1;
+    delete func2;
   }
   
   //app->Run();

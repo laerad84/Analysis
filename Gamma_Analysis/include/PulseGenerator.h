@@ -38,7 +38,6 @@ class PulseGenerator {
   double* pdfPar;
   double* corPar;
 
-
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Asymmetric Gaussian //   
   // p3-p7, valid in range [p1-8,p1+160] (p1:peak time)
@@ -57,6 +56,10 @@ class PulseGenerator {
 		    double E_to_CNT = 17.52, double E_to_PE = 12.7);
   TF1* GetWaveform( std::vector<double> EnergyArr, std::vector<double> SignalTimeArr, 
 		    double E_to_CNT = 17.52, double E_to_PE= 12.7);
+  TGraph* GenSignal( double Energy, double SignalTime, 
+		     double E_to_CNT = 17.52, double E_to_PE = 12.7,double gnd=0);
+  TGraph* GenSignal( std::vector<double> EnergyArr, std::vector<double> SignalTimeArr, 
+		     double E_to_CNT = 17.52, double E_to_PE= 12.7,double gnd=0);
   void Reset();
 
   static double agaus( double* x, double* par);
