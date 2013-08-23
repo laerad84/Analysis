@@ -80,6 +80,7 @@ main(int argc, char** argv){
     wConv->AddModule("Csi");
     wConv->AddModule("Cosmic"); 
     wConv->AddModule("Laser");
+    wConv->AddModule("CV");
     wConv->Set();
     wConv->SetMap();
     wConv->SetBranchAddress();
@@ -195,13 +196,16 @@ main(int argc, char** argv){
     bool CoinTrigger=false;
     
     wConv->GetEntry(iEntry);
+    
     if( iEntry && iEntry % 100 == 0){
       std::cout<< "\r" << iEntry << "/" << nEntries << std::endl;
       std::cout<< std::flush; 
     }
 
+    if(wConv->mod[3]->m_nDigi > 0 ){ continue;}
     //Init
     { 
+      CosmicFit    = 0;
       CosmicBoolUp = 0;
       CosmicBoolDn = 0;
       nDigi        = 0; 
@@ -324,7 +328,7 @@ main(int argc, char** argv){
       }
     }
     if( HitUp != 0 && HitDn != 0 ){ Trigger = true; }
-    if( HitCoinUp != 0 && HitCoinDn != 0 ){ CoinTrigger = true ; } 
+    //if( HitCoinUp != 0 && HitCoinDn != 0 ){ CoinTrigger = true ; } 
     if( Trigger ){ 
       CosmicAna->Reset();
       if( CosmicAna->GetResult( gr, roh, theta ) ){
