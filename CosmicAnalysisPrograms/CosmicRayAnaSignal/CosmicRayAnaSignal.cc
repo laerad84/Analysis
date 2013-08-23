@@ -71,7 +71,7 @@ main(int argc, char** argv){
 
   // Set InputFile
   std::cout << "FILE SETTING" << std::endl;
-  TFile* tfRead = new TFile(Form("%s/run%d_wav.root",WAVEFILEDIR.c_str(), RunNumber));
+  TFile* tfRead = new TFile(Form("%s/CosmicRootFile/run%d_wav.root",WAVEFILEDIR.c_str(), RunNumber));
   TTree* trRead = (TTree*)tfRead->Get("WFTree");
   E14ConvWriter* wConv = new E14ConvWriter(Form("%s/Sum%d.root",SUMFILEDIR.c_str(), RunNumber), trRead);
   {
