@@ -17,6 +17,7 @@ bool E14ConvWriterModule::InitData(){
     m_ID[i]            = -1;
     m_Pedestal[i]      = 0;
     m_Signal[i]        = 0;
+    m_Ene[i]           = 0;
     m_Timing[i]        = -9999;
     m_FitTiming[i]     = -9999;    
     m_HHTiming[i]      = -9999;
@@ -33,6 +34,7 @@ bool E14ConvWriterModule::SetBranchAddress(){
   m_Tree->SetBranchAddress(Form("%sID"       ,m_DetectorName),m_ID);
   m_Tree->SetBranchAddress(Form("%sPedestal" ,m_DetectorName),m_Pedestal);
   m_Tree->SetBranchAddress(Form("%sSignal"   ,m_DetectorName),m_Signal);
+  m_Tree->SetBranchAddress(Form("%sEne"      ,m_DetectorName),m_Ene);
   m_Tree->SetBranchAddress(Form("%sTiming"   ,m_DetectorName),m_Timing);
   m_Tree->SetBranchAddress(Form("%sFitTiming",m_DetectorName),m_FitTiming);
   m_Tree->SetBranchAddress(Form("%sHHTiming" ,m_DetectorName),m_HHTiming);
@@ -47,11 +49,13 @@ bool E14ConvWriterModule::Branch(){
   m_Tree->Branch(Form("%sNumber"  ,m_DetectorName),&m_nDigi  ,
 		 Form("%sNumber/I"             ,m_DetectorName));
   m_Tree->Branch(Form("%sID"      ,m_DetectorName) ,m_ID      ,
-		 Form("%sID[%sNumber]/I"       ,m_DetectorName,m_DetectorName));//m_nDigi
+		 Form("%sID[%sNumber]/S"       ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sPedestal",m_DetectorName) ,m_Pedestal,
 		 Form("%sPed[%sNumber]/D"      ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sSignal"  ,m_DetectorName) ,m_Signal  ,
 		 Form("%sSignal[%sNumber]/D"   ,m_DetectorName,m_DetectorName));//m_nDigi
+  m_Tree->Branch(Form("%sEne"  ,m_DetectorName) ,m_Signal  ,
+		 Form("%sEne[%sNumber]/D"   ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sTiming"  ,m_DetectorName) ,m_Timing  ,
 		 Form("%sTiming[%sNumber]/D"   ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sHHTiming",m_DetectorName) ,m_HHTiming,

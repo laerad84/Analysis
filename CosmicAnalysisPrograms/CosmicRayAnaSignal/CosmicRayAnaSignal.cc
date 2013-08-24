@@ -26,6 +26,8 @@
 #include "E14CosmicAnalyzer.h"
 
 
+#include "CsIPoly.h"
+
 const Double_t COSMIC_THRESHOLD[20] = {1000,1000,1000,1000,1000,
 				       1000,1000,1000,1000,1000,
 				       1000,1000,1000,1000,1000,
@@ -47,7 +49,7 @@ main(int argc, char** argv){
 
   Double_t ADCThreshold    = 300;//in case of rawData 300;
   Double_t HeightThreshold = 30;// in case of Signal Height;~200 in ADC
-  Double_t energyThreshold = 3;
+  Double_t energyThreshold = 4;
 
   if( argc == 2){
     RunNumber = atoi(argv[1]);
@@ -57,6 +59,9 @@ main(int argc, char** argv){
     return -1;
   }
   
+  TApplication* app  = new TApplication("app",&argc,argv);
+  
+
   // ReadEnvironment
   std::cout << "ENVIRONMENT" << std::endl;
   std::string ANALIBDIR     = std::getenv("ANALYSISLIB"    );
@@ -69,9 +74,10 @@ main(int argc, char** argv){
   std::cout << WAVEFILEDIR << std::endl;
   std::cout << SUMFILEDIR  << std::endl;
 
+  IDHandler* handler = new IDHandler();
   // Set InputFile
   std::cout << "FILE SETTING" << std::endl;
-  TFile* tfRead = new TFile(Form("%s/CosmicRootFile/run_wav_%d.root",WAVEFILEDIR.c_str(), RunNumber));
+  TFile* tfRead = new TFile(Form("%s/run_wav_%d.root",COSMICFILEDIR.c_str(), RunNumber));
   TTree* trRead = (TTree*)tfRead->Get("Tree");
   E14ConvWriter* wConv = new E14ConvWriter(Form("%s/Sum%d.root",SUMFILEDIR.c_str(), RunNumber), trRead);
   {
@@ -133,7 +139,7 @@ main(int argc, char** argv){
     trOut->Branch("nDigi"    ,&nDigi    ,"nDigi/I");
     trOut->Branch("CsIID"    ,CsIID     ,"CsIID[nDigi]/I");//nDigi;
     trOut->Branch("CsIADC"   ,CsIADC    ,"CsIADC[nDigi]/I");//nDigi;
-    trOut->Branch("CsIdepE"  ,CsIdepE   ,"CsidepE[nDigi]/D");//nDigi;
+    trOut->Branch("CsIdepE"  ,CsIdepE   ,"CsIdepE[nDigi]/D");//nDigi;
     trOut->Branch("CsITiming"    ,CsITiming      ,"CsITiming[nDigi]/D");//nDigi;
     trOut->Branch("CsIHHTiming"  ,CsIHHTiming    ,"CsIHHTiming[nDigi]/D");//nDigi;
     trOut->Branch("CsIFitTiming" ,CsIFitTiming   ,"CsIFitTiming[nDigi]/D");//nDigi;
@@ -180,7 +186,6 @@ main(int argc, char** argv){
 
   double CosmicOut[20];
 
-  IDHandler* handler       = new IDHandler();
   /*
     HoughCsI*  hough         = new HoughCsI();
     Chisq_cosmic* chi2Cosmic = new Chisq_cosmic();
@@ -191,10 +196,14 @@ main(int argc, char** argv){
   std::cout << "TotalEntries::" << nEntries  << std::endl;  
   
   TGraph* gr  = new TGraph();
+  TCanvas* can = new TCanvas("can","",1200,600);
+  can->Divide(2,1);
+  
   for( int iEntry = 0; iEntry < nEntries; iEntry++){
     bool Trigger=false;
     bool CoinTrigger=false;
-    
+    gr->Set(0);
+
     wConv->GetEntry(iEntry);
     
     if( iEntry && iEntry % 100 == 0){
@@ -241,7 +250,7 @@ main(int argc, char** argv){
       CosmicSignal[i] = 0;
       CosmicTime[i]   = 0;
     }
-    
+    //CsIPoly* poly  =new CsIPoly("csi","csi");
     // Cosmic Trigger Judge // 
     for( int iMod = 0; iMod < 3; iMod++ ){
       int nSubMod = (wConv->mod[iMod])->m_nDigi;      
@@ -251,11 +260,13 @@ main(int argc, char** argv){
 	CsiNumber = nSubMod;
 	for( int iSubMod = 0; iSubMod < nSubMod; iSubMod++ ){	    
 	  CsiID[iSubMod]     = wConv->mod[iMod]->m_ID[iSubMod];
-	  CsiSignal[iSubMod] = wConv->mod[iMod]->m_Signal[iSubMod];
+	  CsiSignal[iSubMod] = wConv->mod[iMod]->m_Ene[iSubMod];
 	  CsiTime[iSubMod]      = wConv->mod[iMod]->m_Timing[iSubMod];
 	  CsiFitTime[iSubMod]   = wConv->mod[iMod]->m_FitTiming[iSubMod];
 	  CsiSplTime[iSubMod]   = wConv->mod[iMod]->m_SplTiming[iSubMod];
 	  CsiHHTime[iSubMod]    = wConv->mod[iMod]->m_HHTiming[iSubMod];
+	  //std::cout<< CsiID[iSubMod] << "\t" << CsiSignal[iSubMod] << std::endl;
+	  //poly->Fill( CsiID[iSubMod],CsiSignal[iSubMod]);
 
 	}
 	break;
@@ -280,20 +291,35 @@ main(int argc, char** argv){
       }
 
     }
-
-    
+    /*
+    can->cd(1);
+    poly->Draw("colz");
+    can->Update();
+    can->Modified();
     // Analysis Code 
     gr->Set(0);
+    */
 
     // Set Activated Crystal to graph    
     
     nDigi = 0;
+    int nOuterUp = 0;
+    int nOuterDn = 0;
     for ( int idigi = 0; idigi < CsiNumber; idigi++){
-      if( CsiSignal[idigi] < HeightThreshold ){ continue; }
+      //if( CsiSignal[idigi] < HeightThreshold ){ continue; }
+      if( CsiSignal[idigi] < energyThreshold ){ continue; }
       double x,y;
       handler->GetMetricPosition(CsiID[idigi], x,y);
-      gr->SetPoint(gr->GetN(), x, y);
+      if( x*x+y*y > 850*850 || abs(y) > 50 ){ 
+	if( y > 25 ){
+	  nOuterUp++;
+	}else if( y < -25){
+	  nOuterDn++;
+	}else{;}
+      }
+      if( nOuterUp <1 && nOuterDn<1 ){ continue; }
 
+      gr->SetPoint(gr->GetN(), x, y);
       CsIID[nDigi]   = CsiID[idigi];
       CsIdepE[nDigi]      = CsiSignal[idigi];
       CsITiming[nDigi]    = CsiTime[idigi];
@@ -324,13 +350,21 @@ main(int argc, char** argv){
 	if( CosmicSignal[ iCosmic+5  ] > COSMIC_THRESHOLD[ iCosmic +5  ] ||
 	    CosmicSignal[ iCosmic+15 ] > COSMIC_THRESHOLD[ iCosmic +15 ]){
 	  HitDn     |= 1 << iCosmic;
-	}       	  
+	}       	
       }
     }
     if( HitUp != 0 && HitDn != 0 ){ Trigger = true; }
     //if( HitCoinUp != 0 && HitCoinDn != 0 ){ CoinTrigger = true ; } 
     if( Trigger ){ 
       CosmicAna->Reset();
+      
+      Bool_t  test = CosmicAna->mc_hough->CosmicJudgment(gr);
+      if( test ){
+	std::cout<< "T";
+      }else{
+	std::cout<< "F";
+      }
+      std::cout<< "\t" << gr->GetN() << std::endl;
       if( CosmicAna->GetResult( gr, roh, theta ) ){
 	CalFactor = CosmicAna->mc_chi2Cosmic->GetCalibrationFactor();      
 	CosmicFit = 1; 
@@ -338,6 +372,8 @@ main(int argc, char** argv){
 	CosmicFit = 0;
 	CalFactor = 0;
       }
+
+
     }else{	
       CalFactor = 0;
       nDigi     = 0;
@@ -352,6 +388,7 @@ main(int argc, char** argv){
   hisTriggerHitPosition->Write();
   trOut->Write();
   tfOut->Close();  
+  //app->Run();
 }
 
 
