@@ -231,7 +231,7 @@ main( int argc, char** argv){
     trCosmic->GetEntry(ievent);
     //if( CalFactor <= 0.9 ) continue; 
     for( int idigi = 0; idigi < nDigi; idigi++){
-      CosmicHist[ CsIID[ idigi ] ]->Fill( CsIdepE[ idigi ]*CalFactor );
+      CosmicHist[ CsIID[ idigi ] ]->Fill( CsIdepE[ idigi ]);//*CalFactor );
     }
   }
 
