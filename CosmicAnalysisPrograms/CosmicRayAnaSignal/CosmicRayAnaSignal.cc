@@ -359,11 +359,14 @@ main(int argc, char** argv){
       CosmicAna->Reset();
       
       Bool_t  test = CosmicAna->mc_hough->CosmicJudgment(gr);
-      if( test ){
+      /*
+	if( test ){
 	std::cout<< "T";
-      }else{
+	}else{
 	std::cout<< "F";
-      }
+	}
+      */
+      
       std::cout<< "\t" << gr->GetN() << std::endl;
       if( CosmicAna->GetResult( gr, roh, theta ) ){
 	CalFactor = CosmicAna->mc_chi2Cosmic->GetCalibrationFactor();      
