@@ -193,7 +193,7 @@ main( int argc, char** argv){
   TH1D* CosmicTempHist[2716];
   for( int i = 0; i< 2716; i++){
     CosmicTempHist[i] = new TH1D( Form("hisTempCH%04d",i), Form("CosmicTemp_%04d",i),
-				  240,-200,1000);
+				  200,0,100);
   }
 
   std::cout << "///////////////////////////////////////////////////////" << std::endl;
@@ -217,11 +217,11 @@ main( int argc, char** argv){
       //std::cout<< ich << " : " << Peak << " : " << Sigma << std::endl;
       CosmicHist[ich] = new TH1D( Form( "his_CH%04d", ich ),
 				  Form( "his_CH%04d", ich ),
-				  160,0,Peak*8);
+				  200,0,100);
     }else{
       CosmicHist[ich] = new TH1D( Form( "his_CH%04d", ich ),
 				  Form( "his_CH%04d", ich ),
-				  160,0, 1000);
+				  200,0, 100);
     }
   }
 
@@ -241,11 +241,16 @@ main( int argc, char** argv){
   for( int ich = 0; ich < 2716; ich ++){ 
     ID= ich;
     if( CosmicHist[ich]->GetEntries() > 100){
-      if( searchPeak( CosmicHist[ich], Norm, Peak, Sigma, Chi2, Ndf ) ){
+      //if( searchPeak( CosmicHist[ich], Norm, Peak, Sigma, Chi2, Ndf ) ){
+      /*
 	if( ich >= 2240 ){
 	  Peak  = Peak / 2 ;
 	  Sigma = Sigma / 2; 
 	}
+      */
+      Peak = 13.7;
+      Sigma = 3;
+
 	gr->SetPoint( gr->GetN(), Peak, Sigma );
 	grGain->SetPoint( grGain->GetN() ,ich, Peak );
 	grGain->SetPointError( grGain->GetN() -1 , 0, Sigma );
