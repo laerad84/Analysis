@@ -241,15 +241,11 @@ main( int argc, char** argv){
   for( int ich = 0; ich < 2716; ich ++){ 
     ID= ich;
     if( CosmicHist[ich]->GetEntries() > 100){
-      //if( searchPeak( CosmicHist[ich], Norm, Peak, Sigma, Chi2, Ndf ) ){
-      /*
+      if( searchPeak( CosmicHist[ich], Norm, Peak, Sigma, Chi2, Ndf ) ){
 	if( ich >= 2240 ){
 	  Peak  = Peak / 2 ;
 	  Sigma = Sigma / 2; 
 	}
-      */
-      Peak = 13.7;
-      Sigma = 3;
 
 	gr->SetPoint( gr->GetN(), Peak, Sigma );
 	grGain->SetPoint( grGain->GetN() ,ich, Peak );
