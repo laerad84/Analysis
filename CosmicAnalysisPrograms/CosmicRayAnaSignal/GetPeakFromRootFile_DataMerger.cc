@@ -229,7 +229,7 @@ main( int argc, char** argv){
   for( int ievent  =0 ;ievent < trCosmic->GetEntries(); ievent++){
     //std::cout<< ievent << std::endl;
     trCosmic->GetEntry(ievent);
-    if( CalFactor <= 0.9 ) continue; 
+    //if( CalFactor <= 0.9 ) continue; 
     for( int idigi = 0; idigi < nDigi; idigi++){
       CosmicHist[ CsIID[ idigi ] ]->Fill( CsIdepE[ idigi ]*CalFactor );
     }
