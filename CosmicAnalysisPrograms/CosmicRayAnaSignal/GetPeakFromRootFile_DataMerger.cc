@@ -153,11 +153,14 @@ main( int argc, char** argv){
   Int_t    CsIID[2716];//nDigi
   Double_t CsIdepE[2716];//nDigi
   Double_t CalFactor;
+  Int_t    HitUp;
+  Int_t    HitDn;
   trCosmic->SetBranchAddress("nDigi",&nDigi);
   trCosmic->SetBranchAddress("CsIID",CsIID);//nDigi
   trCosmic->SetBranchAddress("CsIdepE",CsIdepE);//nDigi
   trCosmic->SetBranchAddress("CalFactor",&CalFactor);
-
+  trCosmic->SetBranchAddress("HitUp",&HitUp);
+  trCosmic->SetBranchAddress("HitDn",&HitDn);
 
   std::cout <<  "Output confirmation" << std::endl; 
   TFile* tfout = new TFile(Form("%s/CosmicResult_%d_%d.root",
@@ -230,6 +233,9 @@ main( int argc, char** argv){
     //std::cout<< ievent << std::endl;
     trCosmic->GetEntry(ievent);
     //if( CalFactor <= 0.9 ) continue; 
+    if( (HitUp & 7) == 0 ){ continue; }
+    if( (HitDn & 7) == 0 ){ continue; }
+
     for( int idigi = 0; idigi < nDigi; idigi++){
       CosmicHist[ CsIID[ idigi ] ]->Fill( CsIdepE[ idigi ]);//*CalFactor );
     }
