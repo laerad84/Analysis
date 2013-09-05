@@ -76,7 +76,7 @@ main(int argc,char** argv)
   if( argc  == 3 ){
     outputFilename      = Form("%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),runNumber,iterationNumber);
     calibrationFilename = Form("%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),iterationNumber);
-  }else if( argc == 4 ){
+  }else if( argc >= 4 ){
     outputFilename      = Form("%s/%s/CalibrationADV_%04d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
     calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),iterationNumber);
   }

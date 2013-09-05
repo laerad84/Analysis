@@ -78,9 +78,10 @@ main(int argc,char** argv)
     runNumber           = atoi(argv[1]);
     iterationNumber     = atoi(argv[2]);
     path                = argv[3];
-    ScaleFactor         = atof(argv[4]);    
     InitialCalibrationFilename = argv[4];
-    outputFilename      = Form("%s/%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
+    ScaleFactor         = atof(argv[5]);    
+
+   outputFilename      = Form("%s/%s/CalibrationADV_%d_%d.root",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),runNumber,iterationNumber);
     calibrationFilename = Form("%s/%s/CalibrationFactorADV_%d.dat",ROOTFILE_3PI0CALIBRATION.c_str(),path.c_str(),iterationNumber);
   }else{
     std::cerr << "<<<>>>Arguement Error<<<>>>" <<"\n"

@@ -125,16 +125,25 @@ int main( int argc, char** argv){
       if( klVec[0].chisqZ() > 6 ){continue;} 
       bool  bInnerGamma = false;
       bool  bOuterGamma = false;
+      bool  bClusterMaxE= false;
       // Cut on Gamma // 
       Double_t MinGammaE = 200;
       Int_t nEGamma = 0;      
       if( klVec.size() > 1 ){
 	if( klVec[1].chisqZ() - klVec[0].chisqZ() < 6 ){ continue; }
       }
+
+
+      Double_t ClusterMaxE = 0;
       std::list<Gamma>::iterator git = glist.begin();
       for( int igamma = 0; igamma < 6; igamma++,git++){
+
 	hisGammaE[iFile]->Fill((*git).e());
 	if( (*git).e() > MinGammaE ){ nEGamma++;}
+	if( (*git).clusterEVec()[0] > ClusterMaxE){
+	  ClusterMaxE = (*git).clusterEVec()[0];
+	  if(ClusterMaxE > 400 ){ bClusterMaxE = true; }
+	}
 	if( TMath::Abs((*git).x()) < 150 &&
 	    TMath::Abs((*git).y()) < 150 ){
 	  bInnerGamma = true; 	  
@@ -145,6 +154,8 @@ int main( int argc, char** argv){
 	if( TMath::Abs((*git).y())>575){ bOuterGamma = true; }
       }
 
+
+      if( bClusterMaxE){ continue; }
       if( nEGamma < 6 ){ continue; }
       if( bInnerGamma ){ continue; }
       if( bOuterGamma ){ continue; }

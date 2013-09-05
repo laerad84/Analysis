@@ -44,6 +44,7 @@ void * handle( void *ptr){
   can->Update();
   can->Modified();
   can->Update();
+  can->SaveAs("Event.eps");
   gSystem->ProcessEvents();
 }
 
