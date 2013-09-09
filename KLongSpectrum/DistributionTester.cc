@@ -38,10 +38,10 @@ int main( int argc, char** argv){
   soltFunc->SetParameters(soltPar);
   sugarFunc->SetParameters(sugarPar);
 
-  const int nFile = 6;
+  const int nFile = 8;
   TFile* tf[nFile]; 
   TTree* tr[nFile];  
-  char* name[nFile] = {"SIMFAST","3pi0_LaserComp","WAV","SIM","3pi0_OldComp","WAVNOCV"};
+  char* name[nFile] = {"SIMFAST","3pi0_LaserComp","WAV","SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal"};
   
   for( int i = 0; i < nFile; i++){
     tf[i] = new TFile(Form("Kl_Total_%s.root",name[i]));
@@ -109,7 +109,7 @@ int main( int argc, char** argv){
       //if( ievent  >= 100000 ){ break ; } 
       std::list<Cluster> clist;
       std::list<Gamma>   glist;
-      std::vector<Klong>   klVec;
+      std::vector<Klong> klVec;
       data.getData(clist);
       data.getData(glist);
       data.getData(klVec);
