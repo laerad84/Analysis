@@ -57,12 +57,13 @@ main( int argc ,char ** argv ){
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
   std::string TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());  
 
-  const int nFileType = 5; 
+  const int nFileType = 6; 
   char* FileTypes[nFileType]={"3pi0_OldComp"  ,
 			      "3pi0_LaserComp",
 			      "3pi0_3pi0Comp",
-			      "3pi0_noCal",
-			      "3pi0_OldComp_wopi0"};
+			      "3pi0_noCal",//Missed noComp//
+			      "3pi0_OldComp_wopi0",
+			      "3pi0_NoCompNoCal"};
   int EnergyConvInt;
   switch( TypeIndex ){
   case 0:
@@ -79,6 +80,9 @@ main( int argc ,char ** argv ){
     break;
   case 4:
     EnergyConvInt = 0;
+    break;
+  case 5:
+    EnergyConvInt = 2;
     break;
   default:
     return -1;
@@ -243,6 +247,8 @@ main( int argc ,char ** argv ){
 	CsiEnergy = Converter->ConvertToEnergy( CsiID , CsiSignal)*CalibrationFactor[CsiID]/TempCorFactor;	
       }else if( TypeIndex == 4 ){
 	CsiEnergy = Converter->ConvertToEnergy( CsiID , CsiSignal)*CalibrationFactor[CsiID]/TempCorFactor;	
+      }else if( TypeIndex ==5 ){
+	CsiEnergy = Converter->ConvertToEnergy( CsiID , CsiSignal)/TempCorFactor;
       }
 
       double CsiHHTime = reader->CsiHHTime[ich];
