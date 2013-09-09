@@ -57,10 +57,12 @@ main( int argc ,char ** argv ){
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
   std::string TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());  
 
-  const int nFileType = 3; 
+  const int nFileType = 5; 
   char* FileTypes[nFileType]={"3pi0_OldComp"  ,
 			      "3pi0_LaserComp",
-			      "3pi0_3pi0Comp"};
+			      "3pi0_3pi0Comp",
+			      "3pi0_noCal",
+			      "3pi0_OldComp_wopi0"};
   int EnergyConvInt;
   switch( TypeIndex ){
   case 0:
@@ -71,6 +73,12 @@ main( int argc ,char ** argv ){
     break;
   case 2:
     EnergyConvInt = 3;
+    break;
+  case 3:
+    EnergyConvInt = 2;
+    break;
+  case 4:
+    EnergyConvInt = 0;
     break;
   default:
     return -1;
@@ -113,7 +121,7 @@ main( int argc ,char ** argv ){
   trout->Branch("CsiTime"    ,CSIDigiTime  ,"CsiTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiHHTime"  ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiSignal"  ,CSIDigiSignal,"CsiSignal[CsiNumber]/D");//nCSIDigi
-  trout->Branch("CsiL1nTrig",&CSIL1nTrig,"CsiL1nTrig/I");
+  trout->Branch("CsiL1nTrig" ,&CSIL1nTrig  ,"CsiL1nTrig/I");
   trout->Branch("CsiL1TrigCount",CSIL1TrigCount,"CsiL1TrigCount[20]/D");
   /*
   trout->Branch("nCSIDigi",&nCSIDigi,"nCSIDigi/I");
@@ -228,7 +236,14 @@ main( int argc ,char ** argv ){
       double CsiSignal = reader->CsiSignal[ich]; 
       //double CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[ reader->CsiID[ich]]/TempCorFactor;      
       //double CsiEnergy = reader->CsiEne[ich]; oldinary
-      Double_t CsiEnergy = Converter->ConvertToEnergy( CsiID , CsiSignal)*CalibrationFactor[CsiID]/TempCorFactor*Pi0PeakCorFactor;
+      Double_t CsiEnergy=0;
+      if( TypeIndex < 3 ){
+	CsiEnergy = Converter->ConvertToEnergy( CsiID , CsiSignal)*CalibrationFactor[CsiID]/TempCorFactor*Pi0PeakCorFactor;
+      }else if( TypeIndex == 3 ){
+	CsiEnergy = Converter->ConvertToEnergy( CsiID , CsiSignal)*CalibrationFactor[CsiID]/TempCorFactor;	
+      }else if( TypeIndex == 4 ){
+	CsiEnergy = Converter->ConvertToEnergy( CsiID , CsiSignal)*CalibrationFactor[CsiID]/TempCorFactor;	
+      }
 
       double CsiHHTime = reader->CsiHHTime[ich];
       int CsiTimeClusterID = reader->CsiTimeClusterID[ich];

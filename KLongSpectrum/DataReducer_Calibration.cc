@@ -29,9 +29,7 @@ Int_t main( int argc , char** argv ){
 
   const int nFileType = 9;
   int FileType = atoi( argv[1] ); 
-  char *RunName[9] = {"SIM"         ,"WAV"           ,"SUM",
-			      "SIMFAST"     ,"WAVNOCV"       ,"WAVNEWCOMPNONCAL",
-			      "3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp"};
+  char *RunName[9] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp"};
 
 
   if( FileType == 0 ){
