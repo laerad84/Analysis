@@ -27,9 +27,9 @@ Int_t main( int argc , char** argv ){
     return -1; 
   }
 
-  const int nFileType = 9;
+  const int nFileType = 12;
   int FileType = atoi( argv[1] ); 
-  char *RunName[9] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp"};
+  char *RunName[nFileType] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp","3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_noCompNoCal"};
 
 
   if( FileType == 0 ){
@@ -50,6 +50,12 @@ Int_t main( int argc , char** argv ){
     std::cout<< "ReadData( Wave Analysis:Laser Compensation) File" << std::endl;
   }else if( FileType == 8 ){
     std::cout<< "ReadData( Wave Analysis:3pi0 Compensation) File" << std::endl; 
+  }else if( FileType == 9 ){
+    std::cout<< "ReadData( Wave Analysis:Non Compensation) File" << std::endl;
+  }else if( FileType == 10 ){
+    std::cout<< "ReadData( Wave Analysis:Old Comp&No pi0 ) File" << std::endl;
+  }else if( FileType == 11 ){
+    std::cout<< "ReadData( Wave Analysis: No Comp No Cal) File" << std::endl;
   }else{
     return -1;
   }
@@ -160,10 +166,49 @@ Int_t main( int argc , char** argv ){
     while( ifsRunNumber >> tmpRunNumber ){
       if( tmpRunNumber < 4249 ){ continue; }
       if( tmpRunNumber > 4624 ){ continue; }
-      //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
       ch->Add(Form("%s/run_wav_%d_3pi0_3pi0Comp.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
     }
+  }else if(FileType == 9){
+    std::string HOMEDIR = std::getenv("HOME");
+    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/KLRunList_2.txt",HOMEDIR.c_str()));
+    if( !ifsRunNumber.is_open() ){ 
+      std::cerr << "File dosen't exist" << std::endl;
+      return -1; 
+    }
+    int tmpRunNumber; 
+    while( ifsRunNumber >> tmpRunNumber ){
+      if( tmpRunNumber < 4249 ){ continue; }
+      if( tmpRunNumber > 4624 ){ continue; }
+      ch->Add(Form("%s/run_wav_%d_3pi0_noCal.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+    }
+  }else if(FileType == 10){
+    std::string HOMEDIR = std::getenv("HOME");
+    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/KLRunList_2.txt",HOMEDIR.c_str()));
+    if( !ifsRunNumber.is_open() ){ 
+      std::cerr << "File dosen't exist" << std::endl;
+      return -1; 
+    }
+    int tmpRunNumber; 
+    while( ifsRunNumber >> tmpRunNumber ){
+      if( tmpRunNumber < 4249 ){ continue; }
+      if( tmpRunNumber > 4624 ){ continue; }
+      ch->Add(Form("%s/run_wav_%d_3pi0_OldComp_wopi0.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+    }
+  } else if(FileType == 11){
+    std::string HOMEDIR = std::getenv("HOME");
+    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/KLRunList_2.txt",HOMEDIR.c_str()));
+    if( !ifsRunNumber.is_open() ){ 
+      std::cerr << "File dosen't exist" << std::endl;
+      return -1; 
+    }
+    int tmpRunNumber; 
+    while( ifsRunNumber >> tmpRunNumber ){
+      if( tmpRunNumber < 4249 ){ continue; }
+      if( tmpRunNumber > 4624 ){ continue; }
+      ch->Add(Form("%s/run_wav_%d_3pi0_NoCompNoCal.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+    }
   }
+
 
   std::cout<< "Total Event Number : " << ch->GetEntries() << std::endl;  
 
