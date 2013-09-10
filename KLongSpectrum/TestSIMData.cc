@@ -16,7 +16,7 @@
 #include "pi0/Pi0.h"
 #include <vector>
 #include <list>
-
+#include "TApplication.h"
 const double KLMass = 497.648;//MeV
 
 double KLSpectrum(double* x,double*p){
@@ -38,10 +38,10 @@ int main( int argc, char** argv){
   soltFunc->SetParameters(soltPar);
   sugarFunc->SetParameters(sugarPar);
 
-  const int nFile = 9;
+  const int nFile = 2;
   TFile* tf[nFile]; 
   TTree* tr[nFile];  
-  char* name[nFile] = {"SIMFAST","3pi0_LaserComp","WAV","SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"};
+  char* name[nFile] = {"SIMFAST","SIM"};
   
   for( int i = 0; i < nFile; i++){
     tf[i] = new TFile(Form("Kl_Total_%s.root",name[i]));
@@ -49,7 +49,8 @@ int main( int argc, char** argv){
   }
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
-
+  TApplication* app = new TApplication("app",&argc, argv);
+  
   /*
   Double_t KLMass;
   Double_t KLChisq;
@@ -97,7 +98,7 @@ int main( int argc, char** argv){
     hisGammaE[i]     = new TH1D(Form("hisGammaE_%d",i),Form("hisGammaE_%s",name[i]),100,0,2000);
   }
 
-  TFile* tfOut = new TFile("DistributionSIMDATA.root","recreate");
+  TFile* tfOut = new TFile("TestSIMDATA.root","recreate");
   for( int iFile = 0; iFile < nFile; iFile++){
     E14GNAnaDataContainer data;
     data.setBranchAddress( tr[iFile] );
@@ -122,17 +123,18 @@ int main( int argc, char** argv){
       if( iFile != 2 ){
 	if( CsiL1nTrig< 5 ){ continue; }
       }
-      if( klVec[0].chisqZ() > 6 ){continue;} 
+      //if( klVec[0].chisqZ() > 6 ){continue;} 
       bool  bInnerGamma = false;
       bool  bOuterGamma = false;
       bool  bClusterMaxE= false;
       // Cut on Gamma // 
       Double_t MinGammaE = 200;
       Int_t nEGamma = 0;      
+      /*
       if( klVec.size() > 1 ){
 	if( klVec[1].chisqZ() - klVec[0].chisqZ() < 6 ){ continue; }
       }
-
+      */
 
       Double_t ClusterMaxE = 0;
       std::list<Gamma>::iterator git = glist.begin();
@@ -151,11 +153,11 @@ int main( int argc, char** argv){
 	if( TMath::Sqrt((*git).x()*(*git).x()+(*git).y()*(*git).y()) > 850 ){
 	  bOuterGamma = true;
 	}
-	if( TMath::Abs((*git).y())>575){ bOuterGamma = true; }
+	if( TMath::Abs((*git).y())>550){ bOuterGamma = true; }
       }
 
 
-      if( bClusterMaxE){ continue; }
+      //if( bClusterMaxE){ continue; }
       if( nEGamma < 6 ){ continue; }
       if( bInnerGamma ){ continue; }
       if( bOuterGamma ){ continue; }
@@ -243,10 +245,10 @@ int main( int argc, char** argv){
       if( klVec[0].vz() < 5000 && klVec[0].vz() > 3000){
 	if(TMath::Abs(klVec[0].m()-KLMass )< 10 ){
 	  hisKLP[iFile]->Fill(klMom);
-	}
-      }
       hisKLE[iFile]->Fill(klVec[0].e());
       hisKLZ[iFile]->Fill(klVec[0].vz());
+	}
+      }
       /*
       std::cout <<klMom  << "\tSolt:\t:" 
 		<< soltFunc->Eval(klMom) << "\tSugar:\t" 
@@ -284,15 +286,15 @@ int main( int argc, char** argv){
   can->cd(1);
   gPad->SetGridx();
   gPad->SetGridy();
+  //hisKLE[0]->Scale(0.0116);
   hisKLE[0]->Draw();
-  hisKLE[1]->Scale(ScaleFactor);
   hisKLE[1]->Draw("same");
   can->cd(2);
   gPad->SetGridx();
   gPad->SetGridy();
   gPad->SetLogy();
+  //hisKLZ[0]->Scale(0.0116);
   hisKLZ[0]->Draw();
-  hisKLZ[1]->Scale(ScaleFactor);
   hisKLZ[1]->Draw("same");
   /*
   hisKLZ[2]->SetLineColor(3);
@@ -303,23 +305,23 @@ int main( int argc, char** argv){
   gPad->SetGridx();
   gPad->SetGridy();
   gPad->SetLogy();
+  //hisKLMass[0]->Scale(0.0116);
   hisKLMass[0]->Draw();
   hisKLMass[1]->Draw("same");
   can->cd(4);
   gPad->SetGridx();
   gPad->SetGridy();
-  hisKLChisq[0]->Draw();
-  hisKLChisq[1]->Scale(ScaleFactor);
-  hisKLChisq[2]->Scale(ScaleFactor);
+  //hisKLChisq[0]->Scale(0.0116);
   hisKLChisq[1]->Draw("same");
   hisKLSecChisq[0]->Draw("same");
   hisKLSecChisq[1]->Draw("same");
+
   can->cd(5);
   gPad->SetGridx();
   gPad->SetGridy();
   gPad->SetLogy();
+  //hisGammaE[0]->Scale(0.0116);
   hisGammaE[0]->Draw();
-  hisGammaE[1]->Scale(ScaleFactor);
   hisGammaE[1]->Draw("same");
   /*
   hisKLE[0]->Write();
@@ -340,11 +342,12 @@ int main( int argc, char** argv){
     hisKLZPosition[i]->Write();
     hisKLMass[i]->Write();
   }
-  for( int i = 0; i< nFile-1; i++){
+  for( int i = 0; i< nFile; i++){
     for( int j = 0; j< 10; j++){
       hisKLZAcceptance[i][j]->Write();
     }
   }
   tfOut->Write();
   tfOut->Close();
+  app->Run();
 }

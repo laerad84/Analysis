@@ -29,7 +29,7 @@ Int_t main( int argc , char** argv ){
 
   const int nFileType = 13;
   int FileType = atoi( argv[1] ); 
-  char *RunName[nFileType] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp","3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal","3pi0_LaserComp_NOCV"};
+  char *RunName[nFileType] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp","3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal","3pi0_OldComp_NOCV"};
 
 
   if( FileType == 0 ){
@@ -57,7 +57,7 @@ Int_t main( int argc , char** argv ){
   }else if( FileType == 11 ){
     std::cout<< "ReadData( Wave Analysis: No Comp No Cal) File" << std::endl;
   }else if( FileType == 12 ){
-    std::cout<< "ReadData( Wave Analysis: W/O CV LaserComp) File" << std::endl;
+    std::cout<< "ReadData( Wave Analysis: W/O CV OldComp) File" << std::endl;
   }else{
     return -1;
   }
@@ -218,7 +218,7 @@ Int_t main( int argc , char** argv ){
     }
     int tmpRunNumber; 
     while( ifsRunNumber >> tmpRunNumber ){
-      ch->Add(Form("%s/run_wav_%d_3pi0_LaserComp.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+      ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
     }
   }
 
