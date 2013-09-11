@@ -74,8 +74,12 @@ main( int argc ,char ** argv ){
   //std::string oFileForm        = "%s/Sim3pi0_wav_%d.root";     //ROOTFILE_SIM3PI0
   //std::string iFileForm          = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";    //ROOTFILE_SIM3PI0
   //std::string oFileForm          = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root"; // ROOTFILE_SIM3PI0
-  std::string iFileForm          = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration_mis_1.root";    //ROOTFILE_SIM3PI0
-  std::string oFileForm          = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root"; // ROOTFILE_SIM3PI0
+  //std::string iFileForm          = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration_mis_1.root";    //ROOTFILE_SIM3PI0
+  //std::string oFileForm          = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root"; // ROOTFILE_SIM3PI0
+
+  std::string iFileForm          = "%s/Sim3pi0_wav_ALCV_1000000_%d.root";    //ROOTFILE_SIM3PI0
+  std::string oFileForm          = "%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_1000000_%d.root"; // ROOTFILE_SIM3PI0
+
 
   //std::string iFileForm = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";
   //std::string oFileForm = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_%s.root";
