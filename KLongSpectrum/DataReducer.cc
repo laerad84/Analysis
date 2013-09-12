@@ -28,7 +28,7 @@ Int_t main( int argc , char** argv ){
   }
 
   int FileType = atoi( argv[1] ); 
-
+  const int nFiles = 7;
   if( FileType == 0 ){
     std::cout<< "Read Simulation File" << std::endl;
   }else if( FileType == 1 ){
@@ -41,6 +41,8 @@ Int_t main( int argc , char** argv ){
     std::cout<< "Read Data( Wave Analysis:W/O CV) File" << std::endl;
   }else if( FileType == 5 ){
     std::cout<< "Read Data( Wave Analysis:Old Compensated) File" << std::endl;
+  }else if( FileType == 6 ){
+    std::cout<< "Read Data( Sim Analysis: Old Compensate" << std::endl;
   }
 
   std::string ROOTFILE_SUMUP = std::getenv("ROOTFILE_SUMUP");
@@ -110,7 +112,13 @@ Int_t main( int argc , char** argv ){
       //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
       ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
     }
+  }else if(FileType == 6){ //Gsim event sato spectrum
+    for( int i = 0; i< 10; i++){
+      ch->Add(Form("%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_1000000_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+    }
   }
+
+
   std::cout<< "Total Event Number : " << ch->GetEntries() << std::endl;  
 
   int CsiL1nTrig;
@@ -122,7 +130,7 @@ Int_t main( int argc , char** argv ){
   data.setBranchAddress( ch );
   
   //// Set Output File //// 
-  char *RunName[6] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL"};
+  char *RunName[nFiles] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","SIM_SATO"};
   TFile* tfout = new TFile(Form("Kl_Total_%s.root",RunName[FileType]),"RECREATE");
   TTree* trKL = new TTree("trKL","Klong Tree");
   Double_t KLMass;
