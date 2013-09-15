@@ -36,9 +36,7 @@ double KLSpectrum(double* x,double*p){
 
 //void DistributionTester(){
 int main( int argc, char** argv){
-
-  int nTimeIteration = atoi(argv[1]);
-
+  int nTimeIteration =  atoi( argv[1] );
   TF1* soltFunc  = new TF1("soltfunc",KLSpectrum,0,12,5);
   TF1* sugarFunc = new TF1("sugarfunc",KLSpectrum,0,12,5);
   const double soltPar[5] = { 1, 1.37,7.48e-1,-2.9e-1,1.68e-2};
@@ -80,7 +78,7 @@ int main( int argc, char** argv){
   //man->PrintOffset();
 
   Double_t TimeOffset[2716]={0};
-  if( nTimeIteration > 0 ){
+  if( nTimeIteration > 1 ){ 
     std::ifstream ifs(Form("TimeOffset_%d.dat",nTimeIteration));
     if( !ifs.is_open() ){
       std::cout<< "No CalibrationFile" << std::endl;
@@ -92,10 +90,8 @@ int main( int argc, char** argv){
       TimeOffset[tmpID] = tmpOffset;
       std::cout<<tmpID << "\t" <<  TimeOffset[tmpID] << std::endl;
     }
+    ifs.close();
   }
-
-
-
   for( int ievent = 0; ievent < tr->GetEntries(); ievent++){      
     tr->GetEntry(ievent);
     //if( ievent  >= 100000 ){ break ; } 
