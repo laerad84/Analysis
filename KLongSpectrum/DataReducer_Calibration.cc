@@ -27,9 +27,9 @@ Int_t main( int argc , char** argv ){
     return -1; 
   }
 
-  const int nFileType = 13;
+  const int nFileType = 14;
   int FileType = atoi( argv[1] ); 
-  char *RunName[nFileType] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp","3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal","3pi0_OldComp_NOCV"};
+  char *RunName[nFileType] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp","3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal","3pi0_OldComp_NOCV","SIMFULL"};
 
 
   if( FileType == 0 ){
@@ -58,6 +58,8 @@ Int_t main( int argc , char** argv ){
     std::cout<< "ReadData( Wave Analysis: No Comp No Cal) File" << std::endl;
   }else if( FileType == 12 ){
     std::cout<< "ReadData( Wave Analysis: W/O CV OldComp) File" << std::endl;
+  }else if( FileType == 13 ){
+    std::cout<< "ReadData( SIMulation FULL ) File" << std::endl;
   }else{
     return -1;
   }
@@ -75,6 +77,7 @@ Int_t main( int argc , char** argv ){
     ch = new TChain("T");
   }
 
+  
   if( FileType == 0){
     //for( int i = 0; i< 120; i++){
     for( int i = 0; i< 60; i++){
@@ -220,7 +223,16 @@ Int_t main( int argc , char** argv ){
     while( ifsRunNumber >> tmpRunNumber ){
       ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
     }
+  }else if( FileType == 13){
+    //for( int i = 0; i< 120; i++){
+    for( int i = 0; i< 8; i++){
+      //ch->Add(Form("%s/Calibration_with_4e9/Calibration_%03d0_15.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+      //ch->Add(Form("%s/out_KL3pi0.mac_1000000_%d_FEB_CL_KL.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+      //ch->Add(Form("%s/Sim3pi0_wav_KL_RES_LY_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+      ch->Add(Form("%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_5E8KL_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+    }
   }
+  
 
 
   std::cout<< "Total Event Number : " << ch->GetEntries() << std::endl;  
