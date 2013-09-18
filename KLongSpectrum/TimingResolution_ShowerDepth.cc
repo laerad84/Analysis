@@ -23,9 +23,24 @@
 #include "T0Manager.h"
 #include "TDirectory.h"
 #include "TProfile.h"
-#include "IDHandler.h"
-
 const double KLMass = 497.648;//MeV
+double const sol = 299.792458;//[mm/nsec]
+double const solc= 80;//[mm/nsec]
+double const Pcor[2]={6.49003,0.99254};
+double const CsIX0=18.5;//mm
+
+double showerDepth(double x){
+  double L = CsIX0*(Pcor[0]+Pcor[1]*log(x/1000.));//mm  
+  return L;
+}
+
+double showerTimeDelay(Klong kl, Gamma g){
+  double depth     = showerDepth(g.e());
+  double cosTheta  = abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
+  double delayTime = 500/solc - depth*(1-cosTheta)/sol;
+  return delayTime;
+}
+
 
 double KLSpectrum(double* x,double*p){
   //double klp   = TMath::Sqrt( x[0]*x[0]-KLMass*KLMass);  
@@ -46,7 +61,6 @@ int main( int argc, char** argv){
   soltFunc->SetParameters(soltPar);
   sugarFunc->SetParameters(sugarPar);
 
-  IDHandler* handler = new IDHandler();
   const int nFile = 1;
   TFile* tf;
   TTree* tr;
@@ -57,7 +71,7 @@ int main( int argc, char** argv){
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
 
-  TFile* tfOut = new TFile(Form("TimeResolution_%s.root",name),"recreate");
+  TFile* tfOut = new TFile(Form("TimeResolution_Shower_%s.root",name),"recreate");
   TH2D* hisResolution = new TH2D("hisResolution","hisResolution",100,0,400,100,-20,20);
   TH2D* hisResolutionAdj = new TH2D("hisResolutionAdj","hisResolutionAdj",100,0,400,100,-20,20);
   TH2D* hisResolutionLY[4];//0: good/good 1:good/bad 2:bad/good 3:bad/bad
@@ -66,7 +80,6 @@ int main( int argc, char** argv){
   for( int i = 0; i< 4; i++){
     hisResolutionLY[i] = new TH2D(Form("hisResolutionLY_%d",i),Form("hisResolutionLY_%d",i),100,0,400,100,-20,20);
   }
-  double sol = 299.792458;//[mm/nsec]
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
@@ -83,7 +96,7 @@ int main( int argc, char** argv){
   //man->PrintOffset();
 
   Double_t TimeOffset[2716]={0};
-  std::ifstream ifs("TimeOffset_10.dat");
+  std::ifstream ifs("TimeOffset_Shower_10.dat");
   if( !ifs.is_open() ){
     std::cout<< "No CalibrationFile" << std::endl;
     return -1;
@@ -105,6 +118,7 @@ int main( int argc, char** argv){
     data.getData(glist);
     data.getData(klVec);
     
+    
     double klpos[3]={0};
     klpos[0] = klVec[0].vx();
     klpos[1] = klVec[1].vy();
@@ -118,7 +132,9 @@ int main( int argc, char** argv){
 				 + TMath::Power(((*git).y() - klVec[0].vy()),2) 
 				 + TMath::Power(((*git).z() - klVec[0].vz()),2));
     double g0Offset = TimeOffset[g0crystalID];//man->GetT0Offset(g0crystalID);
-    double g0Delta  = g0Offset-g0length/sol;//man->GetT0Offset(g0crystalID);
+    double g0Shower = showerTimeDelay(klVec[0],(*git));
+    double g0Delta  = g0Offset-g0length/sol-g0Shower;//man->GetT0Offset(g0crystalID);
+
     bool bg0good=false;
     double g0xy[2];
 
@@ -152,7 +168,7 @@ int main( int argc, char** argv){
 	int id0= (*git).clusterIdVec()[0];
 	int id1= (*git).clusterIdVec()[1];
 	hisResolution->Fill( (*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-((*git).clusterTimeVec()[0])); 
-	hisResolutionAdj->Fill( (*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
+	hisResolutionAdj->Fill( (*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0])); 
 	bool bggood =false;
 	double gxy[2];
 	gxy[0] = (*git).x();

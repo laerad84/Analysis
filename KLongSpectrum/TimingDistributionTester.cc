@@ -24,6 +24,10 @@
 #include "TDirectory.h"
 #include "TProfile.h"
 const double KLMass = 497.648;//MeV
+double const sol = 299.792458;//[mm/nsec]
+double const solc= 80;//[mm/nsec]
+double const Pcor[2]={6.49003,0.99254};
+double const CsIX0=18.5;//mm
 
 double KLSpectrum(double* x,double*p){
   //double klp   = TMath::Sqrt( x[0]*x[0]-KLMass*KLMass);  
@@ -32,6 +36,17 @@ double KLSpectrum(double* x,double*p){
   double value = p[0]*TMath::Exp(-0.5*(klp-p[1])*(klp-p[1])/(sigma*sigma));
   return value;
 }
+double showerDepth(double x){
+  double L = CsIX0*(Pcor[0]+Pcor[1]*log(x/1000.));//mm  
+  return L;
+}
+double showerTimeDelay(Klong kl, Gamma g){
+  double depth     = showerDepth(g.e());
+  double cosTheta  = abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
+  double delayTime = 500/solc - depth*(1-cosTheta)/sol;
+  return delayTime;
+}
+
 
 
 //void DistributionTester(){
@@ -54,7 +69,7 @@ int main( int argc, char** argv){
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
 
-  TFile* tfOut = new TFile(Form("DistributionTimeData_%s_%d.root",name,nTimeIteration),"recreate");
+  TFile* tfOut = new TFile(Form("DistributionTimeData_Shower_%s_%d.root",name,nTimeIteration),"recreate");
   TH2D* hisTimeID;
   TH2D* hisAdjTimeID;
   hisTimeID    = new TH2D(Form("hisTimeID_%d",nTimeIteration),Form("hisTimeID_%d",nTimeIteration),
@@ -79,7 +94,7 @@ int main( int argc, char** argv){
 
   Double_t TimeOffset[2716]={0};
   if( nTimeIteration > 1 ){ 
-    std::ifstream ifs(Form("TimeOffset_%d.dat",nTimeIteration));
+    std::ifstream ifs(Form("TimeOffset_Shower_%d.dat",nTimeIteration));
     if( !ifs.is_open() ){
       std::cout<< "No CalibrationFile" << std::endl;
       return -1;
@@ -115,7 +130,9 @@ int main( int argc, char** argv){
 				 + TMath::Power(((*git).y() - klVec[0].vy()),2) 
 				 + TMath::Power(((*git).z() - klVec[0].vz()),2));
     double g0Offset = TimeOffset[g0crystalID];//man->GetT0Offset(g0crystalID);
-    double g0Delta  = g0Offset-g0length/sol;//man->GetT0Offset(g0crystalID);
+    double g0Shower = showerTimeDelay(klVec[0],(*git));
+    double g0Delta  = g0Offset-g0length/sol-g0Shower;//man->GetT0Offset(g0crystalID);
+
     git++;
     if( g0crystalID >= 2240 ){continue; }
     
@@ -132,12 +149,13 @@ int main( int argc, char** argv){
       double length = TMath::Sqrt( TMath::Power(((*git).x() - klVec[0].vx()),2) 
 				   + TMath::Power(((*git).y() - klVec[0].vy()),2) 
 				   + TMath::Power(((*git).z() - klVec[0].vz()),2));
-      double Delta = Offset-length/sol;//man->GetT0Offset(crystalID);
+      double Shower = showerTimeDelay(klVec[0],(*git));
+      double Delta = Offset-length/sol-Shower;//man->GetT0Offset(crystalID);
       hisTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Offset)-(g0time-g0Offset));
       hisAdjTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Delta)-(g0time-g0Delta));
     }
   }
-    /// Evaluation T0 /// 
+  /// Evaluation T0 /// 
 
   TF1* func = new TF1("func","gaus",-20,20);
   hisTimeID->FitSlicesY(func);
@@ -157,7 +175,7 @@ int main( int argc, char** argv){
   int calibrated[2716] = {-1};
   int nCalibrated = 0;
   double mean=0;
-  std::ofstream ofs(Form("TimeOffset_%d.dat",nTimeIteration+1));
+  std::ofstream ofs(Form("TimeOffset_Shower_%d.dat",nTimeIteration+1));
   for( int i = 1; i<= profAdjTimeID->GetNbinsX(); i++){
     if( profAdjTimeID->GetBinEntries(i) < 1 ){ continue; }
     calibrated[i-1] = 1;
