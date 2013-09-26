@@ -41,7 +41,7 @@ int main( int argc, char** argv){
   const int nFile = 2;
   TFile* tf[nFile]; 
   TTree* tr[nFile];  
-  char* name[nFile] = {"WAVNOCV","SIM_SATO"};
+  char* name[nFile] = {"SIMFULL","WAVNOCV"};
   
   for( int i = 0; i < nFile; i++){
     tf[i] = new TFile(Form("Kl_Total_%s.root",name[i]));
@@ -50,39 +50,38 @@ int main( int argc, char** argv){
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
 
-  /*
-  Double_t KLMass;
-  Double_t KLChisq;
-  Double_t KLSecChisq;
-  Double_t KLE;
-  Double_t KLPos[nFile];
-  Double_t KLMom[nFile];
-  Double_t GammaE[6];
-  Double_t GammaPos[6][nFile]; 
-  Double_t GammaTime[6];
-
-  for( int i = 0; i< nFile; i++){
-    tr[i]->SetBranchAddress("KLMass",&KLMass);
-    tr[i]->SetBranchAddress("KLChisq",&KLChisq);
-    tr[i]->SetBranchAddress("KLSecChisq",&KLSecChisq);
-    tr[i]->SetBranchAddress("KLE",&KLE);
-    tr[i]->SetBranchAddress("KLPos",KLPos);
-    tr[i]->SetBranchAddress("KLMom",KLMom);
-    tr[i]->SetBranchAddress("GammaE",GammaE);
-    tr[i]->SetBranchAddress("GammaPos",GammaPos);
-    tr[i]->SetBranchAddress("GammaTime",GammaTime);
-  }
-*/
   TH1D* hisKLP[nFile];
   TH1D* hisKLZ[nFile];
   TH1D* hisKLE[nFile];
   TH1D* hisKLMass[nFile];
   TH1D* hisKLChisq[nFile];
   TH1D* hisKLSecChisq[nFile];
+  TH1D* hisKLX[nFile];
+  TH1D* hisKLY[nFile];
+
   TH1D* hisGammaE[nFile];
+  TH1D* hisGammaTime[nFile];
+  TH1D* hisGammaPosX[nFile];
+  TH1D* hisGammaPosY[nFile];
   TH1D* hisKLZAcceptance[nFile][10];
   TH1D* hisKLZPosition[nFile];
   TH1D* hisVETOHistory[nFile];
+  TH1D* hisPi0E[nFile];
+  TH1D* hisPi0Mass[nFile];
+  TH1D* hisPi0Z[nFile];
+  TH1D* hisPi0ZSig[nFile];
+  TH1D* hisPi0P[nFile];
+  TH1D* hisPi0Pt[nFile];
+  TH1D* hisL1TrigCount[nFile][20];
+
+  TH1D* hisKLEN[nFile];
+  TH1D* hisKLMassN[nFile];
+  TH1D* hisKLXN[nFile];
+  TH1D* hisKLYN[nFile];
+  TH1D* hisPi0MassN[nFile];
+  TH1D* hisKLChisqN[nFile];
+  TH1D* hisKLSecChisqN[nFile];
+  
   for( int i = 0; i< nFile; i++){
     for( int j = 0; j< 10; j++){
       hisKLZAcceptance[i][j] = new TH1D(Form("hisKLZAcceptance_%d_%d",i,j),Form("hisKLZAcceptance_%d_%d_%d",i,500*j,500*(j+1)),70,0,7000);
@@ -91,11 +90,32 @@ int main( int argc, char** argv){
     hisKLZ[i]        = new TH1D(Form("hisKLZ_%d",i),Form("hisKLZ_%s",name[i]),70,0,7000);
     hisKLP[i]        = new TH1D(Form("hisKLP_%d",i),Form("hisKLP_%s",name[i]),100,0,10000);
     hisKLE[i]        = new TH1D(Form("hisKLE_%d",i),Form("hisKLE_%s",name[i]),100,0,10000);
-    hisKLMass[i]     = new TH1D(Form("hisKLMass_%d",i),Form("hisKLMass_%s",name[i]),50,400,800);
+    hisKLX[i]        = new TH1D(Form("hisKLX_%d",i),Form("hisKLX_%s",name[i]),160,-400,400);
+    hisKLY[i]        = new TH1D(Form("hisKLY_%d",i),Form("hisKLY_%s",name[i]),160,-400,400);
+    hisKLMass[i]     = new TH1D(Form("hisKLMass_%d",i),Form("hisKLMass_%s",name[i]),100,450,550);
     hisKLChisq[i]    = new TH1D(Form("hisKLChisq_%d",i),Form("hisKLChisq_%s",name[i]),100,0,100);
     hisKLSecChisq[i] = new TH1D(Form("hisKLSecChisq_%d",i),Form("hisKLSecChisq_%s",name[i]),100,0,100);
     hisGammaE[i]     = new TH1D(Form("hisGammaE_%d",i),Form("hisGammaE_%s",name[i]),100,0,2000);
+    hisGammaTime[i]  = new TH1D(Form("hisGammaTime_%d",i),Form("hisGammaTime_%s",name[i]),100,0,400);
+    hisGammaPosX[i]  = new TH1D(Form("hisGammaPosX_%d",i),Form("hisGammaPosX_%s",name[i]),80,-1000,1000);
+    hisGammaPosY[i]  = new TH1D(Form("hisGammaPosY_%d",i),Form("hisGammaPosY_%s",name[i]),80,-1000,1000);
     hisVETOHistory[i]= new TH1D(Form("hisVETOHistory_%d",i),Form("hisVETOHistory_%s",name[i]),20,0,20);
+    hisPi0E[i]       = new TH1D(Form("hisPi0E_%d",i),Form("hisPi0E_%s",name[i]),100,0,3000);
+    hisPi0P[i]       = new TH1D(Form("hisPi0P_%d",i),Form("hisPi0P_%s",name[i]),100,0,3000);
+    hisPi0Pt[i]      = new TH1D(Form("hisPi0Pt_%d",i),Form("hisPi0Pt_%s",name[i]),100,0,400);
+    hisPi0Mass[i]    = new TH1D(Form("hisPi0Mass_%d",i),Form("hisPi0Mass_%s",name[i]),150,50,200);
+    hisPi0Z[i]       = new TH1D(Form("hisPi0Z_%d",i),Form("hisPi0Z_%s",name[i]),70,0,7000);
+    hisPi0ZSig[i]    = new TH1D(Form("hisPi0ZSig_%d",i),Form("hisPi0ZSig_%s",name[i]),150,0,15000);
+    for( int k = 0; k<20; k++){
+	hisL1TrigCount[i][k]= new TH1D(Form("hisL1TrigCount_%d_%d",i,k),Form("hisL1TrigCount_%s_%d",name[i],k),500,0,30000);
+    }
+    hisKLEN[i]        = new TH1D(Form("hisKLEN_%d",i),Form("hisKLEN_%s",name[i]),100,0,10000);
+    hisKLMassN[i]     = new TH1D(Form("hisKLMassN_%d",i),Form("hisKLMassN_%s",name[i]),100,450,550);
+    hisKLXN[i]        = new TH1D(Form("hisKLXN_%d",i),Form("hisKLXN_%s",name[i]),160,-400,400);
+    hisKLYN[i]        = new TH1D(Form("hisKLYN_%d",i),Form("hisKLYN_%s",name[i]),160,-400,400);
+    hisPi0MassN[i]    = new TH1D(Form("hisPi0MassN_%d",i),Form("hisPi0MassN_%s",name[i]),150,50,200);
+    hisKLChisqN[i]    = new TH1D(Form("hisKLChisqN_%d",i),Form("hisKLChisqN_%s",name[i]),100,0,100);
+    hisKLSecChisqN[i] = new TH1D(Form("hisKLSecChsiqN_%d",i),Form("hisKLSecChisqN_%s",name[i]),100,0,100);    
   }
 
   TFile* tfOut = new TFile("DistributionTesterNOCV.root","recreate");
@@ -125,7 +145,6 @@ int main( int argc, char** argv){
 	if( CsiL1nTrig< 5 ){ continue; }
       }
       hisVETOHistory[iFile]->Fill(1);
-      //if( klVec[0].chisqZ() > 6 ){continue;} 
       hisVETOHistory[iFile]->Fill(2);
       bool  bInnerGamma = false;
       bool  bOuterGamma = false;
@@ -133,16 +152,10 @@ int main( int argc, char** argv){
       // Cut on Gamma // 
       Double_t MinGammaE = 200;
       Int_t nEGamma = 0;      
-      if( klVec.size() > 1 ){
-	//if( klVec[1].chisqZ() - klVec[0].chisqZ() < 6 ){ continue; }
-      }
-      hisVETOHistory[iFile]->Fill(3);
-
       Double_t ClusterMaxE = 0;
       std::list<Gamma>::iterator git = glist.begin();
       for( int igamma = 0; igamma < 6; igamma++,git++){
 
-	hisGammaE[iFile]->Fill((*git).e());
 	if( (*git).e() > MinGammaE ){ nEGamma++;}
 	if( (*git).clusterEVec()[0] > ClusterMaxE){
 	  ClusterMaxE = (*git).clusterEVec()[0];
@@ -155,116 +168,112 @@ int main( int argc, char** argv){
 	if( TMath::Sqrt((*git).x()*(*git).x()+(*git).y()*(*git).y()) > 850 ){
 	  bOuterGamma = true;
 	}
-	if( TMath::Abs((*git).y())>575){ bOuterGamma = true; }
+	if( TMath::Abs((*git).y())>550){ bOuterGamma = true; }
       }
 
 
+      /////////////////////////////
+      /// Basic Cut condition   ///
       //if( bClusterMaxE){ continue; }
       hisVETOHistory[iFile]->Fill(4);
-      //if( nEGamma < 6 ){ continue; }
+      if( nEGamma < 6 ){ continue; }
       hisVETOHistory[iFile]->Fill(5);
       if( bInnerGamma ){ continue; }
       hisVETOHistory[iFile]->Fill(6);
       if( bOuterGamma ){ continue; }
       hisVETOHistory[iFile]->Fill(7);
-      //if( bInnerGamma || bOuterGamma ) { continue; }
 
-      /*
-      // CutValues // 
-      // true->Cut // 
-      bool  bNGamma     = false;
-      bool  bRWGamma    = false;
-      bool  bTGamma     = false;
-      bool  bGammaX     = false;
-      bool  bGammaGood  = false;
+      hisKLChisq[iFile]->Fill(klVec[0].chisqZ());
+      if( klVec.size() >1 ){
+	hisKLSecChisq[iFile]->Fill(klVec[1].chisqZ());
+      }
 
-      Int_t nGamma = 0;
-      Int_t nGammaGood = 0;
-      Int_t GEIndex = -1;
-      Double_t MaximumR = 0; 
-      Double_t GammaMinDist = 1000;
-      Double_t GammaTMean   = 0; 
-      Double_t MaximumTDelta= 0;
-      Double_t MinGammaE = 1000000;
-      
-      // Cut on Gamma // 
-      for( int igamma = 0; igamma < 6; igamma++){
-	if( GammaE[igamma] < MinGammaE ){MinGammaE = GammaE[igamma];}
-	if( TMath::Abs(GammaPos[igamma][0]) < 150 &&
-	    TMath::Abs(GammaPos[igamma][1]) < 150 ){
-	  bInnerGamma = true; 	  
-	}
-	if( TMath::Sqrt(GammaPos[igamma][0]*GammaPos[igamma][0]+GammaPos[igamma][1]*GammaPos[igamma][1]) > 800){
-	  bOuterGamma = true;
-	}	
-	if( TMath::Abs(GammaPos[igamma][1])>550){ bOuterGamma = true; }
-	if( GammaE[igamma] > 200 ){
-	  nGamma++;
-	}
-	if( GammaPos[igamma][1]>0&&GammaPos[igamma][0] > -200 ){ nGammaGood++;}
-	else if( GammaPos[igamma][1]<=0&&GammaPos[igamma][0] > 175 ){ nGammaGood++;}
-	
-	if( TMath::Abs( GammaPos[igamma][0] ) > 600 ){ bGammaX = true ;}
-	TVector2 vec( GammaPos[igamma][0], GammaPos[igamma][1]);
-	if( vec.Mod() > MaximumR ){ MaximumR = vec.Mod();}
-	
-	for( int jgamma = igamma+1; jgamma < 6; jgamma++){
-	  Double_t R = TMath::Sqrt((GammaPos[igamma][0]-GammaPos[jgamma][0])
-				   *(GammaPos[igamma][0]-GammaPos[jgamma][0])
-				   +(GammaPos[igamma][1]-GammaPos[jgamma][1])
-				   *(GammaPos[igamma][1]-GammaPos[jgamma][1]));
-	  if( GammaMinDist > R ) { GammaMinDist = R;}
+      if( klVec[0].chisqZ() > 15 ){continue;} 
+      //////////////////////////////
+      bool bEGammaN = false;
+      bool bKLZ     = false;
+      bool bKLP     = false;
+      bool bPi0Pt   = false; 
+      for( git = glist.begin();
+	   git != glist.end();
+	   git++){
+	if( (*git).e() > 1300 ){ bEGammaN = true; }
+      }
+      std::vector<Pi0>::iterator pit = klVec[0].pi0().begin();      
+      if( klVec[0].p3().mag() > 4500 || klVec[0].p3().mag() < 1500 ){
+	bKLP = true;
+      }
+      if( klVec[0].vz() > 4500 || klVec[0].vz() < 2000 ){
+	bKLZ = true; 
+      }
+      for(pit= klVec[0].pi0().begin();
+	  pit!=klVec[0].pi0().end();
+	  pit++){
+	if( (*pit).p3().perp() > 140 ){ 
+	  bPi0Pt = true;
 	}
       }
-      //if( nGamma !=6 ){ continue; }
-
-      GEIndex =  (int)(MinGammaE/50);
-      if( GammaMinDist < 200 ){bRWGamma = true;}
-      //if( nGamma != 6 ){ bNGamma = true; }
-      //if( nGammaGood <4 ){bNGamma = true; }
-      //if( bGammaX ){ continue; }
-      // Cut on KL // 
-      bool bklChisq = false;
-      bool bkle     = false;
-      bool bklz     = false;
-      bool bklmass  = false;
-      bool bklpt    = false;
-      Double_t Klmass = 497.648;
-      if( KLE > 5000 ) bkle = true; 
-      if( KLMass   < Klmass-10  || KLMass > Klmass+10  ){ bklmass = true; }
-      if( KLPos[2] < 1000 || KLPos[2]> 5500){ bklz    = true; } 
-      if( klptSq   > 100  ){ bklpt = true; }
-      if( KLChisq  > 5 ){ bklChisq = true; }
       
-      //if( KLSecChisq - KLChisq < 5 ){ continue; }
-      // Initial Cut // 
-            
-      //if( bInnerGamma || bOuterGamma || bNGamma ){ continue; }      
-      //if( bInnerGamma || bOuterGamma || bNGamma || bRWGamma ){ continue; }      
-      //if( bklmass || bklpt || bklChisq ){ continue; }
-      //if( bTGamma ){ continue; }
-      if( bInnerGamma || bOuterGamma ){ continue; }
-      std::cout<< GEIndex << std::endl;
-      Double_t KLECutMin = 2700;
-      Double_t KLECutMax = 3300;
-      */
+      for( int il1 = 0; il1 < 20; il1++){
+	hisL1TrigCount[iFile][il1]->Fill(CsiL1TrigCount[il1]);
+      }
 
+      for(git= glist.begin();
+	  git!= glist.end();
+	  git++){
+	hisGammaE[iFile]->Fill((*git).e());
+	hisGammaTime[iFile]->Fill((*git).t());
+	hisGammaPosX[iFile]->Fill((*git).x());
+	hisGammaPosY[iFile]->Fill((*git).y());
+      }
+      for(pit= klVec[0].pi0().begin();
+	  pit!=klVec[0].pi0().end();
+	  pit++){
+	hisPi0E[iFile]->Fill((*pit).e());
+	hisPi0Z[iFile]->Fill((*pit).vz());
+	hisPi0P[iFile]->Fill((*pit).p3().mag());
+	hisPi0Pt[iFile]->Fill((*pit).p3().perp());
+	hisPi0Mass[iFile]->Fill((*pit).m());
+	hisPi0ZSig[iFile]->Fill((*pit).recZsig2());	
+      }
+      
+      /*
       if( klVec[0].vz() < 5000 && klVec[0].vz() > 3000){
 	if(TMath::Abs(klVec[0].m()-KLMass )< 10 ){
 	  hisKLP[iFile]->Fill(klMom);
 	}
       }
+      */
+      hisKLP[iFile]->Fill(klVec[0].p3().mag());
       hisKLE[iFile]->Fill(klVec[0].e());
       hisKLZ[iFile]->Fill(klVec[0].vz());
+      hisKLX[iFile]->Fill(klVec[0].vx());
+      hisKLY[iFile]->Fill(klVec[0].vy());
+      hisKLMass[iFile]->Fill(klVec[0].m());
 
       if( TMath::IsNaN(Ratio) == 0 ){ 
 	hisKLZPosition[iFile]->Fill(klVec[0].vz(),Ratio);
       }
-      hisKLMass[iFile]->Fill(klVec[0].m());
-      hisKLChisq[iFile]->Fill(klVec[0].chisqZ());
-      if( klVec.size() >1 ){
-	hisKLSecChisq[iFile]->Fill(klVec[1].chisqZ());
+
+
+
+      if( !bEGammaN && !bKLZ && !bKLP && !bPi0Pt ){
+
+	hisKLEN[iFile]->Fill(klVec[0].e());
+	hisKLMassN[iFile]->Fill(klVec[0].m());
+	hisKLXN[iFile]->Fill(klVec[0].vx());
+	hisKLYN[iFile]->Fill(klVec[0].vy());
+	hisKLChisqN[iFile]->Fill(klVec[0].chisqZ());
+	if( klVec.size() >1 ){
+	  hisKLSecChisqN[iFile]->Fill(klVec[1].chisqZ());
+	}
+	for(pit= klVec[0].pi0().begin();
+	    pit!=klVec[0].pi0().end();
+	    pit++){
+	  hisPi0MassN[iFile]->Fill((*pit).m());       
+	}
       }
+
       Int_t KLEIndex = (int)(klVec[0].e()/500);
       if( KLEIndex <0|| KLEIndex >= 10){ continue;}
       hisKLZAcceptance[iFile][KLEIndex]->Fill(klVec[0].vz());            
@@ -279,63 +288,46 @@ int main( int argc, char** argv){
     hisKLSecChisq[iFile]->SetLineColor(iFile+1);
     hisGammaE[iFile]->SetLineColor(iFile+1);
   }
-
-  std::cout << "Draw" << std::endl;
-  TCanvas* can = new TCanvas("can","can",1200,800);
-  can->Divide(3,2);
-  Double_t ScaleFactor = hisKLZ[0]->Integral()/hisKLZ[1]->Integral();
-  /*
-  can->cd(1);
-  gPad->SetGridx();
-  gPad->SetGridy();
-  hisKLE[0]->Draw();
-  hisKLE[1]->Scale(ScaleFactor);
-  hisKLE[1]->Draw("same");
-  can->cd(2);
-  gPad->SetGridx();
-  gPad->SetGridy();
-  gPad->SetLogy();
-  hisKLZ[0]->Draw();
-  hisKLZ[1]->Scale(ScaleFactor);
-  hisKLZ[1]->Draw("same");
-  can->cd(3);
-  gPad->SetGridx();
-  gPad->SetGridy();
-  gPad->SetLogy();
-  hisKLMass[0]->Draw();
-  hisKLMass[1]->Draw("same");
-  can->cd(4);
-  gPad->SetGridx();
-  gPad->SetGridy();
-  hisKLChisq[0]->Draw();
-  hisKLChisq[1]->Scale(ScaleFactor);
-  hisKLChisq[2]->Scale(ScaleFactor);
-  hisKLChisq[1]->Draw("same");
-  hisKLSecChisq[0]->Draw("same");
-  hisKLSecChisq[1]->Draw("same");
-  can->cd(5);
-  gPad->SetGridx();
-  gPad->SetGridy();
-  gPad->SetLogy();
-  hisGammaE[0]->Draw();
-  hisGammaE[1]->Draw("same");
-*/
-  
-
+ 
   for( int i = 0; i < nFile; i++){
     hisKLChisq[i]->Write();
     hisKLSecChisq[i]->Write();
     hisGammaE[i]->Write();
+    hisGammaTime[i]->Write();
+    hisGammaPosX[i]->Write();
+    hisGammaPosY[i]->Write();
+
+    hisPi0E[i]->Write();
+    hisPi0P[i]->Write();
+    hisPi0Pt[i]->Write();
+    hisPi0Z[i]->Write();
+    hisPi0ZSig[i]->Write();
+    hisPi0Mass[i]->Write();
+    
     hisKLE[i]->Write();
     hisKLP[i]->Write();
     hisKLZ[i]->Write();
+    hisKLX[i]->Write();
+    hisKLY[i]->Write();
     hisKLZPosition[i]->Write();
     hisKLMass[i]->Write();
     hisVETOHistory[i]->Write();
+
+    hisKLEN[i]->Write();
+    hisKLMassN[i]->Write();
+    hisKLXN[i]->Write();
+    hisKLYN[i]->Write();
+    hisPi0MassN[i]->Write();
+    hisKLChisqN[i]->Write();
+    hisKLSecChisqN[i]->Write();
+   
   }
   for( int i = 0; i< nFile; i++){
     for( int j = 0; j< 10; j++){
       hisKLZAcceptance[i][j]->Write();
+    }
+    for( int j = 0; j< 20; j++){
+      hisL1TrigCount[i][j]->Write();
     }
   }
   tfOut->Write();

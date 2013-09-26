@@ -97,7 +97,7 @@ Int_t main( int argc , char** argv ){
       //if( tmpRunNumber > 4624 ){ continue; }
       //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
       ch->Add(Form("%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
-    }    
+    }
   }else if(FileType == 5){
     std::string HOMEDIR = std::getenv("HOME");
     std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/KLRunList_2.txt",HOMEDIR.c_str()));

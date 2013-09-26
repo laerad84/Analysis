@@ -60,12 +60,15 @@ int main( int argc, char** argv){
   TFile* tfOut = new TFile(Form("TimeResolution_%s.root",name),"recreate");
   TH2D* hisResolution = new TH2D("hisResolution","hisResolution",100,0,400,100,-20,20);
   TH2D* hisResolutionAdj = new TH2D("hisResolutionAdj","hisResolutionAdj",100,0,400,100,-20,20);
-  TH2D* hisResolutionLY[4];//0: good/good 1:good/bad 2:bad/good 3:bad/bad
+  TH2D* hisResolutionLY[2];//0: good/good 1:good/bad 2:bad/good 3:bad/bad
+  TH2D* hisResolutionLY_Neighbor[2]; 
   TH2D* hisX = new TH2D("hisX","hisX",2716,0,2716,80,-1000,1000);
   TH2D* hisY = new TH2D("hisY","hisY",2716,0,2716,80,-1000,1000);
-  for( int i = 0; i< 4; i++){
+  for( int i = 0; i< 2; i++){
     hisResolutionLY[i] = new TH2D(Form("hisResolutionLY_%d",i),Form("hisResolutionLY_%d",i),100,0,400,100,-20,20);
+    hisResolutionLY_Neighbor[i] = new TH2D(Form("hisResolutionLY_Neighbor_%d",i),Form("hisResolutionLY_Neighbor_%d",i),100,0,400,100,-20,20);
   }
+
   double sol = 299.792458;//[mm/nsec]
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
@@ -148,12 +151,13 @@ int main( int argc, char** argv){
     git = glist.begin();
     
     for( int igamma  = 0; igamma < 6; igamma++,git++){
+      bool bggood =false;
+      int id0= (*git).clusterIdVec()[0];
+      int id1= (*git).clusterIdVec()[1];
       if((*git).clusterEVec()[0] > 300 && (*git).clusterEVec()[0] < 400 ){
-	int id0= (*git).clusterIdVec()[0];
-	int id1= (*git).clusterIdVec()[1];
 	hisResolution->Fill( (*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-((*git).clusterTimeVec()[0])); 
 	hisResolutionAdj->Fill( (*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
-	bool bggood =false;
+
 	double gxy[2];
 	gxy[0] = (*git).x();
 	gxy[1] = (*git).y();
@@ -170,29 +174,67 @@ int main( int argc, char** argv){
 	    bggood = false;
 	  }
 	}
-	if( bg0good ){
-	  if( bggood ){
-	    hisResolutionLY[0]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
-	  }else{
-	    hisResolutionLY[1]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
-	  }
+	if( bggood ){
+	  hisResolutionLY[0]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
 	}else{
+	  hisResolutionLY[1]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
+	}
+      }
+
+      double x0 = (*git).coex();
+      double y0 = (*git).coey();
+      for( int iid = 0; iid < (*git).clusterIdVec().size()-1; iid++){
+	//for( int iid = 0; iid < 1; iid++){
+	int TestID[2]={-1};
+	double x[2]={0};
+	double y[2]={0}; 
+	double R[2]={0};
+	double D[2]={0};
+	double t[2]={0};
+	double L[2]={0};
+	double E[2]={0};
+	double T[2]={0};
+	TestID[0]=(*git).clusterIdVec()[iid];
+
+	handler->GetMetricPosition((*git).clusterIdVec()[iid],x[0],y[0]);
+	x[0] = -x[0];
+	L[0] = sqrt( (x0-x[0])*(x0-x[0])+(y0-y[0])*(y0-y[0]));
+	R[0] = ((x[0]-x0)*x0+(y[0]-y0)*y0)/sqrt( x0*x0+y0*y0 );
+	D[0] = sqrt(L[0]*L[0]-R[0]*R[0]);
+	E[0] = (*git).clusterEVec()[iid];	  
+	T[0] = (*git).clusterTimeVec()[iid];
+	for( int jid = iid+1; jid < (*git).clusterIdVec().size(); jid++){
+
+	  TestID[1]=(*git).clusterIdVec()[jid];
+	  handler->GetMetricPosition((*git).clusterIdVec()[iid],x[1],y[1]);
+	  x[1] = -x[1];
+	  L[1] = sqrt( (x0-x[1])*(x0-x[1])+(y0-y[1])*(y0-y[1]));
+	  R[1] = ((x[1]-x0)*x0+(y[1]-y0)*y0)/sqrt( x0*x0+y0*y0 );
+	  D[1] = sqrt(L[1]*L[1]-R[1]*R[1]);
+	  E[1] = (*git).clusterEVec()[jid];	  
+	  T[1] = (*git).clusterTimeVec()[jid];	  
+	  if( D[0] > 20 || D[1] > 20 ){ continue; }
+	  if( abs(R[0]) > 7 || abs(R[1]) > 7 ){ continue; }
+	  if( abs(R[0]-R[1]) > 12.5 ){ continue; }
+	  if( E[1] < E[0]*0.8 ){ continue; }
 	  if( bggood ){
-	    hisResolutionLY[2]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
+	    hisResolutionLY_Neighbor[0]->Fill(E[1],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]]));
 	  }else{
-	    hisResolutionLY[3]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
+	    hisResolutionLY_Neighbor[1]->Fill(E[1],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]]));
 	  }
 	}
       }
     }
   }
 
+
   hisResolution->Write();
   hisResolutionAdj->Write();
-  hisResolutionLY[0]->Write();
-  hisResolutionLY[1]->Write();
-  hisResolutionLY[2]->Write();
-  hisResolutionLY[3]->Write();
+  for( int i = 0; i< 2; i++){
+    hisResolutionLY[i]->Write();
+    hisResolutionLY_Neighbor[i]->Write();
+  }
+
   hisX->Write();
   hisY->Write();
   tfOut->Close();
