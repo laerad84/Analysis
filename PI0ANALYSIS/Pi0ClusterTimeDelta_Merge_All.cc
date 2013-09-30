@@ -165,7 +165,7 @@ main( int argc ,char ** argv ){
   //double CsiL1TrigCountThreshold[20] = {1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
   //					1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};
   Double_t TimeOffset[2716]={0};
-  std::ifstream ifs("TimeOffset_Shower_10.dat");
+  std::ifstream ifs("~/local/Analysis/KLongSpectrum/Data/TimeOffset_Shower_10.dat");
   if( !ifs.is_open() ){
     std::cout<< "No CalibrationFile" << std::endl;
     return -1;
