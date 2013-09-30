@@ -211,8 +211,8 @@ int main( int argc, char** argv){
 	GammaCE[gIndex]   = (*git).clusterEVec()[0];
 	GammaE[gIndex]    = (*git).e();
 	GammaX[gIndex]    = (*git).x();
-	GammaY[gIndex]     = (*git).y();
-	GammaTimeSigma        += TMath::Power(GammaTime[gIndex] -GammaTime0,2);
+	GammaY[gIndex]    = (*git).y();
+	GammaTimeSigma    += TMath::Power(GammaTime[gIndex] -GammaTime0,2);
 	gIndex++;
     }
     for( int i = 0; i< 6; i++){

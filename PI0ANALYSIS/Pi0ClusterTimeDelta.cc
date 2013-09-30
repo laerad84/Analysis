@@ -77,7 +77,8 @@ main( int argc ,char ** argv ){
     return -1;
   }
   //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
-  std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
+  //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
+  std::string TCalFile = Form("~/local/Analysis/KLongSpectrum/Data/TimeOffset_Shower_10.dat");  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
   std::string TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());  
   TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str());
@@ -128,8 +129,8 @@ main( int argc ,char ** argv ){
   double SciTime[1];
 
   trout->Branch("SciNumber",&SciNumber,"SciNumber/I");
-  trout->Branch("SciEne"   ,&SciEne,"SciEne/D");//SciNumber
-  trout->Branch("SciTime"  ,&SciTime,"SciTime/D");//SciNumber
+  trout->Branch("SciEne"   ,&SciEne  ,"SciEne/D");//SciNumber
+  trout->Branch("SciTime"  ,&SciTime ,"SciTime/D");//SciNumber
   trout->Branch("CVNumber" ,&CVNumber,"CVNumber/I");
   trout->Branch("CVModID"  ,CVModID  ,"CVModID[CVNumber]/S");//CVNumber
   trout->Branch("CVEne"    ,CVEne    ,"CVEne[CVNumber]/D");//CVNumber
@@ -295,6 +296,7 @@ main( int argc ,char ** argv ){
       if( CsISignal[idigi] > 5 && CsIEnergy[idigi]>0.5){
 	CSIDigiID[ nCSIDigi ]     = CsIID[idigi];
 	CSIDigiE[ nCSIDigi ]      = CsIEnergy[idigi];
+	//CSIDigiTime[ nCSIDigi ]   = CsITime[idigi]+TimeDelta[CsIID[idigi]];
 	CSIDigiTime[ nCSIDigi ]   = CsITime[idigi]+TimeDelta[CsIID[idigi]];
 	CSIDigiHHTime[ nCSIDigi ] = CsIHHTime[idigi];
 	CSIDigiSignal[nCSIDigi]   = CsISignal[idigi];

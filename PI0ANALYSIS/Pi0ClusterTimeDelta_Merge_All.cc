@@ -46,6 +46,26 @@
 #include "TRandom.h"
 #include "TF1.h"
 
+
+const double KLMass = 497.648;//MeV
+double const sol = 299.792458;//[mm/nsec]
+double const solc= 80;//[mm/nsec]
+double const Pcor[2]={6.49003,0.99254};
+double const CsIX0=18.5;//mm
+double showerDepth(double x){
+  double L = CsIX0*(Pcor[0]+Pcor[1]*log(x/1000.));//mm  
+  return L;
+}
+
+
+double showerTimeDelay(Pi0 kl, Gamma g){
+  double depth     = showerDepth(g.e());
+  double cosTheta  = abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
+  double delayTime = 500/solc - depth*(1-cosTheta)/sol;
+  return delayTime;
+}
+
+
 double funcResolutionInvSq( double* x, double* p){
   double value = 0;
   if( x[0] >  0  && p[0] > 0){
@@ -81,6 +101,7 @@ main( int argc ,char ** argv ){
     trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunN[i]));
   }
   E14GNAnaDataContainer data; 
+
   data.setBranchAddress(trin);
 
   int    RunNo;
@@ -143,6 +164,21 @@ main( int argc ,char ** argv ){
 
   //double CsiL1TrigCountThreshold[20] = {1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
   //					1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};
+  Double_t TimeOffset[2716]={0};
+  std::ifstream ifs("TimeOffset_Shower_10.dat");
+  if( !ifs.is_open() ){
+    std::cout<< "No CalibrationFile" << std::endl;
+    return -1;
+  }
+  int tmpID;
+  double tmpOffset;
+  while( ifs >> tmpID >> tmpOffset ){
+    TimeOffset[tmpID] = tmpOffset;
+    std::cout<<tmpID << "\t" <<  TimeOffset[tmpID] << std::endl;
+  }
+
+
+
   double CsiL1TrigCountThreshold[20] = {1000,3000,3000,3400,3400,3400,2200,2200,2400,2400,
 					2400,1000,1000,1000,1000,1000,1000,1000,1000,1000};
   //double CsiL1TrigHighThreshold = 50000;
@@ -151,7 +187,27 @@ main( int argc ,char ** argv ){
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIMPI0.c_str()),"recreate");
+  TFile* tfout= new TFile("Pi0_All_Out.root","recreate");
+  TTree* trOut= new TTree("GammaTimeTree","GammaTime");
+  E14GNAnaDataContainer dataCopy;
+  dataCopy.branchOfPi0List(trOut);
+  double GammaCE[2];
+  double GammaTime[2];
+  double GammaTimeSigma;
+  double GammaTimeSigmaExcept[2];
+  double GammaE[2];
+  double GammaX[2];
+  double GammaY[2];
+  trOut->Branch("GammaCE",GammaCE,"GammaCE[2]/D");
+  trOut->Branch("GammaTime",GammaTime,"GammaTime[2]/D");
+  trOut->Branch("GammaTimeSigma",&GammaTimeSigma,"GammaTimeSigma/D");
+  trOut->Branch("GammaTimeSigmaExcept",GammaTimeSigmaExcept,"GammaTimeSigmaExcept[2]/D");
+  trOut->Branch("GammaE",GammaE,"GammaE[2]/D");
+  trOut->Branch("GammaX",GammaX,"GammaX[2]/D");
+  trOut->Branch("GammaY",GammaY,"GammaY[2]/D");
+
+
+  //TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIMPI0.c_str()),"recreate");
 
   const int nHist  =1;
   char* Name[nHist] = {"Data"};
@@ -247,76 +303,17 @@ main( int argc ,char ** argv ){
     std::list<Gamma>   glist;
     std::list<Pi0>     plist;
     //if((ievent % 1000)== 0){ std::cout<< ievent << "/" << entries << std::endl; }
+    dataCopy.reset();
     data.getData(plist);
+    dataCopy.setData(plist);
 
-    Int_t hisID = -1;
-    /*
-    bool bnEvent  = false;
-    bool bkEvent  = false;
-    bool bgEvent  = false;
-    bool bnreact  = false;
-    bool bgreact  = false;
-    bool bkreact  = false;
-    bool bkdecay  = false;
-    bool bksdecay = false;
-    bool bETC     = false;
-
-    if( pid[0] == 2112 ){
-      bnEvent = true;
-    }else if( pid[0] == 130 ){
-      bkEvent = true;
-    }else if( pid[0] == 22 ){
-      bgEvent = true;
-    }
-    int nPi0 = 0;
-    int nPipm= 0;
-    int nEta = 0;
-    int other= 0;
-    for( int ip = 1 ; ip < nTrack; ip++){
-      if( pid[1]  == 310 ){ bksdecay = true;}
-      if( pid[ip] == 211 ){ bksdecay = true;}
-      if( pid[ip] == 111 ){ nPi0++; }
-      if( pid[ip] == 211 || pid[ip] == -211 ){ nPipm++;}
-    }
-    
-    if( bnEvent ){
-      //if( nPi0 ==1 ){ bnreact = true; }
-      if( abs(end_v[0][2]-3536) < 10 ){
-	bnreact = true;
-      }else{
-	bETC = true;
-      }
-    }else if( bgEvent ){
-      if( nPi0 == 1 ){ bgreact = true; }
-      else{bETC = true;}
-    }else if( bkEvent ){
-      if( abs(end_v[0][2]-3536) < 10 ){
-	bkreact = true;
-      }else{
-	bkdecay = true; 
-      }
-    }else{
-      bETC = true;
-    }
-
-    if( bnreact ){
-      hisID = 0;
-    }else if( bgreact ){
-      hisID = 1;
-    }else if( bkreact ){
-      hisID = 2;
-    }else if( bkdecay ){       
-      hisID = 3;
-    }else if( bETC ){
-      hisID = 4;
-    }
-    */
+    Int_t hisID = -1;    
     std::list<Pi0>::iterator pit = plist.begin();
+    if( (*pit).vz() < 1000 ){ continue; }
 
     if( hisID >= 0 ){
       hisPi0[hisID]->Fill((*pit).m());    
     }
-
     hisSciEneDistrib->Fill(SciEne);
     if(SciEne < 425 ){ continue; }
     bool CVTrig = false;
@@ -378,6 +375,7 @@ main( int argc ,char ** argv ){
 	    bPosition = false;
 	  }	  
 	}
+
 	if( !bPosition ){ continue; }
 
 	int    ClusterID[2] ={0};
@@ -420,6 +418,39 @@ main( int argc ,char ** argv ){
 	double gchisq_2 = (*pit).g2().chisq();
 	double pi0pt    = TMath::Sqrt((*pit).p3()[0]*(*pit).p3()[0]+ (*pit).p3()[1]*(*pit).p3()[1]);
 	double pi0Mass  = (*pit).m();
+
+	GammaTimeSigma = 0;
+	for( int i  =0; i< 2; i++){
+	  GammaTime[i] = 0;
+	  GammaY[i] = 0;
+	  GammaX[i] = 0;
+	  GammaE[i] = 0;
+	  GammaCE[i] = 0;
+	  GammaTimeSigmaExcept[i] = 0;
+	}
+	
+	GammaTime[0] = (*pit).g1().clusterTimeVec()[0]-showerTimeDelay((*pit),(*pit).g1())-TimeOffset[(*pit).g1().clusterIdVec()[0]];
+	GammaCE[0]   = (*pit).g1().clusterEVec()[0];
+	GammaE[0]    = (*pit).g1().e();
+	GammaX[0]    = (*pit).g1().x();
+	GammaY[0]    = (*pit).g1().y();
+
+	GammaTime[1] = (*pit).g2().clusterTimeVec()[0]-showerTimeDelay((*pit),(*pit).g2())-TimeOffset[(*pit).g2().clusterIdVec()[0]];
+	GammaCE[1]   = (*pit).g2().clusterEVec()[0];
+	GammaE[1]    = (*pit).g2().e();
+	GammaX[1]    = (*pit).g2().x();
+	GammaY[1]    = (*pit).g2().y();
+	
+	GammaTimeSigma = TMath::Abs( GammaTime[0]-GammaTime[1]);
+	GammaTimeSigmaExcept[0] = GammaTimeSigma;
+	GammaTimeSigmaExcept[1] = GammaTimeSigma;
+	
+	dataCopy.setData(plist);
+	trOut->Fill();
+
+	  
+
+
 	//std::cout<< pi0Mass << std::endl;
 	if( Eg1 > 350 &&
 	    Eg2 > 200 &&
@@ -509,6 +540,7 @@ main( int argc ,char ** argv ){
   }
   hisSciEneDistrib->Write();
   hisSciEneDistribTrigged->Write();
+  trOut->Write();
   tfout->Close();
   return 0;
 }
