@@ -198,13 +198,13 @@ main( int argc ,char ** argv ){
   double GammaE[2];
   double GammaX[2];
   double GammaY[2];
-  trOut->Branch("GammaCE",GammaCE,"GammaCE[2]/D");
-  trOut->Branch("GammaTime",GammaTime,"GammaTime[2]/D");
-  trOut->Branch("GammaTimeSigma",&GammaTimeSigma,"GammaTimeSigma/D");
-  trOut->Branch("GammaTimeSigmaExcept",GammaTimeSigmaExcept,"GammaTimeSigmaExcept[2]/D");
-  trOut->Branch("GammaE",GammaE,"GammaE[2]/D");
-  trOut->Branch("GammaX",GammaX,"GammaX[2]/D");
-  trOut->Branch("GammaY",GammaY,"GammaY[2]/D");
+  trOut->Branch("GammaGCE",GammaCE,"GammaGCE[2]/D");
+  trOut->Branch("GammaGTime",GammaTime,"GammaGTime[2]/D");
+  trOut->Branch("GammaGTimeSigma",&GammaTimeSigma,"GammaGTimeSigma/D");
+  trOut->Branch("GammaGTimeSigmaExcept",GammaTimeSigmaExcept,"GammaGTimeSigmaExcept[2]/D");
+  trOut->Branch("GammaGE",GammaE,"GammaGE[2]/D");
+  trOut->Branch("GammaGX",GammaX,"GammaGX[2]/D");
+  trOut->Branch("GammaGY",GammaY,"GammaGY[2]/D");
 
 
   //TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIMPI0.c_str()),"recreate");
