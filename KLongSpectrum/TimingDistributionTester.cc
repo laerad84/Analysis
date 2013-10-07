@@ -23,11 +23,8 @@
 #include "T0Manager.h"
 #include "TDirectory.h"
 #include "TProfile.h"
+
 const double KLMass = 497.648;//MeV
-double const sol = 299.792458;//[mm/nsec]
-double const solc= 80;//[mm/nsec]
-double const Pcor[2]={6.49003,0.99254};
-double const CsIX0=18.5;//mm
 
 double KLSpectrum(double* x,double*p){
   //double klp   = TMath::Sqrt( x[0]*x[0]-KLMass*KLMass);  
@@ -36,16 +33,43 @@ double KLSpectrum(double* x,double*p){
   double value = p[0]*TMath::Exp(-0.5*(klp-p[1])*(klp-p[1])/(sigma*sigma));
   return value;
 }
+
+double const sol = 299.792458;//[mm/nsec]
+double const solc= 80;//[mm/nsec]
+double const Pcor[2]={6.49003,0.99254};
+double const CsIX0=18.5;//mm
+
 double showerDepth(double x){
   double L = CsIX0*(Pcor[0]+Pcor[1]*log(x/1000.));//mm  
   return L;
 }
 double showerTimeDelay(Klong kl, Gamma g){
   double depth     = showerDepth(g.e());
-  double cosTheta  = abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
+  double cosTheta  = TMath::Abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
   double delayTime = 500/solc - depth*(1-cosTheta)/sol;
   return delayTime;
 }
+double showerTimeDelayAdj(Klong kl, Gamma g){
+  double clusterTimingConstant = 0.541812;
+  double depth     = showerDepth( g.e() );
+  double cosTheta  = TMath::Abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
+  //double delayTime = 500/solc - depth*(1-cosTheta)/sol + 0.541812*TMath::Log10(TMath::E())*log(g.e()/1000);
+  double delayTime = -depth*(1/sol-cosTheta/solc);
+  return delayTime;
+}
+double ThetaConstant(Klong kl, Gamma g){
+  double cosTheta  =1-sol/solc*TMath::Abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
+  return cosTheta;
+}
+
+double gammaLOF( Klong kl, Gamma g){
+  double length = 0;
+  length = sqrt( pow(g.x()-kl.vx(),2)+ pow(g.y()-kl.vy(),2)+pow(g.z()-kl.vz(),2));
+  return length;
+}
+
+
+
 
 
 
@@ -76,7 +100,7 @@ int main( int argc, char** argv){
 			  2716,0, 2716,500,-40,60);
   hisAdjTimeID = new TH2D(Form("hisAdjTimeID_%d",nTimeIteration),Form("hisAdjTimeID_%d",nTimeIteration),
 			  2716,0, 2716,500,-40,60);
-  double sol = 299.792458;//[mm/nsec]
+  //double sol = 299.792458;//[mm/nsec]
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
@@ -130,15 +154,31 @@ int main( int argc, char** argv){
 				 + TMath::Power(((*git).y() - klVec[0].vy()),2) 
 				 + TMath::Power(((*git).z() - klVec[0].vz()),2));
     double g0Offset = TimeOffset[g0crystalID];//man->GetT0Offset(g0crystalID);
-    double g0Shower = showerTimeDelay(klVec[0],(*git));
+    double g0Shower = showerTimeDelayAdj(klVec[0],(*git));
     double g0Delta  = g0Offset-g0length/sol-g0Shower;//man->GetT0Offset(g0crystalID);
 
-    git++;
     if( g0crystalID >= 2240 ){continue; }
     
     double g0Ene = (*git).clusterEVec()[0];
     if(g0Ene > 400 ){ continue; }
     if(g0Ene < 100 ){ continue; }
+
+    double GammaTimeSigma=0;
+    double GammaTimeMean = 0; 
+    for( int igamma = 0; igamma < 6; igamma++,git++){
+      GammaTimeSigma += (*git).t()*(*git).t();
+      GammaTimeMean  += (*git).t();
+    }
+    GammaTimeMean /= 6;
+    GammaTimeSigma = sqrt((GammaTimeSigma/6) - (GammaTimeMean*GammaTimeMean));
+    if( nTimeIteration > 10 ){ 
+      if( GammaTimeSigma > 10 ){ continue; }
+    }
+
+    git = glist.begin();
+    git++;
+
+    
 
     for( int igamma = 1; igamma < 6; igamma++,git++){
       int crystalID = (*git).clusterIdVec()[0];
@@ -149,26 +189,34 @@ int main( int argc, char** argv){
       double length = TMath::Sqrt( TMath::Power(((*git).x() - klVec[0].vx()),2) 
 				   + TMath::Power(((*git).y() - klVec[0].vy()),2) 
 				   + TMath::Power(((*git).z() - klVec[0].vz()),2));
-      double Shower = showerTimeDelay(klVec[0],(*git));
+      double Shower = showerTimeDelayAdj(klVec[0],(*git));
       double Delta = Offset-length/sol-Shower;//man->GetT0Offset(crystalID);
       hisTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Offset)-(g0time-g0Offset));
       hisAdjTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Delta)-(g0time-g0Delta));
     }
   }
   /// Evaluation T0 /// 
+  double gausFit[2] ={0};
+  if( nTimeIteration < 5 ){ 
+    gausFit[0] = -10*(5-nTimeIteration);
+    gausFit[1] = 10*(5-nTimeIteration);
+  }else{
+    gausFit[0] = -5;
+    gausFit[1] = 5;
+  }
+  TF1* func = new TF1("func","gaus",gausFit[0],gausFit[1]);
 
-  TF1* func = new TF1("func","gaus",-20,20);
   hisTimeID->FitSlicesY(func);
   hisAdjTimeID->FitSlicesY(func);
   TProfile* profTimeID = hisTimeID->ProfileX();
   TProfile* profAdjTimeID = hisAdjTimeID->ProfileX();
 
-  TH1D *hisTimeID_0 = (TH1D*)gDirectory->Get("hisTimeID_0");
-  TH1D *hisTimeID_1 = (TH1D*)gDirectory->Get("hisTimeID_1");
-  TH1D *hisTimeID_2 = (TH1D*)gDirectory->Get("hisTimeID_2");
-  TH1D *hisAdjTimeID_0 = (TH1D*)gDirectory->Get("hisAdjTimeID_0");
-  TH1D *hisAdjTimeID_1 = (TH1D*)gDirectory->Get("hisAdjTimeID_1");
-  TH1D *hisAdjTimeID_2 = (TH1D*)gDirectory->Get("hisAdjTimeID_2");
+  TH1D *hisTimeID_0 = (TH1D*)gDirectory->Get(Form("%s_0",hisTimeID->GetName()));
+  TH1D *hisTimeID_1 = (TH1D*)gDirectory->Get(Form("%s_1",hisTimeID->GetName()));
+  TH1D *hisTimeID_2 = (TH1D*)gDirectory->Get(Form("%s_2",hisTimeID->GetName()));
+  TH1D *hisAdjTimeID_0 = (TH1D*)gDirectory->Get(Form("%s_0",hisAdjTimeID->GetName()));
+  TH1D *hisAdjTimeID_1 = (TH1D*)gDirectory->Get(Form("%s_1",hisAdjTimeID->GetName()));
+  TH1D *hisAdjTimeID_2 = (TH1D*)gDirectory->Get(Form("%s_2",hisAdjTimeID->GetName()));
 
   
   std::cout << "Slice" << std::endl;
@@ -176,20 +224,31 @@ int main( int argc, char** argv){
   int nCalibrated = 0;
   double mean=0;
   std::ofstream ofs(Form("TimeOffset_Shower_%d.dat",nTimeIteration+1));
-  for( int i = 1; i<= profAdjTimeID->GetNbinsX(); i++){
-    if( profAdjTimeID->GetBinEntries(i) < 1 ){ continue; }
-    calibrated[i-1] = 1;
-    mean += profAdjTimeID->GetBinContent(i);
-    nCalibrated++;
-    std::cout<< i-1 << "\t" << profAdjTimeID->GetBinContent(i) << std::endl;
-  }
-  mean /= nCalibrated;
   double timeCalFactor[2716] = {0};
+  double tmptimeCalFactor[2716] = {0};
+  TH1D* tmpTimeOffsetDistribution = new TH1D("tmpTimeOffset","tmpTimeOffset",200,-20,20);
+  /*
+  for( int i = 1; i<= hisAdjTimeID_1->GetNbinsX(); i++){
+    tmptimeCalFactor[i-1] = hisAdjTimeID_1->GetBinContent(i);
+    if( profAdjTimeID->GetBinEntries(i) < 1 ){continue;}
+    tmpTimeOffsetDistribution->Fill( tmptimeCalFactor[i-1] - mean);
+    std::cout<< i-1 << "\t" << tmptimeCalFactor[i-1] << std::endl;
+  }
+*/
+  for( int i = 0; i< 2716; i++){
+    if( profAdjTimeID->GetBinEntries(i+1) < 1 ){ continue;}
+    calibrated[i] = 1; 
+    tmptimeCalFactor[i] = profAdjTimeID->GetBinContent(i+1);
+    tmpTimeOffsetDistribution->Fill( tmptimeCalFactor[i] );
+  }
+
+  mean = tmpTimeOffsetDistribution->GetMean();
   TH1D* TimeOffsetDistribution = new TH1D(Form("TimeOffsetDistribution_%d",nTimeIteration),
 					  Form("TimeOffsetDistribution_%d",nTimeIteration),
 					  200,-20,20);
+
   for( int i = 0; i< 2716; i++){
-    if( calibrated[i] >0){
+    if( calibrated[i] >0){      
       timeCalFactor[i] = profAdjTimeID->GetBinContent(i+1) - mean;
       TimeOffsetDistribution->Fill( profAdjTimeID->GetBinContent(i+1) - mean);
     }else{
@@ -198,11 +257,23 @@ int main( int argc, char** argv){
     ofs << i  << "\t" << timeCalFactor[i]+TimeOffset[i] << "\n";
   }
   ofs.close();
+  /*
+  for( int ibin = 1; ibin < hisAdjTimeID_1->GetNbinsX();ibin++){
+    if( profAdjTimeID->GetBinEntries(ibin) > 0 ){
+      timeCalFactor[ibin-1] = hisAdjTimeID_1->GetBinContent(ibin)-1;
+      TimeOffsetDistribution->Fill( timeCalFactor[ibin-1] - mean);
+    }else{
+      timeCalFactor[ibin-1] = 0;
+    }
+    ofs << ibin-1  << "\t" << timeCalFactor[ibin-1]+TimeOffset[ibin-1] << "\n";
+  }
+  */
+  ofs.close();
   
 
   hisTimeID->Write();
   hisAdjTimeID->Write();
-  //TimeOffsetDistribution->Write();
+  TimeOffsetDistribution->Write();
   /*
   hisTimeID_0->Write();
   hisTimeID_1->Write();

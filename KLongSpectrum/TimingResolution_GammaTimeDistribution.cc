@@ -45,6 +45,14 @@ double showerTimeDelay(Klong kl, Gamma g){
   return delayTime;
 }
 
+double showerTimeDelayAdj(Klong kl, Gamma g){
+  double clusterTimingConstant = 0.541812;
+  double depth     = showerDepth( g.e() );
+  double cosTheta  = TMath::Abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
+  //double delayTime = 500/solc - depth*(1-cosTheta)/sol + 0.541812*TMath::Log10(TMath::E())*log(g.e()/1000);
+  double delayTime = -depth*(1/sol-cosTheta/solc);
+  return delayTime;
+}
 
 double KLSpectrum(double* x,double*p){
   //double klp   = TMath::Sqrt( x[0]*x[0]-KLMass*KLMass);  
@@ -68,7 +76,7 @@ int main( int argc, char** argv){
   const int nFile = 1;
   TFile* tf;
   TTree* tr;
-  char* name = "WAV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
+  char* name = "WAVNOCV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
 
   tf = new TFile(Form("Kl_Total_%s.root",name));
   tr = (TTree*)tf->Get(Form("trKL"));
@@ -84,6 +92,10 @@ int main( int argc, char** argv){
   double GammaE[6];
   double GammaX[6];
   double GammaY[6];
+  double KLMass;
+  double KLChisq;
+  double KLChisqSec;
+  double Pi0Pt[3];
   trOut->Branch("GammaCE",GammaCE,"GammaCE[6]/D");
   trOut->Branch("GammaTime",GammaTime,"GammaTime[6]/D");
   trOut->Branch("GammaTimeSigma",&GammaTimeSigma,"GammaTimeSigma/D");
@@ -91,6 +103,11 @@ int main( int argc, char** argv){
   trOut->Branch("GammaE",GammaE,"GammaE[6]/D");
   trOut->Branch("GammaX",GammaX,"GammaX[6]/D");
   trOut->Branch("GammaY",GammaY,"GammaY[6]/D");
+  trOut->Branch("KLMass",&KLMass,"KLMass/D");
+  trOut->Branch("KLChisq",&KLChisq,"KLChisq/D");
+  trOut->Branch("KLChisqSec",&KLChisqSec,"KLChisqSec/D");
+  trOut->Branch("Pi0Pt",Pi0Pt,"Pi0Pt[3]/D");
+
   TH2D* hisResolution = new TH2D("hisResolution","hisResolution",100,0,400,100,-20,20);
   TH2D* hisResolutionAdj = new TH2D("hisResolutionAdj","hisResolutionAdj",100,0,400,100,-20,20);
   TH2D* hisResolutionLY[4];//0: good/good 1:good/bad 2:bad/good 3:bad/bad
@@ -172,6 +189,12 @@ int main( int argc, char** argv){
     
 
     GammaTimeSigma=0;
+    KLChisq = 0;
+    KLChisqSec = -1;
+    KLMass  = 0; 
+    for( int i = 0; i< 3; i++){
+      Pi0Pt[i] = 0;
+    }
     for( int i = 0; i< 6; i++){
       GammaTime[i] = 0;
       GammaY[i] = 0;
@@ -185,7 +208,7 @@ int main( int argc, char** argv){
     klpos[0] = klVec[0].vx();
     klpos[1] = klVec[1].vy();
     klpos[2] = klVec[2].vz();
-    if( klVec[0].chisqZ() > 15 ){ continue; }
+    //if( klVec[0].chisqZ() > 15 ){ continue; }
     if( klpos[2] > 5500 ){continue; }
     Double_t x0(0),y0(0);
     Double_t x1(0),y1(0);
@@ -197,17 +220,40 @@ int main( int argc, char** argv){
     std::list<Gamma>::iterator git = glist.begin();
 
     Double_t GammaTime0=-100;
-    
+    bool bAbortIDEvent = false;
+    int AbortIDs[2]={2455,2456};
     int gIndex =0; 
+    GammaTime0 = 0; 
     for( git = glist.begin();
 	 git != glist.end();
 	 git++){
+      if( gIndex >= 6 ){ break;}
+      
+      GammaTime0 += (*git).clusterTimeVec()[0]-showerTimeDelayAdj(klVec[0],(*git))-TimeOffset[(*git).clusterIdVec()[0]];
+      for( int id = 0; id <2; id ++){
+	int cid = (*git).clusterIdVec()[0];
+	if( cid == AbortIDs[id] ){
+	  bAbortIDEvent = true; 
+	}
+      }
+      gIndex++;
+    }
+    GammaTime0 /= 6;
+    gIndex = 0; 
+
+    if( bAbortIDEvent ){ continue; }
+    for( git = glist.begin();
+	 git != glist.end();
+	 git++){
+
       if( gIndex >= 6 ){ break; }
       //if( abs((*git).x()) > 600 || abs((*git).y() > 600 )){ continue; } 
+      /*
 	if( git == glist.begin() ){
-	  GammaTime0 = (*git).t()-showerTimeDelay(klVec[0],(*git))-TimeOffset[(*git).clusterIdVec()[0]];
+	  GammaTime0 = (*git).t()-showerTimeDelayAdj(klVec[0],(*git))-TimeOffset[(*git).clusterIdVec()[0]];
 	}
-	GammaTime[gIndex] = (*git).clusterTimeVec()[0]-showerTimeDelay(klVec[0],(*git))-TimeOffset[(*git).clusterIdVec()[0]];
+      */
+	GammaTime[gIndex] = (*git).clusterTimeVec()[0]-showerTimeDelayAdj(klVec[0],(*git))-TimeOffset[(*git).clusterIdVec()[0]];
 	GammaCE[gIndex]   = (*git).clusterEVec()[0];
 	GammaE[gIndex]    = (*git).e();
 	GammaX[gIndex]    = (*git).x();
@@ -234,6 +280,14 @@ int main( int argc, char** argv){
     if( gammaMinE ){ continue; }
     if( gammapos  ){ continue; }
     GammaTimeSigma =TMath::Sqrt(GammaTimeSigma/5);
+    KLChisq = klVec[0].chisqZ();
+    KLMass  = klVec[0].m();
+    if( klVec.size() == 2 ){
+      KLChisqSec = klVec[1].chisqZ(); 
+    }
+    for( int i = 0; i< 3; i++){
+      Pi0Pt[i] = klVec[0].pi0()[i].p3().perp();
+    }
     trOut->Fill();
 
 
@@ -247,7 +301,7 @@ int main( int argc, char** argv){
 				 + TMath::Power(((*git).y() - klVec[0].vy()),2) 
 				 + TMath::Power(((*git).z() - klVec[0].vz()),2));
     double g0Offset = TimeOffset[g0crystalID];//man->GetT0Offset(g0crystalID);
-    double g0Shower = showerTimeDelay(klVec[0],(*git));
+    double g0Shower = showerTimeDelayAdj(klVec[0],(*git));
     double g0Delta  = g0Offset-g0length/sol-g0Shower;//man->GetT0Offset(g0crystalID);
 
     bool bg0good=false;
