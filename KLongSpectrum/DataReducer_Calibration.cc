@@ -274,7 +274,6 @@ Int_t main( int argc , char** argv ){
   Double_t GammaPos[6][3];
   Double_t GammaTime[6];
 
-  E14GNAnaDataContainer dataCopy;
   trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
   trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
   trKL->Branch("CsiNumber",&cCsiNumber,"CsiNumber/I");
@@ -282,6 +281,7 @@ Int_t main( int argc , char** argv ){
   trKL->Branch("CsiEne",cCsiEne,"CsiEne[CsiNumber]/D");//cCsiNumber
   trKL->Branch("CsiTime",cCsiTime,"CsiTime[CsiNumber]/D");//cCsiNumber
   trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//cCsiNumber
+  E14GNAnaDataContainer dataCopy;
   dataCopy.branchOfKlong(trKL);
 
     
@@ -315,10 +315,6 @@ Int_t main( int argc , char** argv ){
       cCsiTime[i]  = 0;
       cCsiSignal[i] = 0; 
     }
-
-
-
-
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
