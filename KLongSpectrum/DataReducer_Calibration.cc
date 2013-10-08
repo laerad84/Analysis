@@ -241,6 +241,13 @@ Int_t main( int argc , char** argv ){
   double CsiEne[3000];
   double CsiTime[3000];
   double CsiSignal[3000];
+
+  int cCsiNumber;
+  int cCsiModID[3000];
+  double cCsiEne[3000];
+  double cCsiTime[3000];
+  double cCsiSignal[3000];
+
   int CsiL1nTrig;
   double CsiL1TrigCount[20];
   ch->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
@@ -270,11 +277,11 @@ Int_t main( int argc , char** argv ){
   E14GNAnaDataContainer dataCopy;
   trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
   trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
-  trKL->Branch("CsiNumber",&CsiNumber,"CsiNumber/I");
-  trKL->Branch("CsiModID",CsiModID,"CsiModID[CsiNumber]/I");//CsiNumber
-  trKL->Branch("CsiEne",CsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
-  trKL->Branch("CsiTime",CsiTime,"CsiTime[CsiNumber]/D");//CsiNumber
-  trKL->Branch("CsiSignal",CsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
+  trKL->Branch("CsiNumber",&cCsiNumber,"CsiNumber/I");
+  trKL->Branch("CsiModID",cCsiModID,"CsiModID[CsiNumber]/I");//cCsiNumber
+  trKL->Branch("CsiEne",cCsiEne,"CsiEne[CsiNumber]/D");//cCsiNumber
+  trKL->Branch("CsiTime",cCsiTime,"CsiTime[CsiNumber]/D");//cCsiNumber
+  trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//cCsiNumber
   dataCopy.branchOfKlong(trKL);
 
     
@@ -301,6 +308,17 @@ Int_t main( int argc , char** argv ){
     dataCopy.reset();
     //if(ievent > 1000){ break; }
     
+    cCsiNumber = 0; 
+    for( int i = 0; i< 3000; i++){
+      cCsiModID[i] = 0;
+      cCsiEne[i]   = 0; 
+      cCsiTime[i]  = 0;
+      cCsiSignal[i] = 0; 
+    }
+
+
+
+
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
@@ -310,7 +328,17 @@ Int_t main( int argc , char** argv ){
     dataCopy.setData( clist );
     dataCopy.setData( glist );
     dataCopy.setData( klVec );
+    for( int i = 0; i< CsiNumber; i++){
+      cCsiModID[i] = CsiModID[i];
+      cCsiEne[i] = CsiEne[i];
+      cCsiTime[i] = CsiTime[i];
+      cCsiSignal[i] = CsiSignal[i];
+      cCsiNumber++;
+    }
+
     
+
+
     //std::cout<< klVec.size() << "\t" << clist.size() << "\t" << glist.size() << std::endl;
     if( klVec.size() == 0 ){ continue; }
     //if( clist.size() == 0 ){ continue; }
