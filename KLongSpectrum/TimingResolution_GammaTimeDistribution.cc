@@ -76,7 +76,7 @@ int main( int argc, char** argv){
   const int nFile = 1;
   TFile* tf;
   TTree* tr;
-  char* name = "WAVNOCV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
+  char* name = "WAV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
 
   tf = new TFile(Form("Kl_Total_%s.root",name));
   tr = (TTree*)tf->Get(Form("trKL"));
@@ -87,6 +87,7 @@ int main( int argc, char** argv){
   TTree* trOut    = new TTree("GammaTimeTree","GammaTime");
   double GammaCE[6];
   double GammaTime[6];
+  double GammaSignal[6];
   double GammaTimeSigma;
   double GammaTimeSigmaExcept[6];
   double GammaE[6];
@@ -96,11 +97,20 @@ int main( int argc, char** argv){
   double KLChisq;
   double KLChisqSec;
   double Pi0Pt[3];
+  double MaxHeight;
+  double TLowGammaMean;
+  double TLowGammaSigma;
+  int    nLowGamma;
+  trOut->Branch("MaxHeight",&MaxHeight,"MaxHeight/D");
+  trOut->Branch("nLowGamma",&nLowGamma,"nLowGamma/I");
+  trOut->Branch("TLowGammaMean",&TLowGammaMean,"TLowGammaMean/D");
+  trOut->Branch("TLowGammaSigma",&TLowGammaSigma,"TLowGammaSigma/D");
   trOut->Branch("GammaCE",GammaCE,"GammaCE[6]/D");
   trOut->Branch("GammaTime",GammaTime,"GammaTime[6]/D");
   trOut->Branch("GammaTimeSigma",&GammaTimeSigma,"GammaTimeSigma/D");
   trOut->Branch("GammaTimeSigmaExcept",GammaTimeSigmaExcept,"GammaTimeSigmaExcept[6]/D");
   trOut->Branch("GammaE",GammaE,"GammaE[6]/D");
+  trOut->Branch("GammaSignal",GammaSignal,"GammaSignal[6]/D");
   trOut->Branch("GammaX",GammaX,"GammaX[6]/D");
   trOut->Branch("GammaY",GammaY,"GammaY[6]/D");
   trOut->Branch("KLMass",&KLMass,"KLMass/D");
@@ -116,6 +126,12 @@ int main( int argc, char** argv){
   for( int i = 0; i< 4; i++){
     hisResolutionLY[i] = new TH2D(Form("hisResolutionLY_%d",i),Form("hisResolutionLY_%d",i),100,0,400,100,-20,20);
   }
+  TH2D* hisTimingNonlinearity[3];
+  char* Name[3] = {"Good","Bad","Large"};
+  for( int i = 0; i< 3; i++){
+    hisTimingNonlinearity[i] = new TH2D(Form("hisTimingNonlinearity_%d",i),Form("hisTimingNonLinearity_%s",Name[i]),160,0,16000,100,-20,20);
+  }
+
   TH2D* hisTimeD = new TH2D("hisTimeD","hisTimeD",12,0,150,100,-15,15);
   TH2D* hisED    = new TH2D("hisED"   ,"hisED"   ,12,0,150,100,0,400);
   TH2D* hisTimeR = new TH2D("hisTimeR","hisTimeR",13,-150-12.5,150+12.5,150,-15,15);
@@ -151,9 +167,16 @@ int main( int argc, char** argv){
   TH1D* hisInjectionAngle = new TH1D("hisInjectionAngle","hisInjectionAngle",100,0,1);
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
+  int CsiNumber;
+  double CsiSignal[3000];
+  int CsiModID[3000];
+  
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   tr->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
-  
+  tr->SetBranchAddress("CsiNumber",&CsiNumber);
+  tr->SetBranchAddress("CsiSignal",CsiSignal);
+  tr->SetBranchAddress("CsiModID",CsiModID);
+
   /*T0Manager* man = new T0Manager();
   if( nTimeIteration > 0 ){
     if( !(man->ReadFile(Form("TimeOffset_%d.dat",nTimeIteration)))){
@@ -177,7 +200,7 @@ int main( int argc, char** argv){
     std::cout<<tmpID << "\t" <<  TimeOffset[tmpID] << std::endl;
   }
 
-  for( int ievent = 0; ievent < tr->GetEntries(); ievent++){      
+  for( int ievent = 0; ievent < tr->GetEntries()-203363; ievent++){      
     tr->GetEntry(ievent);
     //if( ievent  >= 100000 ){ break ; } 
     std::list<Cluster> clist;
@@ -204,6 +227,15 @@ int main( int argc, char** argv){
       GammaTimeSigmaExcept[i] = 0;
     }
     
+    MaxHeight = 0;
+    nLowGamma = 0;
+    TLowGammaMean = 0;
+    TLowGammaSigma = 0;
+
+
+
+
+
     double klpos[3]={0};
     klpos[0] = klVec[0].vx();
     klpos[1] = klVec[1].vy();
@@ -259,7 +291,48 @@ int main( int argc, char** argv){
 	GammaX[gIndex]    = (*git).x();
 	GammaY[gIndex]    = (*git).y();
 	GammaTimeSigma    += TMath::Power(GammaTime[gIndex] -GammaTime0,2);
+	int tmpID  = (*git).clusterIdVec()[0];
+	for( int i = 0; i< CsiNumber; i++){
+	  if( tmpID == CsiModID[i] ){
+	    GammaSignal[gIndex]= CsiSignal[i];
+	    break;
+	  }
+	}
+	if( GammaSignal[gIndex] > MaxHeight ){ MaxHeight = GammaSignal[gIndex];}
+	if( GammaSignal[gIndex] < 2000 ){ 
+	  TLowGammaMean += GammaTime[gIndex];
+	  TLowGammaSigma += GammaTime[gIndex]*GammaTime[gIndex];
+	  nLowGamma++;
+	}
 	gIndex++;
+    }
+    TLowGammaMean /= nLowGamma;
+    TLowGammaSigma = TMath::Sqrt(TLowGammaSigma/nLowGamma - TLowGammaMean*TLowGammaMean);
+
+    int PositionIndex = 0; 
+    if( nLowGamma == 4 ){
+      for( int i = 0; i< 6; i++){
+	if( GammaSignal[i] >=2000 && TLowGammaSigma < 2){
+	  if( TMath::Abs(GammaX[i]) < 600 ){
+	    if( GammaY[i] > 0  ){
+	      if( GammaX[i] < -100 ){
+		PositionIndex = 1;
+	      }else{
+		PositionIndex = 0;
+	      }
+	    }else{
+	      if( GammaX[i] < 75 ){
+		PositionIndex = 1;
+	      }else{
+		PositionIndex = 0;
+	      }
+	    }
+	  }else{
+	    PositionIndex = 2;
+	  }
+	  hisTimingNonlinearity[PositionIndex]->Fill(GammaSignal[i], GammaTime[i]-TLowGammaMean );
+	}
+      }
     }
     for( int i = 0; i< 6; i++){
       for( int j = 0; j< 6; j++){
@@ -325,6 +398,9 @@ int main( int argc, char** argv){
     hisX->Fill(g0crystalID, g0xy[0] );
     hisY->Fill(g0crystalID, g0xy[1] );
     git++;
+
+    
+
     
     //std::cout << g0crystalID  << "\t" << g0xy[0] << "\t" << g0xy[1] << std::endl;
 
@@ -378,6 +454,10 @@ int main( int argc, char** argv){
   hisX->Write();
   hisY->Write();
   
+
+  hisTimingNonlinearity[0]->Write();
+  hisTimingNonlinearity[1]->Write();
+  hisTimingNonlinearity[2]->Write();
   trOut->Write();
   tfOut->Close();
 }

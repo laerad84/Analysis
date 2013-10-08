@@ -282,14 +282,11 @@ Int_t main( int argc , char** argv ){
   //dataCopy.branchOfGammaList(trKL);
   //dataCopy.branchOfPi0List(trKL);
   dataCopy.branchOfKlong(trKL);
-  trKL->Branch("CsiNumber",&cCsiNumber,"CsiNumber/S");
+  trKL->Branch("CsiNumber",&cCsiNumber,"CsiNumber/I");
   trKL->Branch("CsiModID",cCsiModID,"CsiModID[CsiNumber]/I");  
   trKL->Branch("CsiEne",cCsiEne,"CsiEne[CsiNumber]/D");//cCsiNumber
   trKL->Branch("CsiTime",cCsiTime,"CsiTime[CsiNumber]/D");//cCsiNumber
   trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//cCsiNumber
-
-    
-
 
   /*
   trKL->Branch("KLMass"  ,&KLMass  ,"KLMass/D");
