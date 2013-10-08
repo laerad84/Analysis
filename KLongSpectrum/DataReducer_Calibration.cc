@@ -268,7 +268,6 @@ Int_t main( int argc , char** argv ){
   Double_t GammaTime[6];
 
   E14GNAnaDataContainer dataCopy;
-  dataCopy.branchOfKlong(trKL);
   trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
   trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
   trKL->Branch("CsiNumber",&CsiNumber,"CsiNumber/I");
@@ -276,6 +275,7 @@ Int_t main( int argc , char** argv ){
   trKL->Branch("CsiEne",CsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
   trKL->Branch("CsiTime",CsiTime,"CsiTime[CsiNumber]/D");//CsiNumber
   trKL->Branch("CsiSignal",CsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
+  dataCopy.branchOfKlong(trKL);
 
     
 
