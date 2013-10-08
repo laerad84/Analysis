@@ -309,6 +309,13 @@ Int_t main( int argc , char** argv ){
     dataCopy.reset();
     //if(ievent > 1000){ break; }
     cCsiNumber = 0; 
+    for( int i = 0; i< 3000; i++){
+      cCsiModID[i] = 0;
+      cCsiEne[i]   = 0; 
+      cCsiTime[i]  = 0;
+      cCsiSignal[i] = 0; 
+    }
+
     for( int i = 0; i< CsiNumber; i++){
       cCsiModID[i] = CsiModID[i];
       cCsiEne[i] = CsiEne[i];
@@ -318,12 +325,7 @@ Int_t main( int argc , char** argv ){
     }
 
     
-    for( int i = 0; i< 3000; i++){
-      cCsiModID[i] = 0;
-      cCsiEne[i]   = 0; 
-      cCsiTime[i]  = 0;
-      cCsiSignal[i] = 0; 
-    }
+
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
