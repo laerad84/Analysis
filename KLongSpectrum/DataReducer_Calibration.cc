@@ -236,15 +236,24 @@ Int_t main( int argc , char** argv ){
 
 
   std::cout<< "Total Event Number : " << ch->GetEntries() << std::endl;  
-
+  int CsiNumber;
+  int CsiModID[2716];
+  double CsiEne[2716];
+  double CsiTime[2716];
+  double CsiSignal[2716];
   int CsiL1nTrig;
   double CsiL1TrigCount[20];
   ch->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   ch->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
+  ch->SetBranchAddress("CsiNumber",&CsiNumber);
+  ch->SetBranchAddress("CsiModID",CsiModID);
+  ch->SetBranchAddress("CsiEne",CsiEne);
+  ch->SetBranchAddress("CsiTime",CsiTime);
+  ch->SetBranchAddress("CsiSignal",CsiSignal);
 
   E14GNAnaDataContainer data;
   data.setBranchAddress( ch );
-  
+
   //// Set Output File //// 
   TFile* tfout = new TFile(Form("Kl_Total_%s.root",RunName[FileType]),"RECREATE");
   TTree* trKL = new TTree("trKL","Klong Tree");
@@ -259,8 +268,18 @@ Int_t main( int argc , char** argv ){
   Double_t GammaTime[6];
   trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
   trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
+  trKL->Branch("CsiNumber",&CsiNumber,"CsiNumber/I");
+  trKL->Branch("CsiModID",CsiModID,"CsiModID[CsiNumber]/I");//CsiNumber
+  trKL->Branch("CsiEne",CsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
+  trKL->Branch("CsiTime",CsiTime,"CsiTime[CsiNumber]/D");//CsiNumber
+  trKL->Branch("CsiSignal",CsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
+
   E14GNAnaDataContainer dataCopy;
   dataCopy.branchOfKlong(trKL);
+
+    
+
+
   /*
   trKL->Branch("KLMass"  ,&KLMass  ,"KLMass/D");
   trKL->Branch("KLChisq" ,&KLChisq ,"KLChisq/D");
