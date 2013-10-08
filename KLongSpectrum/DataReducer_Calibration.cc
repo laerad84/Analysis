@@ -296,6 +296,7 @@ Int_t main( int argc , char** argv ){
 
   for( int ievent = 0; ievent < ch->GetEntries() ; ievent++){
     ch->GetEntry( ievent );
+    std::cout<< ievent << std::endl;
     //data.reset();
     dataCopy.reset();
     //if(ievent > 1000){ break; }
