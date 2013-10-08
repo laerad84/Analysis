@@ -250,6 +250,8 @@ Int_t main( int argc , char** argv ){
 
   int CsiL1nTrig;
   double CsiL1TrigCount[20];
+  E14GNAnaDataContainer data;
+  data.setBranchAddress( ch );
   ch->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   ch->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   ch->SetBranchAddress("CsiNumber",&CsiNumber);
@@ -258,8 +260,6 @@ Int_t main( int argc , char** argv ){
   ch->SetBranchAddress("CsiTime",CsiTime);
   ch->SetBranchAddress("CsiSignal",CsiSignal);
 
-  E14GNAnaDataContainer data;
-  data.setBranchAddress( ch );
 
   //// Set Output File //// 
   TFile* tfout = new TFile(Form("Kl_Total_%s.root",RunName[FileType]),"RECREATE");
@@ -276,13 +276,17 @@ Int_t main( int argc , char** argv ){
 
   trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
   trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
-  trKL->Branch("CsiNumber",&cCsiNumber,"CsiNumber/I");
-  trKL->Branch("CsiModID",cCsiModID,"CsiModID[CsiNumber]/I");//cCsiNumber
+
+  E14GNAnaDataContainer dataCopy;
+  dataCopy.branchOfClusterList(trKL);
+  //dataCopy.branchOfGammaList(trKL);
+  //dataCopy.branchOfPi0List(trKL);
+  dataCopy.branchOfKlong(trKL);
+  trKL->Branch("CsiNumber",&cCsiNumber,"CsiNumber/S");
+  trKL->Branch("CsiModID",cCsiModID,"CsiModID[CsiNumber]/I");  
   trKL->Branch("CsiEne",cCsiEne,"CsiEne[CsiNumber]/D");//cCsiNumber
   trKL->Branch("CsiTime",cCsiTime,"CsiTime[CsiNumber]/D");//cCsiNumber
   trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//cCsiNumber
-  E14GNAnaDataContainer dataCopy;
-  dataCopy.branchOfKlong(trKL);
 
     
 
@@ -303,12 +307,20 @@ Int_t main( int argc , char** argv ){
 
   for( int ievent = 0; ievent < ch->GetEntries() ; ievent++){
     ch->GetEntry( ievent );
-    std::cout<< ievent << std::endl;
+    //std::cout<< ievent << std::endl;
     //data.reset();
     dataCopy.reset();
     //if(ievent > 1000){ break; }
-    
     cCsiNumber = 0; 
+    for( int i = 0; i< CsiNumber; i++){
+      cCsiModID[i] = CsiModID[i];
+      cCsiEne[i] = CsiEne[i];
+      cCsiTime[i] = CsiTime[i];
+      cCsiSignal[i] = CsiSignal[i];
+      cCsiNumber++;
+    }
+
+    
     for( int i = 0; i< 3000; i++){
       cCsiModID[i] = 0;
       cCsiEne[i]   = 0; 
@@ -321,18 +333,9 @@ Int_t main( int argc , char** argv ){
     data.getData( clist );
     data.getData( glist );
     data.getData( klVec );
-    dataCopy.setData( clist );
-    dataCopy.setData( glist );
+    //dataCopy.setData( clist );
+    //dataCopy.setData( glist );
     dataCopy.setData( klVec );
-    for( int i = 0; i< CsiNumber; i++){
-      cCsiModID[i] = CsiModID[i];
-      cCsiEne[i] = CsiEne[i];
-      cCsiTime[i] = CsiTime[i];
-      cCsiSignal[i] = CsiSignal[i];
-      cCsiNumber++;
-    }
-
-    
 
 
     //std::cout<< klVec.size() << "\t" << clist.size() << "\t" << glist.size() << std::endl;
