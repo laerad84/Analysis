@@ -131,7 +131,7 @@ int main( int argc, char** argv){
     }
     ifs.close();
   }
-  for( int ievent = 0; ievent < tr->GetEntries(); ievent++){      
+  for( int ievent = 0; ievent < tr->GetEntries()-203363; ievent++){      
     tr->GetEntry(ievent);
     //if( ievent  >= 100000 ){ break ; } 
     std::list<Cluster> clist;
