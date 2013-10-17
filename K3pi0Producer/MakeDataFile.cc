@@ -126,6 +126,10 @@ main( int argc ,char ** argv ){
   while( ifsTCal >> tmpID >> tmpDelta >> tmpSig ){
     TimeDelta[ tmpID ]    = tmpDelta;
   }
+  for( int i = 0; i< 2716; i++){
+    TimeDelta[i] = 0; 
+  }
+
   std::cout<< "Read Energy Calibration File" << std::endl;
   std::ifstream ifsECal(Form(ECalFile.c_str(),ANAFILEDIR.c_str()));
   while( ifsECal >> tmpID >> tmpCalFactor ){
@@ -159,7 +163,7 @@ main( int argc ,char ** argv ){
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber,FileLevel),"recreate");
-  TTree* trout = new TTree("T",Form("Output from Time zero;%s;%s",ECalFile.c_str(),TCalFile.c_str()) );  
+  TTree* trout = new TTree("T",Form("Output from Time zero;%s;%s",ECalFile.c_str(),"NOTIMEOFFSET"));//"TCalFile.c_str()) );  
   
   int EventNumber;
   int nCSIDigi = 0;
