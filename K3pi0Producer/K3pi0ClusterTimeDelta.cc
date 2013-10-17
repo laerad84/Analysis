@@ -97,9 +97,10 @@ main( int argc ,char ** argv ){
   double tmpCalFactor; 
   std::string ANAFILEDIR = std::getenv("HOME");
   //std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str()));
-  std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/ResultTimeDelta.dat",ANAFILEDIR.c_str()));
-  if( !ifs.is_open() ) { std::cerr <<"File does not exist."<< Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str())  << std::endl; return -1;}
-
+  //std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/ResultTimeDelta.dat",ANAFILEDIR.c_str()));
+  std::string TimeCalFilename = Form("%s/Data/TimeOffset/TimeOffset_with_Cosmic.dat",ANAFILEDIR.c_str());
+  std::ifstream ifs(TimeCalFilename.c_str());
+  if( !ifs.is_open() ) { std::cerr <<"File does not exist."<< TimeCalFilename.c_str()  << std::endl; return -1;}
   while( ifs >> tmpID >> tmpDelta >> tmpDeltaSig ){
     TimeDelta[ tmpID ]    = tmpDelta;
     TimeDeltaSig[ tmpID ] = tmpDeltaSig; 

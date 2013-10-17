@@ -97,15 +97,6 @@ main( int argc ,char ** argv ){
     std::cout<< tfTempCorr->GetName() << "is not opened" << std::endl;
     return -1;
   }
-  std::ifstream ifsTCal( TCalFile.c_str());
-  if( !(ifsTCal.is_open())){ 
-    std::cout << TCalFile << "is not opened" << std::endl;
-    return -1;
-  }
-  if( !(ifsECal.is_open())){
-    std::cout<< ECalFile << "is not opened" << std::endl;
-    return -1; 
-  }
 
   //Set Calibration constant 
 
@@ -123,14 +114,20 @@ main( int argc ,char ** argv ){
   std::string ANAFILEDIR = std::getenv("HOME");
   //std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str()));
   std::ifstream ifsTCal(Form(TCalFile.c_str(),ANALYSISLIB.c_str()));
-  if( !ifsTCal.is_open() ) { std::cerr <<"File does not exist."<< Form(TCalFile.c_str(),ANALYSISLIB.c_str())  << std::endl; return -1;}
+  if( !(ifsTCal.is_open())){ 
+    std::cout << TCalFile << "is not opened" << std::endl;
+    return -1;
+  }
   while( ifsTCal >> tmpID >> tmpDelta ){
     TimeDelta[ tmpID ]    = tmpDelta;
   }
   std::ifstream ifsECal(Form(ECalFile.c_str(),ANAFILEDIR.c_str()));
-  if( !ifsECal.is_open() ){ std::cerr << "File does not exist." << Form(ECalFile.c_str(),ANAFILEDIR.c_str()) << std::endl; return -1; }
   while( ifsECal >> tmpID >> tmpCalFactor ){
     CalibrationFactor[ tmpID ] = tmpCalFactor;
+  }
+  if( !(ifsECal.is_open())){
+    std::cout<< ECalFile << "is not opened" << std::endl;
+    return -1; 
   }
   
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -154,7 +151,7 @@ main( int argc ,char ** argv ){
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber),"recreate");
-  TTree* trout = new TTree("T", "Output from Time zero" );  
+  TTree* trout = new TTree("T",Form("Output from Time zero;%s;%s",ECalFile.c_str(),TCalFile.c_str()) );  
   
   int EventNumber;
   int nCSIDigi = 0;
@@ -455,7 +452,7 @@ main( int argc ,char ** argv ){
 	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor;      
 	break;
       case 2:
-	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]/TempCorFactor*Pi0PeakCorFactor;
+	CsiEnergy = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;
 	break;
       default:
 	break;
@@ -496,22 +493,22 @@ main( int argc ,char ** argv ){
     }
     
     if( nCSIDigi<5){ continue;}
-
+    
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
     
     /*
-    std::cout<< "Cluster" << std::endl;
-    std::cout << nCSIDigi << std::endl;
-    for( int i = 0; i< nCSIDigi; i++ ){
-
+      std::cout<< "Cluster" << std::endl;
+      std::cout << nCSIDigi << std::endl;
+      for( int i = 0; i< nCSIDigi; i++ ){
+      
       std::cout<< i            << " / "
-	       << nCSIDigi     << " : " 
-	       << CSIDigiID[i] << " : " 
-	       << CSIDigiE[i]  << " : "
+      << nCSIDigi     << " : " 
+      << CSIDigiID[i] << " : " 
+      << CSIDigiE[i]  << " : "
 	       << CSIDigiTime[i] << std::endl;
-    }
+	       }
     */
     
     clist = clusterFinder.findCluster( nCSIDigi,CSIDigiID,CSIDigiE,CSIDigiTime);
@@ -525,9 +522,8 @@ main( int argc ,char ** argv ){
       data.setData(klVec);    
       trout->Fill();
     }
-    //}
-    }
   }
+
   std::cout<< "End" << std::endl;
   trout->Write();
   std::cout<< "Write" << std::endl;

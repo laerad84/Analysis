@@ -24,6 +24,8 @@
 #include "TDirectory.h"
 #include "TProfile.h"
 
+#include "TSpline.h"
+#include "TGraphErrors.h"
 const double KLMass = 497.648;//MeV
 
 double KLSpectrum(double* x,double*p){
@@ -54,7 +56,7 @@ double showerTimeDelayAdj(Klong kl, Gamma g){
   double depth     = showerDepth( g.e() );
   double cosTheta  = TMath::Abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
   //double delayTime = 500/solc - depth*(1-cosTheta)/sol + 0.541812*TMath::Log10(TMath::E())*log(g.e()/1000);
-  double delayTime = -depth*(1/sol-cosTheta/solc);
+  double delayTime = depth*(1/sol-cosTheta/solc);
   return delayTime;
 }
 double ThetaConstant(Klong kl, Gamma g){
@@ -68,10 +70,12 @@ double gammaLOF( Klong kl, Gamma g){
   return length;
 }
 
-
-
-
-
+TFile* tflin = new TFile("TimingLinearityFuncLaser.root");
+TGraphErrors* grTimingLinearity = (TGraphErrors*)tflin->Get("grTimingLinearityLaser");
+TSpline3* spl = new TSpline3("spl",grTimingLinearity);
+double HeightAdjFunc(double* x, double* par){
+  return spl->Eval(x[0]);
+}
 
 //void DistributionTester(){
 int main( int argc, char** argv){
@@ -92,8 +96,11 @@ int main( int argc, char** argv){
   tr = (TTree*)tf->Get(Form("trKL"));
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
-
-  TFile* tfOut = new TFile(Form("DistributionTimeData_Shower_%s_%d.root",name,nTimeIteration),"recreate");
+  int CsiNumber;
+  double CsiSignal[3000];
+  int CsiModID[3000];
+  
+  TFile* tfOut = new TFile(Form("DistributionTimeData_ShowerHeight_%s_%d.root",name,nTimeIteration),"recreate");
   TH2D* hisTimeID;
   TH2D* hisAdjTimeID;
   hisTimeID    = new TH2D(Form("hisTimeID_%d",nTimeIteration),Form("hisTimeID_%d",nTimeIteration),
@@ -105,7 +112,9 @@ int main( int argc, char** argv){
   data.setBranchAddress( tr );
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   tr->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
-  
+  tr->SetBranchAddress("CsiNumber",&CsiNumber);
+  tr->SetBranchAddress("CsiSignal",CsiSignal);
+  tr->SetBranchAddress("CsiModID",CsiModID);
   /*T0Manager* man = new T0Manager();
   if( nTimeIteration > 0 ){
     if( !(man->ReadFile(Form("TimeOffset_%d.dat",nTimeIteration)))){
@@ -118,7 +127,7 @@ int main( int argc, char** argv){
 
   Double_t TimeOffset[2716]={0};
   if( nTimeIteration > 1 ){ 
-    std::ifstream ifs(Form("TimeOffset_Shower_%d.dat",nTimeIteration));
+    std::ifstream ifs(Form("TimeOffset_ShowerHeight_%d.dat",nTimeIteration));
     if( !ifs.is_open() ){
       std::cout<< "No CalibrationFile" << std::endl;
       return -1;
@@ -165,10 +174,22 @@ int main( int argc, char** argv){
 
     double GammaTimeSigma=0;
     double GammaTimeMean = 0; 
+    int    CrystalID[6]={-1,-1,-1,-1,-1,-1};
+    double CrystalHeight[6];
+    double HeightOffset[6];
     for( int igamma = 0; igamma < 6; igamma++,git++){
       GammaTimeSigma += (*git).t()*(*git).t();
       GammaTimeMean  += (*git).t();
+      CrystalID[igamma] =  (*git).clusterIdVec()[0];
+      for( int icsi = 0; icsi < CsiNumber; icsi++){
+	if( CrystalID[igamma] == CsiModID[icsi]){
+	  CrystalHeight[igamma] = CsiSignal[icsi];
+	  HeightOffset[igamma] = spl->Eval(CrystalHeight[igamma]);
+	  break;
+	}
+      }
     }
+    
     GammaTimeMean /= 6;
     GammaTimeSigma = sqrt((GammaTimeSigma/6) - (GammaTimeMean*GammaTimeMean));
     if( nTimeIteration > 10 ){ 
@@ -177,8 +198,6 @@ int main( int argc, char** argv){
 
     git = glist.begin();
     git++;
-
-    
 
     for( int igamma = 1; igamma < 6; igamma++,git++){
       int crystalID = (*git).clusterIdVec()[0];
@@ -192,7 +211,7 @@ int main( int argc, char** argv){
       double Shower = showerTimeDelayAdj(klVec[0],(*git));
       double Delta = Offset-length/sol-Shower;//man->GetT0Offset(crystalID);
       hisTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Offset)-(g0time-g0Offset));
-      hisAdjTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Delta)-(g0time-g0Delta));
+      hisAdjTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Delta-HeightOffset[igamma])-(g0time-g0Delta-HeightOffset[0]));
     }
   }
   /// Evaluation T0 /// 
@@ -223,7 +242,7 @@ int main( int argc, char** argv){
   int calibrated[2716] = {-1};
   int nCalibrated = 0;
   double mean=0;
-  std::ofstream ofs(Form("TimeOffset_Shower_%d.dat",nTimeIteration+1));
+  std::ofstream ofs(Form("TimeOffset_ShowerHeight_%d.dat",nTimeIteration+1));
   double timeCalFactor[2716] = {0};
   double tmptimeCalFactor[2716] = {0};
   TH1D* tmpTimeOffsetDistribution = new TH1D("tmpTimeOffset","tmpTimeOffset",200,-20,20);

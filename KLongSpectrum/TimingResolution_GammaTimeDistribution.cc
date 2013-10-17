@@ -50,7 +50,7 @@ double showerTimeDelayAdj(Klong kl, Gamma g){
   double depth     = showerDepth( g.e() );
   double cosTheta  = TMath::Abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
   //double delayTime = 500/solc - depth*(1-cosTheta)/sol + 0.541812*TMath::Log10(TMath::E())*log(g.e()/1000);
-  double delayTime = -depth*(1/sol-cosTheta/solc);
+  double delayTime = depth*(1/sol-cosTheta/solc);
   return delayTime;
 }
 
@@ -61,6 +61,14 @@ double KLSpectrum(double* x,double*p){
   double value = p[0]*TMath::Exp(-0.5*(klp-p[1])*(klp-p[1])/(sigma*sigma));
   return value;
 }
+
+double gammaLOF( Klong kl, Gamma g){
+  double length = 0;
+  length = sqrt( pow(g.x()-kl.vx(),2)+ pow(g.y()-kl.vy(),2)+pow(g.z()-kl.vz(),2));
+  return length;
+}
+
+
 
 
 //void DistributionTester(){
@@ -76,7 +84,7 @@ int main( int argc, char** argv){
   const int nFile = 1;
   TFile* tf;
   TTree* tr;
-  char* name = "WAV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
+  char* name = "WAVNOCV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
 
   tf = new TFile(Form("Kl_Total_%s.root",name));
   tr = (TTree*)tf->Get(Form("trKL"));
@@ -170,13 +178,13 @@ int main( int argc, char** argv){
   int CsiNumber;
   double CsiSignal[3000];
   int CsiModID[3000];
-  
+  //double KLMass;
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   tr->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   tr->SetBranchAddress("CsiNumber",&CsiNumber);
   tr->SetBranchAddress("CsiSignal",CsiSignal);
   tr->SetBranchAddress("CsiModID",CsiModID);
-
+  //tr->SetBranchAddress("KLMass",&KLMass);
   /*T0Manager* man = new T0Manager();
   if( nTimeIteration > 0 ){
     if( !(man->ReadFile(Form("TimeOffset_%d.dat",nTimeIteration)))){
@@ -188,7 +196,7 @@ int main( int argc, char** argv){
   //man->PrintOffset();
 
   Double_t TimeOffset[2716]={0};
-  std::ifstream ifs("TimeOffset_Shower_10.dat");
+  std::ifstream ifs("TimeOffset_ShowerHeight_10.dat");
   if( !ifs.is_open() ){
     std::cout<< "No CalibrationFile" << std::endl;
     return -1;
@@ -200,8 +208,9 @@ int main( int argc, char** argv){
     std::cout<<tmpID << "\t" <<  TimeOffset[tmpID] << std::endl;
   }
 
-  for( int ievent = 0; ievent < tr->GetEntries()-203363; ievent++){      
+  for( int ievent = 0; ievent < tr->GetEntries(); ievent++){      
     tr->GetEntry(ievent);
+    //std::cout<< ievent << std::endl;
     //if( ievent  >= 100000 ){ break ; } 
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
@@ -241,7 +250,7 @@ int main( int argc, char** argv){
     klpos[1] = klVec[1].vy();
     klpos[2] = klVec[2].vz();
     //if( klVec[0].chisqZ() > 15 ){ continue; }
-    if( klpos[2] > 5500 ){continue; }
+    //if( klpos[2] > 5500 ){continue; }
     Double_t x0(0),y0(0);
     Double_t x1(0),y1(0);
     Double_t t0(0),t1(0); 
@@ -253,7 +262,6 @@ int main( int argc, char** argv){
 
     Double_t GammaTime0=-100;
     bool bAbortIDEvent = false;
-    int AbortIDs[2]={2455,2456};
     int gIndex =0; 
     GammaTime0 = 0; 
     for( git = glist.begin();
@@ -261,19 +269,12 @@ int main( int argc, char** argv){
 	 git++){
       if( gIndex >= 6 ){ break;}
       
-      GammaTime0 += (*git).clusterTimeVec()[0]-showerTimeDelayAdj(klVec[0],(*git))-TimeOffset[(*git).clusterIdVec()[0]];
-      for( int id = 0; id <2; id ++){
-	int cid = (*git).clusterIdVec()[0];
-	if( cid == AbortIDs[id] ){
-	  bAbortIDEvent = true; 
-	}
-      }
+      GammaTime0 += (*git).clusterTimeVec()[0]-showerTimeDelayAdj(klVec[0],(*git))-TimeOffset[(*git).clusterIdVec()[0]]-gammaLOF(klVec[0],(*git))/sol;
       gIndex++;
     }
     GammaTime0 /= 6;
     gIndex = 0; 
 
-    if( bAbortIDEvent ){ continue; }
     for( git = glist.begin();
 	 git != glist.end();
 	 git++){
@@ -285,7 +286,7 @@ int main( int argc, char** argv){
 	  GammaTime0 = (*git).t()-showerTimeDelayAdj(klVec[0],(*git))-TimeOffset[(*git).clusterIdVec()[0]];
 	}
       */
-	GammaTime[gIndex] = (*git).clusterTimeVec()[0]-showerTimeDelayAdj(klVec[0],(*git))-TimeOffset[(*git).clusterIdVec()[0]];
+	GammaTime[gIndex] = (*git).clusterTimeVec()[0]-showerTimeDelayAdj(klVec[0],(*git))-TimeOffset[(*git).clusterIdVec()[0]]-gammaLOF(klVec[0],(*git))/sol;;
 	GammaCE[gIndex]   = (*git).clusterEVec()[0];
 	GammaE[gIndex]    = (*git).e();
 	GammaX[gIndex]    = (*git).x();
@@ -299,7 +300,7 @@ int main( int argc, char** argv){
 	  }
 	}
 	if( GammaSignal[gIndex] > MaxHeight ){ MaxHeight = GammaSignal[gIndex];}
-	if( GammaSignal[gIndex] < 2000 ){ 
+	if( GammaSignal[gIndex] < 1000 &&GammaSignal[gIndex] > 100){ 
 	  TLowGammaMean += GammaTime[gIndex];
 	  TLowGammaSigma += GammaTime[gIndex]*GammaTime[gIndex];
 	  nLowGamma++;
@@ -310,9 +311,9 @@ int main( int argc, char** argv){
     TLowGammaSigma = TMath::Sqrt(TLowGammaSigma/nLowGamma - TLowGammaMean*TLowGammaMean);
 
     int PositionIndex = 0; 
-    if( nLowGamma == 4 ){
+    if( nLowGamma >= 3 && GammaTimeSigma < 4){
       for( int i = 0; i< 6; i++){
-	if( GammaSignal[i] >=2000 && TLowGammaSigma < 2){
+	if( GammaSignal[i] >=1000 && TLowGammaSigma < 4){
 	  if( TMath::Abs(GammaX[i]) < 600 ){
 	    if( GammaY[i] > 0  ){
 	      if( GammaX[i] < -100 ){

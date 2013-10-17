@@ -24,8 +24,8 @@
 #include "TDirectory.h"
 #include "TProfile.h"
 #include "IDHandler.h"
-
-
+#include "TSpline.h"
+#include "TGraphErrors.h"
 const double KLMass = 497.648;//MeV
 
 double KLSpectrum(double* x,double*p){
@@ -65,7 +65,7 @@ double showerTimeDelayAdj(Klong kl, Gamma g){
   double depth     = showerDepth( g.e() );
   double cosTheta  = TMath::Abs(TMath::Sqrt(TMath::Power(g.x() - kl.vx(),2)+TMath::Power(g.y() - kl.vy(),2))/(g.z() - kl.vz()));
   //double delayTime = 500/solc - depth*(1-cosTheta)/sol + 0.541812*TMath::Log10(TMath::E())*log(g.e()/1000);
-  double delayTime = -depth*(1/sol-cosTheta/solc);
+  double delayTime = depth*(1/sol-cosTheta/solc);
   return delayTime;
 }
 
@@ -79,6 +79,16 @@ double gammaLOF( Klong kl, Gamma g){
   length = sqrt( pow(g.x()-kl.vx(),2)+ pow(g.y()-kl.vy(),2)+pow(g.z()-kl.vz(),2));
   return length;
 }
+
+
+
+TFile* tflin = new TFile("TimingLinearityFuncLaser.root");
+TGraphErrors* grTimingLinearity = (TGraphErrors*)tflin->Get("grTimingLinearityLaser");
+TSpline3* spl = new TSpline3("spl",grTimingLinearity);
+double HeightAdjFunc(double* x, double* par){
+  return spl->Eval(x[0]);
+}
+
 //void DistributionTester(){
 int main( int argc, char** argv){
 
@@ -99,8 +109,13 @@ int main( int argc, char** argv){
   tr = (TTree*)tf->Get(Form("trKL"));
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
+  int CsiNumber;
+  double CsiSignal[3000];
+  int CsiModID[3000];
+  
 
-  TFile* tfOut = new TFile(Form("TimeResolution_%s.root",name),"recreate");
+
+  TFile* tfOut = new TFile(Form("TimeResolution_%s_Height.root",name),"recreate");
   TH2D* hisResolution = new TH2D("hisResolution","hisResolution",100,0,400,100,-20,20);
   TH2D* hisResolutionAdj = new TH2D("hisResolutionAdj","hisResolutionAdj",100,0,400,100,-20,20);
   TH2D* hisResolutionLY[2];//0: good/good 1:good/bad 2:bad/good 3:bad/bad
@@ -166,7 +181,9 @@ int main( int argc, char** argv){
   data.setBranchAddress( tr );
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   tr->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
-  
+  tr->SetBranchAddress("CsiNumber",&CsiNumber);
+  tr->SetBranchAddress("CsiSignal",CsiSignal);
+  tr->SetBranchAddress("CsiModID",CsiModID);
   /*T0Manager* man = new T0Manager();
   if( nTimeIteration > 0 ){
     if( !(man->ReadFile(Form("TimeOffset_%d.dat",nTimeIteration)))){
@@ -178,7 +195,7 @@ int main( int argc, char** argv){
   //man->PrintOffset();
 
   Double_t TimeOffset[2716]={0};
-  std::ifstream ifs("TimeOffset_Shower_10.dat");
+  std::ifstream ifs("TimeOffset_ShowerHeight_10.dat");
   if( !ifs.is_open() ){
     std::cout<< "No CalibrationFile" << std::endl;
     return -1;
@@ -357,15 +374,42 @@ int main( int argc, char** argv){
       bool bggood =false;
       int id0= (*git).clusterIdVec()[0];
       int id1= (*git).clusterIdVec()[1];
+      double h0=0;
+      double h1=0;
+      double t0=0;
+      double t1=0;
+      for( int i = 0; i< CsiNumber; i++){
+	
+	if( id0 == CsiModID[i] ){
+	  h0= CsiSignal[i];
+	  if( id0 > id1 ){
+	    break;
+	  }else{
+	    continue;
+	  }
+	}
+	if( id1 == CsiModID[i]){
+	  if( id1 > id0 ){ 
+	    break;
+	  }else{
+	    continue;
+	  }
+	}
+      }
+      t0 = spl->Eval(h0);
+      t1 = spl->Eval(h1);
+
       double x0 = (*git).coex();
       double y0 = (*git).coey();
       double t4Offset[2]={0};
       if( TMath::Abs( x0 ) < 20 && TMath::Abs(y0) < 20 ){ continue; }
       if( TMath::Abs( x0 ) > 50 && TMath::Abs(y0) > 50 ){ continue; }
+      
+
 
       if((*git).clusterEVec()[0] > 300 && (*git).clusterEVec()[0] < 400 ){
 	hisResolution->Fill( (*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-((*git).clusterTimeVec()[0])); 
-	hisResolutionAdj->Fill( (*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
+	hisResolutionAdj->Fill( (*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0])-t0+t1);
 	double gxy[2];
 	gxy[0] = (*git).x();
 	gxy[1] = (*git).y();
@@ -383,10 +427,10 @@ int main( int argc, char** argv){
 	  }
 	}
 	if( bggood ){
-	  hisResolutionLY[0]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
+	  hisResolutionLY[0]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0])+t0-t1);
 	  
 	}else{
-	  hisResolutionLY[1]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0]));
+	  hisResolutionLY[1]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0])+t0-t1);
 	}
       }
       
