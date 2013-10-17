@@ -82,8 +82,8 @@ main( int argc ,char ** argv ){
   //Old Calibration File.
   //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   //std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
-  std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
-  //std::string TCalFile = Form("%s/Data/CalibrationFile/TimeOffset_Shower_10.dat",ANALYSISLIB.c_str());
+  //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
+  std::string TCalFile = Form("%s/Data/CalibrationFile/TimeOffset_Shower_10.dat",ANALYSISLIB.c_str());
   std::string ECalFile = Form("%s/Data/CalibrationFile/CalibrationFactorWithoutNOCV.dat",ANALYSISLIB.c_str());
 
   std::cout<< "Temperature Calibration" << std::endl;
