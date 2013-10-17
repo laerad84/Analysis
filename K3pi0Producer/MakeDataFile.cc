@@ -76,6 +76,7 @@ main( int argc ,char ** argv ){
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // READ CALIBRATION CONSTANTS
+  std::cout<< "READ CALIBRATION FILE" << std::endl;
   //Old Calibration File.
   //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   //std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
@@ -150,6 +151,7 @@ main( int argc ,char ** argv ){
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  std::cout<< __PRETTY_FUNCTION__ << std::endl;
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber,FileLevel),"recreate");
