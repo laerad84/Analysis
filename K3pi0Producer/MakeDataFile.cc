@@ -66,7 +66,7 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";//Run ID
-  std::string oFileForm="%s/run_wav_%d_%d_.root";// Calibration Type , Run ID
+  std::string oFileForm="%s/run_wav_%d_%d.root";// Calibration Type , Run ID
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
