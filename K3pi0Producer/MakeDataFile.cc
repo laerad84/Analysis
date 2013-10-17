@@ -46,7 +46,7 @@ int
 main( int argc ,char ** argv ){
   int FileLevel=-1;
   if( argc < 2 ){ return -1; }
-  FileLevel = std::atoi(argv[1]); 
+  FileLevel = std::atoi(argv[2]); 
   
   switch( FileLevel){
   case 0 :
@@ -58,6 +58,9 @@ main( int argc ,char ** argv ){
   case 2 :
     std::cout << "All calibration Applied" << std::endl;
     break;
+  default :
+    std::cout << "Invaelid Number" << std::endl;
+    return -1;
   }
 
   int RunNumber = atoi( argv[1]);
@@ -74,11 +77,10 @@ main( int argc ,char ** argv ){
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // READ CALIBRATION CONSTANTS
   //Old Calibration File.
-  //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   //std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
-
-  std::string TCalFile = Form("%s/Data/CalibrationFile/TimeOffset_Shower_10.dat",ANALYSISLIB.c_str());
+  std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
+  //std::string TCalFile = Form("%s/Data/CalibrationFile/TimeOffset_Shower_10.dat",ANALYSISLIB.c_str());
   std::string ECalFile = Form("%s/Data/CalibrationFile/CalibrationFactorWithoutNOCV.dat",ANALYSISLIB.c_str());
   std::string TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());  
   Double_t Pi0PeakCorFactor = 0.9937;
@@ -150,7 +152,7 @@ main( int argc ,char ** argv ){
 
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
-  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber),"recreate");
+  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber,FileLevel),"recreate");
   TTree* trout = new TTree("T",Form("Output from Time zero;%s;%s",ECalFile.c_str(),TCalFile.c_str()) );  
   
   int EventNumber;
@@ -302,7 +304,7 @@ main( int argc ,char ** argv ){
   double CsITime[2716]   = {-1};
   double CsIHHTime[2716] = {-1};
   
-  std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
+  //std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
   Long_t entries =  reader->fChain->GetEntries();
   for( int ievent  = 0; ievent < entries ; ievent++){
     /// Initialize /// 
@@ -408,7 +410,7 @@ main( int argc ,char ** argv ){
       EtcDigiTime[idigi] = reader->EtcTime[idigi];
       nEtcDigi++;
     }
-    std::cout<< __PRETTY_FUNCTION__<< " : " << __LINE__ << std::endl;
+    //std::cout<< __PRETTY_FUNCTION__<< " : " << __LINE__ << std::endl;
     for (int idigi = 0; idigi<reader->CC03Number; idigi++){
       CC03Signal[idigi] = reader->CC03Signal[idigi];
       CC03DigiID[idigi] = reader->CC03ID[idigi];
