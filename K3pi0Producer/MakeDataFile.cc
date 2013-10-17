@@ -76,6 +76,8 @@ main( int argc ,char ** argv ){
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // READ CALIBRATION CONSTANTS
+  Double_t Pi0PeakCorFactor = 0.9937;
+  std::cout<< Pi0PeakCorFactor << std::endl;
   std::cout<< "READ CALIBRATION FILE" << std::endl;
   //Old Calibration File.
   //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
@@ -83,9 +85,9 @@ main( int argc ,char ** argv ){
   std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   //std::string TCalFile = Form("%s/Data/CalibrationFile/TimeOffset_Shower_10.dat",ANALYSISLIB.c_str());
   std::string ECalFile = Form("%s/Data/CalibrationFile/CalibrationFactorWithoutNOCV.dat",ANALYSISLIB.c_str());
-  std::string TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());  
-  Double_t Pi0PeakCorFactor = 0.9937;
 
+  std::cout<< "Temperature Calibration" << std::endl;
+  std::string TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());  
   TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str());
   TTree* trTempCorr  =(TTree*)tfTempCorr->Get("TemperatureCorrectionCsI");
   Double_t TempCorFactor=0;
@@ -95,14 +97,12 @@ main( int argc ,char ** argv ){
     TempCorFactor = 1;
   }
   std::cout<< TempCorFactor << std::endl;
-
   if( tfTempCorr == NULL ){
     std::cout<< tfTempCorr->GetName() << "is not opened" << std::endl;
     return -1;
   }
 
   //Set Calibration constant 
-
   double TimeDelta[2716]={0};
   double CalibrationFactor[2716] = {1};
   for( int i = 0; i< 2716; i++){
@@ -113,17 +113,20 @@ main( int argc ,char ** argv ){
   double TimeDeltaLength[2716]={0};
   int    tmpID;
   double tmpDelta;
+  double tmpSig;
   double tmpCalFactor; 
   std::string ANAFILEDIR = std::getenv("HOME");
   //std::ifstream ifs(Form("%s/local/Analysis/K3pi0Producer/Data/Pi0Peak.dat",ANAFILEDIR.c_str()));
+  std::cout<< "Read TimeOffset" << std::endl;
   std::ifstream ifsTCal(Form(TCalFile.c_str(),ANALYSISLIB.c_str()));
   if( !(ifsTCal.is_open())){ 
     std::cout << TCalFile << "is not opened" << std::endl;
     return -1;
   }
-  while( ifsTCal >> tmpID >> tmpDelta ){
+  while( ifsTCal >> tmpID >> tmpDelta >> tmpSig ){
     TimeDelta[ tmpID ]    = tmpDelta;
   }
+  std::cout<< "Read Energy Calibration File" << std::endl;
   std::ifstream ifsECal(Form(ECalFile.c_str(),ANAFILEDIR.c_str()));
   while( ifsECal >> tmpID >> tmpCalFactor ){
     CalibrationFactor[ tmpID ] = tmpCalFactor;
@@ -138,6 +141,7 @@ main( int argc ,char ** argv ){
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Set L1 Trigger Scheme
+  std::cout<< "Set Trigger Scheme" << std::endl;
   double CSIL1TrigCountThreshold[20] = {1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
 					1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};
 
