@@ -215,6 +215,9 @@ int Calibration::SelectKL_prefit(){
     if( KL_prefit.pi0()[idx].g1().e() < gammaEneCut ){
       m_FlagKL_prefit |= 256;
     }
+    if( KL_prefit.pi0()[idx].g2().e() < gammaEneCut ){
+      m_FlagKL_prefit |= 256;
+    }
   }
 
   return m_FlagKL_prefit;  
