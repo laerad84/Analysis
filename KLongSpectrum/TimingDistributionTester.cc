@@ -23,7 +23,8 @@
 #include "T0Manager.h"
 #include "TDirectory.h"
 #include "TProfile.h"
-
+#include "TApplication.h"
+#include "TCanvas.h"
 #include "TSpline.h"
 #include "TGraphErrors.h"
 const double KLMass = 497.648;//MeV
@@ -80,6 +81,7 @@ double HeightAdjFunc(double* x, double* par){
 //void DistributionTester(){
 int main( int argc, char** argv){
   int nTimeIteration =  atoi( argv[1] );
+  TApplication* app = new TApplication("app",&argc,argv);
   TF1* soltFunc  = new TF1("soltfunc",KLSpectrum,0,12,5);
   TF1* sugarFunc = new TF1("sugarfunc",KLSpectrum,0,12,5);
   const double soltPar[5] = { 1, 1.37,7.48e-1,-2.9e-1,1.68e-2};
@@ -143,6 +145,7 @@ int main( int argc, char** argv){
   for( int ievent = 0; ievent < tr->GetEntries()-203363; ievent++){      
     tr->GetEntry(ievent);
     //if( ievent  >= 100000 ){ break ; } 
+    if(CsiNumber > 500 ){ continue; }
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
@@ -164,7 +167,7 @@ int main( int argc, char** argv){
 				 + TMath::Power(((*git).z() - klVec[0].vz()),2));
     double g0Offset = TimeOffset[g0crystalID];//man->GetT0Offset(g0crystalID);
     double g0Shower = showerTimeDelayAdj(klVec[0],(*git));
-    double g0Delta  = g0Offset-g0length/sol-g0Shower;//man->GetT0Offset(g0crystalID);
+    double g0Delta  = g0Offset+g0length/sol+g0Shower;//man->GetT0Offset(g0crystalID);
 
     if( g0crystalID >= 2240 ){continue; }
     
@@ -177,7 +180,8 @@ int main( int argc, char** argv){
     int    CrystalID[6]={-1,-1,-1,-1,-1,-1};
     double CrystalHeight[6];
     double HeightOffset[6];
-    for( int igamma = 0; igamma < 6; igamma++,git++){
+    git = glist.begin();
+    for( int igamma = 0;igamma < 6; igamma++,git++){
       GammaTimeSigma += (*git).t()*(*git).t();
       GammaTimeMean  += (*git).t();
       CrystalID[igamma] =  (*git).clusterIdVec()[0];
@@ -198,8 +202,11 @@ int main( int argc, char** argv){
 
     git = glist.begin();
     git++;
-
+    if(CrystalHeight[0] > 4000 ){ continue; }
+    if(CrystalHeight[0] < 200 ){continue; }
     for( int igamma = 1; igamma < 6; igamma++,git++){
+      if( CrystalHeight[igamma] > 4000 ){ continue; }
+      if( CrystalHeight[igamma] < 200  ){ continue; }
       int crystalID = (*git).clusterIdVec()[0];
       double Ene = (*git).clusterEVec()[0];
       if(Ene > g0Ene){ continue; }
@@ -209,9 +216,9 @@ int main( int argc, char** argv){
 				   + TMath::Power(((*git).y() - klVec[0].vy()),2) 
 				   + TMath::Power(((*git).z() - klVec[0].vz()),2));
       double Shower = showerTimeDelayAdj(klVec[0],(*git));
-      double Delta = Offset-length/sol-Shower;//man->GetT0Offset(crystalID);
+      double Delta = Offset+length/sol+Shower;//man->GetT0Offset(crystalID);
       hisTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Offset)-(g0time-g0Offset));
-      hisAdjTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Delta-HeightOffset[igamma])-(g0time-g0Delta-HeightOffset[0]));
+      hisAdjTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Delta)-(g0time-g0Delta));
     }
   }
   /// Evaluation T0 /// 
@@ -254,28 +261,73 @@ int main( int argc, char** argv){
     std::cout<< i-1 << "\t" << tmptimeCalFactor[i-1] << std::endl;
   }
 */
-  for( int i = 0; i< 2716; i++){
-    if( profAdjTimeID->GetBinEntries(i+1) < 1 ){ continue;}
-    calibrated[i] = 1; 
-    tmptimeCalFactor[i] = profAdjTimeID->GetBinContent(i+1);
-    tmpTimeOffsetDistribution->Fill( tmptimeCalFactor[i] );
-  }
 
-  mean = tmpTimeOffsetDistribution->GetMean();
   TH1D* TimeOffsetDistribution = new TH1D(Form("TimeOffsetDistribution_%d",nTimeIteration),
 					  Form("TimeOffsetDistribution_%d",nTimeIteration),
 					  200,-20,20);
-
-  for( int i = 0; i< 2716; i++){
-    if( calibrated[i] >0){      
-      timeCalFactor[i] = profAdjTimeID->GetBinContent(i+1) - mean;
-      TimeOffsetDistribution->Fill( profAdjTimeID->GetBinContent(i+1) - mean);
-    }else{
-      timeCalFactor[i] = 0;
+  TGraphErrors* grTimeOffset = new TGraphErrors();
+  grTimeOffset->SetNameTitle("grTimeOffset","grTimeOffset");
+  TCanvas* can  =new TCanvas("can","can",800,800);
+  if( nTimeIteration <= 10 ){
+    for( int i = 0; i< 2716; i++){
+      if( profAdjTimeID->GetBinEntries(i+1) < 1 ){ continue;}
+      calibrated[i] = 1; 
+      tmptimeCalFactor[i] = profAdjTimeID->GetBinContent(i+1);
+      tmpTimeOffsetDistribution->Fill( tmptimeCalFactor[i] );
     }
-    ofs << i  << "\t" << timeCalFactor[i]+TimeOffset[i] << "\n";
+    
+    mean = tmpTimeOffsetDistribution->GetMean();
+    
+    for( int i = 0; i< 2716; i++){
+      if( calibrated[i] >0){      
+	timeCalFactor[i] = profAdjTimeID->GetBinContent(i+1) - mean;
+	TimeOffsetDistribution->Fill( profAdjTimeID->GetBinContent(i+1) - mean);
+      }else{
+	timeCalFactor[i] = 0;
+      }
+      ofs << i  << "\t" << timeCalFactor[i]+TimeOffset[i] << "\n";
+    }
+    ofs.close();
+  }else{
+    for( int i = 0; i< 2716; i++){
+      TH1D* hist = hisAdjTimeID->ProjectionY(Form("hist_%d",i),i+1,i+1);
+      if( hist->GetEntries() < 1 ){
+	grTimeOffset->SetPoint(grTimeOffset->GetN(),i,0);
+	grTimeOffset->SetPointError(grTimeOffset->GetN()-1,0,0);
+	continue;
+      }
+      /*
+      hist->Draw();
+      can->Update();
+      can->Modified();
+      getchar();
+      */
+
+      double FitWidth = 20-(nTimeIteration-10)*2;
+      if(FitWidth < 2 ){ FitWidth = 2;}
+      hist->Fit("gaus","","",-hist->GetRMS()*5,hist->GetRMS()*5);
+      TF1* func = hist->GetFunction("gaus");
+      calibrated[i]    = 1;
+      timeCalFactor[i] = func->GetParameter(1);
+      double error     = func->GetParError(1);
+      tmpTimeOffsetDistribution->Fill( tmptimeCalFactor[i] );
+      grTimeOffset->SetPoint(grTimeOffset->GetN(),i,timeCalFactor[i] );
+      grTimeOffset->SetPointError( grTimeOffset->GetN()-1,0,error );      
+      std::cout<< i << "\t" << tmptimeCalFactor[i] << std::endl;
+    }
+    mean = tmpTimeOffsetDistribution->GetMean();
+    for( int i = 0 ; i< 2716; i++){
+      if( calibrated[i] > 0 ){
+	timeCalFactor[i] = tmptimeCalFactor[i] - mean;
+      }else{
+	timeCalFactor[i] = 0;
+      }
+
+      ofs << i << "\t" << timeCalFactor[i]+TimeOffset[i] << "\n";
+    }
   }
-  ofs.close();
+  
+  
   /*
   for( int ibin = 1; ibin < hisAdjTimeID_1->GetNbinsX();ibin++){
     if( profAdjTimeID->GetBinEntries(ibin) > 0 ){
@@ -301,5 +353,8 @@ int main( int argc, char** argv){
   hisAdjTimeID_1->Write();
   hisAdjTimeID_2->Write();
   */
+  
+  grTimeOffset->Write();
   tfOut->Close();
+  //app->Run();
 }

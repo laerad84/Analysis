@@ -97,15 +97,7 @@ bool LYRegion( double x, double y ){
   }
   return bRegion;
 }
-/*
-TFile* tflin = new TFile("TimingLinearityFuncLaser.root");
-TGraphErrors* grTimingLinearity = (TGraphErrors*)tflin->Get("grTimingLinearityLaser");
-TSpline3* spl = new TSpline3("spl",grTimingLinearity);
-double HeightAdjFunc(double* x, double* par){
-  return spl->Eval(x[0]);
-}
-*/
-//void DistributionTester(){
+
 int main( int argc, char** argv){
 
   TF1* soltFunc  = new TF1("soltfunc",KLSpectrum,0,12,5);
@@ -136,70 +128,21 @@ int main( int argc, char** argv){
   tr->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
   tr->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
 
-
-
   TFile* tfOut = new TFile(Form("TimeResolution_%s_Height.root",name),"recreate");
-  TH2D* hisResolution = new TH2D("hisResolution","hisResolution",100,0,400,100,-20,20);
-  TH2D* hisResolutionAdj = new TH2D("hisResolutionAdj","hisResolutionAdj",100,0,400,100,-20,20);
+
   TH2D* hisResolutionLY[2];//0: good/good 1:good/bad 2:bad/good 3:bad/bad
   TH2D* hisResolutionHeight[2];
   TH2D* hisResolutionLY_Neighbor[2]; 
-  TH2D* hisX = new TH2D("hisX","hisX",2716,0,2716,80,-1000,1000);
-  TH2D* hisY = new TH2D("hisY","hisY",2716,0,2716,80,-1000,1000);
-  TH2D* hisEnergyDep = new TH2D("hisEnergyDep","hisEnergyDep",100,0,4000,100,-20,20);
-  TH2D* hisEnergyDepAdj = new TH2D("hisEnergyDepAdj","hisEnergyDepAdj",100,0,4000,100,-20,20);
-  TH2D* hisCEnergyDep = new TH2D("hisCEnergyDep","hisCEnergyDep",100,0,4000,100,-20,20);
-  TH2D* hisCEnergyDepAdj = new TH2D("hisCEnergyDepAdj","hisCEnergyDepAdj",100,0,4000,100,-20,20);
-
-  TH2D* hisEnergyDepLY[2];
-  TH2D* hisEnergyDepLYAdj[2];
-  TH2D* hisCEnergyDepLY[2];
-  TH2D* hisCEnergyDepLYAdj[2];
-  TH2D* hisEnergyRatioLY[2];
-  TH2D* hisEnergyRatioLYLog[2];
-  TH2D* hisEnergyRatioLYAdj[2];
-  TH2D* hisEnergyRatioEnergyLY[2];
-  TH2D* hisEnergyRatioEnergy1LY[2];
-  TH2D* hisCEnergyRatioLY[2];
-  TH2D* hisCEnergyRatioEnergyLY[2];
-  TH2D* hisCEnergyRatioEnergy1LY[2];
-  TH2D* hisDeltaXLY[2];
-  TH2D* hisDeltaTime[2];
-  TH2D* hisThetaDep[2];
-  TH2D* hisThetaDepAdj[2];
-  TH2D* hisThetaCDep[2];
-  TH2D* hisThetaCDepAdj[2];
-  TH2D* hisThetaCDep1[2];
-  TH2D* hisThetaCDep1Adj[2];
-  TH2D* hisThetaDep1[2];
-  TH2D* hisThetaDep1Adj[2];
   for( int i = 0; i< 2; i++){
-    hisResolutionLY[i] = new TH2D(Form("hisResolutionLY_%d",i),Form("hisResolutionLY_%d",i),100,0,400,100,-20,20);
-    hisResolutionHeight[i] = new TH2D(Form("hisResolutionHeight_%d",i),Form("hisResolutionHeight_%d",i),160,0,16000,100,-20,20);
-
-    hisResolutionLY_Neighbor[i] = new TH2D(Form("hisResolutionLY_Neighbor_%d",i),Form("hisResolutionLY_Neighbor_%d",i),100,0,400,100,-20,20);
-    hisEnergyDepLY[i] = new TH2D(Form("hisEnergyDepLY_%d",i),Form("hisEnergyDepLY_%d",i),100,0,400,100,-20,20);
-    hisCEnergyDepLY[i] = new TH2D(Form("hisCEnergyDepLY_%d",i),Form("hisCEnergyDepLY_%d",i),100,0,400,100,-20,20);
-    hisEnergyDepLYAdj[i] = new TH2D(Form("hisEnergyDepLYAdj_%d",i),Form("hisEnergyDepAdjLY_%d",i),100,0,400,100,-20,20);
-    hisCEnergyDepLYAdj[i] = new TH2D(Form("hisCEnergyDepLYAdj_%d",i),Form("hisCEnergyDepAdjLY_%d",i),100,0,400,100,-20,20);
-    hisEnergyRatioLY[i] = new TH2D(Form("hisEnergyRatioLY_%d",i),Form("hisEnergyRatioLY_%d",i),100,0,1,100,-20,20);
-    hisEnergyRatioLYAdj[i] = new TH2D(Form("hisEnergyRatioLYAdj_%d",i),Form("hisEnergyRatioLYAdj_%d",i),100,0,1,100,-20,20);
-    hisEnergyRatioLYLog[i] = new TH2D(Form("hisEnergyRatioLYLog_%d",i),Form("hisEnergyRatioLYLog_%d",i),100,-1,0,100,-20,20);
-    hisEnergyRatioEnergyLY[i] = new TH2D(Form("hisEnergyRatioEnergyLY_%d",i),Form("hisEnergyRatioEnergyLY_%d",i),100,0,1,100,0,1000);
-    hisEnergyRatioEnergy1LY[i] = new TH2D(Form("hisEnergyRatioEnergy1LY_%d",i),Form("hisEnergyRatioEnergy1LY_%d",i),100,0,1,100,0,1000);					 
-    hisCEnergyRatioLY[i] = new TH2D(Form("hisCEnergyRatioLY_%d",i),Form("hisCEnergyRatioLY_%d",i),100,0,1,100,-20,20);
-    hisCEnergyRatioEnergyLY[i] = new TH2D(Form("hisCEnergyRatioEnergyLY_%d",i),Form("hisCEnergyRatioEnergyLY_%d",i),100,0,1,100,-20,20);
-    hisCEnergyRatioEnergy1LY[i] = new TH2D(Form("hisCEnergyRatioEnergy1LY_%d",i),Form("hisCEnergyRatioEnergy1LY_%d",i),100,0,1,100,-20,20);					 
-    hisDeltaXLY[i] = new TH2D(Form("hisDeltaXLY_%d",i),Form("hisDeltaXLY_%d",i),100,0,1,200,-200,200);
-    hisDeltaTime[i] = new TH2D(Form("hisDeltaTime_%d",i),Form("hisDeltaTime_%d",i),200,-200,200,100,-20,20);
-    hisThetaDep[i] = new TH2D(Form("hisThetaDep_%d",i),Form("hisThetaDep_%d",i),800,-20,20,100,-20,20);
-    hisThetaDepAdj[i] = new TH2D(Form("hisThetaDepAdj_%d",i),Form("hisThetaDepAdj_%d",i),800,-20,20,100,-20,20);
-    hisThetaDep1[i] = new TH2D(Form("hisThetaDep1_%d",i),Form("hisThetaDep1_%d",i),800,-20,20,100,-20,20);
-    hisThetaDep1Adj[i] = new TH2D(Form("hisThetaDep1Adj_%d",i),Form("hisThetaDep1Adj_%d",i),800,-20,20,100,-20,20);
-    hisThetaCDep[i] = new TH2D(Form("hisThetaCDep_%d",i),Form("hisThetaCDep_%d",i),800,-2,2,100,-20,20);
-    hisThetaCDepAdj[i] = new TH2D(Form("hisThetaCDepAdj_%d",i),Form("hisThetaCDepAdj_%d",i),800,-2,2,100,-20,20);
-    hisThetaCDep1[i] = new TH2D(Form("hisThetaCDep1_%d",i),Form("hisThetaCDep1_%d",i),800,-2,2,100,-20,20);
-    hisThetaCDep1Adj[i] = new TH2D(Form("hisThetaCDep1Adj_%d",i),Form("hisThetaCDep1Adj_%d",i),800,-2,2,100,-20,20);
+    hisResolutionLY[i] = new TH2D(Form("hisResolutionLY_%d",i),
+				  Form("hisResolutionLY_%d",i),
+				  100,0,400,100,-20,20);
+    hisResolutionHeight[i] = new TH2D(Form("hisResolutionHeight_%d",i),
+				      Form("hisResolutionHeight_%d",i),
+				      160,0,16000,100,-20,20);
+    hisResolutionLY_Neighbor[i] = new TH2D(Form("hisResolutionLY_Neighbor_%d",i),
+					   Form("hisResolutionLY_Neighbor_%d",i),
+					   100,0,400,100,-20,20);
   }
 
   Double_t TimeOffset[2716]={0};
@@ -215,26 +158,28 @@ int main( int argc, char** argv){
     std::cout<<tmpID << "\t" <<  TimeOffset[tmpID] << std::endl;
   }
 
-  for( int ievent = 0; ievent < tr->GetEntries(); ievent++){      
+  //for( int ievent = 0; ievent < tr->GetEntries(); ievent++){      
+  for( int ievent = 0; ievent < 1500000; ievent++){      
     tr->GetEntry(ievent);
     if(CsiNumber > 500 ){ continue; }
     //if( ievent  >= 100000 ){ break ; } 
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
-    data.getData(clist);
+    //data.getData(clist);
     data.getData(glist);
     data.getData(klVec);
-    double klpos[3]={0};
+    double klpos[3]={0,0,0};
     klpos[0] = klVec[0].vx();
-    klpos[1] = klVec[1].vy();
-    klpos[2] = klVec[2].vz();
+    klpos[1] = klVec[0].vy();
+    klpos[2] = klVec[0].vz();
 
     if( klVec[0].chisqZ() > 10 ){ continue; }
     if( klpos[2] > 5000 ){ continue; }
 
     std::list<Gamma>::iterator git = glist.begin();
     for( int igamma  = 0; igamma < 6; igamma++,git++){
+      if( git == glist.end() ){ continue; }
       bool bggood =false;
       int id0= (*git).clusterIdVec()[0];
       int id1= (*git).clusterIdVec()[1];
@@ -271,7 +216,7 @@ int main( int argc, char** argv){
       gxy[0] = (*git).x();
       gxy[1] = (*git).y();
       bggood = LYRegion( gxy[0], gxy[1] );
-
+      /*
       if( h1/h0 > 0.9 && h0/h1 > 0.9 ){
 	if( bggood ){
 	  hisResolutionHeight[0]->Fill(h0,(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0])-t0+t1);
@@ -279,11 +224,9 @@ int main( int argc, char** argv){
 	  hisResolutionHeight[1]->Fill(h0,(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0])-t0+t1);
 	}
       }
-      
+      */
       
       if((*git).clusterEVec()[0] > 300 && (*git).clusterEVec()[0] < 400 ){
-	hisResolution->Fill( (*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-((*git).clusterTimeVec()[0])); 
-	hisResolutionAdj->Fill( (*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0])-t0+t1);
 	if( bggood ){
 	  hisResolutionLY[0]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0])+t0-t1);
 	  
@@ -308,7 +251,7 @@ int main( int argc, char** argv){
 	for( int i = 0; i< CsiNumber; i++){	
 	  if( TestID[0] == CsiModID[i] ){
 	    h[0]= CsiSignal[i];
-	    continue;
+	    break;
 	  }
 	}
 	handler->GetMetricPosition((*git).clusterIdVec()[iid],x[0],y[0]);	
@@ -325,7 +268,7 @@ int main( int argc, char** argv){
 	  for( int i = 0; i< CsiNumber; i++){	
 	    if( TestID[1] == CsiModID[i] ){
 	      h[1]= CsiSignal[i];
-	      continue;
+	      break;
 	    }
 	  }
 	  if( h[1] < 10 || h[0] < 10 ){ continue; }
@@ -346,15 +289,15 @@ int main( int argc, char** argv){
 	  
 	  if( TMath::Abs(R[0]) > 7 || TMath::Abs(R[1]) > 7 ){ continue; }
 	  //if( TMath::Abs(R[0]-R[1]) > 12.5 ){ continue; }
-
-	  if( h[0]/h[1] > 0.9 || h[1]/h[0] > 0.9 ){
+	  
+	  if( h[0]/h[1] > 0.85 || h[1]/h[0] > 0.85 ){
 	    if( bggood ){
 	      hisResolutionHeight[0]->Fill(h[0],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]]));
 	    }else{
 	      hisResolutionHeight[1]->Fill(h[0],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]]));
 	    }
 	  }
-
+	  
 	  if( E[1] < E[0]*0.85 || E[1] > E[0]*1.15 ){ continue; }
 	  if( bggood ){
 	    hisResolutionLY_Neighbor[0]->Fill(E[1],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]]));
@@ -366,46 +309,10 @@ int main( int argc, char** argv){
     }
   }
 
-  hisResolution->Write();
-  hisResolutionAdj->Write();
   for( int i = 0; i< 2; i++){
     hisResolutionLY[i]->Write();
     hisResolutionLY_Neighbor[i]->Write();
     hisResolutionHeight[i]->Write();
   }
-
-  hisEnergyDep->Write();
-  hisCEnergyDep->Write();
-  hisEnergyDepAdj->Write();
-  hisCEnergyDepAdj->Write();
-  for( int i = 0; i < 2; i++){
-    hisEnergyDepLY[i]->Write();
-    hisEnergyDepLYAdj[i]->Write();
-    hisCEnergyDepLY[i]->Write();
-    hisCEnergyDepLYAdj[i]->Write();
-    hisEnergyRatioLY[i]->Write();
-    hisEnergyRatioLYLog[i]->Write();
-    hisEnergyRatioLYAdj[i]->Write();
-    hisEnergyRatioEnergyLY[i]->Write();
-    hisEnergyRatioEnergy1LY[i]->Write();
-    hisCEnergyRatioLY[i]->Write();
-    hisCEnergyRatioEnergyLY[i]->Write();
-    hisCEnergyRatioEnergy1LY[i]->Write();
-    hisDeltaXLY[i]->Write();
-    hisDeltaTime[i]->Write();
-
-
-    hisThetaDep[i]->Write();
-    hisThetaDepAdj[i]->Write();
-    hisThetaDep1[i]->Write();
-    hisThetaDep1Adj[i]->Write();
-    hisThetaCDep[i]->Write();
-    hisThetaCDepAdj[i]->Write();
-    hisThetaCDep1[i]->Write();
-    hisThetaCDep1Adj[i]->Write();
-  }
-  hisX->Write();
-  hisY->Write();
-
   tfOut->Close();
 }

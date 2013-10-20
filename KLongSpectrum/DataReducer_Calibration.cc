@@ -305,9 +305,9 @@ Int_t main( int argc , char** argv ){
   dataCopy.branchOfKlong(trKL);
   trKL->Branch("CsiNumber",&cCsiNumber,"CsiNumber/I");
   trKL->Branch("CsiModID",cCsiModID,"CsiModID[CsiNumber]/I");  
-  trKL->Branch("CsiEne",cCsiEne,"CsiEne[CsiNumber]/D");//cCsiNumber
-  trKL->Branch("CsiTime",cCsiTime,"CsiTime[CsiNumber]/D");//cCsiNumber
-  trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//cCsiNumber
+  trKL->Branch("CsiEne",cCsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
+  trKL->Branch("CsiTime",cCsiTime,"CsiTime[CsiNumber]/D");//CsiNumber
+  trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
 
   /*
   trKL->Branch("KLMass"  ,&KLMass  ,"KLMass/D");
