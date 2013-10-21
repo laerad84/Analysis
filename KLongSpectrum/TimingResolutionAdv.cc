@@ -133,6 +133,7 @@ int main( int argc, char** argv){
   TH2D* hisResolutionLY[2];//0: good/good 1:good/bad 2:bad/good 3:bad/bad
   TH2D* hisResolutionHeight[2];
   TH2D* hisResolutionLY_Neighbor[2]; 
+  TH2D* hisTimingHeight[2];
   for( int i = 0; i< 2; i++){
     hisResolutionLY[i] = new TH2D(Form("hisResolutionLY_%d",i),
 				  Form("hisResolutionLY_%d",i),
@@ -143,6 +144,9 @@ int main( int argc, char** argv){
     hisResolutionLY_Neighbor[i] = new TH2D(Form("hisResolutionLY_Neighbor_%d",i),
 					   Form("hisResolutionLY_Neighbor_%d",i),
 					   100,0,400,100,-20,20);
+    hisTimingHeight[i] = new TH2D(Form("hisTimingHeight_%d",i),
+				  Form("hisTimingHeight_%d",i),
+				  160,0,16000,100,-20,20);
   }
 
   Double_t TimeOffset[2716]={0};
@@ -228,8 +232,7 @@ int main( int argc, char** argv){
       
       if((*git).clusterEVec()[0] > 300 && (*git).clusterEVec()[0] < 400 ){
 	if( bggood ){
-	  hisResolutionLY[0]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0])+t0-t1);
-	  
+	  hisResolutionLY[0]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[0]-TimeOffset[id0]-((*git).clusterTimeVec()[1]-TimeOffset[id1])+t1-t0);	  
 	}else{
 	  hisResolutionLY[1]->Fill((*git).clusterEVec()[1],(*git).clusterTimeVec()[1]-TimeOffset[id1]-((*git).clusterTimeVec()[0]-TimeOffset[id0])+t0-t1);
 	}
@@ -290,7 +293,16 @@ int main( int argc, char** argv){
 	  if( TMath::Abs(R[0]) > 7 || TMath::Abs(R[1]) > 7 ){ continue; }
 	  //if( TMath::Abs(R[0]-R[1]) > 12.5 ){ continue; }
 	  
-	  if( h[0]/h[1] > 0.85 || h[1]/h[0] > 0.85 ){
+	  if( h[1] < 3000 ){
+	    if( bggood ){ 
+	      hisTimingHeight[0]->Fill(h[0],T[0]-TimeOffset[TestID[0]]-(T[1]-TimeOffset[TestID[1]]));
+	    }else{
+	      hisTimingHeight[1]->Fill(h[0],T[0]-TimeOffset[TestID[0]]-(T[1]-TimeOffset[TestID[1]]));
+	    }
+	  }
+
+
+	  if( h[0]/h[1] > 0.85 && h[1]/h[0] > 0.85 ){
 	    if( bggood ){
 	      hisResolutionHeight[0]->Fill(h[0],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]]));
 	    }else{
@@ -313,6 +325,7 @@ int main( int argc, char** argv){
     hisResolutionLY[i]->Write();
     hisResolutionLY_Neighbor[i]->Write();
     hisResolutionHeight[i]->Write();
+    hisTimingHeight[i]->Write();
   }
   tfOut->Close();
 }

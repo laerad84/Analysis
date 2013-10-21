@@ -71,13 +71,19 @@ double gammaLOF( Klong kl, Gamma g){
   return length;
 }
 
+double HeightDelay( double height ){
+  double value = TMath::Log( 1 + 0.03566*TMath::Exp( height/1621));
+  return value;
+}
+
+/*
 TFile* tflin = new TFile("TimingLinearityFuncLaser.root");
 TGraphErrors* grTimingLinearity = (TGraphErrors*)tflin->Get("grTimingLinearityLaser");
 TSpline3* spl = new TSpline3("spl",grTimingLinearity);
 double HeightAdjFunc(double* x, double* par){
   return spl->Eval(x[0]);
 }
-
+*/
 //void DistributionTester(){
 int main( int argc, char** argv){
   int nTimeIteration =  atoi( argv[1] );
@@ -98,9 +104,9 @@ int main( int argc, char** argv){
   tr = (TTree*)tf->Get(Form("trKL"));
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
-  int CsiNumber;
-  double CsiSignal[3000];
-  int CsiModID[3000];
+  int      CsiNumber;
+  double   CsiSignal[2716];
+  int      CsiModID[2716];
   
   TFile* tfOut = new TFile(Form("DistributionTimeData_ShowerHeight_%s_%d.root",name,nTimeIteration),"recreate");
   TH2D* hisTimeID;
@@ -115,8 +121,8 @@ int main( int argc, char** argv){
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   tr->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   tr->SetBranchAddress("CsiNumber",&CsiNumber);
-  tr->SetBranchAddress("CsiSignal",CsiSignal);
-  tr->SetBranchAddress("CsiModID",CsiModID);
+  tr->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
+  tr->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
   /*T0Manager* man = new T0Manager();
   if( nTimeIteration > 0 ){
     if( !(man->ReadFile(Form("TimeOffset_%d.dat",nTimeIteration)))){
@@ -142,7 +148,7 @@ int main( int argc, char** argv){
     }
     ifs.close();
   }
-  for( int ievent = 0; ievent < tr->GetEntries()-203363; ievent++){      
+  for( int ievent = 0; ievent < tr->GetEntries(); ievent++){      
     tr->GetEntry(ievent);
     //if( ievent  >= 100000 ){ break ; } 
     if(CsiNumber > 500 ){ continue; }
@@ -178,8 +184,9 @@ int main( int argc, char** argv){
     double GammaTimeSigma=0;
     double GammaTimeMean = 0; 
     int    CrystalID[6]={-1,-1,-1,-1,-1,-1};
-    double CrystalHeight[6];
-    double HeightOffset[6];
+    double CrystalHeight[6]={0,0,0,0,0,0};
+    double HeightOffset[6]={0,0,0,0,0,0};
+
     git = glist.begin();
     for( int igamma = 0;igamma < 6; igamma++,git++){
       GammaTimeSigma += (*git).t()*(*git).t();
@@ -188,12 +195,13 @@ int main( int argc, char** argv){
       for( int icsi = 0; icsi < CsiNumber; icsi++){
 	if( CrystalID[igamma] == CsiModID[icsi]){
 	  CrystalHeight[igamma] = CsiSignal[icsi];
-	  HeightOffset[igamma] = spl->Eval(CrystalHeight[igamma]);
+	  HeightOffset[igamma] = HeightDelay(CrystalHeight[igamma]);
 	  break;
 	}
       }
     }
-    
+    g0Delta+=HeightOffset[0];
+
     GammaTimeMean /= 6;
     GammaTimeSigma = sqrt((GammaTimeSigma/6) - (GammaTimeMean*GammaTimeMean));
     if( nTimeIteration > 10 ){ 
@@ -216,7 +224,7 @@ int main( int argc, char** argv){
 				   + TMath::Power(((*git).y() - klVec[0].vy()),2) 
 				   + TMath::Power(((*git).z() - klVec[0].vz()),2));
       double Shower = showerTimeDelayAdj(klVec[0],(*git));
-      double Delta = Offset+length/sol+Shower;//man->GetT0Offset(crystalID);
+      double Delta = Offset+length/sol+Shower+HeightOffset[igamma];//man->GetT0Offset(crystalID);
       hisTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Offset)-(g0time-g0Offset));
       hisAdjTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Delta)-(g0time-g0Delta));
     }
