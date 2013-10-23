@@ -110,6 +110,7 @@ int main( int argc, char** argv){
 	NHEP++;
       }
     }
+    if( NHEP== 0){ continue; }
     if( !bEtaTrack ){ continue; }
     
     trout->Fill();
