@@ -98,6 +98,10 @@ bool LYRegion( double x, double y ){
   return bRegion;
 }
 
+double HeightDelay( double height ){
+  double value = TMath::Log( 1 + 0.03566*TMath::Exp( height/1621));
+  return value;
+}
 int main( int argc, char** argv){
 
   TF1* soltFunc  = new TF1("soltfunc",KLSpectrum,0,12,5);
@@ -143,14 +147,14 @@ int main( int argc, char** argv){
 				      160,0,16000,100,-20,20);
     hisResolutionLY_Neighbor[i] = new TH2D(Form("hisResolutionLY_Neighbor_%d",i),
 					   Form("hisResolutionLY_Neighbor_%d",i),
-					   100,0,400,100,-20,20);
+					   150,0,600,100,-20,20);
     hisTimingHeight[i] = new TH2D(Form("hisTimingHeight_%d",i),
 				  Form("hisTimingHeight_%d",i),
 				  160,0,16000,100,-20,20);
   }
 
   Double_t TimeOffset[2716]={0};
-  std::ifstream ifs("TimeOffset_ShowerHeight_15.dat");
+  std::ifstream ifs("TimeOffset_ShowerHeight_16.dat");
   if( !ifs.is_open() ){
     std::cout<< "No CalibrationFile" << std::endl;
     return -1;
@@ -213,13 +217,16 @@ int main( int argc, char** argv){
       }
       double x0 = (*git).coex();
       double y0 = (*git).coey();
-      //if( TMath::Abs( x0 ) < 20 && TMath::Abs(y0) < 20 ){ continue; }
-      //if( TMath::Abs( x0 ) > 50 && TMath::Abs(y0) > 50 ){ continue; }
+      if( TMath::Abs( x0 ) < 20 && TMath::Abs(y0) < 20 ){ continue; }
+      if( TMath::Abs( x0 ) > 400 || TMath::Abs(y0) > 400 ){ continue; }
+
+      t0 = HeightDelay( h0 );
+      t1 = HeightDelay( h1 );
 
       double gxy[2];
       gxy[0] = (*git).x();
       gxy[1] = (*git).y();
-      bggood = LYRegion( gxy[0], gxy[1] );
+      bggood = LYRegion( x0, y0);
       /*
       if( h1/h0 > 0.9 && h0/h1 > 0.9 ){
 	if( bggood ){
@@ -258,11 +265,12 @@ int main( int argc, char** argv){
 	  }
 	}
 	handler->GetMetricPosition((*git).clusterIdVec()[iid],x[0],y[0]);	
+	
 	x[0] = -x[0];
 	L[0] = sqrt( (x0-x[0])*(x0-x[0])+(y0-y[0])*(y0-y[0]));
 	R[0] = ((x[0]-x0)*x0+(y[0]-y0)*y0)/sqrt( x0*x0+y0*y0 );
 	D[0] = sqrt(L[0]*L[0]-R[0]*R[0]);
-	E[0] = (*git).clusterEVec()[iid];	  
+	E[0] = (*git).clusterEVec()[iid];
 	T[0] = (*git).clusterTimeVec()[iid];
 	//for( int jid = iid+1; jid < iid+3; jid++){
 	for( int jid = iid+1; jid < (*git).clusterIdVec().size(); jid++){
@@ -286,7 +294,6 @@ int main( int argc, char** argv){
 	  T[1] = (*git).clusterTimeVec()[jid];	  
 	  //if( R[1] > 26 ){ continue; }
 
-
 	  if( TMath::Abs( R[0]-R[1] ) >10 ){ continue;}
 	  if( TMath::Abs(D[0]) > 20 || TMath::Abs(D[1]) > 20 ){ continue; }
 	  
@@ -304,17 +311,17 @@ int main( int argc, char** argv){
 
 	  if( h[0]/h[1] > 0.85 && h[1]/h[0] > 0.85 ){
 	    if( bggood ){
-	      hisResolutionHeight[0]->Fill(h[0],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]]));
+	      hisResolutionHeight[0]->Fill(h[0],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]])-HeightDelay(h[1])+HeightDelay(h[0]));
 	    }else{
-	      hisResolutionHeight[1]->Fill(h[0],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]]));
+	      hisResolutionHeight[1]->Fill(h[0],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]])-HeightDelay(h[1])+HeightDelay(h[0]));
 	    }
 	  }
 	  
 	  if( E[1] < E[0]*0.85 || E[1] > E[0]*1.15 ){ continue; }
-	  if( bggood ){
-	    hisResolutionLY_Neighbor[0]->Fill(E[1],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]]));
+	  if( bggood){
+	    hisResolutionLY_Neighbor[0]->Fill(E[1],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]])-HeightDelay(h[1])+HeightDelay(h[0]));
 	  }else{
-	    hisResolutionLY_Neighbor[1]->Fill(E[1],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]]));
+	    hisResolutionLY_Neighbor[1]->Fill(E[1],T[1]-TimeOffset[TestID[1]]-(T[0]-TimeOffset[TestID[0]])-HeightDelay(h[1])+HeightDelay(h[0]));
 	  }
 	}
       }

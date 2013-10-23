@@ -113,8 +113,13 @@ int main( int argc, char** argv){
   TH2D* hisAdjTimeID;
   hisTimeID    = new TH2D(Form("hisTimeID_%d",nTimeIteration),Form("hisTimeID_%d",nTimeIteration),
 			  2716,0, 2716,500,-40,60);
+  if( nTimeIteration  < 17 ){
   hisAdjTimeID = new TH2D(Form("hisAdjTimeID_%d",nTimeIteration),Form("hisAdjTimeID_%d",nTimeIteration),
 			  2716,0, 2716,500,-40,60);
+  }else{
+  hisAdjTimeID = new TH2D(Form("hisAdjTimeID_%d",nTimeIteration),Form("hisAdjTimeID_%d",nTimeIteration),
+			  2716,0, 2716,500,-10,15);
+  }
   //double sol = 299.792458;//[mm/nsec]
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
@@ -205,16 +210,16 @@ int main( int argc, char** argv){
     GammaTimeMean /= 6;
     GammaTimeSigma = sqrt((GammaTimeSigma/6) - (GammaTimeMean*GammaTimeMean));
     if( nTimeIteration > 10 ){ 
-      if( GammaTimeSigma > 10 ){ continue; }
+      if( GammaTimeSigma > 20 ){ continue; }
     }
 
     git = glist.begin();
     git++;
-    if(CrystalHeight[0] > 4000 ){ continue; }
-    if(CrystalHeight[0] < 200 ){continue; }
+    if(CrystalHeight[0] > 4000 && nTimeIteration < 17){ continue; }
+    if(CrystalHeight[0] < 100 ){continue; }
     for( int igamma = 1; igamma < 6; igamma++,git++){
-      if( CrystalHeight[igamma] > 4000 ){ continue; }
-      if( CrystalHeight[igamma] < 200  ){ continue; }
+      if( CrystalHeight[igamma] > 4000 &&nTimeIteration < 17){ continue; }
+      if( CrystalHeight[igamma] < 100  ){ continue; }
       int crystalID = (*git).clusterIdVec()[0];
       double Ene = (*git).clusterEVec()[0];
       if(Ene > g0Ene){ continue; }
