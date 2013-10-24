@@ -78,7 +78,7 @@ int main( int argc, char** argv ){
   trout->Branch("PHEP0",APHEP0,"PHEP0[NHEP]/D");//NHEP
   trout->Branch("PHEP4",APHEP4,"PHEP4[NHEP]/D");//NHEP
 
-  int nIt = 1; 
+  int nIt = 2000; 
   for( int i = 0; i< tr->GetEntries(); i++ ){
     //for( int i = 0; i< 100; i++ ){
     tr->GetEntry(i);
