@@ -111,7 +111,7 @@ int main( int argc, char** argv ){
 	CLHEP::Hep3Vector p   = CLHEP::Hep3Vector(PHEP1[itrack],PHEP2[itrack],PHEP3[itrack]);
 	CLHEP::Hep3Vector vtx = CLHEP::Hep3Vector(VHEP1[itrack],VHEP2[itrack],VHEP3[itrack]);
 	double phi = CLHEP::RandFlat::shoot()*2*M_PIl;
-	//vtx.rotateZ(phi);
+	vtx.rotateZ(phi);
 	p.rotateZ(phi);	
 	double P0=p.mag();
 	double P1=P0 + CLHEP::RandGauss::shoot(0., P0*0.02 );
