@@ -12,14 +12,13 @@ int main( int argc, char** argv){
   TTree* tr = (TTree*)tf->Get("eventTree00");
   */
   TChain* tr = new TChain("eventTree00");
-  
-
+  tr->Add("NeutronOnFrontCV.root");
 
   GsimTrackData* trackData          = new GsimTrackData();
   GsimGenParticleData* particleData = new GsimGenParticleData();
   tr->SetBranchAddress("GenParticle.",&(particleData));
   
-  TFile* tfout = new TFile("CVNeutronEta.root","recreate");
+  TFile* tfout = new TFile("NeutronOnFrontCVHEPEvt.root","recreate");
   TTree* trout = new TTree("HEPEvt","HEPEvt");
   int nMax = 300;
   int NHEP;
@@ -78,35 +77,36 @@ int main( int argc, char** argv){
     bool bEtaTrack = true;
     for( int itrack= 0; itrack < nTrack; itrack++){
       GsimTrackData* trackData = (GsimTrackData*)trackArr->UncheckedAt(itrack);
+      /*
       if( trackData->mother == 1 ){
 	if( trackData->pid != 221 ){
 	  bEtaTrack = false;
 	}
       }
       if(trackData->mother == 1 && trackData->pid == 2112 ){
-	JDAHEP1[NHEP] = 0;
-	JDAHEP2[NHEP] = 0;
-	IDHEP[NHEP] = trackData->pid;
-	VHEP1[NHEP] = trackData->v[0];
-	VHEP2[NHEP] = trackData->v[1];
-	VHEP3[NHEP] = trackData->v[2];
-	VHEP4[NHEP] = 0;
-	PHEP0[NHEP] = sqrt(pow(trackData->p[0]/1000,2)
-			   +pow(trackData->p[1]/1000,2)
-			   +pow(trackData->p[2]/1000,2));
-	PHEP1[NHEP] = trackData->p[0]/1000;
-	PHEP2[NHEP] = trackData->p[1]/1000;
-	PHEP3[NHEP] = trackData->p[2]/1000;
-	PHEP4[NHEP] = trackData->ek/1000;
-	  /*
-	  sqrt(pow(trackData->p[0]/1000,2)
+      */
+      JDAHEP1[NHEP] = 0;
+      JDAHEP2[NHEP] = 0;
+      IDHEP[NHEP] = trackData->pid;
+      VHEP1[NHEP] = trackData->v[0];
+      VHEP2[NHEP] = trackData->v[1];
+      VHEP3[NHEP] = trackData->v[2];
+      VHEP4[NHEP] = 0;
+      PHEP0[NHEP] = sqrt(pow(trackData->p[0]/1000,2)
+			 +pow(trackData->p[1]/1000,2)
+			 +pow(trackData->p[2]/1000,2));
+      PHEP1[NHEP] = trackData->p[0]/1000;
+      PHEP2[NHEP] = trackData->p[1]/1000;
+      PHEP3[NHEP] = trackData->p[2]/1000;
+      PHEP4[NHEP] = trackData->ek/1000;
+      /*
+	sqrt(pow(trackData->p[0]/1000,2)
 			+pow(trackData->p[1]/1000,2)
 			+pow(trackData->p[2]/1000,2)
 			+pow(trackData->mass/1000,2))-trackData->mass/1000;
 	  */
-	PHEP5[NHEP] = trackData->mass/1000;
-	NHEP++;
-      }
+      PHEP5[NHEP] = trackData->mass/1000;
+      NHEP++;
     }
     if( NHEP == 0){ continue; }
     if( !bEtaTrack ){ continue; }    
