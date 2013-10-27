@@ -82,6 +82,7 @@ int main( int argc, char** argv ){
   for( int i = 0; i< tr->GetEntries(); i++ ){
     //for( int i = 0; i< 100; i++ ){
     tr->GetEntry(i);
+    if( IDHEP[0] != 2112 ){ continue; }
     for( int j = 0; j < nIt; j++){
       ANHEP=0;
       for( int it = 0; it < nMax; it++){
