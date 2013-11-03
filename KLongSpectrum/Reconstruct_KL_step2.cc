@@ -137,7 +137,11 @@ int main( int argc, char** argv){
   Double_t FractionAngle[120];
   Int_t    CutCondition;
   Int_t    EventID;
-
+  Double_t BaseTime;
+  Double_t EGamma;
+  Double_t ECenter;
+  trOut->Branch("EGamma",&EGamma,"EGamma/D");
+  trOut->Branch("ECenter",&ECenter,"ECenter/D");
   trOut->Branch("EventID",&EventID,"EventID/I");
   trOut->Branch("Radius",&Radius,"Radius/D");
   trOut->Branch("X",&X,"X/D");
@@ -146,6 +150,7 @@ int main( int argc, char** argv){
   trOut->Branch("theta",&theta,"theta/D");
   trOut->Branch("phi",&phi,"phi/D");
   trOut->Branch("ClusterSize",&ClusterSize,"ClusterSize/I");
+  trOut->Branch("BaseTime",&BaseTime,"BaseTime/D");
   trOut->Branch("E",E,"E[ClusterSize]/D");//ClusterSize
   trOut->Branch("T",T,"T[ClusterSize]/D");//ClusterSize
   trOut->Branch("R",R,"R[ClusterSize]/D");//ClusterSize
@@ -197,7 +202,8 @@ int main( int argc, char** argv){
     int cCutCondition = CutCondition;
     
     for( int i  =0; i< 6; i++,git++){
-      Double_t BaseTime = (*git).clusterTimeVec()[0];
+      ECenter = 0;
+      EGamma = (*git).edep();
       X  = (*git).coex();
       Y  = (*git).coey();
       CLHEP::Hep3Vector p=CLHEP::Hep3Vector(X,Y,0);
@@ -206,6 +212,7 @@ int main( int argc, char** argv){
       ZVtx   = (*git).z() - klVec[0].vz();
       hisInjectionAngle->Fill(ZVtx/Radius);
       CutCondition = cCutCondition;
+      BaseTime = 0;
       for( int j = 0; j< 120 ; j++){
 	E[j] = 0;
 	T[j] = 0;
@@ -223,12 +230,17 @@ int main( int argc, char** argv){
 	  }
 	}
 	E[j]= (*git).clusterEVec()[j];
-	T[j]= (*git).clusterTimeVec()[j]-BaseTime;
+	T[j]= (*git).clusterTimeVec()[j];
 	CLHEP::Hep3Vector v = CLHEP::Hep3Vector(posx-X,posy-Y,0);
 	FractionAngle[j] = v.phi() - p.phi();
 	R[j]=v.mag()*cos(FractionAngle[j]);
 	D[j]=v.mag()*sin(FractionAngle[j]);
+	if( v.mag() < 20 ){
+	  BaseTime += E[j]*T[j];
+	  ECenter += E[j];
+	}
       }
+      BaseTime=BaseTime/ECenter;
       trOut->Fill();
     }
   }
