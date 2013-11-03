@@ -110,10 +110,10 @@ int main( int argc, char** argv){
   TFile* tfOut = new TFile(Form("TimeResolution_GammaTimeDistribution_%s.root",name),"recreate");
   TTree* trOut = new TTree("GammaTimeTree","GammaTime");
   data.branchOfClusterList(trOut);
-  data.branchOfDigi(trOut);
+  //data.branchOfDigi(trOut);
   trOut->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
-  trOut->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig");
-  trOut->Branch("CsiNumber",&CsiNumber,"CsiNumber");
+  trOut->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
+  trOut->Branch("CsiNumber",&CsiNumber,"CsiNumber/I");
   trOut->Branch("CsiSignal",CsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
   trOut->Branch("CsiModID",CsiModID,"CsiModID[CsiNumber]/I");//CsiNumber
   trOut->Branch("CsiEne",CsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
