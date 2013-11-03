@@ -108,11 +108,12 @@ int main( int argc, char** argv){
   tr->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
   tr->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
   tr->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
-  tr->SetCacheSize(0); 
+  tr->SetCacheSize(-1); 
 
 
-  TFile* tfOut = new TFile(Form("kl_Data_%s.root",name),"recreate");
+  TFile* tfOut = new TFile(Form("kl_Data_KL_%s.root",name),"recreate");
   TTree* trOut = new TTree("trKL","Time correction");
+  trOut->SetCacheSize(-1);
   //data.branchOfClusterList(trOut);
   //data.branchOfDigi(trOut);
   data.branchOfKlong(trOut);
@@ -177,10 +178,11 @@ int main( int argc, char** argv){
 	}
 	glist_TimeCut.push_back((*git));
       }      
-
+      if( glist_TimeCut.size() == 0 ){ std::cerr <<"glist Size:" << glist_TimeCut.size() << std::endl;}
       if( glist_TimeCut.size() != 6 ){
 	continue;
       }
+      
       std::vector<Klong> klVec;
       if( !user_rec(glist_TimeCut,klVec)){ continue; }
       user_cut(data, klVec);
