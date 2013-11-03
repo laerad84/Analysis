@@ -102,9 +102,9 @@ int main( int argc, char** argv){
   Double_t CsiEne[3000];
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
-  /*
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   tr->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
+  /*
   tr->SetBranchAddress("CsiNumber",&CsiNumber);
   tr->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
   tr->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
@@ -167,8 +167,8 @@ int main( int argc, char** argv){
       std::list<Gamma>::iterator git = glist.begin();
       for( int i = 0; i< glist.size(); i++,git++){
 	GammaTime[i] = (*git).clusterTimeVec()[0];
-	GammaTimeMean+= GammaTime[i];
-	nGamma++;
+	GammaTimeMean+= GammaTime[i]*(*git).edep();
+	nGamma +=(*git).edep();
       }
       GammaTimeMean = GammaTimeMean/nGamma;
       git=glist.begin();
