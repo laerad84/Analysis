@@ -147,7 +147,6 @@ int main( int argc, char** argv){
   int nTotal = tr->GetEntries(); 
   for( int ievent  =0; ievent < nTotal; ievent++){
       tr->GetEntry( ievent );
-      if( CsiNumber > 500 ){ continue; }
       if( (ievent % 1000) == 0){
 	std::cout<< ievent <<"/" << nTotal << std::endl;
       }
