@@ -92,7 +92,7 @@ int main( int argc, char** argv){
   char* name = "DATA_NONTIMECAL";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
 
   tf = new TFile(Form("TimeResolution_GammaTimeDistribution_%s.root",name));
-  tr = (TTree*)tf->Get(Form("trKL"));
+  tr = (TTree*)tf->Get(Form("GammaTimeTree"));
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
   Int_t CsiNumber;
