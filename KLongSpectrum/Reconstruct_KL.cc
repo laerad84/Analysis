@@ -94,10 +94,10 @@ int main( int argc, char** argv){
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
   Int_t CsiNumber;
-  Int_t CsiModID[3000];
-  Double_t CsiSignal[3000];
-  Double_t CsiTime[3000];
-  Double_t CsiEne[3000];
+  Int_t CsiModID[3000]={0};
+  Double_t CsiSignal[3000]={0};
+  Double_t CsiTime[3000]={0};
+  Double_t CsiEne[3000]={0};
   E14GNAnaDataContainer data;
   //data.setBranchAddress( tr );
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
@@ -106,18 +106,20 @@ int main( int argc, char** argv){
   tr->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
   tr->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
   tr->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
-
-  TFile* tfOut = new TFile(Form("TimeResolution_GammaTimeDistribution_%s.root",name),"recreate");
-  TTree* trOut = new TTree("GammaTimeTree","GammaTime");
+  tr->SetBranchAddress("CsiTime",CsiTime);//CsiNumber
+  TFile* tfOut = new TFile(Form("kl_Cluster_%s.root",name),"recreate");
+  TTree* trOut = new TTree("trCluster","Time Offset Adj");
   data.branchOfClusterList(trOut);
   //data.branchOfDigi(trOut);
   trOut->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
   trOut->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
+  /*
   trOut->Branch("CsiNumber",&CsiNumber,"CsiNumber/I");
   trOut->Branch("CsiSignal",CsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
   trOut->Branch("CsiModID",CsiModID,"CsiModID[CsiNumber]/I");//CsiNumber
   trOut->Branch("CsiEne",CsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
-  
+  trOut->Branch("CsiTime",CsiTime,"CsiTime[CsiNumber]/D");//CsiNumber
+  */
   ClusterFinder cFinder;
 
   Double_t TimeOffset[2716];
