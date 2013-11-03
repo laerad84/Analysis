@@ -102,13 +102,14 @@ int main( int argc, char** argv){
   Double_t CsiEne[3000];
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
-  
+  /*
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   tr->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   tr->SetBranchAddress("CsiNumber",&CsiNumber);
   tr->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
   tr->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
   tr->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
+  */
   tr->SetCacheSize(-1); 
 
   TFile* tfOut = new TFile(Form("kl_KL_%s.root",name),"recreate");
