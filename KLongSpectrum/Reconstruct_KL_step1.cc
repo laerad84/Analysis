@@ -91,8 +91,8 @@ int main( int argc, char** argv){
   TTree* tr;
   char* name = "DATA_NONTIMECAL";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
 
-  tf = new TFile(Form("TimeResolution_GammaTimeDistribution_%s.root",name));
-  tr = (TTree*)tf->Get(Form("GammaTimeTree"));
+  tf = new TFile(Form("kl_Cluster_%s.root",name));
+  tr = (TTree*)tf->Get(Form("trCluster"));
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
   Int_t CsiNumber;
@@ -111,7 +111,7 @@ int main( int argc, char** argv){
   tr->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
   tr->SetCacheSize(-1); 
 
-  TFile* tfOut = new TFile(Form("kl_Data_KL_%s.root",name),"recreate");
+  TFile* tfOut = new TFile(Form("kl_KL_%s.root",name),"recreate");
   TTree* trOut = new TTree("trKL","Time correction");
   trOut->SetCacheSize(-1);
   //data.branchOfClusterList(trOut);
