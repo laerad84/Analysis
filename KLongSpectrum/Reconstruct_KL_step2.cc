@@ -205,9 +205,8 @@ int main( int argc, char** argv){
       phi    = p.phi();
       ZVtx   = (*git).z() - klVec[0].vz();
       hisInjectionAngle->Fill(ZVtx/Radius);
-
       CutCondition = cCutCondition;
-      for( int j = 0; j< 200 ; j++){
+      for( int j = 0; j< 120 ; j++){
 	E[j] = 0;
 	T[j] = 0;
 	R[j] = 0;
