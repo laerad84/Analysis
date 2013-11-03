@@ -108,18 +108,22 @@ int main( int argc, char** argv){
   tr->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
   tr->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
   tr->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
+  tr->SetCacheSize(0); 
+
 
   TFile* tfOut = new TFile(Form("kl_Data_%s.root",name),"recreate");
   TTree* trOut = new TTree("trKL","Time correction");
-  data.branchOfClusterList(trOut);
+  //data.branchOfClusterList(trOut);
   //data.branchOfDigi(trOut);
+  data.branchOfKlong(trOut);
+  /*
   trOut->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
   trOut->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
   trOut->Branch("CsiNumber",&CsiNumber,"CsiNumber/I");
   trOut->Branch("CsiSignal",CsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
   trOut->Branch("CsiModID",CsiModID,"CsiModID[CsiNumber]/I");//CsiNumber
   trOut->Branch("CsiEne",CsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
-  
+  */
   ClusterFinder cFinder;
   GammaFinder   gFinder;
   Double_t TimeOffset[2716];
