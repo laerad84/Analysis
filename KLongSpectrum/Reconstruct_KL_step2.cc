@@ -140,6 +140,7 @@ int main( int argc, char** argv){
   Double_t BaseTime;
   Double_t EGamma;
   Double_t ECenter;
+  Double_t GammaChisq;
   trOut->Branch("EGamma",&EGamma,"EGamma/D");
   trOut->Branch("ECenter",&ECenter,"ECenter/D");
   trOut->Branch("EventID",&EventID,"EventID/I");
@@ -157,6 +158,7 @@ int main( int argc, char** argv){
   trOut->Branch("D",D,"D[ClusterSize]/D");//ClusterSize
   trOut->Branch("FractionAngle",FractionAngle,"FractionAngle[ClusterSize]/D");//ClusterSize
   trOut->Branch("CutCondition",&CutCondition,"CutCondition/I");
+  trOut->Branch("GammaChisq",&GammaChisq,"GammaChisq/D");
 
   TH1D* hisInjectionAngle = new TH1D("hisIndjectionAngle","hisInjectionAngle",100,0,100);
   int nTotal = tr->GetEntries(); 
@@ -204,6 +206,7 @@ int main( int argc, char** argv){
     for( int i  =0; i< 6; i++,git++){
       ECenter = 0;
       EGamma = (*git).edep();
+      GammaChisq=(*git).chisq();
       X  = (*git).coex();
       Y  = (*git).coey();
       CLHEP::Hep3Vector p=CLHEP::Hep3Vector(X,Y,0);
