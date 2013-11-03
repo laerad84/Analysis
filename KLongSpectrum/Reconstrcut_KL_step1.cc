@@ -91,7 +91,7 @@ int main( int argc, char** argv){
   TTree* tr;
   char* name = "DATA_NONTIMECAL";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
 
-  tf = new TFile(Form("kl_Data_%s.root",name));
+  tf = new TFile(Form("TimeResolution_GammaTimeDistribution_%s.root",name));
   tr = (TTree*)tf->Get(Form("trKL"));
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
@@ -102,6 +102,7 @@ int main( int argc, char** argv){
   Double_t CsiEne[3000];
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
+  
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   tr->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   tr->SetBranchAddress("CsiNumber",&CsiNumber);
@@ -110,16 +111,15 @@ int main( int argc, char** argv){
   tr->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
   tr->SetCacheSize(-1); 
 
-
   TFile* tfOut = new TFile(Form("kl_Data_KL_%s.root",name),"recreate");
   TTree* trOut = new TTree("trKL","Time correction");
   trOut->SetCacheSize(-1);
   //data.branchOfClusterList(trOut);
   //data.branchOfDigi(trOut);
   data.branchOfKlong(trOut);
-  /*
   trOut->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
   trOut->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
+  /*
   trOut->Branch("CsiNumber",&CsiNumber,"CsiNumber/I");
   trOut->Branch("CsiSignal",CsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
   trOut->Branch("CsiModID",CsiModID,"CsiModID[CsiNumber]/I");//CsiNumber
