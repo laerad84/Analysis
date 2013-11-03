@@ -218,7 +218,7 @@ int main( int argc, char** argv){
 	double posx = map->getX((*git).clusterIdVec()[j]);
 	double posy = map->getY((*git).clusterIdVec()[j]);
 	if( j == 0 ){ 
-	  if( abs( posx - X ) < 12.5 &&  abs(posy - Y )< 12.5 ){
+	  if( abs( posx - X ) > 12.5 ||  abs(posy - Y )> 12.5 ){
 	    CutCondition |= 1 << cgammaPosCenter;
 	  }
 	}
