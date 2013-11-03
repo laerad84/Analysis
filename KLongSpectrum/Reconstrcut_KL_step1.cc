@@ -190,6 +190,7 @@ int main( int argc, char** argv){
       trOut->Fill();
       data.eventID++;
   }
+  hisGammaTime->Write();
   trOut->Write();
   tfOut->Close();
 }
