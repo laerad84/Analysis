@@ -160,8 +160,9 @@ int main( int argc, char** argv){
   int cklmass = 0; 
   int cgammaPosIn =1;
   int cgammaPosOut=2;
-  int cgammaPosSmall=3;
-  int cgammaPosLarge=4;
+  int cgammaPosCenter=3;
+  int cgammaPosSmall=4;
+  int cgammaPosLarge=5;
 
 
   for( int ievent  =0; ievent < nTotal; ievent++){
@@ -193,6 +194,8 @@ int main( int argc, char** argv){
     }
 
     git = glist.begin();
+    int cCutCondition = CutCondition;
+    
     for( int i  =0; i< 6; i++,git++){
       Double_t BaseTime = (*git).clusterTimeVec()[0];
       X  = (*git).coex();
@@ -202,10 +205,26 @@ int main( int argc, char** argv){
       phi    = p.phi();
       ZVtx   = (*git).z() - klVec[0].vz();
       hisInjectionAngle->Fill(ZVtx/Radius);
+
+      CutCondition = cCutCondition;
+      for( int j = 0; j< 200 ; j++){
+	E[j] = 0;
+	T[j] = 0;
+	R[j] = 0;
+	D[j] = 0;
+	FractionAngle[j] = 0;
+      }
       ClusterSize = (*git).clusterIdVec().size();
-      for( int j  =0; j< (*git).clusterIdVec().size(); j++){
+      for( int j  =0; j< (*git).clusterIdVec().size(); j++){	
 	double posx = map->getX((*git).clusterIdVec()[j]);
 	double posy = map->getY((*git).clusterIdVec()[j]);
+	if( j == 0 ){ 
+	  if( abs( posx - X ) < 12.5 &&  abs(posy - Y )< 12.5 ){
+	    CutCondition |= 1 << cgammaPosCenter;
+	  }
+	}
+	E[j]= (*git).clusterEVec()[j];
+	T[j]= (*git).clusterTimeVec()[j]-BaseTime;
 	CLHEP::Hep3Vector v = CLHEP::Hep3Vector(posx-X,posy-Y,0);
 	FractionAngle[j] = v.phi() - p.phi();
 	R[j]=v.mag()*cos(FractionAngle[j]);
