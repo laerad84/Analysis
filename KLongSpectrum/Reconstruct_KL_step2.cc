@@ -209,10 +209,11 @@ int main( int argc, char** argv){
       GammaChisq=(*git).chisq();
       X  = (*git).coex();
       Y  = (*git).coey();
-      CLHEP::Hep3Vector p=CLHEP::Hep3Vector(X,Y,0);
-      Radius = p.mag();
-      phi    = p.phi();
       ZVtx   = (*git).z() - klVec[0].vz();
+      CLHEP::Hep3Vector p=CLHEP::Hep3Vector(X,Y,ZVtx);
+      Radius = p.perp();
+      phi    = p.phi();
+      theta  = p.theta();
       hisInjectionAngle->Fill(ZVtx/Radius);
       CutCondition = cCutCondition;
       BaseTime = 0;

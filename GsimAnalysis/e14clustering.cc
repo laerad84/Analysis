@@ -20,12 +20,13 @@ Int_t main(Int_t argc,char** argv)
 {
   //read argument 
   int nloop = -1;
-  if(argc==4){
-    nloop = atoi(argv[3]);
+
+  if(argc==5){
+    nloop = std::atoi(argv[3]);
     std::cout<<"nRequest== "<<nloop<<"events."<<std::endl;
-  }else if(argc!=3){
+  }else if(argc!=4 && argc!= 3){
     std::cerr << "Argument error."<<std::endl
-	      <<"usege:  bin/e14clustering input output [nRequest]" <<std::endl;
+	      <<"usege:  bin/e14clustering input output CalibrationPrecision [nRequest]" <<std::endl;
     return 1;
   }
 
@@ -33,7 +34,10 @@ Int_t main(Int_t argc,char** argv)
   std::string ofname = argv[2];
   std::cout<<"input file: "<<ifname<<std::endl;
   std::cout<<"output file: "<<ofname<<std::endl;
-
+  Int_t CalibrationPrecision = 0;
+  if( argc >=4  ){
+    CalibrationPrecision = std::atoi(argv[3]);
+  }
   // set input file
   TChain *trin = new TChain("eventTree00");
   trin->Add(ifname.c_str());
@@ -52,6 +56,24 @@ Int_t main(Int_t argc,char** argv)
   int nCSIDigi=0;
   int CSIDigiID[3000]={0};
   double CSIDigiE[3000]={0},CSIDigiTime[3000]={0};
+  double CSICal[3000]={1};
+  for( int i = 0; i< 3000; i++){
+    CSICal[i] = 1;
+  }
+  std::string HOMEDIR = std::getenv("HOME");
+  if( CalibrationPrecision != 0 ){
+    std::ifstream ifs(Form("%s/local/Analysis/GsimAnalysis/CalFactor/CalFactor_%d.txt",HOMEDIR.c_str(),CalibrationPrecision));
+    if( !ifs.is_open() ){ 
+      std::cout<< "Failed to open" << std::endl;
+      return -1; 
+    }
+    int tmpID; 
+    double tmpCal;
+    while( ifs >> tmpID >> tmpCal ){
+      CSICal[tmpID] = tmpCal;
+    }
+  }
+
   ClusterFinder clusterFinder;
   
   // loop analysis
@@ -64,11 +86,14 @@ Int_t main(Int_t argc,char** argv)
     if(nloop>100&&ievt%(nloop/100)==0)
       std::cout<<ievt/(nloop/100)<<"%"<<std::endl;
     
-    trin->GetEntry(ievt);
-    
+    trin->GetEntry(ievt);    
     //Clustering
     digiReader.getCsiDigi(nCSIDigi,CSIDigiID,CSIDigiE,CSIDigiTime);
-    std::list<Cluster> clist = clusterFinder.findCluster(nCSIDigi,CSIDigiID,CSIDigiE,CSIDigiTime);
+    double AdjCSIDigiE[3000]={0}; 
+    for( int i = 0; i < nCSIDigi;i++){
+      AdjCSIDigiE[i]=CSIDigiE[i]*CSICal[CSIDigiID[i]];
+    }
+    std::list<Cluster> clist = clusterFinder.findCluster(nCSIDigi,CSIDigiID,AdjCSIDigiE,CSIDigiTime);
 
     //filling digi-data and Cluster infomation in TTree
     data.setData( digiReader );
