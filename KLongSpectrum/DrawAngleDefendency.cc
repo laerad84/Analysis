@@ -9,6 +9,12 @@
 #include "TH2.h"
 #include <iostream>
 #include "GeneralFunctions.h"
+double GetTimeRes( double Ene ){
+  double value = 0;
+  value = sqrt(0.3*0.3+3.592*3.592/Ene + 12.24*12.24/Ene/Ene);
+  return value;
+}
+
 int main( int argc, char** argv){
 
 
@@ -34,6 +40,7 @@ int main( int argc, char** argv){
   Double_t EGamma;
   Double_t ECenter;
   Double_t GammaChisq;
+
   tr->SetBranchAddress("EGamma",&EGamma);
   tr->SetBranchAddress("ECenter",&ECenter);
   tr->SetBranchAddress("EventID",&EventID);
@@ -93,13 +100,13 @@ int main( int argc, char** argv){
     for( int i = 0; i< ClusterSize; i++){
       if( E[i] < 10 ){ continue;}
       if( TMath::Abs(D[i]) < 12.5 ){
-	hisRT[AngleIndex]->Fill(R[i],T[i]-BaseTime);
+	hisRT[AngleIndex]->Fill(R[i],T[i]-BaseTime,GetTimeRes(E[i]));
       }
       if( TMath::Abs(R[i]) < 12.5 ){
-	hisDT[AngleIndex]->Fill(D[i],T[i]-BaseTime);
+	hisDT[AngleIndex]->Fill(D[i],T[i]-BaseTime,GetTimeRes(E[i]));
       }
       int DIndex = hisDist_D->Fill(TMath::Abs(D[i]))-1;
-      hisRDT[AngleIndex][DIndex]->Fill(R[i],T[i]-BaseTime);
+      hisRDT[AngleIndex][DIndex]->Fill(R[i],T[i]-BaseTime,GetTimeRes(E[i]));
     }
   }
   

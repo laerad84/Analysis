@@ -88,16 +88,16 @@ int main( int argc, char** argv){
     if( plist.size() >= 2 ){ continue; }
     std::list<Pi0>::iterator pit=plist.begin();
     Double_t pi0Mass = (*pit).m();
-
+    
     Double_t Pi0MassPeak[2]={131.678,134.747};
     Double_t Pi0MassPeakSig[2]={6.06779,3.56126};
 
     if( TMath::Abs(pi0Mass - Pi0MassPeak[Index]) > 2*Pi0MassPeakSig[Index] ){
       continue;
     }
-    Double_t Correction = pdgPi0Mass/pi0Mass;
+    Double_t Correction = pi0Mass/pdgPi0Mass;
     CLHEP::Hep3Vector gp1 = (*pit).g1().p3();
-    CLHEP::Hep3Vector gp2 = (*pit).g1().p3();
+    CLHEP::Hep3Vector gp2 = (*pit).g2().p3();
     JDAHEP1[NHEP] = 0;
     JDAHEP2[NHEP] = 0;
     ISTHEP[NHEP] = 1;
