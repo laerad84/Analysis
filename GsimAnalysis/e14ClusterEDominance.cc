@@ -8,7 +8,7 @@
 #include "TH1.h"
 bool user_rec(std::list<Gamma> const &glist, std::list<Pi0>& piList);
 void user_cut(E14GNAnaDataContainer &data,std::list<Pi0> const &piList);
-
+const double pi0mass = 134.9766;
 int main(int argc,char** argv){
   // read argument  
   if(argc!=3){
@@ -36,8 +36,11 @@ int main(int argc,char** argv){
   //
   GammaFinder gFinder;
 
-  TH1D* hisSumEnergy = new TH1D("hisSumEnergy","hisSumEnergy",100,0,1);
+
+  TH1D* hisSumEnergy = new TH1D("hisSumEnergy","hisSumEnergy",100,0,1);  
+  TH1D* hisGammaDepRaw = new TH1D("hisGammaDepRaw","hisGammaDepRaw",100,0,1);
   TH1D* hisGammaDep[10];
+
   for( int i = 0; i< 10; i++){
     hisGammaDep[i] = new TH1D(Form("hisGammaDep_%d",i),Form("hisGammaDep_%d",i),100,0,1);
   }
@@ -70,18 +73,25 @@ int main(int argc,char** argv){
 
     std::list<Pi0>::iterator pit = piList.begin();
     double EnergySum = 0;
-    for( int i = 0; i< (*pit).g1().clusterEVec().size(); i++){
-      if( i >= 10 ){ continue; }
-      double fractionE = (*pit).g1().clusterEVec()[i]/(*pit).g1().edep();
-      hisGammaDep[i]->Fill(fractionE);
-      EnergySum+=(fractionE);	
-    }  
+    double FractionSqSum = 0;
+    if( TMath::Abs((*pit).m() - pi0mass) < 2 ){
+      for( int i = 0; i< (*pit).g1().clusterEVec().size(); i++){
+	if( i >= 10 ){ continue; }
+	double fractionE = (*pit).g1().clusterEVec()[i]/(*pit).g1().edep();
+	hisGammaDep[i]->Fill(fractionE);
+	EnergySum+=(fractionE);
+	FractionSqSum+=fractionE*fractionE;
+      }  
+    }
+    hisGammaDepRaw->Fill(sqrt(FractionSqSum));
+
     hisSumEnergy->Fill(EnergySum);
     // fill data to TTree
     data.setData( piList );
     outputTree->Fill();
     data.eventID++;
   }
+  hisGammaDepRaw->Write();
   for( int i = 0; i< 10; i++){
     hisGammaDep[i]->Write();
   }
