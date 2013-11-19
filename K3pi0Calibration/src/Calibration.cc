@@ -271,7 +271,8 @@ int Calibration::SelectCluster( int idx , int GammaIndex){
       clusterNoCorrE += *jj_e;
     }
     CorrFactor = KL_prefit.pi0()[idx].g1().e() - clusterNoCorrE;
-    Corr = (KL.pi0()[KL.pi0().size() -1 ].g2().e() - KL_prefit.pi0()[idx].g1().e())/clusterNoCorrE + 1;
+    Corr = KL.pi0()[KL.pi0().size() -1 ].g2().e()/KL_prefit.pi0()[idx].g1().e();
+    //Corr = (KL.pi0()[KL.pi0().size() -1 ].g2().e() - KL_prefit.pi0()[idx].g1().e())/clusterNoCorrE + 1;
     //Corr = (KL.pi0()[KL.pi0().size() -1 ].g2().e() -CorrFactor)/(KL_prefit.pi0()[idx].g1().e() - CorrFactor);
     err = KL.pi0()[ KL.pi0().size() -1 ].g2().sigmaE() / KL_prefit.pi0()[idx].g1().e();
 
@@ -331,7 +332,8 @@ int Calibration::SelectCluster( int idx , int GammaIndex){
     }
 
     CorrFactor = KL_prefit.pi0()[idx].g2().e() - clusterNoCorrE;
-    Corr = (KL.pi0()[KL.pi0().size() -1 ].g2().e() - KL_prefit.pi0()[idx].g2().e())/clusterNoCorrE + 1;
+    Corr = KL.pi0()[KL.pi0().size() -1 ].g2().e()/KL_prefit.pi0()[idx].g2().e();
+    //Corr = (KL.pi0()[KL.pi0().size() -1 ].g2().e() - KL_prefit.pi0()[idx].g2().e())/clusterNoCorrE + 1;
     //Corr = (KL.pi0()[KL.pi0().size() -1 ].g2().e() -CorrFactor)/(KL_prefit.pi0()[idx].g2().e() - CorrFactor); 
     err = KL.pi0()[ KL.pi0().size() -1 ].g2().sigmaE() / KL_prefit.pi0()[idx].g2().e();
     
