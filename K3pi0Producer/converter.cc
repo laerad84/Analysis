@@ -48,7 +48,7 @@
 int
 main( int argc ,char ** argv ){
   
-  int RunNumber = atoi( argv[1]);
+  int RunNumber = 0;//atoi( argv[1]);
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
   std::string HOME         = std::getenv("HOME");
@@ -57,8 +57,10 @@ main( int argc ,char ** argv ){
   //std::string oFileForm="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root";
   std::string ROOTFILE_SIMCONV = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/ConvFile";
   std::string ROOTFILE_SIM3PI0 = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";
-  std::string iFileForm        = "%s/Conv_KL3pi0_ALCV_5000000_%d.root"; //ROOTFILE_SIMCONV
-  std::string oFileForm        = "%s/Sim3pi0_wav_ALCV_5000000_%d.root";     //ROOTFILE_SIM3PI0
+  //std::string iFileForm        = "%s/Conv_KL3pi0_ALCV_5000000_%d.root"; //ROOTFILE_SIMCONV
+  //std::string oFileForm        = "%s/Sim3pi0_wav_ALCV_5000000_%d.root";     //ROOTFILE_SIM3PI0
+  std::string iFileForm        = argv[1];
+  std::string oFileForm        = argv[2];
 
   //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
@@ -71,7 +73,7 @@ main( int argc ,char ** argv ){
 
   //TChain* trin = new TChain("T"); 
   //trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMCONV.c_str(),RunNumber));
-  TFile* tfin = new TFile(Form(iFileForm.c_str(),ROOTFILE_SIMCONV.c_str(),RunNumber));
+  TFile* tfin = new TFile(Form(iFileForm.c_str()));//,ROOTFILE_SIMCONV.c_str(),RunNumber));
   TTree* trin = (TTree*)tfin->Get("T");
 
   int EventNumber;
@@ -108,7 +110,7 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("v",v);
   trin->SetBranchAddress("end_v",end_v);
 
-  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIM3PI0.c_str(),RunNumber),"recreate");
+  TFile* tfout = new TFile(Form(oFileForm.c_str()),"recreate");//,ROOTFILE_SIM3PI0.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("Tree", "Output from Time zero" );  
   
   int nCSIDigi = 0;
