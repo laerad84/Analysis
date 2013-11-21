@@ -57,9 +57,9 @@ main( int argc ,char ** argv ){
   //std::string oFileForm="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root";
   std::string ROOTFILE_SIMCONV = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/ConvFile";
   std::string ROOTFILE_SIM3PI0 = "/gpfs/fs03/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";
-  std::string iFileForm        = "%s/Conv_KL3pi0_FAST_REDUCED_5E6_%d.root"; //ROOTFILE_SIMCONV
   //std::string oFileForm        = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";     //ROOTFILE_SIM3PI0
-  std::string oFileForm        = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration_mis_1.root";     //ROOTFILE_SIM3PI0
+  std::string iFileForm        = "%s/Conv_KL3pi0_1000000_%d.root"; //ROOTFILE_SIMCONV
+  std::string oFileForm        = "%s/Sim3pi0_KL3pi0_1000000_%d.root";     //ROOTFILE_SIM3PI0
 
   //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
