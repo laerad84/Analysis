@@ -431,7 +431,7 @@ main( int argc ,char ** argv ){
     //std::cout<< __PRETTY_FUNCTION__<< " : " << __LINE__ << std::endl;
     for (int idigi = 0; idigi<reader->LaserNumber; idigi++){
       LaserSignal[idigi] = reader->LaserSignal[idigi];
-z      LaserDigiID[idigi] = reader->LaserID[idigi];
+      LaserDigiID[idigi] = reader->LaserID[idigi];
       LaserDigiE[idigi]  = reader->LaserEne[idigi];
       LaserDigiTime[idigi] = reader->LaserTime[idigi];
       nLaserDigi++;
