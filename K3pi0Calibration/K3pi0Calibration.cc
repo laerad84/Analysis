@@ -105,13 +105,14 @@ main(int argc,char** argv)
   //E14ReadSumFile* ReadSum = new  E14ReadSumFile();
   TFile* tfinput = new TFile(inputFilename.c_str());
   TTree* ch = (TTree*)tfinput->Get("T");
+  E14GNAnaDataContainer data;
 
   Int_t CsiNumber;
   Double_t CsiEne[2716];//CsiNumber
   Double_t CsiTime[2716];//CsiNumber
   Int_t    CsiModID[2716];//CsiNumber
   Double_t CsiSignal[2716];//CsiNumber
-
+  data.setBranchAddress(ch);
   ch->SetBranchAddress("CsiNumber", &CsiNumber );
   ch->SetBranchAddress("CsiTime",CsiTime);//CsiNumber
   ch->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
@@ -137,7 +138,6 @@ main(int argc,char** argv)
   TFile *fout = new TFile(outputFilename.c_str(),"RECREATE");  
   TTree *trout = new TTree("trCalibration","output from E14_CALIBRTION_CULSTER_BUILDER"); 
   Calibration* calibrator  = new Calibration();  
-  E14GNAnaDataContainer data;
   data.branchOfClusterList( trout );
   data.branchOfDigi( trout );
   CalibrationTree calData;

@@ -3,6 +3,7 @@
 #include "TChain.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TGraphErrors.h"
 
 #include "gnana/DigiReader.h"
 #include "gnana/E14GNAnaFunction.h"
@@ -84,7 +85,8 @@ main(int argc,char** argv)
     return -1;
   }
   //inputFilename       = Form("%s/run_wav_%04d_cl.root",ROOTFILE_WAV.c_str(),runNumber);
-  inputFilename         = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root",ROOTFILE_SIMCONV.c_str(),runNumber);
+  //inputFilename         = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration.root",ROOTFILE_SIMCONV.c_str(),runNumber);
+  inputFilename         = Form("%s/Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_%d.root",ROOTFILE_SIMCONV.c_str(),runNumber);
   //inputFilename       = Form("%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root",ROOTFILE_SIMCONV.c_str(),runNumber);// Test MisCalibration
 
   std::cout<<"********************************************************\n";
@@ -108,6 +110,9 @@ main(int argc,char** argv)
     TempCorFactor = 1;
    }
 
+  /// Gamma E reconstruction function 
+  TFile* tfcorr = new TFile(Form("%s/Data/GammaECorrection.root",ANALYSISLIB.c_str()));
+  TGraphErrors* grCorr  = (TGraphErrors*)tfcorr->Get("ECorrection");
 
   std::cout<< "TempCorFactor :" << TempCorFactor << std::endl;
   std::cout<< "ScaleFactor   :" << ScaleFactor << std::endl;
