@@ -82,7 +82,7 @@ main( int argc ,char ** argv ){
   //std::string iFileForm          = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration_mis_1.root";    //ROOTFILE_SIM3PI0
   //std::string oFileForm          = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root"; // ROOTFILE_SIM3PI0
   std::string iFileForm          = "%s/Sim_e14_KL3pi0_1000000_%d.root";    //ROOTFILE_SIM3PI0
-  std::string oFileForm          = "%s/Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_NONLIN_%d.root"; // ROOTFILE_SIM3PI0
+  std::string oFileForm          = "%s/Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_%d.root"; // ROOTFILE_SIM3PI0
 
   //std::string iFileForm          = "%s/Sim3pi0_wav_ALCV_5E8_%d.root";    //ROOTFILE_SIM3PI0
   //std::string oFileForm          = "%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_5E8KL_%d.root"; // ROOTFILE_SIM3PI0
@@ -269,10 +269,8 @@ main( int argc ,char ** argv ){
 	double mont  = gRandom->PoissonD(value)/value;
 	
 	CSIDigiID[nCSIDigi]     = tmpID;
-	CSIDigiE[nCSIDigi]      = NonLinFunction(tmpEne)*mont;
-	//CSIDigiE[nCSIDigi]      = (tmpEne)*mont;
-
-	CSIDigiE[nCSIDigi]      = NonLinFunction(tmpEne)*mont;
+	CSIDigiE[nCSIDigi]      = (tmpEne)*mont;
+	//CSIDigiE[nCSIDigi]      = NonLinFunction(tmpEne)*mont;
 	CSIDigiSignal[nCSIDigi] = tmpSignal*mont;
 	CSIDigiTime[nCSIDigi]   = tmpTime;
 	CSIDigiHHTime[nCSIDigi] = tmpHHTime;

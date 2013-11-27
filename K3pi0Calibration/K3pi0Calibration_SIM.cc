@@ -312,6 +312,12 @@ main(int argc,char** argv)
     
     clist = clusterFinder.findCluster(nCSIDigi,CSIDigiID,CSIDigiE,CSIDigiTime);
     gFinder.findGamma(clist, glist);
+    std::list<Gamma>::iterator it=glist.begin();
+    for( ; it != glist.end();it++){
+      double gE = (*it).e();
+      (*it).setEnergy( grCorr->Eval( gE,0,"S")*gE );
+    }
+
     if( glist.size() == 6 ){
       if(user_rec(glist,klVec)){
 	data.setData( clist );
