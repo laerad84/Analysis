@@ -270,6 +270,9 @@ main( int argc ,char ** argv ){
 	
 	CSIDigiID[nCSIDigi]     = tmpID;
 	CSIDigiE[nCSIDigi]      = NonLinFunction(tmpEne)*mont;
+	//CSIDigiE[nCSIDigi]      = (tmpEne)*mont;
+
+	CSIDigiE[nCSIDigi]      = NonLinFunction(tmpEne)*mont;
 	CSIDigiSignal[nCSIDigi] = tmpSignal*mont;
 	CSIDigiTime[nCSIDigi]   = tmpTime;
 	CSIDigiHHTime[nCSIDigi] = tmpHHTime;
