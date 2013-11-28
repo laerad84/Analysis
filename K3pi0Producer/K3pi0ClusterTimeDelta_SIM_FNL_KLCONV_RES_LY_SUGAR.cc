@@ -61,6 +61,12 @@ double NonLinFunction( double E ){
   value  = 1+(E/1000)*(E/1000)*0.03;//3% nonlinearity.
   return E*value;
 }
+double NonLinFunction_1( double E ){
+  double value = 0;
+  value = 1+(E/1000)*(E/1000)*0.1;//10% nonlinearity.
+  return E*value;
+}
+
 int
 main( int argc ,char ** argv ){
   
@@ -82,7 +88,8 @@ main( int argc ,char ** argv ){
   //std::string iFileForm          = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration_mis_1.root";    //ROOTFILE_SIM3PI0
   //std::string oFileForm          = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_mis_1.root"; // ROOTFILE_SIM3PI0
   std::string iFileForm          = "%s/Sim_e14_KL3pi0_1000000_%d.root";    //ROOTFILE_SIM3PI0
-  std::string oFileForm          = "%s/Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_%d.root"; // ROOTFILE_SIM3PI0
+  //std::string oFileForm          = "%s/Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_%d.root"; // ROOTFILE_SIM3PI0
+  std::string oFileForm          = "%s/Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_NON10_%d.root"; // ROOTFILE_SIM3PI0
 
   //std::string iFileForm          = "%s/Sim3pi0_wav_ALCV_5E8_%d.root";    //ROOTFILE_SIM3PI0
   //std::string oFileForm          = "%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_5E8KL_%d.root"; // ROOTFILE_SIM3PI0
