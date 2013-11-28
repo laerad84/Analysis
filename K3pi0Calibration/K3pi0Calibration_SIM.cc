@@ -327,6 +327,7 @@ main(int argc,char** argv)
 	///change here JWLEE
 	//Fiducial cut
 	bool GammaFlag = false;
+	/*
 	for( int i = 0; i< klVec[0].pi0().size(); i++){
 	  if( TMath::Abs(klVec[0].pi0()[i].g1().y()) > 550){
 	    GammaFlag = true;
@@ -335,6 +336,9 @@ main(int argc,char** argv)
 	    GammaFlag = true; 
 	  }
 	}
+	*/
+	if( klVec[0].vz() > 5000 ){ continue; }
+
 	//if( (data.CutCondition & 2) != 0 ){ continue; }
 	//if( GammaFlag ){ continue;} 
 

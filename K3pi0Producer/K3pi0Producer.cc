@@ -48,7 +48,7 @@ main( int argc ,char ** argv ){
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form("%s/run_wav_%d.root",WAVFILE.c_str(),RunNumber));
 
-  TFile* tfout = new TFile(Form("%s/run_wav_%d_pi0peakT0.root",WAVFILE.c_str(),RunNumber),"recreate");
+  TFile* tfout = new TFile(Form("%s/run_wav_%d_CosmicT0.root",WAVFILE.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("T", "Output from Time zero" );
   std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
 
@@ -61,6 +61,8 @@ main( int argc ,char ** argv ){
   double CSIDigiHHTime[2716];
   double CSIIntegratedADC[2716];
   double CSISignal[2716];
+  double CSIChisq[2716];
+  int    CSINDF[2716];
 
   int nCC03Digi = 0;
   int CC03DigiID[32]={-1};
@@ -120,6 +122,8 @@ main( int argc ,char ** argv ){
   trout->Branch("CsiHHTime"       ,CSIDigiHHTime,"CsiHHTime[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiIntegratedADC",CSIIntegratedADC,"CsiIntegratedADC[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiSignal"       ,CSISignal,"CsiSignal[CsiNumber]/D");//nCSIDigi
+  trout->Branch("CsiChisq"        ,CSIChisq,"CsiChisq[CsiNumber]/D");//nCSIDigi
+  trout->Branch("CsiNDF"          ,CSINDF,"CsiNDF[CsiNumber]/I");//nCSIDigi
 
   trout->Branch("CC03Number"       ,&nCC03Digi,"CC03Number/I");
   trout->Branch("CC03ModID"        ,CC03DigiID,"CC03ModID[CC03Number]/I");//nCC03Digi
@@ -203,6 +207,8 @@ main( int argc ,char ** argv ){
   double CsISignal[2716] = {0.};
   double CsITime[2716]   = {-1};
   double CsIHHTime[2716] = {-1};
+  double CsIChisq[2716]  = {0};
+  int  CsINDF[2716]    = {0};
 
   
   std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
@@ -225,6 +231,8 @@ main( int argc ,char ** argv ){
       CsITime[ich]   = -1;
       CsIHHTime[ich] = -1;
       CsISignal[ich] = 0.;
+      CsIChisq[ich]  = 0;
+      CsINDF[ich]    = 0;
 
       CSIDigiID[ich] = 0;
       CSIDigiE[ich] = 0;
