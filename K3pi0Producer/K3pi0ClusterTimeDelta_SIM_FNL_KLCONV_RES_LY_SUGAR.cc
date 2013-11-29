@@ -276,8 +276,8 @@ main( int argc ,char ** argv ){
 	double mont  = gRandom->PoissonD(value)/value;
 	
 	CSIDigiID[nCSIDigi]     = tmpID;
-	CSIDigiE[nCSIDigi]      = (tmpEne)*mont;
-	//CSIDigiE[nCSIDigi]      = NonLinFunction(tmpEne)*mont;
+	//CSIDigiE[nCSIDigi]      = (tmpEne)*mont;
+	CSIDigiE[nCSIDigi]      = NonLinFunction_1(tmpEne)*mont;
 	CSIDigiSignal[nCSIDigi] = tmpSignal*mont;
 	CSIDigiTime[nCSIDigi]   = tmpTime;
 	CSIDigiHHTime[nCSIDigi] = tmpHHTime;
