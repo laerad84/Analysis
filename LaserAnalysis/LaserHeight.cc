@@ -66,6 +66,7 @@ int main( int argc, char** argv ){
 
 
     for( int iCsi = 0; iCsi < CsiNumber; iCsi++){
+      if( CsiSignal[iCsi] < 10 ){ continue; }
       hisLaserHeight[CsiID[iCsi]]->Fill(CsiSignal[iCsi]);
     }
     if( LaserSignal[0] < 200 ){ continue; }
