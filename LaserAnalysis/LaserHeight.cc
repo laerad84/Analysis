@@ -61,7 +61,7 @@ int main( int argc, char** argv ){
   for( int ievt = 0; ievt < nEntries; ievt++){
     ch->GetEntry(ievt);
     if( LaserID[0]    != 0   ){ continue; }
-    if( LaserTime[0] > 140 ){ continue; }
+    if( LaserTime[0] < 140 ){ continue; }
     if( LaserSignal[0] < 100 ){ continue; }
 
     for( int iCsi = 0; iCsi < CsiNumber; iCsi++){
