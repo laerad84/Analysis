@@ -54,15 +54,20 @@ int main( int argc, char** argv ){
     hisLaserHT[i] = new TH2D(Form("hisLaserHT_%d",i),Form("hisLaserHT_%d",i),80,0,16000,300,-20,40);
   }
 
+  TH1D* hisLaserTime = new TH1D("hisLaserTime","hisLaserTime", 500,0,500);
+  TH1D* hisLaserSignal = new TH1D("hisLaserSignal","hisLasersignal",160,0,16000);
+  
   Int_t nEntries = ch->GetEntries();
   for( int ievt = 0; ievt < nEntries; ievt++){
     ch->GetEntry(ievt);
+    if( LaserID[0]    != 0   ){ continue; }
+    if( LaserTime[0] > 140 ){ continue; }
+    if( LaserSignal[0] < 100 ){ continue; }
+
     for( int iCsi = 0; iCsi < CsiNumber; iCsi++){
       hisLaserHeight[CsiID[iCsi]]->Fill(CsiSignal[iCsi]);
     }
     if( LaserSignal[0] < 200 ){ continue; }
-    if( LaserTime[0]   < 50  ){ continue; }
-    if( LaserID[0]    != 0   ){ continue; }
     
     for( int iCsi = 0; iCsi < CsiNumber; iCsi++){
       hisLaserHT[CsiID[iCsi]]->Fill(CsiSignal[iCsi],CsiTime[iCsi] - LaserTime[0] );
