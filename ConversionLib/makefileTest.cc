@@ -41,8 +41,7 @@ int main( int argc, char** argv){
 
 	if(!data->AddTrack()){
 	  std::cout<< "Add Track is Aborted" << std::endl;
-	}
-
+	}	
 
 	std::cout << data->GetNDetector() << std::endl;
 	Long_t nentries = data->ConvertAll();

@@ -31,7 +31,8 @@ int main( int argc, char** argv){
 
   TChain* ch = new TChain("trLaser");
   
-  std::ifstream ifs("../RunList/RunAll.csv");
+  //std::ifstream ifs("../RunList/RunAll.csv");
+  std::ifstream ifs("../RunList/RunAllAdj.txt");
   int tmpRunNumber;
   while( ifs >> tmpRunNumber ){
     RunNumberVec.push_back( tmpRunNumber );
@@ -45,8 +46,10 @@ int main( int argc, char** argv){
   Double_t Error[2716];
   Double_t Chisq[2716];
 
-  for( int i = 0; i< 2716; i++){
+  Double_t Initial[2716];
 
+  for( int i = 0; i< 2716; i++){
+    Initial[i] = 0;
     Entries[i] = 0;
     Output[i] = 0;
     RMS[i] = 0;
@@ -63,6 +66,7 @@ int main( int argc, char** argv){
   ch->SetBranchAddress("RMS",RMS);
 
 
+
   TFile* tfOut = new TFile("Output.root","recreate");
 
   TGraphErrors* gr[2716];
@@ -70,6 +74,9 @@ int main( int argc, char** argv){
   TGraphErrors* grBase[2716];
   TGraphErrors* grBaseAdj[2716];
   TGraphErrors* grBaseHeight[2716];
+  TGraphErrors* grBaseHeightAdj[2716];
+  TGraphErrors* grBaseDrift[2716];
+  TGraphErrors* grBaseDriftAdj[2716];
   TGraphErrors* grBaseTemp[2716];
   for( int i = 0; i< 2716; i++){
     gr[i] = new TGraphErrors();
@@ -82,6 +89,12 @@ int main( int argc, char** argv){
     grBaseAdj[i]->SetNameTitle(Form("LaserOutputBaseAdj_%d",i),Form("LaserOutputBaseAdj_%d",i));
     grBaseHeight[i] = new TGraphErrors();
     grBaseHeight[i]->SetNameTitle(Form("LaserOutputBaseHeight_%d",i),Form("LaserOutputBaseHeight_%d",i));
+    grBaseHeightAdj[i] = new TGraphErrors();
+    grBaseHeightAdj[i]->SetNameTitle(Form("LaserOutputBaseHeightAdj_%d",i),Form("LaserOutputBaseHeightAdj_%d",i));
+    grBaseDrift[i] = new TGraphErrors();
+    grBaseDrift[i]->SetNameTitle(Form("LaserOutputDrift_%d",i),Form("LaserOutputDrift_%d",i));
+    grBaseDriftAdj[i] = new TGraphErrors();
+    grBaseDriftAdj[i]->SetNameTitle(Form("LaserOutputDriftAdj_%d",i),Form("LaserOutputDriftAdj_%d",i));
     grBaseTemp[i] = new TGraphErrors();
     grBaseTemp[i]->SetNameTitle(Form("LaserOutputBaseTemp_%d",i),Form("LaserOutputBaseTemp_%d",i));
 
@@ -90,8 +103,15 @@ int main( int argc, char** argv){
   TH2D* hisRatioAdj = new TH2D("hisRatioAdj","hisRatioAdj",160,0,16000,200,0,10);
   for( int ientries = 0 ; ientries < ch->GetEntries(); ientries++){
     ch->GetEntry( ientries );
+    if( Entries[0] < 100 ){ continue; }
     trTemp->GetEntry( RunNumber );
+    if( ientries == 0){
+      for( int i = 0; i< 2716; i++){
+	Initial[i] = Output[i];
+      }
+    }
     Double_t BaseOut = Output[22];
+    Double_t BaseInit = Initial[22];
     for( int i = 0; i< 2716; i++){
       int CorrectionID = 0;
       if( i < 2240 ){ CorrectionID = 0;}
@@ -108,17 +128,37 @@ int main( int argc, char** argv){
 	grBase[i]->SetPointError( grBaseAdj[i]->GetN()-1,0,0);
 	grBaseAdj[i]->SetPointError( grBaseAdj[i]->GetN()-1,0,0);
       }else{
-	gr[i]->SetPoint( gr[i]->GetN(), RunNumber,Output[i]);
-	gr[i]->SetPointError( gr[i]->GetN()-1, 0, Error[i]);
-	grAdj[i]    ->SetPoint( grAdj[i]->GetN(),     RunNumber, Output[i]/grLin[CorrectionID]->Eval(Output[i],0,"S"));
-	grBase[i]   ->SetPoint( grBase[i]->GetN(),    RunNumber, Output[i]/BaseOut);
-	grBaseAdj[i]->SetPoint( grBaseAdj[i]->GetN(), RunNumber, Output[i]/grLin[CorrectionID]->Eval(Output[i],0,"S")/(BaseOut/grLin[CorrectionID]->Eval(BaseOut,0,"S")));
-	grAdj[i]    ->SetPointError( grAdj[i]->GetN()-1,0,Error[i]/BaseOut);
-	grBase[i]   ->SetPointError( grBase[i]->GetN()-1,0,Error[i]/BaseOut);
-	grBaseAdj[i]->SetPointError( grBaseAdj[i]->GetN()-1,0,Error[i]/BaseOut);
-	grBaseHeight[i]->SetPoint(grBaseHeight[i]->GetN(),Output[i],Output[i]/BaseOut);
-	grBaseHeight[i]->SetPointError( grBaseHeight[i]->GetN()-1,0,Error[i]/BaseOut);
-	grBaseTemp[i]->SetPoint(grBaseTemp[i]->GetN(),temp,Output[i]/BaseOut);
+	double cconst[2];
+	cconst[0] = grLin[CorrectionID]->Eval(Output[i],0,"S");
+	cconst[1] = grLin[CorrectionID]->Eval(BaseOut,0,"S");
+	
+	if( Initial[i] != 0 ){
+	  /*
+	  grBaseDrift[i]->SetPoint(grBaseDrift[i]->GetN(),Output[i],Output[i]/BaseOut/Initial[i]*BaseInit);
+	  grBaseDrift[i]->SetPointError( grBaseDrift[i]->GetN()-1,0,Error[i]/BaseOut/Initial[i]*BaseInit);
+	  grBaseDriftAdj[i]->SetPoint(grBaseDriftAdj[i]->GetN(),Output[i],(Output[i]/cconst[0])/(BaseOut/cconst[1])/Initial[i]*BaseInit);
+	  grBaseDriftAdj[i]->SetPointError( grBaseDriftAdj[i]->GetN()-1,0,Error[i]/(BaseOut/cconst[1])/Initial[i]*BaseInit);
+	  */
+	  if( Error[i]/Output[i]  > 0.01 ){ continue; }
+	  gr[i]->SetPoint( gr[i]->GetN(), RunNumber,Output[i]);
+	  gr[i]->SetPointError( gr[i]->GetN()-1, 0, Error[i]);
+	  grAdj[i]    ->SetPoint( grAdj[i]->GetN(),     RunNumber, Output[i]/grLin[CorrectionID]->Eval(Output[i],0,"S"));
+	  grBase[i]   ->SetPoint( grBase[i]->GetN(),    RunNumber, Output[i]/BaseOut);
+	  grBaseAdj[i]->SetPoint( grBaseAdj[i]->GetN(), RunNumber, Output[i]/grLin[CorrectionID]->Eval(Output[i],0,"S")/(BaseOut/grLin[CorrectionID]->Eval(BaseOut,0,"S")));
+	  grAdj[i]    ->SetPointError( grAdj[i]->GetN()-1,0,Error[i]/BaseOut);
+	  grBase[i]   ->SetPointError( grBase[i]->GetN()-1,0,Error[i]/BaseOut);
+	  grBaseAdj[i]->SetPointError( grBaseAdj[i]->GetN()-1,0,Error[i]/BaseOut);
+	  grBaseHeight[i]->SetPoint(grBaseHeight[i]->GetN(),Output[i],Output[i]/BaseOut);
+	  grBaseHeight[i]->SetPointError( grBaseHeight[i]->GetN()-1,0,Error[i]/BaseOut);
+	  grBaseHeightAdj[i]->SetPoint(grBaseHeightAdj[i]->GetN(),Output[i],(Output[i]/cconst[0])/(BaseOut/cconst[1]));
+	  grBaseHeightAdj[i]->SetPointError( grBaseHeightAdj[i]->GetN()-1,0,Error[i]/(BaseOut/cconst[1]));
+	  grBaseTemp[i]->SetPoint(grBaseTemp[i]->GetN(),temp,Output[i]/BaseOut);
+	  
+	  grBaseDrift[i]->SetPoint(grBaseDrift[i]->GetN(),RunNumber,Output[i]/BaseOut/Initial[i]*BaseInit);
+	  grBaseDrift[i]->SetPointError( grBaseDrift[i]->GetN()-1,0,Error[i]/BaseOut/Initial[i]*BaseInit);
+	  grBaseDriftAdj[i]->SetPoint(grBaseDriftAdj[i]->GetN(),RunNumber,(Output[i]/cconst[0])/(BaseOut/cconst[1])/Initial[i]*BaseInit);
+	  grBaseDriftAdj[i]->SetPointError( grBaseDriftAdj[i]->GetN()-1,0,Error[i]/(BaseOut/cconst[1])/Initial[i]*BaseInit);
+	}
       if( i <2240){
 	hisRatioAdj->Fill( Output[i],Output[i]/grLin[CorrectionID]->Eval(Output[i],0,"S")/(BaseOut/grLin[CorrectionID]->Eval(BaseOut,0,"S")));
 	hisRatio->Fill( Output[i],Output[i]/BaseOut);
@@ -133,6 +173,9 @@ int main( int argc, char** argv){
     grAdj[i]->Write();
     grBaseAdj[i]->Write();
     grBaseHeight[i]->Write();
+    grBaseHeightAdj[i]->Write();
+    grBaseDrift[i]->Write();
+    grBaseDriftAdj[i]->Write();
     grBaseTemp[i]->Write();
   }
   hisRatio->Write();

@@ -65,8 +65,8 @@ main( int argc ,char ** argv ){
   //std::string oFileForm        = "%s/Sim3pi0_wav_ALCV_5E8_%d.root";     //ROOTFILE_SIM3PI0
 
 
-  std::string iFileForm        = "%s/Conv_KL3pi0_1000000_%d.root";
-  std::string oFileForm        = "%s/Sim_KL3pi0_1000000_%d.root";
+  std::string iFileForm        = "%s/Conv_e14_KL3pi0_1000000_%d.root";
+  std::string oFileForm        = "%s/Sim_e14_KL3pi0_1000000_%d.root";
 
   //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
@@ -79,9 +79,9 @@ main( int argc ,char ** argv ){
 
   //TChain* trin = new TChain("T"); 
   //trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIMCONV.c_str(),RunNumber));
+  std::cout<< "Start Setting branch" << std::endl;
   TFile* tfin = new TFile(Form(iFileForm.c_str(),ROOTFILE_SIMCONV.c_str(),RunNumber));
   TTree* trin = (TTree*)tfin->Get("T");
-
 
   int EventNumber;
   int CsiNumber;
@@ -151,6 +151,7 @@ main( int argc ,char ** argv ){
   trout->Branch("v",v,"v[nTrack][3]/D");//nTrack
   trout->Branch("end_v",end_v,"end_v[nTrack][3]/D");//nTrack
 
+  std::cout<< "End Branch Setting" << std::endl;
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,6 +182,7 @@ main( int argc ,char ** argv ){
     CalibrationFactor[ tmpID ] = tmpCalFactor;
   }
   
+  std::cout<< "L1" << std::endl;
   L1TrigCounter* l1 = new L1TrigCounter();
   l1->ReadMapFile();
   l1->SetThreshold(1000);

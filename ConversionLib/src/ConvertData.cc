@@ -25,7 +25,7 @@ ConvertData::~ConvertData()
 {
 	this->mOutputTree->Write();
 	this->mOutputFile->Close();
-	this->mDetectorArray.Delete();
+	//this->mDetectorArray.Delete();
 }
 
 Int_t ConvertData::Add(char* detectorName){

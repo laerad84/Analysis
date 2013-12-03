@@ -67,7 +67,7 @@ Bool_t ConvertTrackData::Convert(){
   this->m_trackArr = (TClonesArray*)(this->m_particleData->briefTracks);
   this->nTrack     = this->m_trackArr->GetEntries();
 
-  std::cout << "nTrack : " << this->nTrack << std::endl;
+  //std::cout << "nTrack : " << this->nTrack << std::endl;
 
   for( Int_t trackIndex = 0; trackIndex < this->nTrack; trackIndex++){
     GsimTrackData* trackData = (GsimTrackData*)m_trackArr->UncheckedAt(trackIndex);
@@ -83,8 +83,8 @@ Bool_t ConvertTrackData::Convert(){
     trackData->end_v.GetXYZ(this->end_v[trackIndex]);
     
 
-    std::cout << trackIndex << "\t" << trackData->track << "\t" << trackData->mother << "\t" << trackData->pid << std::endl;
-    std::cout << trackIndex << "\t" << this->track[trackIndex] << "\t" << this->mother[trackIndex] << "\t" << this->pid[trackIndex] << std::endl;
+    //std::cout << trackIndex << "\t" << trackData->track << "\t" << trackData->mother << "\t" << trackData->pid << std::endl;
+    //std::cout << trackIndex << "\t" << this->track[trackIndex] << "\t" << this->mother[trackIndex] << "\t" << this->pid[trackIndex] << std::endl;
 
     
     /*

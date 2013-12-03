@@ -86,13 +86,13 @@ Bool_t ConvertDigiData::SetBranchAddress(){
 }
 
 Bool_t ConvertDigiData::Convert(){
-
   Int_t m_nDigi  = this->m_EventData->nDigi;
   this->m_nDigi  = this->m_EventData->nDigi;
   m_Arr          = this->m_EventData->digi;
   this->m_TotalE = 0;
-  
-  for( Int_t digiIndex = 0; digiIndex < this->m_nDigi; digiIndex++){
+
+  //std::cout<< m_nDigi << std::endl;
+  for( Int_t digiIndex = 0; digiIndex < m_nDigi; digiIndex++){
     GsimDigiData* digi        = (GsimDigiData*)m_Arr->UncheckedAt(digiIndex);	    
     this->m_ID[digiIndex]     = (int)digi->modID;
     this->m_time[digiIndex]   = (double)digi->time;
