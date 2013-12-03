@@ -29,7 +29,7 @@ Int_t main( int argc , char** argv ){
 
   const int nFileType = 16;
   int FileType = atoi( argv[1] ); 
-  char *RunName[nFileType] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp","3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal","3pi0_OldComp_NOCV","SIMFULL","DATA_NONTIMECAL","DATA_NONTIMECALNOCV"};
+  char *RunName[nFileType] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp","3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal","3pi0_OldComp_NOCV","SIMFULL","DATA_NONTIMECAL1","DATA_NONTIMECALNOCV"};
 
 
   if( FileType == 0 ){
@@ -237,7 +237,8 @@ Int_t main( int argc , char** argv ){
     }
   }else if( FileType == 14){
     std::string HOMEDIR = std::getenv("HOME");
-    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/KLRunList_3_W_CV.txt",HOMEDIR.c_str()));
+    //std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/KLRunList_3_W_CV.txt",HOMEDIR.c_str()));
+    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/RunList_3pi0_5Crate150.csv",HOMEDIR.c_str()));
     int tmpRunNumber;
     if( !ifsRunNumber.is_open()){ std::cout<< "No RunList file" << std::endl;return -1;}
     while( ifsRunNumber >> tmpRunNumber ){
