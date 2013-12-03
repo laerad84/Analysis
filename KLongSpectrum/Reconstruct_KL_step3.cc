@@ -105,21 +105,22 @@ int main( int argc, char** argv){
   //TFile* tf;
   //TTree* tr;
   TChain* tr;
-  //char* name = "DATA_NONTIMECAL";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
+  char* name = "DATA_NONTIMECAL1";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
   //char* name = "DATA_NONTIMECALNOCV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
-  char* name = "SIM_1e9";
+  //char* name = "SIM_1e9";
   /*
   tf = new TFile(Form("kl_KL_%s.root",name));
   tr = (TTree*)tf->Get(Form("trKL"));
   */
 
-  //tr = new TChain("trKL");
-  //tr->Add(Form("kl_KL_%s.root",name));
+  tr = new TChain("trKL");
+  tr->Add(Form("kl_KL_%s.root",name));
+  /*
   tr = new TChain("T");
   for( int i = 0; i< 20; i++){
     tr->Add(Form("Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_NON10_%d.root",i));
   }
-
+  */
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
   Int_t CsiNumber;
