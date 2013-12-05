@@ -141,13 +141,29 @@ main( int argc, char** argv){
   }
   */
   std::string ROOTFILE_COSMIC = std::getenv("ROOTFILE_COSMIC");
-
   TChain* trCosmic = new TChain("CosmicOut");  
+
+
   Int_t RunIDStart = atoi( argv[1]);
   Int_t RunIDEnd   = atoi( argv[2]);
-  for( int i = RunIDStart; i <= RunIDEnd; i++){
-    trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),i));
+  std::vector<int> RunList;
+  if( argc ==1 ){
+    inputFileList = argv[1];
+    int tmpRunList;
+    std::ifstream ifs( inputFileList.c_str());
+    while( ifs >> tmpRunList ){
+      RunList.push_back(tmpRunList);
+      trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),i));
+    }
+  }else if( argc ==2){
+    for( int i = RunIDStart; i <= RunIDEnd; i++){
+      trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),i));
+    }
+  }else{
+    retrun -1; 
   }
+  
+
 
   Int_t    nDigi;
   Int_t    CsIID[2716];//nDigi
@@ -163,10 +179,18 @@ main( int argc, char** argv){
   trCosmic->SetBranchAddress("HitDn",&HitDn);
 
   std::cout <<  "Output confirmation" << std::endl; 
-  TFile* tfout = new TFile(Form("%s/CosmicResult_%d_%d.root",
-				ROOTFILE_COSMIC.c_str(), 
-				RunIDStart,RunIDEnd),
-			   "recreate");
+  TFile* tfout;
+  if( argc ==1 ){    
+    tfout= new TFile(Form("%s/CosmicResult_%s.root",
+			  ROOTFILE_COSMIC.c_str(), 
+			  inputFileList.c_str()),
+		     "recreate");
+  }else if( argc ==2 ){
+    tfout= new TFile(Form("%s/CosmicResult_%d_%d.root",
+			  ROOTFILE_COSMIC.c_str(), 
+			  RunIDStart,RunIDEnd),
+		     "recreate");
+  }
 
   TGraph* gr = new TGraph();
   TGraphErrors* grGain = new TGraphErrors();
