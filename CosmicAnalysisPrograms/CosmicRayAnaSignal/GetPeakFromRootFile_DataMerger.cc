@@ -153,14 +153,14 @@ main( int argc, char** argv){
     std::ifstream ifs( inputFileList.c_str());
     while( ifs >> tmpRunList ){
       RunList.push_back(tmpRunList);
-      trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),i));
+      trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),tmpRunList));
     }
   }else if( argc ==2){
     for( int i = RunIDStart; i <= RunIDEnd; i++){
       trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),i));
     }
   }else{
-    retrun -1; 
+    return -1; 
   }
   
 
