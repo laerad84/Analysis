@@ -147,7 +147,7 @@ main( int argc, char** argv){
   Int_t RunIDStart;
   Int_t RunIDEnd;
   std::vector<int> RunList;
-  if( argc ==1 ){
+  if( argc ==2 ){
     inputFileList = argv[1];
     int tmpRunList;
     std::ifstream ifs( inputFileList.c_str());
@@ -155,7 +155,7 @@ main( int argc, char** argv){
       RunList.push_back(tmpRunList);
       trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),tmpRunList));
     }
-  }else if( argc ==2){
+  }else if( argc ==3){
     RunIDStart= atoi( argv[1]);
     RunIDEnd = atoi( argv[2]);
     for( int i = RunIDStart; i <= RunIDEnd; i++){
@@ -182,12 +182,12 @@ main( int argc, char** argv){
 
   std::cout <<  "Output confirmation" << std::endl; 
   TFile* tfout;
-  if( argc ==1 ){    
+  if( argc ==2 ){    
     tfout= new TFile(Form("%s/CosmicResult_%s.root",
 			  ROOTFILE_COSMIC.c_str(), 
 			  inputFileList.c_str()),
 		     "recreate");
-  }else if( argc ==2 ){
+  }else if( argc ==3 ){
     tfout= new TFile(Form("%s/CosmicResult_%d_%d.root",
 			  ROOTFILE_COSMIC.c_str(), 
 			  RunIDStart,RunIDEnd),
