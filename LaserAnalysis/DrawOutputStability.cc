@@ -9,6 +9,8 @@
 #include "TF1.h"
 #include "TChain.h"
 #include "TMath.h"
+#include "IDHandler.h"
+
 int main( int argc, char** argv){
   TFile* tfTemp = new TFile("~/local/Analysis/AnalysisLib/Data/Temperature_Factor/TemperatureCorrectionFactor.root");
   TTree* trTemp = (TTree*)tfTemp->Get("TemperatureCorrectionCsI");
@@ -22,7 +24,7 @@ int main( int argc, char** argv){
   for( int i = 0; i< 3; i++){
     grLin[i] = (TGraph*)tfLaserLin->Get(Form("heightLinearity_%d",i));
   }
-
+  IDHandler* handler =new IDHandler();
 
   const int nAll = 495;
   TFile* tf[nAll];
@@ -99,6 +101,19 @@ int main( int argc, char** argv){
     grBaseTemp[i]->SetNameTitle(Form("LaserOutputBaseTemp_%d",i),Form("LaserOutputBaseTemp_%d",i));
 
   }
+
+
+
+
+  int baseID[4] = {22, 35,2212, 2227};
+  /*
+     2|3
+    -----
+     0|1
+  */
+
+
+
   TH2D* hisRatio = new TH2D("hisRatio","hisRatio",160,0,16000,200,0,10);
   TH2D* hisRatioAdj = new TH2D("hisRatioAdj","hisRatioAdj",160,0,16000,200,0,10);
   for( int ientries = 0 ; ientries < ch->GetEntries(); ientries++){
@@ -110,9 +125,31 @@ int main( int argc, char** argv){
 	Initial[i] = Output[i];
       }
     }
-    Double_t BaseOut = Output[22];
+
+    Double_t BaseOut[4];
+    for( int i = 0; i< 4; i++){
+      BaseOut[i] = Output[baseID[i]];
+    }
+
     Double_t BaseInit = Initial[22];
     for( int i = 0; i< 2716; i++){
+      int RegionID;
+      double x,y;
+      handler->GetMetricPosition(i,x,y);
+      if( y < 0 ){
+	if( x < 0 ){
+	  RegionID = 0;
+	}else{
+	  RegionID = 1;
+	}
+      }else{
+	if( x < 0 ){
+	  RegionID = 2;
+	}else{
+	  RegionID = 3;
+	}
+      }
+
       int CorrectionID = 0;
       if( i < 2240 ){ CorrectionID = 0;}
       else{
@@ -130,38 +167,38 @@ int main( int argc, char** argv){
       }else{
 	double cconst[2];
 	cconst[0] = grLin[CorrectionID]->Eval(Output[i],0,"S");
-	cconst[1] = grLin[CorrectionID]->Eval(BaseOut,0,"S");
+	cconst[1] = grLin[CorrectionID]->Eval(BaseOut[RegionID],0,"S");
 	
 	if( Initial[i] != 0 ){
 	  /*
-	  grBaseDrift[i]->SetPoint(grBaseDrift[i]->GetN(),Output[i],Output[i]/BaseOut/Initial[i]*BaseInit);
-	  grBaseDrift[i]->SetPointError( grBaseDrift[i]->GetN()-1,0,Error[i]/BaseOut/Initial[i]*BaseInit);
-	  grBaseDriftAdj[i]->SetPoint(grBaseDriftAdj[i]->GetN(),Output[i],(Output[i]/cconst[0])/(BaseOut/cconst[1])/Initial[i]*BaseInit);
-	  grBaseDriftAdj[i]->SetPointError( grBaseDriftAdj[i]->GetN()-1,0,Error[i]/(BaseOut/cconst[1])/Initial[i]*BaseInit);
+	  grBaseDrift[i]->SetPoint(grBaseDrift[i]->GetN(),Output[i],Output[i]/BaseOut[RegionID]/Initial[i]*BaseInit);
+	  grBaseDrift[i]->SetPointError( grBaseDrift[i]->GetN()-1,0,Error[i]/BaseOut[RegionID]/Initial[i]*BaseInit);
+	  grBaseDriftAdj[i]->SetPoint(grBaseDriftAdj[i]->GetN(),Output[i],(Output[i]/cconst[0])/(BaseOut[RegionID]/cconst[1])/Initial[i]*BaseInit);
+	  grBaseDriftAdj[i]->SetPointError( grBaseDriftAdj[i]->GetN()-1,0,Error[i]/(BaseOut[RegionID]/cconst[1])/Initial[i]*BaseInit);
 	  */
 	  if( Error[i]/Output[i]  > 0.01 ){ continue; }
 	  gr[i]->SetPoint( gr[i]->GetN(), RunNumber,Output[i]);
 	  gr[i]->SetPointError( gr[i]->GetN()-1, 0, Error[i]);
 	  grAdj[i]    ->SetPoint( grAdj[i]->GetN(),     RunNumber, Output[i]/grLin[CorrectionID]->Eval(Output[i],0,"S"));
-	  grBase[i]   ->SetPoint( grBase[i]->GetN(),    RunNumber, Output[i]/BaseOut);
-	  grBaseAdj[i]->SetPoint( grBaseAdj[i]->GetN(), RunNumber, Output[i]/grLin[CorrectionID]->Eval(Output[i],0,"S")/(BaseOut/grLin[CorrectionID]->Eval(BaseOut,0,"S")));
-	  grAdj[i]    ->SetPointError( grAdj[i]->GetN()-1,0,Error[i]/BaseOut);
-	  grBase[i]   ->SetPointError( grBase[i]->GetN()-1,0,Error[i]/BaseOut);
-	  grBaseAdj[i]->SetPointError( grBaseAdj[i]->GetN()-1,0,Error[i]/BaseOut);
-	  grBaseHeight[i]->SetPoint(grBaseHeight[i]->GetN(),Output[i],Output[i]/BaseOut);
-	  grBaseHeight[i]->SetPointError( grBaseHeight[i]->GetN()-1,0,Error[i]/BaseOut);
-	  grBaseHeightAdj[i]->SetPoint(grBaseHeightAdj[i]->GetN(),Output[i],(Output[i]/cconst[0])/(BaseOut/cconst[1]));
-	  grBaseHeightAdj[i]->SetPointError( grBaseHeightAdj[i]->GetN()-1,0,Error[i]/(BaseOut/cconst[1]));
-	  grBaseTemp[i]->SetPoint(grBaseTemp[i]->GetN(),temp,Output[i]/BaseOut);
+	  grBase[i]   ->SetPoint( grBase[i]->GetN(),    RunNumber, Output[i]/BaseOut[RegionID]);
+	  grBaseAdj[i]->SetPoint( grBaseAdj[i]->GetN(), RunNumber, Output[i]/grLin[CorrectionID]->Eval(Output[i],0,"S")/(BaseOut[RegionID]/grLin[CorrectionID]->Eval(BaseOut[RegionID],0,"S")));
+	  grAdj[i]    ->SetPointError( grAdj[i]->GetN()-1,0,Error[i]/BaseOut[RegionID]);
+	  grBase[i]   ->SetPointError( grBase[i]->GetN()-1,0,Error[i]/BaseOut[RegionID]);
+	  grBaseAdj[i]->SetPointError( grBaseAdj[i]->GetN()-1,0,Error[i]/BaseOut[RegionID]);
+	  grBaseHeight[i]->SetPoint(grBaseHeight[i]->GetN(),Output[i],Output[i]/BaseOut[RegionID]);
+	  grBaseHeight[i]->SetPointError( grBaseHeight[i]->GetN()-1,0,Error[i]/BaseOut[RegionID]);
+	  grBaseHeightAdj[i]->SetPoint(grBaseHeightAdj[i]->GetN(),Output[i],(Output[i]/cconst[0])/(BaseOut[RegionID]/cconst[1]));
+	  grBaseHeightAdj[i]->SetPointError( grBaseHeightAdj[i]->GetN()-1,0,Error[i]/(BaseOut[RegionID]/cconst[1]));
+	  grBaseTemp[i]->SetPoint(grBaseTemp[i]->GetN(),temp,Output[i]/BaseOut[RegionID]);
 	  
-	  grBaseDrift[i]->SetPoint(grBaseDrift[i]->GetN(),RunNumber,Output[i]/BaseOut/Initial[i]*BaseInit);
-	  grBaseDrift[i]->SetPointError( grBaseDrift[i]->GetN()-1,0,Error[i]/BaseOut/Initial[i]*BaseInit);
-	  grBaseDriftAdj[i]->SetPoint(grBaseDriftAdj[i]->GetN(),RunNumber,(Output[i]/cconst[0])/(BaseOut/cconst[1])/Initial[i]*BaseInit);
-	  grBaseDriftAdj[i]->SetPointError( grBaseDriftAdj[i]->GetN()-1,0,Error[i]/(BaseOut/cconst[1])/Initial[i]*BaseInit);
+	  grBaseDrift[i]->SetPoint(grBaseDrift[i]->GetN(),RunNumber,Output[i]/BaseOut[RegionID]/Initial[i]*BaseInit);
+	  grBaseDrift[i]->SetPointError( grBaseDrift[i]->GetN()-1,0,Error[i]/BaseOut[RegionID]/Initial[i]*BaseInit);
+	  grBaseDriftAdj[i]->SetPoint(grBaseDriftAdj[i]->GetN(),RunNumber,(Output[i]/cconst[0])/(BaseOut[RegionID]/cconst[1])/Initial[i]*BaseInit);
+	  grBaseDriftAdj[i]->SetPointError( grBaseDriftAdj[i]->GetN()-1,0,Error[i]/(BaseOut[RegionID]/cconst[1])/Initial[i]*BaseInit);
 	}
       if( i <2240){
-	hisRatioAdj->Fill( Output[i],Output[i]/grLin[CorrectionID]->Eval(Output[i],0,"S")/(BaseOut/grLin[CorrectionID]->Eval(BaseOut,0,"S")));
-	hisRatio->Fill( Output[i],Output[i]/BaseOut);
+	hisRatioAdj->Fill( Output[i],Output[i]/grLin[CorrectionID]->Eval(Output[i],0,"S")/(BaseOut[RegionID]/grLin[CorrectionID]->Eval(BaseOut[RegionID],0,"S")));
+	hisRatio->Fill( Output[i],Output[i]/BaseOut[RegionID]);
 	}
       }
     }
