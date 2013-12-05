@@ -144,8 +144,8 @@ main( int argc, char** argv){
   TChain* trCosmic = new TChain("CosmicOut");  
 
 
-  Int_t RunIDStart = atoi( argv[1]);
-  Int_t RunIDEnd   = atoi( argv[2]);
+  Int_t RunIDStart;
+  Int_t RunIDEnd;
   std::vector<int> RunList;
   if( argc ==1 ){
     inputFileList = argv[1];
@@ -156,6 +156,8 @@ main( int argc, char** argv){
       trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),tmpRunList));
     }
   }else if( argc ==2){
+    RunIDStart= atoi( argv[1]);
+    RunIDEnd = atoi( argv[2]);
     for( int i = RunIDStart; i <= RunIDEnd; i++){
       trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),i));
     }
