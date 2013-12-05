@@ -101,26 +101,45 @@ int main( int argc, char** argv){
 
   CsiMap* map = CsiMap::getCsiMap();
 
+  int mode = std::atoi( argv[1]);
   const int nFile = 1;
   //TFile* tf;
   //TTree* tr;
   TChain* tr;
-  char* name = "DATA_NONTIMECAL1";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
-  //char* name = "DATA_NONTIMECALNOCV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
-  //char* name = "SIM_1e9";
-  /*
-  tf = new TFile(Form("kl_KL_%s.root",name));
-  tr = (TTree*)tf->Get(Form("trKL"));
-  */
+  std::string name;
+  switch( mode ){
+  case 0:
+    name = "DATA_NONTIMECAL1";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
+    tr = new TChain("trKL");
+    tr->Add(Form("kl_KL_%s.root",name.c_str()));
+    break;
+  case 1:
+    name = "DATA_NONTIMECALNOCV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
+    tr = new TChain("trKL");
+    tr->Add(Form("kl_KL_%s.root",name.c_str()));
+    break;
+  case 2:
+    name = "SIM_1e9";
+    tr = new TChain("T");
+    for( int i = 0; i< 20; i++){
+      tr->Add(Form("Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_NON10_%d.root",i));
+    }
+    break;
+  case 3:
+    name = "SIM";
+    tr = new TChain("trKL");
+    tr->Add("Kl_Total_SIM.root");//"Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_NON10_%d.root",i));
+    break;
 
-  tr = new TChain("trKL");
-  tr->Add(Form("kl_KL_%s.root",name));
-  /*
-  tr = new TChain("T");
-  for( int i = 0; i< 20; i++){
-    tr->Add(Form("Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_NON10_%d.root",i));
+  case 4:
+    name = "SIM_SATO";
+    tr = new TChain("trKL");
+    tr->Add("Kl_Total_SIM_SATO.root");//"Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_NON10_%d.root",i));
+    break;
+
+  default:
+    return -1; 
   }
-  */
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
   Int_t CsiNumber;
@@ -138,34 +157,45 @@ int main( int argc, char** argv){
   tr->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
   tr->SetBranchAddress("CsiEne",CsiEne);//CsiNumber
   */
-  tr->SetCacheSize(-1); 
+  //tr->SetCacheSize(-1); 
+  std::cout<< __LINE__ << std::endl;
 
+
+  std::cout<< __LINE__ << std::endl;
+  std::cout<< __LINE__ << std::endl;
+  TFile* tfOut = new TFile(Form("kl_%s.root",name.c_str()),"recreate");
+  TTree* trOut = new TTree("KLDistribution","Time correction");
+  
   int CutConditionKL;
   int EventID;
   E14GNAnaDataContainer dataCp;
+  std::cout<< __LINE__ << std::endl;
 
-  TFile* tfOut = new TFile(Form("kl_%s.root",name),"recreate");
-  TTree* trOut = new TTree("KLDistribution","Time correction");
+  std::cout<< __LINE__ << std::endl;
   dataCp.branchOfKlong(trOut);
+
   trOut->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
   trOut->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
   trOut->Branch("CutConditionKL",&CutConditionKL,"CutConditionKL/I");
   trOut->Branch("EventID",&EventID,"EventID/I");
+  std::cout<< __LINE__ << std::endl;
   
-  TH1D* hisL1nTrig[2];
-  TH1D* hisL1TrigCount[2][20];
-  TH1D* hisKLMass[2];
-  TH1D* hisGammaE[2];
-  TH1D* hisGammaX[2];
-  TH1D* hisGammaY[2];
+  const int nHist =3; 
+  TH1D* hisL1nTrig[nHist];
+  TH1D* hisL1TrigCount[nHist][20];
+  TH1D* hisKLMass[nHist];
+  TH1D* hisGammaE[nHist];
+  TH1D* hisGammaX[nHist];
+  TH1D* hisGammaY[nHist];
   
-  TH1D* hisKLX[2];
-  TH1D* hisKLY[2];
-  TH1D* hisKLZ[2];
-  TH1D* hisKLP[2];
-  TH1D* hisKLChisqZ[2];
+  TH1D* hisKLX[nHist];
+  TH1D* hisKLY[nHist];
+  TH1D* hisKLZ[nHist];
+  TH1D* hisKLP[nHist];
+  TH1D* hisKLChisqZ[nHist];
+  std::cout<< __LINE__ << std::endl;
 
-  for( int i = 0; i< 2; i++){
+  for( int i = 0; i< nHist; i++){
     hisL1nTrig[i] = new TH1D(Form("hisL1nTrig_%d",i),Form("hisL1nTrig_%d",i),20,0,20);
     for( int j = 0; j < 20; j++){
       hisL1TrigCount[i][j] = new TH1D(Form("hisL1TrigCount_%d_%d",i,j),Form("hisL1TrigCount_%d_%d",i,j),
@@ -182,7 +212,7 @@ int main( int argc, char** argv){
     hisKLMass[i] = new TH1D(Form("hisKLMass_%d",i),Form("hisKLMass_%d",i),60,0,6000);
     hisKLChisqZ[i] = new TH1D(Form("hisKLChisqZ_%d",i),Form("hisKLChisqZ_%d",i),60,0,6000);
   }
-
+  std::cout<< "Start" << std::endl;
   for( int ievent  =0; ievent < tr->GetEntries(); ievent++){
     if( (ievent %  1000 ) == 0 ){ 
       std::cout<< (double)(ievent)/tr->GetEntries() << std::endl;
@@ -260,18 +290,34 @@ int main( int argc, char** argv){
 	hisGammaY[0]->Fill((*git).y());
       }
 
-      hisKLChisqZ[1]->Fill(klVec[1].chisqZ());
-      if( CutConditionKL == 0 ){
+      //hisKLChisqZ[1]->Fill(klVec[1].chisqZ());
+      if( (CutConditionKL & 15)== 0){
+	hisKLChisqZ[1]->Fill(klVec[1].chisqZ());
 	hisKLMass[1]->Fill(klVec[0].m());
 	hisKLX[1]->Fill(klVec[0].vx() );
 	hisKLY[1]->Fill(klVec[0].vy() );
 	hisKLZ[1]->Fill(klVec[0].vz() );   
 	hisKLP[1]->Fill(klVec[0].p3().mag());
 	git = glist.begin();
-	for( int i = 0; i< 6; i++){
+	for( int i = 0; i< 6; i++,git++){
 	  hisGammaE[1]->Fill((*git).e());
 	  hisGammaX[1]->Fill((*git).x());
 	  hisGammaY[1]->Fill((*git).y());
+	}
+      }
+
+      if( CutConditionKL == 0 ){
+	hisKLChisqZ[2]->Fill(klVec[1].chisqZ());
+	hisKLMass[2]->Fill(klVec[0].m());
+	hisKLX[2]->Fill(klVec[0].vx() );
+	hisKLY[2]->Fill(klVec[0].vy() );
+	hisKLZ[2]->Fill(klVec[0].vz() );   
+	hisKLP[2]->Fill(klVec[0].p3().mag());
+	git = glist.begin();
+	for( int i = 0; i< 6; i++){
+	  hisGammaE[2]->Fill((*git).e());
+	  hisGammaX[2]->Fill((*git).x());
+	  hisGammaY[2]->Fill((*git).y());
 	}
       }
     }
@@ -290,6 +336,7 @@ int main( int argc, char** argv){
     hisKLY[i]->Write();
     hisKLZ[i]->Write();
     hisKLP[i]->Write();
+    hisKLMass[i]->Write();
     hisKLChisqZ[i]->Write();
   }
   trOut->Write();

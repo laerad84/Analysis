@@ -81,7 +81,7 @@ Int_t main( int argc , char** argv ){
     ch = new TChain("T");
   }
 
-  
+  std::cout<< "Read File" << std::endl;
   if( FileType == 0){
     //for( int i = 0; i< 120; i++){
     for( int i = 0; i< 60; i++){
