@@ -94,10 +94,11 @@ int main( int argc, char** argv){
   TFile* tf;
   TTree* tr;
   //char* name = "SumUp";
-  char* name = "KLCollection_Minimum";
-
+  //char* name = "KLCollection_Minimum";
+  char* name = "kl_KL_DATA_NONTIMECAL1";
   tf = new TFile(Form("%s.root",name));
-  tr = (TTree*)tf->Get(Form("RecTree"));
+  //tr = (TTree*)tf->Get(Form("RecTree"));
+  tr = (TTree*)tf->Get(Form("trKL"));
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
   Int_t CsiNumber;
