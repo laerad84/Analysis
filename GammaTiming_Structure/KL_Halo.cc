@@ -104,6 +104,7 @@ int main( int argc, char** argv){
 
   TH2D* hisECenter = new TH2D("hisECenter","hisECenter",800,-400,400,800,-400,400);
   TH2D* hisKLVtx   = new TH2D("hisKLVtx","hisKLVtx",800,-400,400,800,-400,400);
+  TH2D* hisPt      = new TH2D("hisPt","hisPt",800,-400,400,800,-400,400);
 
   for( int ievent  =0; ievent < tr->GetEntries(); ievent++){
     tr->GetEntry( ievent );
@@ -127,7 +128,9 @@ int main( int argc, char** argv){
     
     Double_t EX=0;
     Double_t EY=0;
-    Double_t SumE;
+    Double_t SumE=0;
+    Double_t PX=0;
+    Double_t PY=0;
     /*
     for( int i = 0; i< klVec[0].pi0().size(); i++){
       EX += klVec[0].pi0()[i].g1().e()*klVec[0].pi0()[i].g1().x();
@@ -138,6 +141,7 @@ int main( int argc, char** argv){
       SumE+=klVec[0].pi0()[i].g2().e();
     }
     */
+    /*
     for( int i = 0; i< klVec[0].pi0().size(); i++,pit++){
       EX += (*pit).g1().e()*(*pit).g1().x();
       EY += (*pit).g1().e()*(*pit).g1().y();
@@ -146,10 +150,19 @@ int main( int argc, char** argv){
       SumE+=(*pit).g1().e();
       SumE+=(*pit).g2().e();
     }
+    */
+
+    for( int i = 0; i< glist.size(); i++,git++){
+      if( i >= 6 ){ continue; }
+      EX += (*git).e()*(*git).x();
+      EY += (*git).e()*(*git).y();
+      SumE += (*git).e();
+    }
 
 
     Double_t ECenterX = EX/SumE;
     Double_t ECenterY = EY/SumE;
+    //std::cout<< ECenterX << "\t" << ECenterY << std::endl;
     hisKLVtx->Fill(klVec[0].vx(),klVec[0].vy());
     hisECenter->Fill( ECenterX, ECenterY);
     
