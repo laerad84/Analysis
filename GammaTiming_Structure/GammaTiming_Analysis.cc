@@ -16,6 +16,10 @@
 #include "gamma/GammaFinder.h"
 #include "cluster/Cluster.h"
 #include "cluster/ClusterFinder.h"
+#include "gamma/GammaFinder.h"
+#include "rec2g/Rec2g.h"
+
+
 #include "klong/Klong.h"
 #include "pi0/Pi0.h"
 #include <vector>
@@ -31,6 +35,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "csimap/CsiMap.h"
 
+
+#include "User_Function.h"
 
 const double KLMass = 497.648;//MeV
 double const sol = 299.792458;//[mm/nsec]
@@ -89,83 +95,107 @@ int main( int argc, char** argv){
   sugarFunc->SetParameters(sugarPar);
   IDHandler* handler = new IDHandler();
   CsiMap* map = CsiMap::getCsiMap();
+  GammaFinder gFinder;
+  ClusterFinder clusterFinder;
+
 
   const int nFile = 1;
   TFile* tf;
   TTree* tr;
   //char* name = "SumUp";
   char* name = argv[1];
+  int CalRes = std::atoi( argv[2]);
+
   tf = new TFile(Form("%s",name));
   tr = (TTree*)tf->Get(Form("RecTree"));
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
   
-  TFile* tfOut = new TFile(Form("GammaTimingAna_%s",name),"recreate");
+  TFile* tfOut = new TFile(Form("ShapeChisq_%d_%s",CalRes,name),"recreate");
+  TTree* trOut = new TTree("RecTree","");
+  E14GNAnaDataContainer dataCopy;
+  dataCopy.branchOfPi0List(trOut);
 
+  
+  Double_t CalConst[2716];
+  std::ifstream ifs(Form("Data/GainRMS_%d.txt",CalRes));
+  int tmpId;
+  double tmpCal;
+  while( ifs >> tmpId >> tmpCal){
+    CalConst[tmpId] = tmpCal;
+  }
 
-  TH1D* hisGammaTimeDelta = new TH1D("hisGammaTimeDelta","hisGammaTimeDelta",100,-10,10);
-  TH2D* hisGammaDistTime  = new TH2D("hisGammaDistTime","hisGammaDistTime",1000,0,2000,100,-10,10);
-  TH1D* hisGammaTimeChisq[2];
+  TH1D* hisShapeChisqGamma[2];
   for( int i = 0; i <2; i++){
-    hisGammaTimeChisq[i] = new TH1D(Form("hisGammaTimeChisq_%d",i),Form("hisGammaTimeChisq_%d",i),200,0,50);
+    hisShapeChisqGamma[i] = new TH1D(Form("hisShapeChisqGamma_%d",i),Form("hisShapeChisqGamma_%d",i),50,0,2.5);
   }
   for( int ievent  =0; ievent < tr->GetEntries(); ievent++){
     tr->GetEntry( ievent );
     if( (ievent % 1000) == 0){
       std::cout<< ievent <<"/" << tr->GetEntries()<< std::endl;
     }
+    dataCopy.reset();
+    std::list<Cluster> clist;
     std::list<Gamma>   glist;
+    std::list<Gamma>   glistCal;
     //std::vector<Klong> klVec;
     std::list<Pi0> plist;
+    std::list<Pi0> plistCal;
 
     data.getData(glist);
     data.getData(plist);    
 
+    Int_t    nID=0;
+    Int_t ID[2716];
+    Double_t Energy[2716];
+    Double_t Time[2716];
+    for( int i = 0; i< 2716; i++){
+      ID[i] = -1;
+      Energy[i] = 0;
+      Time[i] = 0;
+    }
     int gIndex = 0;
     std::list<Gamma>::iterator git = glist.begin();
     std::list<Pi0>::iterator   pit = plist.begin();
     for( int i  =0; i< plist.size(); i++,pit++){
-      Double_t Dist =TMath::Sqrt(TMath::Power((*pit).g1().x()-(*pit).g2().x(),2)
-				 +TMath::Power((*pit).g1().y()-(*pit).g2().y(),2));
-
-      Double_t FL[2];
-      Double_t GammaTimeChisq[2];
-      Double_t Weight[2] = {0,0};
-
-      FL[0] = TMath::Sqrt( TMath::Power((*pit).g1().x(),2)+TMath::Power((*pit).g1().y(),2)+TMath::Power((*pit).g1().z()-(*pit).vz(),2));
-      FL[1] = TMath::Sqrt( TMath::Power((*pit).g2().x(),2)+TMath::Power((*pit).g2().y(),2)+TMath::Power((*pit).g2().z()-(*pit).vz(),2));
-      Double_t DeltaTime = (FL[1]-FL[0])/sol;
-
-      for( int isize = 1; isize < (*pit).g1().clusterTimeVec().size(); isize++){
-	GammaTimeChisq[0] += TMath::Power((*pit).g1().clusterTimeVec()[isize]-(*pit).g1().clusterTimeVec()[0],2)*(*pit).g1().e();
-	Weight[0]    += (*pit).g1().e();
+      for( int j = 0; j < (*pit).g1().clusterIdVec().size(); j++){
+	ID[nID] = (*pit).g1().clusterIdVec()[j];
+	Energy[nID] = (*pit).g1().clusterEVec()[j]*CalConst[(*pit).g1().clusterIdVec()[j]];
+	Time[nID]   = (*pit).g1().clusterTimeVec()[j];
+	nID++;
       }
-      for( int isize = 1; isize < (*pit).g2().clusterTimeVec().size(); isize++){
-	GammaTimeChisq[1] += TMath::Power((*pit).g2().clusterTimeVec()[isize]-(*pit).g2().clusterTimeVec()[0],2)*(*pit).g2().e();
-	Weight[1]    += (*pit).g2().e();
+      for( int j = 0; j < (*pit).g2().clusterIdVec().size(); j++){
+	ID[nID] = (*pit).g2().clusterIdVec()[j];
+	Energy[nID] = (*pit).g2().clusterEVec()[j]*CalConst[(*pit).g2().clusterIdVec()[j]];
+	Time[nID]   = (*pit).g2().clusterTimeVec()[j];
+	nID++;
       }
-      GammaTimeChisq[0] = GammaTimeChisq[0]/Weight[0];
-      GammaTimeChisq[1] = GammaTimeChisq[1]/Weight[1];
-
-   
-      if( abs((*pit).g2().clusterTimeVec()[0]-(*pit).g1().clusterTimeVec()[0]-DeltaTime) < 1 ){
-	hisGammaTimeChisq[0]->Fill(GammaTimeChisq[0]);
-	hisGammaTimeChisq[0]->Fill(GammaTimeChisq[1]);
+    }
+    clist = clusterFinder.findCluster( nID, ID, Energy, Time );
+    gFinder.findGamma(clist,glistCal);
+    if( clist.size() < 2 ){ continue; }
+    if( glistCal.size() != 2 ){ continue; }
+    if( user_rec( glistCal, plistCal)){
+      user_cut( dataCopy, plistCal);
+      dataCopy.setData(plistCal);
+      std::list<Pi0>::iterator pit = plistCal.begin();
+      if( TMath::Abs( (*pit).g1().clusterTimeVec()[0] -(*pit).g2().clusterTimeVec()[0] ) < 1 ){
+	hisShapeChisqGamma[0]->Fill((*pit).g1().chisq());
+	hisShapeChisqGamma[0]->Fill((*pit).g2().chisq());
       }else{
-	hisGammaTimeChisq[1]->Fill(GammaTimeChisq[0]);
-	hisGammaTimeChisq[1]->Fill(GammaTimeChisq[1]);
+	hisShapeChisqGamma[1]->Fill((*pit).g1().chisq());
+	hisShapeChisqGamma[1]->Fill((*pit).g2().chisq());
       }
-
-      hisGammaDistTime->Fill(Dist,(*pit).g2().clusterTimeVec()[0]-(*pit).g1().clusterTimeVec()[0]-DeltaTime);
-      hisGammaTimeDelta->Fill( (*pit).g2().clusterTimeVec()[0]-(*pit).g1().clusterTimeVec()[0]-DeltaTime);
-
+      
+      trOut->Fill();
+      dataCopy.eventID++;
     }
   }
-
-  for( int i = 0; i <2; i++){
-    hisGammaTimeChisq[i]->Write();
+  
+  for( int i = 0; i< 2; i++){
+    hisShapeChisqGamma[i]->Write();
   }
-  hisGammaTimeDelta->Write();
-  hisGammaDistTime->Write();
+
+  trOut->Write();
   tfOut->Close();
 }

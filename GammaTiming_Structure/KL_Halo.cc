@@ -105,7 +105,8 @@ int main( int argc, char** argv){
   TH2D* hisECenter = new TH2D("hisECenter","hisECenter",800,-400,400,800,-400,400);
   TH2D* hisKLVtx   = new TH2D("hisKLVtx","hisKLVtx",800,-400,400,800,-400,400);
   TH2D* hisPt      = new TH2D("hisPt","hisPt",800,-400,400,800,-400,400);
-
+  TH1D* hisR       = new TH1D("hisR","hisR",800,0,400);
+  
   for( int ievent  =0; ievent < tr->GetEntries(); ievent++){
     tr->GetEntry( ievent );
     if( (ievent % 1000) == 0){
@@ -152,21 +153,32 @@ int main( int argc, char** argv){
     }
     */
 
+
+    bool bGamma = false;
     for( int i = 0; i< glist.size(); i++,git++){
+      if( TMath::Abs((*git).x()) < 150 && TMath::Abs((*git).y()) < 150){
+	bGamma = true;
+      }
+      
       if( i >= 6 ){ continue; }
       EX += (*git).e()*(*git).x();
       EY += (*git).e()*(*git).y();
       SumE += (*git).e();
     }
-
-
+    if( bGamma ){ continue; }
+    if( klVec[0].vz() > 5000 ){ continue; }
     Double_t ECenterX = EX/SumE;
     Double_t ECenterY = EY/SumE;
+    Double_t R = TMath::Sqrt(pow(ECenterX-5.874,2)+pow(ECenterY-1.501,2));
+
+
     //std::cout<< ECenterX << "\t" << ECenterY << std::endl;
+    hisR->Fill(R);
     hisKLVtx->Fill(klVec[0].vx(),klVec[0].vy());
     hisECenter->Fill( ECenterX, ECenterY);
     
   }
+  hisR->Write();
   hisKLVtx->Write();
   hisECenter->Write();
   tfOut->Close();
