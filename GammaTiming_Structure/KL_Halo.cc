@@ -106,7 +106,10 @@ int main( int argc, char** argv){
   TH2D* hisKLVtx   = new TH2D("hisKLVtx","hisKLVtx",800,-400,400,800,-400,400);
   TH2D* hisPt      = new TH2D("hisPt","hisPt",800,-400,400,800,-400,400);
   TH1D* hisR       = new TH1D("hisR","hisR",800,0,400);
+  TH2D* hisXZ      = new TH2D("hisXZ","hisXZ",600,0,6000,800,-400,400);
+  TH2D* hisYZ      = new TH2D("hisYZ","hisYZ",600,0,6000,800,-400,400);
   
+
   for( int ievent  =0; ievent < tr->GetEntries(); ievent++){
     tr->GetEntry( ievent );
     if( (ievent % 1000) == 0){
@@ -121,6 +124,7 @@ int main( int argc, char** argv){
     data.getData(plist);    
     data.getData(klVec);
     if( TMath::Abs(klVec[0].m() - KLMass ) > 10 ){ continue; }
+    if( klVec[0].chisqZ() > 5 ){ continue; }
 
     int gIndex = 0;
     std::list<Gamma>::iterator git = glist.begin();
@@ -170,14 +174,19 @@ int main( int argc, char** argv){
     Double_t ECenterX = EX/SumE;
     Double_t ECenterY = EY/SumE;
     Double_t R = TMath::Sqrt(pow(ECenterX-5.874,2)+pow(ECenterY-1.501,2));
-
+    
 
     //std::cout<< ECenterX << "\t" << ECenterY << std::endl;
     hisR->Fill(R);
     hisKLVtx->Fill(klVec[0].vx(),klVec[0].vy());
     hisECenter->Fill( ECenterX, ECenterY);
+    hisXZ->Fill(klVec[0].vz(),ECenterX);
+    hisYZ->Fill(klVec[0].vz(),ECenterY);
     
   }
+
+  hisXZ->Write();
+  hisYZ->Write();
   hisR->Write();
   hisKLVtx->Write();
   hisECenter->Write();
