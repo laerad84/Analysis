@@ -99,8 +99,64 @@ int main( int argc, char** argv){
   tr = (TTree*)tf->Get(Form("RecTree"));
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
+  Float_t OEVVetoEne;
+  Float_t CC03VetoEne;
+  Float_t OEVTotalVetoEne;
+  Float_t CC03TotalVetoEne;
+  tr->SetBranchAddress("OEVVetoEne",&OEVVetoEne);
+  tr->SetBranchAddress("CC03VetoEne",&CC03VetoEne);
+  tr->SetBranchAddress("OEVTotalVetoEne",&OEVTotalVetoEne);
+  tr->SetBranchAddress("CC03TotalVetoEne",&CC03TotalVetoEne);
   
+
   TFile* tfOut = new TFile(Form("KL_Halo_%s",name),"recreate");
+  TTree* trOut = new TTree("KLongRecTree","KLongRecTree");
+
+  Double_t MaxR;
+  Double_t MinX;
+  Double_t MinY;
+  Double_t coex;
+  Double_t coey;
+  Double_t vtxx;
+  Double_t vtxy;
+  Double_t vtxz;
+  Double_t klp[3];
+  Double_t klv[3];
+  Double_t klE;
+  Double_t MaxGChisq;
+  Int_t    EventNumber;
+  Double_t GPos[6][3];
+  Double_t GE[6];
+  Double_t GChisq[6];
+  Double_t GTimeDelta[6];
+  Double_t GTimeMaxDelta;
+  Double_t MinGDist;
+  Double_t klchisqZ;
+  Double_t klMass;
+
+  trOut->Branch("EventNumber"     ,&EventNumber,"EventNumber/I");
+  trOut->Branch("OEVVetoEne"      ,&OEVVetoEne,"OEVVetoEne/F");
+  trOut->Branch("OEVTotalVetoEne" ,&OEVTotalVetoEne,"CC03TotalVetoEne/F");
+  trOut->Branch("CC03VetoEne"     ,&CC03VetoEne,"CC03VetoEne/F");
+  trOut->Branch("CC03TotalVetoEne",&CC03TotalVetoEne,"CC03TotalVetoEne/F");
+  trOut->Branch("MaxR"            ,&MaxR,"MinR/D");
+  trOut->Branch("MinX"            ,&MinX,"MinX/D");
+  trOut->Branch("MinY"            ,&MinY,"MinY/D");
+  trOut->Branch("MinGDist"        ,&MinGDist,"MinDist/D");
+  trOut->Branch("coex"            ,&coex,"coex/D");
+  trOut->Branch("coey"            ,&coey,"coey/D");
+  trOut->Branch("klMass"          ,&klMass,"klMass/D");
+  trOut->Branch("klchisqZ"        ,&klchisqZ,"klchisqZ/D");
+  trOut->Branch("klp"             ,klp,"klp[3]/D");
+  trOut->Branch("klv"             ,klv,"klv[3]/D");
+  trOut->Branch("klE"             ,&klE,"klE/D");
+  trOut->Branch("MaxGChisq"       ,&MaxGChisq,"MaxGChisq/D");
+  trOut->Branch("GPos"            ,GPos,"GPos[6][3]/D");
+  trOut->Branch("GE"              ,GE,"GE[6]/D");
+  trOut->Branch("GChisq"          ,GChisq,"GChisq[6]/D");
+  trOut->Branch("GTimeDelta"      ,GTimeDelta,"GTimeDelta[6]/D");
+  trOut->Branch("GTimeMaxDelta"   ,&GTimeMaxDelta,"GTimeMaxDelta/D");
+
 
   TH2D* hisECenter = new TH2D("hisECenter","hisECenter",800,-400,400,800,-400,400);
   TH2D* hisKLVtx   = new TH2D("hisKLVtx","hisKLVtx",800,-400,400,800,-400,400);
@@ -122,13 +178,17 @@ int main( int argc, char** argv){
   TH1D* hisGammaTDelta= new TH1D("hisGammaTDelta","hisGammaTDelta",200,-20,20);
   TH1D* hisGammaTDeltaHalo = new TH1D("hisGammaTDeltaHalo","hisGammaTDeltaHalo",200,-20,20);
 
-
+  TH1D* hisCC03ETHalo = new TH1D("hisCC03ETHalo","hisCC03ETHalo",200,0,25);
+  TH1D* hisCC03ET     = new TH1D("hisCC03ET","hisCC03ET",200,0,25);
+  TH1D* hisOEVETHalo  = new TH1D("hisOEVETHalo","hisOEVETHalo",200,0,25);
+  TH1D* hisOEVET      = new TH1D("hisOEVET","hisOEVET",200,0,25);
 
   for( int ievent  =0; ievent < tr->GetEntries(); ievent++){
     tr->GetEntry( ievent );
     if( (ievent % 1000) == 0){
       std::cout<< ievent <<"/" << tr->GetEntries()<< std::endl;
     }
+    EventNumber = ievent;
     std::list<Gamma>   glist;
     //std::vector<Klong> klVec;
     std::list<Pi0> plist;
@@ -137,48 +197,90 @@ int main( int argc, char** argv){
     data.getData(glist);
     data.getData(plist);    
     data.getData(klVec);
-    if( TMath::Abs(klVec[0].m() - KLMass ) > 10 ){ continue; }
-    if( klVec[0].chisqZ() > 5 ){ continue; }
-
-    int gIndex = 0;
     std::list<Gamma>::iterator git = glist.begin();
     std::list<Pi0>::iterator   pit = plist.begin();
+
+
+    Double_t FlightTime[6];
+    Double_t baseTime = 0;
+    git = glist.begin();
+    for( int i = 0; i< 6; i++,git++){
+      double l = TMath::Sqrt( TMath::Power((*git).x()-klVec[0].vx(),2)
+			      +TMath::Power((*git).y()-klVec[0].vy(),2)
+			      +TMath::Power((*git).z()-klVec[0].vz(),2));
+      FlightTime[i] = l/sol;
+      baseTime+=(*git).t()-FlightTime[i];
+    }
+    baseTime = baseTime/6;    
+    Double_t MaxTimeDelta = 0;
+    Double_t TimeDelta=0;
+    git = glist.begin();
     
-    
+    MaxR = 0;
+    MinX = 1000;
+    MinY = 1000;
+    MaxGChisq     = 0;
+    GTimeMaxDelta = 0;
+    MinGDist = 0;
+    int gIndex = 0;        
     Double_t EX=0;
     Double_t EY=0;
     Double_t SumE=0;
     Double_t PX=0;
     Double_t PY=0;
-    /*
-    for( int i = 0; i< klVec[0].pi0().size(); i++){
-      EX += klVec[0].pi0()[i].g1().e()*klVec[0].pi0()[i].g1().x();
-      EY += klVec[0].pi0()[i].g1().e()*klVec[0].pi0()[i].g1().y();
-      EX += klVec[0].pi0()[i].g2().e()*klVec[0].pi0()[i].g2().x();
-      EY += klVec[0].pi0()[i].g2().e()*klVec[0].pi0()[i].g2().y();
-      SumE+=klVec[0].pi0()[i].g1().e();
-      SumE+=klVec[0].pi0()[i].g2().e();
-    }
-    */
-    /*
-    for( int i = 0; i< klVec[0].pi0().size(); i++,pit++){
-      EX += (*pit).g1().e()*(*pit).g1().x();
-      EY += (*pit).g1().e()*(*pit).g1().y();
-      EX += (*pit).g2().e()*(*pit).g2().x();
-      EY += (*pit).g2().e()*(*pit).g2().y();
-      SumE+=(*pit).g1().e();
-      SumE+=(*pit).g2().e();
-    }
-    */
+    git = glist.begin();
+    for( int i = 0; i< 6; i++,git++){
+      GPos[i][0]=(*git).x();
+      GPos[i][1]=(*git).y();
+      GPos[i][2]=(*git).x();
+      GE[i]     =(*git).e();
+      coex      =(*git).e()*(*git).x();
+      coey      =(*git).e()*(*git).y();
+      SumE      +=(*git).e();
+      GChisq[i] =(*git).chisq();
+      if( GChisq[i] > MaxGChisq ){
+	MaxGChisq =GChisq[i];
+      }
+      GTimeDelta[i] = (*git).t() -baseTime-FlightTime[i];
+      if( TMath::Abs(GTimeMaxDelta) < TMath::Abs((*git).t() -baseTime-FlightTime[i]) ){
+	GTimeMaxDelta= (*git).t() -baseTime-FlightTime[i];
+      }
 
+      Double_t R = TMath::Sqrt(TMath::Power((*git).x(),2)+TMath::Power((*git).y(),2));
+      if( R > MaxR){
+	MaxR = R;
+      }
+      if( TMath::Abs((*git).x())< MinX ){
+	MinX  = TMath::Abs((*git).x());
+      }
+      if( TMath::Abs((*git).y())< MinY ){
+	MinY  = TMath::Abs((*git).y());	
+      }
+    }
+    coex = coex/SumE;
+    coey = coey/SumE;
+    klv[0] = klVec[0].vx();
+    klv[1] = klVec[0].vy();
+    klv[2] = klVec[0].vz();
+    klp[0] = klVec[0].p3()[0];
+    klp[1] = klVec[0].p3()[1];
+    klp[2] = klVec[0].p3()[2];
+    klchisqZ=klVec[0].chisqZ();
+    klE    = klVec[0].e();
+    klMass = klVec[0].m();
+    trOut->Fill();
 
+    if( TMath::Abs(klVec[0].m() - KLMass ) > 10 ){ continue; }
+    if( klVec[0].chisqZ() > 5 ){ continue; }
+    
+    git = glist.begin();
     bool bGamma = false;
-    for( int i = 0; i< glist.size(); i++,git++){
-      if( TMath::Abs((*git).x()) < 150 && TMath::Abs((*git).y()) < 150){
+    for( int i = 0; i< 6; i++,git++){
+      if( TMath::Abs((*git).x()) < 125 && TMath::Abs((*git).y()) < 125){
 	bGamma = true;
       }
       Double_t gr = TMath::Sqrt(pow( (*git).x(),2) +pow((*git).y(),2 ));
-      if( gr > 800 ){
+      if( gr > 850 ){
 	bGamma = true;
       }
       if( i >= 6 ){ continue; }
@@ -186,19 +288,17 @@ int main( int argc, char** argv){
       EY += (*git).e()*(*git).y();
       SumE += (*git).e();
     }
+
     if( bGamma ){ continue; }
-    Double_t ECenterX = EX/SumE;
-    Double_t ECenterY = EY/SumE;
-    Double_t R = TMath::Sqrt(pow(ECenterX-5.874,2)+pow(ECenterY-1.501,2));
-
-    bool bHalo = false;
-    
-
-
-    if( TMath::Abs( ECenterX - 5.984 ) > 100 || 
-	TMath::Abs( ECenterY - 1.501 ) > 100 ){
+    if( CC03TotalVetoEne > 1.5 ){ continue; }
+    if( OEVTotalVetoEne > 1.5 ){ continue; }
+    Double_t R = TMath::Sqrt(pow(coex-5.874,2)+pow(coey-1.501,2));    
+    bool bHalo = false;    
+    if( TMath::Abs( coex - 5.984 ) > 100 || 
+	TMath::Abs( coey - 1.501 ) > 100 ){
       bHalo = true;
     }  
+
     if( bHalo ){
       hisKLPHalo->Fill( klVec[0].p3().mag());
     }else{
@@ -208,7 +308,7 @@ int main( int argc, char** argv){
     git = glist.begin();
     double maxGammaChisq=0;
     for( int i = 0; i< glist.size();i++,git++){
-      if( i> 6 ){ continue; }
+      if( i>= 6 ){ break; }
       Double_t gr = TMath::Sqrt(pow( (*git).x(),2) +pow((*git).y(),2 ));
       if( maxGammaChisq < (*git).chisq()){
 	maxGammaChisq = (*git).chisq();
@@ -223,42 +323,33 @@ int main( int argc, char** argv){
 	hisGammaChisq->Fill((*git).chisq());
       }
     }
-    
-    if( bHalo ){
-      hisGammaMaxChisqHalo->Fill(maxGammaChisq);
-    }else{
-      hisGammaMaxChisq->Fill(maxGammaChisq);
-    }
 
-    git = glist.begin();
-    Double_t baseTime = (*git).t();
-    Double_t MaxTimeDelta = 0;
-    Double_t TimeDelta=0;
-    git++;
-    for( int i = 0; i< 6; i++,git++){      
-      if( MaxTimeDelta < TMath::Abs((*git).t() - baseTime )){
-	MaxTimeDelta = TMath::Abs((*git).t() - baseTime);
-	TimeDelta = (*git).t() - baseTime;
-      }
-    }
+    if( TMath::Abs(GTimeMaxDelta) > 3 ){ continue; }
+    if( maxGammaChisq > 2.5 ){ continue; }
     if( bHalo ){
       hisGammaTDeltaHalo->Fill(TimeDelta);
     }else{
       hisGammaTDelta->Fill(TimeDelta);
     }
+    if( bHalo ){
+      hisGammaMaxChisqHalo->Fill(maxGammaChisq);
+      hisOEVETHalo->Fill( OEVVetoEne );
+      hisCC03ETHalo->Fill( CC03VetoEne );
+    }else{
+      hisGammaMaxChisq->Fill(maxGammaChisq);
+      hisOEVET->Fill( OEVVetoEne );
+      hisCC03ET->Fill( CC03VetoEne );
+    }
 
-
-
-    if( maxGammaChisq > 2.5 ){ continue; }
-    //std::cout<< ECenterX << "\t" << ECenterY << std::endl;
-    if( klVec[0].vz() < 5000 ){
+    //std::cout<< coex << "\t" << coey << std::endl;
+    if( klVec[0].vz() < 5500 ){
       hisR->Fill(R);
       hisKLVtx->Fill(klVec[0].vx(),klVec[0].vy());
-      hisECenter->Fill( ECenterX, ECenterY);
+      hisECenter->Fill( coex, coey);
     }
-    hisXZ->Fill(klVec[0].vz(),ECenterX);
-    hisYZ->Fill(klVec[0].vz(),ECenterY);
-    if( TMath::Abs( ECenterX ) > 100 || TMath::Abs( ECenterY ) > 100 ){
+    hisXZ->Fill(klVec[0].vz(),coex);
+    hisYZ->Fill(klVec[0].vz(),coey);
+    if(bHalo){
       CsIPoly* csi = new CsIPoly(Form("CsI_%d",ievent),Form("CsI_%d",ievent));
       git = glist.begin();
       for( int i = 0; i< 6; i++,git++){
@@ -270,8 +361,12 @@ int main( int argc, char** argv){
     }
   }
 
-hisGammaTDelta->Write();
-hisGammaTDeltaHalo->Write();
+  hisOEVET->Write();
+  hisOEVETHalo->Write();
+  hisCC03ET->Write();
+  hisCC03ETHalo->Write();
+  hisGammaTDelta->Write();
+  hisGammaTDeltaHalo->Write();
   hisGammaChisq->Write();
   hisGammaChisqHalo->Write();
   hisGammaMaxChisq->Write();
@@ -287,5 +382,6 @@ hisGammaTDeltaHalo->Write();
   hisR->Write();
   hisKLVtx->Write();
   hisECenter->Write();
+  trOut->Write();
   tfOut->Close();
 }
