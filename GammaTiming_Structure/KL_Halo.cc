@@ -30,7 +30,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "csimap/CsiMap.h"
-
+#include "CsIPoly.h"
 
 const double KLMass = 497.648;//MeV
 double const sol = 299.792458;//[mm/nsec]
@@ -108,7 +108,21 @@ int main( int argc, char** argv){
   TH1D* hisR       = new TH1D("hisR","hisR",800,0,400);
   TH2D* hisXZ      = new TH2D("hisXZ","hisXZ",600,0,6000,800,-400,400);
   TH2D* hisYZ      = new TH2D("hisYZ","hisYZ",600,0,6000,800,-400,400);
-  
+  TH1D* hisKLP     = new TH1D("hisKLP","hisKLP",500,0,5000);
+  TH1D* hisKLPHalo = new TH1D("hisKLPHalo","hisKLPHalo",500,0,5000);
+  TH2D* hisGammaPos= new TH2D("hisGammaPos","hisGammaPos",80,-1000,1000,80,-1000,1000);
+  TH2D* hisGammaPosHalo= new TH2D("hisGammaPosHalo","hisGammaPosHalo",80,-1000,1000,80,-1000,1000);
+
+  TH1D* hisGammaR= new TH1D("hisGammaR","hisGammaR",80,0,1000);
+  TH1D* hisGammaRHalo= new TH1D("hisGammaRHalo","hisGammaRHalo",80,0,1000);
+  TH1D* hisGammaChisq= new TH1D("hisGammaChisq","hisGammaChisq",200,0,50);
+  TH1D* hisGammaChisqHalo= new TH1D("hisGammaChisqHalo","hisGammaChisqHalo",200,0,50);
+  TH1D* hisGammaMaxChisq= new TH1D("hisGammaMaxChisq","hisGammaChisq",200,0,50);
+  TH1D* hisGammaMaxChisqHalo= new TH1D("hisGammaMaxChisqHalo","hisGammaChisqHalo",200,0,50);
+  TH1D* hisGammaTDelta= new TH1D("hisGammaTDelta","hisGammaTDelta",200,-20,20);
+  TH1D* hisGammaTDeltaHalo = new TH1D("hisGammaTDeltaHalo","hisGammaTDeltaHalo",200,-20,20);
+
+
 
   for( int ievent  =0; ievent < tr->GetEntries(); ievent++){
     tr->GetEntry( ievent );
@@ -163,28 +177,111 @@ int main( int argc, char** argv){
       if( TMath::Abs((*git).x()) < 150 && TMath::Abs((*git).y()) < 150){
 	bGamma = true;
       }
-      
+      Double_t gr = TMath::Sqrt(pow( (*git).x(),2) +pow((*git).y(),2 ));
+      if( gr > 800 ){
+	bGamma = true;
+      }
       if( i >= 6 ){ continue; }
       EX += (*git).e()*(*git).x();
       EY += (*git).e()*(*git).y();
       SumE += (*git).e();
     }
     if( bGamma ){ continue; }
-    if( klVec[0].vz() > 5000 ){ continue; }
     Double_t ECenterX = EX/SumE;
     Double_t ECenterY = EY/SumE;
     Double_t R = TMath::Sqrt(pow(ECenterX-5.874,2)+pow(ECenterY-1.501,2));
+
+    bool bHalo = false;
     
 
+
+    if( TMath::Abs( ECenterX - 5.984 ) > 100 || 
+	TMath::Abs( ECenterY - 1.501 ) > 100 ){
+      bHalo = true;
+    }  
+    if( bHalo ){
+      hisKLPHalo->Fill( klVec[0].p3().mag());
+    }else{
+      hisKLP->Fill( klVec[0].p3().mag());
+    }
+
+    git = glist.begin();
+    double maxGammaChisq=0;
+    for( int i = 0; i< glist.size();i++,git++){
+      if( i> 6 ){ continue; }
+      Double_t gr = TMath::Sqrt(pow( (*git).x(),2) +pow((*git).y(),2 ));
+      if( maxGammaChisq < (*git).chisq()){
+	maxGammaChisq = (*git).chisq();
+      }
+      if( bHalo ){
+	hisGammaPosHalo->Fill((*git).x(),(*git).y());
+	hisGammaRHalo->Fill(gr);
+	hisGammaChisqHalo->Fill((*git).chisq());
+      }else{
+	hisGammaPos->Fill((*git).x(),(*git).y());
+	hisGammaR->Fill(gr);
+	hisGammaChisq->Fill((*git).chisq());
+      }
+    }
+    
+    if( bHalo ){
+      hisGammaMaxChisqHalo->Fill(maxGammaChisq);
+    }else{
+      hisGammaMaxChisq->Fill(maxGammaChisq);
+    }
+
+    git = glist.begin();
+    Double_t baseTime = (*git).t();
+    Double_t MaxTimeDelta = 0;
+    Double_t TimeDelta=0;
+    git++;
+    for( int i = 0; i< 6; i++,git++){      
+      if( MaxTimeDelta < TMath::Abs((*git).t() - baseTime )){
+	MaxTimeDelta = TMath::Abs((*git).t() - baseTime);
+	TimeDelta = (*git).t() - baseTime;
+      }
+    }
+    if( bHalo ){
+      hisGammaTDeltaHalo->Fill(TimeDelta);
+    }else{
+      hisGammaTDelta->Fill(TimeDelta);
+    }
+
+
+
+    if( maxGammaChisq > 2.5 ){ continue; }
     //std::cout<< ECenterX << "\t" << ECenterY << std::endl;
-    hisR->Fill(R);
-    hisKLVtx->Fill(klVec[0].vx(),klVec[0].vy());
-    hisECenter->Fill( ECenterX, ECenterY);
+    if( klVec[0].vz() < 5000 ){
+      hisR->Fill(R);
+      hisKLVtx->Fill(klVec[0].vx(),klVec[0].vy());
+      hisECenter->Fill( ECenterX, ECenterY);
+    }
     hisXZ->Fill(klVec[0].vz(),ECenterX);
     hisYZ->Fill(klVec[0].vz(),ECenterY);
-    
+    if( TMath::Abs( ECenterX ) > 100 || TMath::Abs( ECenterY ) > 100 ){
+      CsIPoly* csi = new CsIPoly(Form("CsI_%d",ievent),Form("CsI_%d",ievent));
+      git = glist.begin();
+      for( int i = 0; i< 6; i++,git++){
+	for( int j = 0; j< (*git).clusterIdVec().size();j++){
+	  csi->Fill((*git).clusterIdVec()[j],(*git).clusterEVec()[j]);
+	}
+      }
+      csi->Write();
+    }
   }
 
+hisGammaTDelta->Write();
+hisGammaTDeltaHalo->Write();
+  hisGammaChisq->Write();
+  hisGammaChisqHalo->Write();
+  hisGammaMaxChisq->Write();
+  hisGammaMaxChisqHalo->Write();
+  hisGammaPos->Write();
+  hisGammaPosHalo->Write();
+  hisGammaR->Write();
+  hisGammaRHalo->Write();
+  hisKLP->Write();
+  hisKLPHalo->Write();
   hisXZ->Write();
   hisYZ->Write();
   hisR->Write();
