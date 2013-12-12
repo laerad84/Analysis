@@ -133,13 +133,13 @@ int main( int argc, char** argv){
   Double_t MinGDist;
   Double_t klchisqZ;
   Double_t klMass;
-
+  Double_t GMinE;
   trOut->Branch("EventNumber"     ,&EventNumber,"EventNumber/I");
   trOut->Branch("OEVVetoEne"      ,&OEVVetoEne,"OEVVetoEne/F");
-  trOut->Branch("OEVTotalVetoEne" ,&OEVTotalVetoEne,"CC03TotalVetoEne/F");
+  trOut->Branch("OEVTotalVetoEne" ,&OEVTotalVetoEne,"OEVTotalVetoEne/F");
   trOut->Branch("CC03VetoEne"     ,&CC03VetoEne,"CC03VetoEne/F");
   trOut->Branch("CC03TotalVetoEne",&CC03TotalVetoEne,"CC03TotalVetoEne/F");
-  trOut->Branch("MaxR"            ,&MaxR,"MinR/D");
+  trOut->Branch("MaxR"            ,&MaxR,"MaxR/D");
   trOut->Branch("MinX"            ,&MinX,"MinX/D");
   trOut->Branch("MinY"            ,&MinY,"MinY/D");
   trOut->Branch("MinGDist"        ,&MinGDist,"MinDist/D");
@@ -156,7 +156,7 @@ int main( int argc, char** argv){
   trOut->Branch("GChisq"          ,GChisq,"GChisq[6]/D");
   trOut->Branch("GTimeDelta"      ,GTimeDelta,"GTimeDelta[6]/D");
   trOut->Branch("GTimeMaxDelta"   ,&GTimeMaxDelta,"GTimeMaxDelta/D");
-
+  trOut->Branch("GMinE"           ,&GMinE,"GMinE/D");
 
   TH2D* hisECenter = new TH2D("hisECenter","hisECenter",800,-400,400,800,-400,400);
   TH2D* hisKLVtx   = new TH2D("hisKLVtx","hisKLVtx",800,-400,400,800,-400,400);
@@ -203,40 +203,46 @@ int main( int argc, char** argv){
 
     Double_t FlightTime[6];
     Double_t baseTime = 0;
-    git = glist.begin();
+    Double_t MaxTimeDelta = 0;
+    Double_t TimeDelta=0;
+    MaxR = 0;
+    MinX = 1000;
+    MinY = 1000;
+    GMinE = 100000;
+    MaxGChisq     = 0;
+    GTimeMaxDelta = 0;
+    MinGDist = 0;
+    coex = 0;
+    coey = 0;
+    Double_t SumE = 0;
+    int gIndex = 0;        
+    Double_t EX=0;
+    Double_t EY=0;
+    Double_t PX=0;
+    Double_t PY=0;    
     for( int i = 0; i< 6; i++,git++){
       double l = TMath::Sqrt( TMath::Power((*git).x()-klVec[0].vx(),2)
 			      +TMath::Power((*git).y()-klVec[0].vy(),2)
 			      +TMath::Power((*git).z()-klVec[0].vz(),2));
       FlightTime[i] = l/sol;
       baseTime+=(*git).t()-FlightTime[i];
+      coex      +=(*git).e()*(*git).x();
+      coey      +=(*git).e()*(*git).y();
+      SumE      +=(*git).e();
+      if( (*git).e() < GMinE ){
+	GMinE = (*git).e();
+      }
     }
     baseTime = baseTime/6;    
-    Double_t MaxTimeDelta = 0;
-    Double_t TimeDelta=0;
-    git = glist.begin();
-    
-    MaxR = 0;
-    MinX = 1000;
-    MinY = 1000;
-    MaxGChisq     = 0;
-    GTimeMaxDelta = 0;
-    MinGDist = 0;
-    int gIndex = 0;        
-    Double_t EX=0;
-    Double_t EY=0;
-    Double_t SumE=0;
-    Double_t PX=0;
-    Double_t PY=0;
+    coex = coex/SumE;
+    coey = coey/SumE;
+
     git = glist.begin();
     for( int i = 0; i< 6; i++,git++){
       GPos[i][0]=(*git).x();
       GPos[i][1]=(*git).y();
-      GPos[i][2]=(*git).x();
+      GPos[i][2]=(*git).z();
       GE[i]     =(*git).e();
-      coex      =(*git).e()*(*git).x();
-      coey      =(*git).e()*(*git).y();
-      SumE      +=(*git).e();
       GChisq[i] =(*git).chisq();
       if( GChisq[i] > MaxGChisq ){
 	MaxGChisq =GChisq[i];
@@ -257,8 +263,6 @@ int main( int argc, char** argv){
 	MinY  = TMath::Abs((*git).y());	
       }
     }
-    coex = coex/SumE;
-    coey = coey/SumE;
     klv[0] = klVec[0].vx();
     klv[1] = klVec[0].vy();
     klv[2] = klVec[0].vz();
@@ -283,15 +287,12 @@ int main( int argc, char** argv){
       if( gr > 850 ){
 	bGamma = true;
       }
-      if( i >= 6 ){ continue; }
-      EX += (*git).e()*(*git).x();
-      EY += (*git).e()*(*git).y();
-      SumE += (*git).e();
     }
 
     if( bGamma ){ continue; }
-    if( CC03TotalVetoEne > 1.5 ){ continue; }
-    if( OEVTotalVetoEne > 1.5 ){ continue; }
+    //if( CC03TotalVetoEne > 1.5 ){ continue; }
+    //if( OEVTotalVetoEne > 1.5 ){ continue; }
+    if( GMinE < 200 ){ continue; }
     Double_t R = TMath::Sqrt(pow(coex-5.874,2)+pow(coey-1.501,2));    
     bool bHalo = false;    
     if( TMath::Abs( coex - 5.984 ) > 100 || 
