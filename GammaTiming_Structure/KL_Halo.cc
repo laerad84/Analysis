@@ -130,6 +130,7 @@ int main( int argc, char** argv){
   Double_t GChisq[6];
   Double_t GTimeDelta[6];
   Double_t GTimeMaxDelta;
+  Double_t GTimeMaxSigma;
   Double_t MinGDist;
   Double_t klchisqZ;
   Double_t klMass;
@@ -156,6 +157,7 @@ int main( int argc, char** argv){
   trOut->Branch("GChisq"          ,GChisq,"GChisq[6]/D");
   trOut->Branch("GTimeDelta"      ,GTimeDelta,"GTimeDelta[6]/D");
   trOut->Branch("GTimeMaxDelta"   ,&GTimeMaxDelta,"GTimeMaxDelta/D");
+  trOut->Branch("GTimeMaxSigma"   ,&GTimeMaxSigma,"GTimeMaxSigma/D");
   trOut->Branch("GMinE"           ,&GMinE,"GMinE/D");
 
   TH2D* hisECenter = new TH2D("hisECenter","hisECenter",800,-400,400,800,-400,400);
@@ -211,6 +213,7 @@ int main( int argc, char** argv){
     GMinE = 100000;
     MaxGChisq     = 0;
     GTimeMaxDelta = 0;
+    GTimeMaxSigma = 0;
     MinGDist = 0;
     coex = 0;
     coey = 0;
@@ -233,6 +236,8 @@ int main( int argc, char** argv){
 	GMinE = (*git).e();
       }
     }
+
+    
     baseTime = baseTime/6;    
     coex = coex/SumE;
     coey = coey/SumE;
@@ -263,6 +268,21 @@ int main( int argc, char** argv){
 	MinY  = TMath::Abs((*git).y());	
       }
     }
+    for( int i = 0; i< 6; i++){
+      Double_t tmpSigma = 0;
+      for( int j = 0; j<6; j++){
+	if( i==j){ continue; }
+	tmpSigma+= TMath::Power(GTimeDelta[i]-GTimeDelta[j],2);
+      }
+      tmpSigma = TMath::Sqrt( tmpSigma /5 );
+      if( tmpSigma > GTimeMaxSigma ){
+	GTimeMaxSigma = tmpSigma ;
+      }
+    }
+
+
+
+
     klv[0] = klVec[0].vx();
     klv[1] = klVec[0].vy();
     klv[2] = klVec[0].vz();
