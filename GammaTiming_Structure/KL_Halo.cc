@@ -103,11 +103,16 @@ int main( int argc, char** argv){
   Float_t CC03VetoEne;
   Float_t OEVTotalVetoEne;
   Float_t CC03TotalVetoEne;
+  Float_t CBARVetoEne;
+  Float_t NCCVetoEne;
+  Float_t CVVetoEne;
   tr->SetBranchAddress("OEVVetoEne",&OEVVetoEne);
   tr->SetBranchAddress("CC03VetoEne",&CC03VetoEne);
   tr->SetBranchAddress("OEVTotalVetoEne",&OEVTotalVetoEne);
   tr->SetBranchAddress("CC03TotalVetoEne",&CC03TotalVetoEne);
-  
+  tr->SetBranchAddress("CVVetoEne",&CVVetoEne);
+  tr->SetBranchAddress("NCCVetoEne",&NCCVetoEne);
+  tr->SetBranchAddress("CBARVetoEne",&CBARVetoEne);
 
   TFile* tfOut = new TFile(Form("KL_Halo_%s",name),"recreate");
   TTree* trOut = new TTree("KLongRecTree","KLongRecTree");
@@ -140,6 +145,9 @@ int main( int argc, char** argv){
   trOut->Branch("OEVTotalVetoEne" ,&OEVTotalVetoEne,"OEVTotalVetoEne/F");
   trOut->Branch("CC03VetoEne"     ,&CC03VetoEne,"CC03VetoEne/F");
   trOut->Branch("CC03TotalVetoEne",&CC03TotalVetoEne,"CC03TotalVetoEne/F");
+  trOut->Branch("NCCVetoEne"      ,&NCCVetoEne,"NCCVetoEne/F");
+  trOut->Branch("CVVetoEne"       ,&CVVetoEne,"CVVetoEne/F");
+  trOut->Branch("CBARVetoEne"     ,&CBARVetoEne,"CBARVetoEne/F");
   trOut->Branch("MaxR"            ,&MaxR,"MaxR/D");
   trOut->Branch("MinX"            ,&MinX,"MinX/D");
   trOut->Branch("MinY"            ,&MinY,"MinY/D");
@@ -185,6 +193,22 @@ int main( int argc, char** argv){
   TH1D* hisOEVETHalo  = new TH1D("hisOEVETHalo","hisOEVETHalo",200,0,25);
   TH1D* hisOEVET      = new TH1D("hisOEVET","hisOEVET",200,0,25);
 
+
+  TH1D* hisCC03 = new TH1D("hisCC03","hisCC03",200,0,100);
+  TH1D* hisCC03NCut = new TH1D("hisCC03NCut","hisCC03NCut",200,0,100);
+  TH1D* hisNCC = new TH1D("hisNCC","hisNCC",200,0,100);
+  TH1D* hisNCCNCut = new TH1D("hisNCCNCut","hisNCCNCut",200,0,100);
+  TH1D* hisCBAR = new TH1D("hisCBAR","hisCBAR",200,0,100);
+  TH1D* hisCBARNCut = new TH1D("hisCBARNCut","hisCBARNCut",200,0,100);
+  TH1D* hisCV = new TH1D("hisCV","hisCV",200,0,25);
+  TH1D* hisCVNCut = new TH1D("hisCVNCut","hisCVNCut",200,0,25);
+  TH1D* hisOEV = new TH1D("hisOEV","hisOEV",200,0,100);
+  TH1D* hisOEVNCut = new TH1D("hisOEVNCut","hisOEVNCut",200,0,100);
+
+  TH1D* hisKLMass = new TH1D("hisKLMass","hisKLMass",200,400,600);
+  TH1D* hisKLMassNCut= new TH1D("hisKLMassNCut","hisKLMassNCut",200,400,600);
+  TH1D* hisKLMassNBCut = new TH1D("hisKLMassNBCut","hisKLMassNBCut",200,400,600);
+
   for( int ievent  =0; ievent < tr->GetEntries(); ievent++){
     tr->GetEntry( ievent );
     if( (ievent % 1000) == 0){
@@ -202,6 +226,28 @@ int main( int argc, char** argv){
     std::list<Gamma>::iterator git = glist.begin();
     std::list<Pi0>::iterator   pit = plist.begin();
 
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // VETO CUT
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    bool bNormalizedCut = false;
+    if( CVVetoEne > 1 || NCCVetoEne > 60 || CBARVetoEne > 60 || CC03VetoEne > 60 ){
+      bNormalizedCut = true;
+    }
+
+    hisCC03->Fill(CC03VetoEne);
+    hisNCC->Fill(NCCVetoEne);
+    hisCBAR->Fill(CBARVetoEne);
+    hisCV->Fill(CVVetoEne);
+    hisOEV->Fill(OEVVetoEne);
+    if( !bNormalizedCut ){
+      hisCC03NCut->Fill(CC03VetoEne);
+      hisNCCNCut->Fill(NCCVetoEne);
+      hisCBARNCut->Fill(CBARVetoEne);
+      hisCVNCut->Fill(CVVetoEne);
+      hisOEVNCut->Fill(OEVVetoEne);
+    }
 
     Double_t FlightTime[6];
     Double_t baseTime = 0;
@@ -279,8 +325,8 @@ int main( int argc, char** argv){
 	GTimeMaxSigma = tmpSigma ;
       }
     }
-
-
+    
+    
 
 
     klv[0] = klVec[0].vx();
@@ -294,11 +340,17 @@ int main( int argc, char** argv){
     klMass = klVec[0].m();
     trOut->Fill();
 
-    if( TMath::Abs(klVec[0].m() - KLMass ) > 10 ){ continue; }
-    if( klVec[0].chisqZ() > 5 ){ continue; }
+
+
+    bool bKLMassCut = false;
+    bool bKLChisqCut = false;
+    bool bGamma = false;
+    bool bGammaE= false;
+
+    if( TMath::Abs(klVec[0].m() - KLMass ) > 10 ){ bKLMassCut = true;  }
+    if( klVec[0].chisqZ() > 5 ){ bKLChisqCut = true;}
     
     git = glist.begin();
-    bool bGamma = false;
     for( int i = 0; i< 6; i++,git++){
       if( TMath::Abs((*git).x()) < 125 && TMath::Abs((*git).y()) < 125){
 	bGamma = true;
@@ -308,11 +360,22 @@ int main( int argc, char** argv){
 	bGamma = true;
       }
     }
+    if( GMinE < 200 ){ bGammaE = true; }
+    
+    hisKLMass->Fill(klVec[0].m());
+    if( !bNormalizedCut ){
+      hisKLMassNCut->Fill(klVec[0].m());
+      if( !bGamma && !bGammaE ){
+	hisKLMassNBCut->Fill(klVec[0].m());
+      }
+    }
 
-    if( bGamma ){ continue; }
+    if( bKLMassCut ){continue;}
+    if( bKLChisqCut){continue;}
+    if( bGamma ){continue;}
+    if( bGammaE){continue;}
     //if( CC03TotalVetoEne > 1.5 ){ continue; }
     //if( OEVTotalVetoEne > 1.5 ){ continue; }
-    if( GMinE < 200 ){ continue; }
     Double_t R = TMath::Sqrt(pow(coex-5.874,2)+pow(coey-1.501,2));    
     bool bHalo = false;    
     if( TMath::Abs( coex - 5.984 ) > 100 || 
@@ -382,6 +445,20 @@ int main( int argc, char** argv){
     }
   }
 
+  hisCV->Write();
+  hisNCC->Write();
+  hisCBAR->Write();
+  hisOEV->Write();
+  hisCC03->Write();
+
+  hisCVNCut->Write();
+  hisNCCNCut->Write();
+  hisCBARNCut->Write();
+  hisOEVNCut->Write();
+  hisCC03NCut->Write();
+
+
+
   hisOEVET->Write();
   hisOEVETHalo->Write();
   hisCC03ET->Write();
@@ -396,6 +473,9 @@ int main( int argc, char** argv){
   hisGammaPosHalo->Write();
   hisGammaR->Write();
   hisGammaRHalo->Write();
+  hisKLMass->Write();
+  hisKLMassNCut->Write();
+  hisKLMassNBCut->Write();
   hisKLP->Write();
   hisKLPHalo->Write();
   hisXZ->Write();
