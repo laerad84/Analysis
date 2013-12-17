@@ -133,6 +133,7 @@ int main( int argc, char** argv){
   Double_t GPos[6][3];
   Double_t GE[6];
   Double_t GChisq[6];
+  Double_t GMaxChisq;
   Double_t GTimeDelta[6];
   Double_t GTimeMaxDelta;
   Double_t GTimeMaxSigma;
@@ -140,6 +141,10 @@ int main( int argc, char** argv){
   Double_t klchisqZ;
   Double_t klMass;
   Double_t GMinE;
+  Double_t coeR;
+  Int_t    VetoCut;
+  Int_t    StdCut;
+  Int_t    AdvCut;
   trOut->Branch("EventNumber"     ,&EventNumber,"EventNumber/I");
   trOut->Branch("OEVVetoEne"      ,&OEVVetoEne,"OEVVetoEne/F");
   trOut->Branch("OEVTotalVetoEne" ,&OEVTotalVetoEne,"OEVTotalVetoEne/F");
@@ -154,6 +159,7 @@ int main( int argc, char** argv){
   trOut->Branch("MinGDist"        ,&MinGDist,"MinDist/D");
   trOut->Branch("coex"            ,&coex,"coex/D");
   trOut->Branch("coey"            ,&coey,"coey/D");
+  trOut->Branch("coeR"            ,&coeR,"coeR/D");
   trOut->Branch("klMass"          ,&klMass,"klMass/D");
   trOut->Branch("klchisqZ"        ,&klchisqZ,"klchisqZ/D");
   trOut->Branch("klp"             ,klp,"klp[3]/D");
@@ -167,8 +173,14 @@ int main( int argc, char** argv){
   trOut->Branch("GTimeMaxDelta"   ,&GTimeMaxDelta,"GTimeMaxDelta/D");
   trOut->Branch("GTimeMaxSigma"   ,&GTimeMaxSigma,"GTimeMaxSigma/D");
   trOut->Branch("GMinE"           ,&GMinE,"GMinE/D");
+  trOut->Branch("VetoCut"         ,&VetoCut,"VetoCut/I");
+  trOut->Branch("StdCut"          ,&StdCut,"StdCut/I");
+  trOut->Branch("AdvCut"          ,&AdvCut,"AdvCut/I");
+
 
   TH2D* hisECenter = new TH2D("hisECenter","hisECenter",800,-400,400,800,-400,400);
+  TH2D* hisECenterAcc = new TH2D("hisECenterAcc","hisECenterAcc",800,-400,400,800,-400,400);
+
   TH2D* hisKLVtx   = new TH2D("hisKLVtx","hisKLVtx",800,-400,400,800,-400,400);
   TH2D* hisPt      = new TH2D("hisPt","hisPt",800,-400,400,800,-400,400);
   TH1D* hisR       = new TH1D("hisR","hisR",800,0,400);
@@ -193,17 +205,22 @@ int main( int argc, char** argv){
   TH1D* hisOEVETHalo  = new TH1D("hisOEVETHalo","hisOEVETHalo",200,0,25);
   TH1D* hisOEVET      = new TH1D("hisOEVET","hisOEVET",200,0,25);
 
+  TH1D* hisCC03 = new TH1D("hisCC03","hisCC03",120,0,60);
+  TH1D* hisCC03NCut = new TH1D("hisCC03NCut","hisCC03NCut",120,0,60);
+  TH1D* hisNCC = new TH1D("hisNCC","hisNCC",120,0,60);
+  TH1D* hisNCCNCut = new TH1D("hisNCCNCut","hisNCCNCut",120,0,60);
+  TH1D* hisCBAR = new TH1D("hisCBAR","hisCBAR",120,0,60);
+  TH1D* hisCBARNCut = new TH1D("hisCBARNCut","hisCBARNCut",120,0,60);
+  TH1D* hisCV = new TH1D("hisCV","hisCV",120,0,25);
+  TH1D* hisCVNCut = new TH1D("hisCVNCut","hisCVNCut",120,0,25);
+  TH1D* hisOEV = new TH1D("hisOEV","hisOEV",120,0,60);
+  TH1D* hisOEVNCut = new TH1D("hisOEVNCut","hisOEVNCut",120,0,60);
+  TH1D* hisCC03NBCut = new TH1D("hisCC03NBCut","hisCC03NBCut",120,0,60);
+  TH1D* hisNCCNBCut = new TH1D("hisNCCNBCut","hisNCCNBCut",120,0,60);
+  TH1D* hisCBARNBCut = new TH1D("hisCBARNBCut","hisCBARNBCut",120,0,60);
+  TH1D* hisOEVNBCut  = new TH1D("hisOEVNBCut","hisOEVNBCut",120,0,60);
+  TH1D* hisCVNBCut   = new TH1D("hisCVNBCut","hisCVNBCut", 120,0,60);
 
-  TH1D* hisCC03 = new TH1D("hisCC03","hisCC03",200,0,100);
-  TH1D* hisCC03NCut = new TH1D("hisCC03NCut","hisCC03NCut",200,0,100);
-  TH1D* hisNCC = new TH1D("hisNCC","hisNCC",200,0,100);
-  TH1D* hisNCCNCut = new TH1D("hisNCCNCut","hisNCCNCut",200,0,100);
-  TH1D* hisCBAR = new TH1D("hisCBAR","hisCBAR",200,0,100);
-  TH1D* hisCBARNCut = new TH1D("hisCBARNCut","hisCBARNCut",200,0,100);
-  TH1D* hisCV = new TH1D("hisCV","hisCV",200,0,25);
-  TH1D* hisCVNCut = new TH1D("hisCVNCut","hisCVNCut",200,0,25);
-  TH1D* hisOEV = new TH1D("hisOEV","hisOEV",200,0,100);
-  TH1D* hisOEVNCut = new TH1D("hisOEVNCut","hisOEVNCut",200,0,100);
 
   TH1D* hisKLMass = new TH1D("hisKLMass","hisKLMass",200,400,600);
   TH1D* hisKLMassNCut= new TH1D("hisKLMassNCut","hisKLMassNCut",200,400,600);
@@ -225,7 +242,9 @@ int main( int argc, char** argv){
     data.getData(klVec);
     std::list<Gamma>::iterator git = glist.begin();
     std::list<Pi0>::iterator   pit = plist.begin();
-
+    VetoCut = 0;
+    StdCut  = 0;
+    AdvCut  = 0;
 
     ////////////////////////////////////////////////////////////////////////////////
     // VETO CUT
@@ -234,6 +253,18 @@ int main( int argc, char** argv){
     bool bNormalizedCut = false;
     if( CVVetoEne > 1 || NCCVetoEne > 60 || CBARVetoEne > 60 || CC03VetoEne > 60 ){
       bNormalizedCut = true;
+    }
+    if( CVVetoEne > 1 ){
+      VetoCut  |= 1 << 0;
+    }
+    if( NCCVetoEne > 60 ){
+      VetoCut  |= 1 << 1;
+    }
+    if( CBARVetoEne > 60 ){
+      VetoCut |= 1 << 2;
+    }
+    if( CC03VetoEne > 60 ){
+      VetoCut |= 1 << 3; 
     }
 
     hisCC03->Fill(CC03VetoEne);
@@ -248,7 +279,7 @@ int main( int argc, char** argv){
       hisCVNCut->Fill(CVVetoEne);
       hisOEVNCut->Fill(OEVVetoEne);
     }
-
+    
     Double_t FlightTime[6];
     Double_t baseTime = 0;
     Double_t MaxTimeDelta = 0;
@@ -282,11 +313,11 @@ int main( int argc, char** argv){
 	GMinE = (*git).e();
       }
     }
-
     
     baseTime = baseTime/6;    
     coex = coex/SumE;
     coey = coey/SumE;
+    coeR = sqrt( coex*coex + coey*coey);
 
     git = glist.begin();
     for( int i = 0; i< 6; i++,git++){
@@ -324,10 +355,7 @@ int main( int argc, char** argv){
       if( tmpSigma > GTimeMaxSigma ){
 	GTimeMaxSigma = tmpSigma ;
       }
-    }
-    
-    
-
+    }    
 
     klv[0] = klVec[0].vx();
     klv[1] = klVec[0].vy();
@@ -338,14 +366,12 @@ int main( int argc, char** argv){
     klchisqZ=klVec[0].chisqZ();
     klE    = klVec[0].e();
     klMass = klVec[0].m();
-    trOut->Fill();
-
-
 
     bool bKLMassCut = false;
     bool bKLChisqCut = false;
     bool bGamma = false;
     bool bGammaE= false;
+    bool bGammaChisq = false;
 
     if( TMath::Abs(klVec[0].m() - KLMass ) > 10 ){ bKLMassCut = true;  }
     if( klVec[0].chisqZ() > 5 ){ bKLChisqCut = true;}
@@ -369,11 +395,40 @@ int main( int argc, char** argv){
 	hisKLMassNBCut->Fill(klVec[0].m());
       }
     }
+    bool bStdCut = false;
+    if( bKLMassCut || bGamma || bGammaE ){
+      bStdCut = true;
+    }
+
+    if( bKLMassCut ){
+      StdCut |= 1 << 0;
+    }
+    if( klVec[0].vz() > 5500){
+      StdCut |= 1 << 1;
+    }
+    if( bGamma ){
+      StdCut |= 1 << 2; 
+    }
+    if( bGammaE ){
+      StdCut |= 1 << 3;
+    }
+    
+    if( bKLChisqCut ){
+      AdvCut |= 1 << 0;
+    }
+    if( GTimeMaxDelta > 3 ){
+      AdvCut |= 1 << 1;
+    }
+    if( GMaxChisq > 2.5 ){
+      AdvCut |= 1 << 2;
+    }
+    trOut->Fill();
 
     if( bKLMassCut ){continue;}
     if( bKLChisqCut){continue;}
     if( bGamma ){continue;}
     if( bGammaE){continue;}
+    
     //if( CC03TotalVetoEne > 1.5 ){ continue; }
     //if( OEVTotalVetoEne > 1.5 ){ continue; }
     Double_t R = TMath::Sqrt(pow(coex-5.874,2)+pow(coey-1.501,2));    
@@ -390,13 +445,9 @@ int main( int argc, char** argv){
     }
 
     git = glist.begin();
-    double maxGammaChisq=0;
     for( int i = 0; i< glist.size();i++,git++){
       if( i>= 6 ){ break; }
       Double_t gr = TMath::Sqrt(pow( (*git).x(),2) +pow((*git).y(),2 ));
-      if( maxGammaChisq < (*git).chisq()){
-	maxGammaChisq = (*git).chisq();
-      }
       if( bHalo ){
 	hisGammaPosHalo->Fill((*git).x(),(*git).y());
 	hisGammaRHalo->Fill(gr);
@@ -408,19 +459,27 @@ int main( int argc, char** argv){
       }
     }
 
-    if( TMath::Abs(GTimeMaxDelta) > 3 ){ continue; }
-    if( maxGammaChisq > 2.5 ){ continue; }
+    if( TMath::Abs(GTimeMaxDelta) > 3 ){ 
+      if( TMath::Abs(GTimeMaxDelta) > 17 && TMath::Abs(GTimeMaxDelta) < 20 ){
+	if( GMaxChisq < 2.5 &&klVec[0].vz() < 5500){
+	  hisECenterAcc->Fill(coex, coey);
+	}
+      }
+      continue;
+    }
+
+    if( GMaxChisq > 2.5 ){ continue; }
     if( bHalo ){
-      hisGammaTDeltaHalo->Fill(TimeDelta);
+      hisGammaTDeltaHalo->Fill(MaxTimeDelta);
     }else{
-      hisGammaTDelta->Fill(TimeDelta);
+      hisGammaTDelta->Fill(MaxTimeDelta);
     }
     if( bHalo ){
-      hisGammaMaxChisqHalo->Fill(maxGammaChisq);
+      hisGammaMaxChisqHalo->Fill(GMaxChisq);
       hisOEVETHalo->Fill( OEVVetoEne );
       hisCC03ETHalo->Fill( CC03VetoEne );
     }else{
-      hisGammaMaxChisq->Fill(maxGammaChisq);
+      hisGammaMaxChisq->Fill(GMaxChisq);
       hisOEVET->Fill( OEVVetoEne );
       hisCC03ET->Fill( CC03VetoEne );
     }
@@ -430,7 +489,13 @@ int main( int argc, char** argv){
       hisR->Fill(R);
       hisKLVtx->Fill(klVec[0].vx(),klVec[0].vy());
       hisECenter->Fill( coex, coey);
+      hisCC03NBCut->Fill(CC03VetoEne);
+      hisCVNBCut->Fill(CVVetoEne);
+      hisCBARNBCut->Fill(CBARVetoEne);
+      hisNCCNBCut->Fill(NCCVetoEne);
+      hisOEVNBCut->Fill(OEVVetoEne);
     }
+
     hisXZ->Fill(klVec[0].vz(),coex);
     hisYZ->Fill(klVec[0].vz(),coey);
     if(bHalo){
@@ -457,7 +522,12 @@ int main( int argc, char** argv){
   hisOEVNCut->Write();
   hisCC03NCut->Write();
 
-
+  hisCVNBCut->Write();
+  hisNCCNBCut->Write();
+  hisCBARNBCut->Write();
+  hisOEVNBCut->Write();
+  hisCC03NBCut->Write();
+  
 
   hisOEVET->Write();
   hisOEVETHalo->Write();
@@ -483,6 +553,7 @@ int main( int argc, char** argv){
   hisR->Write();
   hisKLVtx->Write();
   hisECenter->Write();
+  hisECenterAcc->Write();
   trOut->Write();
   tfOut->Close();
 }
