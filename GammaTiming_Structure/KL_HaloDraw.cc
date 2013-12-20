@@ -183,6 +183,7 @@ int main( int argc, char** argv){
   TH1D* hisGE[5];
   TH1D* hisklchisqZ[5];
   TH1D* hisR[5];
+  TH1D* hisHaloR[5];
   TH1D* CV[5];
   TH1D* NCC[5];
   TH1D* CBAR[5];
@@ -190,17 +191,18 @@ int main( int argc, char** argv){
   TH1D* OEV[5];
 
   for( int i = 0; i< 5; i++){
-    hisklMass[i] = new TH1D(Form("hisklMass_%d",i),Form("hisklMass_%s",hisname[i]),200,400,600);
-    hisklpz[i]   = new TH1D(Form("hisklpz_%d",i),Form("hisklPz_%s",hisname[i]),200,0,10000);
-    hisklE[i]    = new TH1D(Form("hisklE_%d",i),Form("hisklE_%s",hisname[i]),200,0,10000);
-    hisCoe[i]    = new TH2D(Form("hisCoe_%d",i),Form("hisCoe_%s",hisname[i]),800,-400,400,800,-400,400);
-    hisCoeX[i]    = new TH1D(Form("hisCoeX_%d",i),Form("hisCoeX_%s",hisname[i]),800,-400,400);
-    hisCoeY[i]    = new TH1D(Form("hisCoeY_%d",i),Form("hisCoeY_%s",hisname[i]),800,-400,400);
+    hisklMass[i]   = new TH1D(Form("hisklMass_%d",i),Form("hisklMass_%s",hisname[i]),200,400,600);
+    hisklpz[i]     = new TH1D(Form("hisklpz_%d",i),Form("hisklPz_%s",hisname[i]),200,0,10000);
+    hisklE[i]      = new TH1D(Form("hisklE_%d",i),Form("hisklE_%s",hisname[i]),200,0,10000);
+    hisCoe[i]      = new TH2D(Form("hisCoe_%d",i),Form("hisCoe_%s",hisname[i]),800,-400,400,800,-400,400);
+    hisCoeX[i]     = new TH1D(Form("hisCoeX_%d",i),Form("hisCoeX_%s",hisname[i]),800,-400,400);
+    hisCoeY[i]     = new TH1D(Form("hisCoeY_%d",i),Form("hisCoeY_%s",hisname[i]),800,-400,400);
     hisklchisqZ[i] = new TH1D(Form("hisklchisqZ_%d",i),Form("hisklchisqZ_%s",hisname[i]),100,0,50); 
     hisGTimeDeltaMax[i] = new TH1D(Form("hisGTimeDeltaMax_%d",i),Form("hisGTimeDeltaMax_%s",hisname[i]),300,-30,30);
     hisGChisqMax[i]     = new TH1D(Form("hisGChisqMax_%d",i),Form("hisGChisqMax_%s",hisname[i]),150,0,30);
-    hisGE[i]     = new TH1D(Form("hisGE_%d",i),Form("hisGE_%s",hisname[i]),300,0,3000);
+    hisGE[i]            = new TH1D(Form("hisGE_%d",i),Form("hisGE_%s",hisname[i]),300,0,3000);
     hisR[i]             = new TH1D(Form("hisR_%d",i),Form("hisR_%s",hisname[i]),1000,0,1000);
+    hisHaloR[i]         = new TH1D(Form("hisHaloR_%d",i),Form("hisHaloR_%s",hisname[i]),1000,0,1000);
     CV[i]  = new TH1D(Form("hisCV_%d",i),Form("hisCV_%s",hisname[i]),100,0,10);
     NCC[i] = new TH1D(Form("hisNCC_%d",i),Form("hisNCC_%s",hisname[i]),50,0,100);
     CBAR[i]= new TH1D(Form("hisCBAR_%d",i),Form("hisCBAR_%s",hisname[i]),50,0,100);
@@ -209,10 +211,6 @@ int main( int argc, char** argv){
     
   }
     
-
-
-
-
   for( int ievent  =0; ievent < trin->GetEntries(); ievent++){
     trin->GetEntry( ievent );
     if( (ievent % 1000) == 0){
@@ -237,6 +235,9 @@ int main( int argc, char** argv){
     hisGTimeDeltaMax[0]->Fill(GTimeMaxDelta);
     hisGChisqMax[0]->Fill(MaxGChisq);
     hisR[0]->Fill(coeR);
+    if( TMath::Abs(coex)>  12.5 || TMath::Abs( coey ) > 12.5 ){
+      hisHaloR[0]->Fill(coeR);
+    }
     CV[0]->Fill(CVVetoEne);
     NCC[0]->Fill(NCCVetoEne);
     CBAR[0]->Fill(CBARVetoEne);
@@ -256,6 +257,9 @@ int main( int argc, char** argv){
       hisGTimeDeltaMax[1]->Fill(GTimeMaxDelta);
       hisGChisqMax[1]->Fill(MaxGChisq);
       hisR[1]->Fill(coeR);
+      if( TMath::Abs( coex ) > 12.5 || TMath::Abs( coey ) > 12.5 ){
+	hisHaloR[1]->Fill(coeR);
+      }
       CV[1]->Fill(CVVetoEne);
       NCC[1]->Fill(NCCVetoEne);
       CBAR[1]->Fill(CBARVetoEne);
@@ -276,6 +280,9 @@ int main( int argc, char** argv){
 	  hisGTimeDeltaMax[3]->Fill(GTimeMaxDelta);
 	  hisGChisqMax[3]->Fill(MaxGChisq);
 	  hisR[3]->Fill(coeR);
+	  if( TMath::Abs( coex ) > 12.5 || TMath::Abs( coey ) > 12.5 ){
+	    hisHaloR[3]->Fill(coeR);
+	  }
 	  CV[3]->Fill(CVVetoEne);
 	  NCC[3]->Fill(NCCVetoEne);
 	  CBAR[3]->Fill(CBARVetoEne);
@@ -295,6 +302,9 @@ int main( int argc, char** argv){
 	  hisGTimeDeltaMax[4]->Fill(GTimeMaxDelta);
 	  hisGChisqMax[4]->Fill(MaxGChisq);
 	  hisR[4]->Fill(coeR);
+	  if( TMath::Abs( coex ) > 12.5 || TMath::Abs( coey ) > 12.5 ){
+	    hisHaloR[4]->Fill(coeR);
+	  }
 	  CV[4]->Fill(CVVetoEne);
 	  NCC[4]->Fill(NCCVetoEne);
 	  CBAR[4]->Fill(CBARVetoEne);
@@ -319,6 +329,9 @@ int main( int argc, char** argv){
 	hisGTimeDeltaMax[2]->Fill(GTimeMaxDelta);
 	hisGChisqMax[2]->Fill(MaxGChisq);
 	hisR[2]->Fill(coeR);
+	if( TMath::Abs( coex ) > 12.5 || TMath::Abs( coey ) > 12.5 ){
+	  hisHaloR[2]->Fill(coeR);
+	}
 	CV[2]->Fill(CVVetoEne);
 	NCC[2]->Fill(NCCVetoEne);
 	CBAR[2]->Fill(CBARVetoEne);
@@ -341,6 +354,7 @@ int main( int argc, char** argv){
     hisGTimeDeltaMax[i]->Write();
     hisGChisqMax[i]->Write();
     hisGE[i]->Write();
+    hisHaloR[i]->Write();
     hisR[i]->Write();
     CV[i]->Write();
     NCC[i]->Write();
