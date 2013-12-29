@@ -46,20 +46,22 @@ int main( int argc ,char** argv ){
   TGraphErrors* grHTLaser1    = new TGraphErrors();
 
   Int_t ChannelNumber = 1207;
+  /*
   TGraphErrors* grChDelay = new TGraphErrors();
   grChDelay->SetNameTitle("grChDelay","grChDelay");
-
+  */
   TH1D* hisTimeDelta[1000];
   TH1D* hisHeight[1000];
   TH1D* hisTimeDeltaLaser[1000];
   TF1* funct              = new TF1("funct",laserTimeDelay,0,20000,4);
   TFile* tfDelay          = new TFile("LaserTimeTotal_m100p50.root");
   TGraphErrors * grDel = (TGraphErrors*)tfDelay->Get(Form("grHeightDeltaT_%d",ChannelNumber));
+  /*
   for( int ip = 0; ip < grDel->GetN(); ip++){
     grChDelay->SetPoint( ip, grDel->GetX()[ip],grDel->GetY()[ip]);
     grChDelay->SetPointError( ip, 0,grDel->GetEY()[ip]);
   }
-
+  */
   funct->SetParameter(0,1);
   funct->SetParameter(1,0.001);
   funct->SetParameter(2,6000);
@@ -69,11 +71,10 @@ int main( int argc ,char** argv ){
   funct->SetParLimits(1,0.00001,0.1);
   funct->SetParLimits(2,3000,16000);
   funct->SetParLimits(3,-0.5,0.5);
-  grChDelay->Fit(funct,"","",0,16000); 
+  //grChDelay->Fit(funct,"","",0,16000); 
   //getchar();
 
   TCanvas* can            = new TCanvas("can","can",1200,800);   
-
   for( Int_t RunNumber = 0; RunNumber <= EndRunNumber-StrRunNumber; RunNumber++){
     std::cout<< RunNumber + StrRunNumber << std::endl;
     TFile* tf = new TFile(Form("Data/LaserTimeStability_%d.root",RunNumber+StrRunNumber));
@@ -144,7 +145,7 @@ int main( int argc ,char** argv ){
 
   funct->Draw();
   can->cd(2);
-  grChDelay->Draw("AP");
+  //grChDelay->Draw("AP");
   can->Update();
   can->Modified();
   can->Update();
