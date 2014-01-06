@@ -18,6 +18,10 @@ class L1TrigCounter {
   double m_CrateCount[nMaxCrate];
   int    m_L1Map[2716];
 
+  double m_Et;
+  int    m_EtFlag;
+  double m_EtThreshold;
+
  public:
   
   L1TrigCounter();
@@ -25,14 +29,15 @@ class L1TrigCounter {
   TH1D* hisTrigCounter; 
   CsIPoly* CsiL1Map;
 
-  void Reset(){ hisTrigCounter->Reset();}
-  int  Fill( int id, double value );
-  void SetThreshold(double threshold){ m_Threshold = threshold; }
+  void   Reset(){ m_Et = 0; m_EtFlag = 0; hisTrigCounter->Reset();}
+  int    Fill( int id, double value );
+  void   SetThreshold(double threshold){ m_Threshold = threshold; }
   double GetThreshold(){ return m_Threshold;}
-  bool ReadMapFile( char* filename = "ch_map_CsI_L1.txt"); 
-  int  GetCrateCnt();
+  bool   ReadMapFile( char* filename = "ch_map_CsI_L1.txt"); 
+  int    GetCrateCnt();
   std::vector<int> GetTriggedCrate();
   std::vector<double> GetCount();
+  double GetEtCount();
   void DrawTrig();
   void DrawTriggerMap();
 };

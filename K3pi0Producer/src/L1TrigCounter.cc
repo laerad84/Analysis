@@ -38,6 +38,8 @@ int L1TrigCounter::Fill( int id, double value){
   if( id <0 || id >= 2716 ){ return -1; }
   if( m_L1Map[id] < 0 || m_L1Map[id] >= nMaxCrate ){ return -1; }
   hisTrigCounter->Fill( m_L1Map[id], value );
+  m_Et += value;
+
   return m_L1Map[id];
 }
 
@@ -57,6 +59,11 @@ std::vector<double> L1TrigCounter::GetCount(){
   }
   return vec;
 }
+
+double L1TrigCounter::GetEtCount(){
+  return m_Et;
+}
+
 void L1TrigCounter::DrawTrig(){
   hisTrigCounter->Draw();
 }
