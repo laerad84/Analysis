@@ -8,6 +8,13 @@ E14ConvWriter::E14ConvWriter(char* SumupFile,TTree* tr){
   bInitialize = false;
 }
 
+E14ConvWriter::E14ConvWriter(TTree* tr ){
+  m_nModule = 0;
+  bInitialize = false;
+  m_tr = tr;
+}
+
+
 E14ConvWriter::~E14ConvWriter(){
   //delete map;
 }

@@ -42,6 +42,7 @@ bool E14ConvWriterModule::SetBranchAddress(){
   m_Tree->SetBranchAddress(Form("%sParA"     ,m_DetectorName),m_ParA);
   m_Tree->SetBranchAddress(Form("%sParB"     ,m_DetectorName),m_ParB);
   m_Tree->SetBranchAddress(Form("%sFit"      ,m_DetectorName),m_Fit);
+  m_Tree->SetBranchAddress(Form("%sChisq"    ,m_DetectorName),m_Chisq);
   return kTRUE;  
 }
 
@@ -70,6 +71,9 @@ bool E14ConvWriterModule::Branch(){
 		 Form("%sParB[%sNumber]/D"     ,m_DetectorName,m_DetectorName));//m_nDigi
   m_Tree->Branch(Form("%sFit"     ,m_DetectorName) ,m_Fit     ,
 		 Form("%sFit[%sNumber]/I"      ,m_DetectorName,m_DetectorName));//m_nDigi
+  m_Tree->Branch(Form("%sChisq"   ,m_DetectorName) ,m_Chisq   ,
+		 Form("%sChisq[%sNumber]/D"    ,m_DetectorName,m_DetectorName));//m_nDigi
+
   return kTRUE;
 }
 

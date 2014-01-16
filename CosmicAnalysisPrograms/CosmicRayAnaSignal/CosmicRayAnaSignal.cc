@@ -33,6 +33,40 @@ const Double_t COSMIC_THRESHOLD[20] = {1000,1000,1000,1000,1000,
 				       1000,1000,1000,1000,1000,
 				       1000,1000,1000,1000,1000};
 
+
+
+bool TriggerJudgement( Int_t &HitUp, Int_t &HitDn, Int_t &HitCoinUp, Int_t &HitCoinDn, Double_t* CosmicOut){
+    
+  // Trigger Judgement // 
+  nHitUp = 0; 
+  nHitDn = 0;
+  if( LaserNumber == 0 ){
+    for( int iCosmic = 0; iCosmic< 5; iCosmic++){
+      if( CosmicSignal[ iCosmic    ] > COSMIC_THRESHOLD[ iCosmic     ] &&
+	  CosmicSignal[ iCosmic+10 ] > COSMIC_THRESHOLD[ iCosmic +10 ]){
+	HitCoinUp |= 1 << iCosmic;
+      }
+      if( CosmicSignal[ iCosmic    ] > COSMIC_THRESHOLD[ iCosmic     ] ||
+	  CosmicSignal[ iCosmic+10 ] > COSMIC_THRESHOLD[ iCosmic +10 ]){
+	HitUp     |= 1 << iCosmic;
+      }
+      if( CosmicSignal[ iCosmic+5  ] > COSMIC_THRESHOLD[ iCosmic +5  ] &&
+	  CosmicSignal[ iCosmic+15 ] > COSMIC_THRESHOLD[ iCosmic +15 ]){
+	HitCoinDn |= 1 << iCosmic;
+      }
+      if( CosmicSignal[ iCosmic+5  ] > COSMIC_THRESHOLD[ iCosmic +5  ] ||
+	  CosmicSignal[ iCosmic+15 ] > COSMIC_THRESHOLD[ iCosmic +15 ]){
+	HitDn     |= 1 << iCosmic;
+      }       	
+    }
+  }
+  if( HitDn && HitUp ){
+    return true;
+  }else{
+    return false;
+  }
+}
+
 int
 main(int argc, char** argv){
   
@@ -183,7 +217,6 @@ main(int argc, char** argv){
   int    LaserID[4096];
   double LaserSignal[4096];
   double LaserTime[4096];
-
   double CosmicOut[20];
 
   /*
@@ -240,16 +273,15 @@ main(int argc, char** argv){
 	CsITiming[i]    = -9999;
 	CsIHHTiming[i]  = -9999;
 	CsIFitTiming[i] = -9999;
-	CsISplTiming[i] = -9999;
-	
+	CsISplTiming[i] = -9999;	
       }
     }
-
 
     for( int i = 0; i< 20; i++){
       CosmicSignal[i] = 0;
       CosmicTime[i]   = 0;
     }
+
     //CsIPoly* poly  =new CsIPoly("csi","csi");
     // Cosmic Trigger Judge // 
     for( int iMod = 0; iMod < 3; iMod++ ){
@@ -355,7 +387,7 @@ main(int argc, char** argv){
     }
     if( HitUp != 0 && HitDn != 0 ){ Trigger = true; }
     //if( HitCoinUp != 0 && HitCoinDn != 0 ){ CoinTrigger = true ; } 
-    if( Trigger ){ 
+    if( Trigger ){
       CosmicAna->Reset();
       
       Bool_t  test = CosmicAna->mc_hough->CosmicJudgment(gr);
@@ -375,8 +407,6 @@ main(int argc, char** argv){
 	CosmicFit = 0;
 	CalFactor = 0;
       }
-
-
     }else{	
       CalFactor = 0;
       nDigi     = 0;
@@ -390,7 +420,7 @@ main(int argc, char** argv){
   std::cout << "Analysis cosmic ray event is over" << std::endl;
   hisTriggerHitPosition->Write();
   trOut->Write();
-  tfOut->Close();  
+  tfOut->Close();
   //app->Run();
 }
 

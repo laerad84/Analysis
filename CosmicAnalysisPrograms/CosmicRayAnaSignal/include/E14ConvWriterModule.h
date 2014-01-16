@@ -27,6 +27,7 @@ class E14ConvWriterModule {
   double m_ParA[4096];
   double m_ParB[4096];
   double m_Ene[4096];
+  double m_Chisq[4096];
  public:
   E14ConvWriterModule(TTree*, char*);
   ~E14ConvWriterModule();

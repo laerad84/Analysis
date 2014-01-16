@@ -112,37 +112,8 @@ int
 main( int argc, char** argv){
 
   std::string inputFileList;
-  //std::string outputFile;
-  /*
-  if( argc != 2){
-    std::cerr << "Argument Error" << std::endl;
-    return -1; 
-  }else{
-    inputFileList = argv[1];
-  }
-
-  char* basenameStr = basename( argv[1] );
-  Int_t YMD = 0; 
-  sscanf( basenameStr , "CosmicList_%d.txt", &YMD);
-  std::cout<< basenameStr << " : " << YMD << std::endl ;
-
-  std::string ROOTFILE_COSMIC = std::getenv("ROOTFILE_COSMIC");
-
-  //TFile* tf =new TFile(inputFile.c_str());
-  //TTree* trCosmic = (TTree*)tf->Get("CosmicOut");
-  std::cout << "Input TChain Settig" << std::endl; 
-  TChain* trCosmic = new TChain("CosmicOut");  
-  Int_t RunID;
-  std::ifstream ifs( inputFileList.c_str() );
-  if( !ifs.is_open() ){ std::cout<< "confirm File path" << std::endl; }
-  while ( ifs >> RunID ){
-    std::cout<< "Read:" << Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),RunID) << std::endl;
-    trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),RunID));
-  }
-  */
   std::string ROOTFILE_COSMIC = std::getenv("ROOTFILE_COSMIC");
   TChain* trCosmic = new TChain("CosmicOut");  
-
 
   Int_t RunIDStart;
   Int_t RunIDEnd;
