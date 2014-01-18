@@ -33,6 +33,7 @@ int main( int argc, char** argv ){
   Int_t CsiNumber;
   Double_t CsiSignal[2716];
   Double_t CsiTime[2716];
+  Double_t CsiHHTime[2716];
   Double_t CsiChisq[2716];
   Short_t  CsiID[2716];
   Short_t  CsiNDF[2716];
@@ -40,6 +41,7 @@ int main( int argc, char** argv ){
 
   Int_t LaserNumber;
   Double_t LaserSignal[10];
+  Double_t LaserHHTime[10];
   Double_t LaserTime[10];
   Double_t LaserChisq[10];
   Short_t  LaserID[10];
@@ -64,6 +66,7 @@ int main( int argc, char** argv ){
   tr->SetBranchAddress("CsiNumber",&CsiNumber);  
   tr->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
   tr->SetBranchAddress("CsiTime",CsiTime);//CsiNumber
+  tr->SetBranchAddress("CsiHHTime",CsiHHTime);//CsiNumber
   tr->SetBranchAddress("CsiChisq",CsiChisq);//CsiNumber
   tr->SetBranchAddress("CsiID",CsiID);//CsiNumber
   tr->SetBranchAddress("CsiNDF",CsiNDF);//CsiNumber
@@ -86,6 +89,7 @@ int main( int argc, char** argv ){
 
   tr->SetBranchAddress("LaserNumber",&LaserNumber);
   tr->SetBranchAddress("LaserSignal",LaserSignal);//LaserNumber
+  tr->SetBranchAddress("LaserHHTime",LaserHHTime);//LaserNumber
   tr->SetBranchAddress("LaserTime",LaserTime);//LaserNumber
   tr->SetBranchAddress("LaserChisq",LaserChisq);//LaserNumber
   tr->SetBranchAddress("LaserID",LaserID);//LaserNumber
@@ -100,6 +104,7 @@ int main( int argc, char** argv ){
   trOut->Branch("CsiNumber",&CsiNumber,"CsiNumber/I");
   trOut->Branch("CsiSignal",CsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
   trOut->Branch("CsiTime",CsiTime,"CsiTime[CsiNumber]/D");//CsiNumber
+  trOut->Branch("CsiHHTime",CsiHHTime,"CsiHHTime[CsiNumber]/D");//CsiNumber
   trOut->Branch("CsiChisq",CsiChisq,"CsiChisq[CsiNumber]/D");//CsiNumber
   trOut->Branch("CsiNDF",CsiNDF,"CsiNDF[CsiNumber]/S");//CsiNumber
   trOut->Branch("CsiID",CsiID,"CsiID[CsiNumber]/S");//CsiNumber
@@ -123,6 +128,7 @@ int main( int argc, char** argv ){
   trOut->Branch("LaserNumber",&LaserNumber,"LaserNumber/I");
   trOut->Branch("LaserSignal",LaserSignal,"LaserSignal[LaserNumber]/D");//LaserNumber
   trOut->Branch("LaserTime",LaserTime,"LaserTime[LaserNumber]/D");//LaserNumber
+  trOut->Branch("LaserHHTime",LaserHHTime,"LaserHHTime[LaserNumber]/D");//LaserNumber
   trOut->Branch("LaserChisq",LaserChisq,"LaserChisq[LaserNumber]/D");//LaserNumber
   trOut->Branch("LaserID",LaserID,"LaserID[LaserNumber]/S");//LaserNumber
   trOut->Branch("LaserNDF",LaserNDF,"LaserNDF[LaserNumber]/S");//LaserNumber  
