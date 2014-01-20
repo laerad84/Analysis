@@ -3,10 +3,36 @@
 #include "TTree.h"
 #include "TH1.h"
 #include <iostream>
+#include <fstream>
+#include "TMath.h"
+
+Double_t LaserDelayFunc(double* x, double* p ){
+  double value = p[0] + p[1]*TMath::Log( 1 + p[2]*TMath::Exp(x[0]/2000));
+  return value;
+}
 
 
 int main( int argc, char** argv){
 //void DrawTimingStability(){
+
+  Double_t par0[3] = {0,0,0};
+  Double_t par1[3] = {1.933,2.851,1.234};
+  Double_t par2[3] = {0.01316,0.01282,0.04478};
+
+  std::ifstream ifs("/home/jwlee/local/Analysis/AnalysisLib/Data/ch_map_CsI_L1.txt");
+  if( !ifs.is_open()){std::cout<< "Error" << std::endl;return -1; }
+  Int_t Crate[2716]={-1};
+  Int_t FADC[2716]={-1};
+  Int_t Ch[2716]={-1};
+  Int_t L1[2716]={-1};
+  Int_t tmpID,tmpC,tmpF,tmpH,tmpL;
+  while( ifs >> tmpID >> tmpC >> tmpF >> tmpH >> tmpL ){
+    std::cout<< tmpID << "\t" << tmpC << "\t" << tmpF << "\t" << tmpH << "\t" << tmpL << std::endl;
+    Crate[tmpID] = tmpC;
+    FADC[tmpID]  = tmpF;
+    Ch[tmpID] = tmpH;
+    L1[tmpID] = tmpL;
+  }
 
   TFile* tf  =new TFile("LaserTiming.root","recreate");
   TTree *tr  = new TTree("LaserTimingTree","");
@@ -25,7 +51,9 @@ int main( int argc, char** argv){
   tr->Branch("Height",Height,"Height[2716]/D");
   tr->Branch("HeightRMS",HeightRMS,"HeightRMS[2716]/D");
   tr->Branch("Entries",Entries,"Entries[2716]/D");
-  for( int i = 4158; i < 4738; i++){
+
+  //for( int i = 4158; i < 4738; i++){
+  for( int i = 4158; i < 4200; i++){
     if( i== 4225 ){ continue; }
     if( i== 4354 ){ continue;}
     TFile* tfin  = new TFile(Form("Data/LaserTimeStability_%d.root",i));
@@ -48,7 +76,9 @@ int main( int argc, char** argv){
       Entries[j] = 0;
       
       ID[j] = j;
+
       Timing[j]= hisTimeDelta[j]->GetMean();
+
       Height[j]= hisHeight[j]->GetMean();
       TimingRMS[j] = hisTimeDelta[j]->GetRMS();
       HeightRMS[j] = hisHeight[j]->GetRMS();
