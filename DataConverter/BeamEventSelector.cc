@@ -111,6 +111,13 @@ int main( int argc, char** argv ){
   Short_t  CC03ID[50];
   Short_t  CC03NDF[50];
 
+  Int_t CVNumber;
+  Double_t CVSignal[50];
+  Double_t CVTime[50];
+  Double_t CVChisq[50];
+  Short_t  CVID[50];
+  Short_t  CVNDF[50];
+
   Int_t CosmicNumber;
   Double_t CosmicSignal[20];
   Double_t CosmicTime[20];
@@ -141,9 +148,15 @@ int main( int argc, char** argv ){
   tr->SetBranchAddress("CC03Signal",CC03Signal);//CC03Number
   tr->SetBranchAddress("CC03Time",CC03Time);//CC03Number
   tr->SetBranchAddress("CC03Chisq",CC03Chisq);//CC03Number
-  tr->SetBranchAddress("CsiID",CsiID);//CsiNumber
   tr->SetBranchAddress("CC03NDF",CC03NDF);//CC03Number
   tr->SetBranchAddress("CC03ID",CC03ID);//CC03Number
+
+  tr->SetBranchAddress("CVNumber",&CVNumber);
+  tr->SetBranchAddress("CVSignal",CVSignal);//CVNumber
+  tr->SetBranchAddress("CVTime",CVTime);//CVNumber
+  tr->SetBranchAddress("CVChisq",CVChisq);//CVNumber
+  tr->SetBranchAddress("CVNDF",CVNDF);//CVNumber
+  tr->SetBranchAddress("CVID",CVID);//CVNumber
 
   tr->SetBranchAddress("OEVNumber",&OEVNumber);
   tr->SetBranchAddress("OEVSignal",OEVSignal);//OEVNumber
@@ -219,6 +232,13 @@ int main( int argc, char** argv ){
   trOut->Branch("CC03Chisq",CC03Chisq,"CC03Chisq[CC03Number]/D");//CC03Number
   trOut->Branch("CC03NDF",CC03NDF,"CC03NDF[CC03Number]/S");//CC03Number
   trOut->Branch("CC03ID",CC03ID,"CC03ID[CC03Number]/S");//CC03Number
+
+  trOut->Branch("CVNumber",&CVNumber,"CVNumber/I");
+  trOut->Branch("CVSignal",CVSignal,"CVSignal[CVNumber]/D");//CVNumber
+  trOut->Branch("CVTime",CVTime,"CVTime[CVNumber]/D");//CVNumber
+  trOut->Branch("CVChisq",CVChisq,"CVChisq[CVNumber]/D");//CVNumber
+  trOut->Branch("CVNDF",CVNDF,"CVNDF[CVNumber]/S");//CVNumber
+  trOut->Branch("CVID",CVID,"CVID[CVNumber]/S");//CVNumber
 
 
   /*
