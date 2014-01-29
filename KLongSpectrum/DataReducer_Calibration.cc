@@ -64,6 +64,8 @@ Int_t main( int argc , char** argv ){
     std::cout << "ReadData(NonTime Cal(CV)) File" << std::endl;
   }else if( FileType == 15 ){
     std::cout << "ReadData(NonTime Cal(NOCV)) File" << std::endl;
+  }else if( FileType == 16 ){
+    std::cout << "ReadData(Time Cal(NOCV) File" << std::endl;
   }else{
     return -1;
   }
@@ -75,10 +77,13 @@ Int_t main( int argc , char** argv ){
   std::string ROOTFILE_3PI0CALIBRATIONWAV = std::getenv("ROOTFILE_WAV");
   std::string ROOTFILE_3PI0CALIBRATIONSIM = "/group/had/koto/ps/klea/work/jwlee/RootFiles/Data/Simulation/3pi0Run/SIM3PI0";  
   TChain* ch;
-  if( FileType == 0 ){ 
+  switch ( FileType ){
+  case 0:
     ch = new TChain("T");
-  }else{
+    break;
+  default:
     ch = new TChain("T");
+    break;
   }
 
   std::cout<< "Read File" << std::endl;
@@ -252,6 +257,14 @@ Int_t main( int argc , char** argv ){
     while( ifsRunNumber >> tmpRunNumber ){
       ch->Add(Form("%s/run_wav_%d_2.root",ROOTFILE_WAV.c_str(),tmpRunNumber));
     }
+  }else if( FileType == 16){
+    std::string HOMEDIR = std::getenv("HOME");
+    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/RunList_3pi0_wo_CV.csv",HOMEDIR.c_str()));
+    int tmpRunNumber;
+    if( !ifsRunNumber.is_open()){ std::cout<< "No RunList file" << std::endl;return -1;}
+    while( ifsRunNumber >> tmpRunNumber ){
+      ch->Add(Form("%s/run_wav_%d_2.root",ROOTFILE_WAV.c_str(),tmpRunNumber));
+    }
   }
 
   
@@ -270,6 +283,14 @@ Int_t main( int argc , char** argv ){
   double cCsiTime[3000];
   double cCsiSignal[3000];
 
+  int s_arrSize = 120;
+  Int_t    GamClusNumbers;
+  Int_t    GamClusSizes[120];
+  Double_t GamClusCsiSignal[120][120];
+  Double_t GamClusCsiChisq[120][120];
+  Int_t    GamClusCsiL1[120][120];
+  Int_t    GamClusCsiCrate[120][120];
+
   int CsiL1nTrig;
   double CsiL1TrigCount[20];
   E14GNAnaDataContainer data;
@@ -282,6 +303,13 @@ Int_t main( int argc , char** argv ){
   ch->SetBranchAddress("CsiTime",CsiTime);
   ch->SetBranchAddress("CsiSignal",CsiSignal);
 
+  ch->SetBranchAddress("GamClusNumbers",&GamClusNumbers);
+  ch->SetBranchAddress("GamClusSizes",GamClusSizes);//GamClusNumbers
+  ch->SetBranchAddress("GamClusCsiSignal",GamClusCsiSignal);//GamClusNumbers
+  ch->SetBranchAddress("GamClusCsiChisq",GamClusCsiChisq);//GamClusNumbers
+  ch->SetBranchAddress("GamClusCsiL1",GamClusCsiL1);//GamClusNumbers
+  ch->SetBranchAddress("GamClusCsiCrate",GamClusCsiCrate);//GamClusNumbers
+  
 
   //// Set Output File //// 
   TFile* tfout = new TFile(Form("Kl_Total_%s.root",RunName[FileType]),"RECREATE");
@@ -308,7 +336,14 @@ Int_t main( int argc , char** argv ){
   trKL->Branch("CsiModID",cCsiModID,"CsiModID[CsiNumber]/I");  
   trKL->Branch("CsiEne",cCsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
   trKL->Branch("CsiTime",cCsiTime,"CsiTime[CsiNumber]/D");//CsiNumber
-  trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber
+  trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber  
+  int  s_arrSize = 120;
+  trKL->Branch("GamClusNumbers",&GamClusNumbers,"GamClusNumbers/I");
+  trKL->Branch("GamClusSizes",GamClusSizes,"GamClusSizes[GamClusNumbers]/I");//GamClusNumbers 
+  trKL->Branch("GamClusCsiSignal",GamClusCsiSignal,Form("GamClusCsiSignal[GamClusNumbers][%d]/D",s_arrSize));//GamClusNumbers 
+  trKL->Branch("GamClusCsiChisq",GamClusCsiChisq,Form("GamClusCsiChisq[GamClusNumbers][%d]/D",s_arrSize));//GamClusNumbers 
+  trKL->Branch("GamClusCsiL1",GamClusCsiL1,Form("GamClusCsiL1[GamClusNumbers][%d]/I",s_arrSize));//GamClusNumbers 
+  trKL->Branch("GamClusCsiCrate",GamClusCsiCrate,Form("GamClusCsiCrate[GamClusNumbers][%d]/I",s_arrSize));//GamClusNumbers 
 
   /*
   trKL->Branch("KLMass"  ,&KLMass  ,"KLMass/D");
@@ -354,6 +389,9 @@ Int_t main( int argc , char** argv ){
     data.getData( clist );
     data.getData( glist );
     data.getData( klVec );
+
+    
+
     //dataCopy.setData( clist );
     //dataCopy.setData( glist );
     dataCopy.setData( klVec );

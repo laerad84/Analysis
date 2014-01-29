@@ -172,7 +172,7 @@ main( int argc ,char ** argv ){
     trout->Branch("CsiL1TrigCount",CSIL1TrigCount,"CsiL1TrigCount[20]/D");
     
     trout->Branch("GamClusNumbers",&GamClusNumbers,"GamClusNumbers/I");
-    trout->Branch("GamClusSizes",&GamClusSizes,"GamClusSizes[GamClusNumbers]/I");  
+    trout->Branch("GamClusSizes",GamClusSizes,"GamClusSizes[GamClusNumbers]/I");  
     trout->Branch("GamClusCsiSignal",GamClusCsiSignal,Form("GamClusCsiSignal[GamClusNumbers][%d]/D",s_arrSize));
     trout->Branch("GamClusCsiChisq",GamClusCsiChisq,Form("GamClusCsiChisq[GamClusNumbers][%d]/D",s_arrSize));
     trout->Branch("GamClusCsiL1",GamClusCsiL1,Form("GamClusCsiL1[GamClusNumbers][%d]/I",s_arrSize));
