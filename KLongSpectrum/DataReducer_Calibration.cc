@@ -337,7 +337,6 @@ Int_t main( int argc , char** argv ){
   trKL->Branch("CsiEne",cCsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
   trKL->Branch("CsiTime",cCsiTime,"CsiTime[CsiNumber]/D");//CsiNumber
   trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber  
-  int  s_arrSize = 120;
   trKL->Branch("GamClusNumbers",&GamClusNumbers,"GamClusNumbers/I");
   trKL->Branch("GamClusSizes",GamClusSizes,"GamClusSizes[GamClusNumbers]/I");//GamClusNumbers 
   trKL->Branch("GamClusCsiSignal",GamClusCsiSignal,Form("GamClusCsiSignal[GamClusNumbers][%d]/D",s_arrSize));//GamClusNumbers 
