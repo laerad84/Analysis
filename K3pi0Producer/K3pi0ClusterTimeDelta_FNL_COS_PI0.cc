@@ -150,6 +150,8 @@ main( int argc ,char ** argv ){
   Int_t    GamClusCsiL1[120][120];
   Int_t    GamClusCsiCrate[120][120];
 
+
+
   ;;
   //Branch
   {
@@ -454,7 +456,19 @@ main( int argc ,char ** argv ){
       EtcNDF[ich]    = reader->EtcNDF[ich];
       EtcNumber++;
     }
+    GamClusNumbers = 0;
+    for( int i = 0; i< 120; i++){
+      GamClusSizes[i] = 0;
+      for( int j = 0; j< 120; j++){
+	GamClusCsiSignal[i][j] = 0;
+	GamClusCsiChisq[i][j]  = 0;
+	GamClusCsiL1[i][j]     = 0;
+	GamClusCsiCrate[i][j]  = -1;
+      }
+    }
+
     
+
     nCsI = 0;
     for( int ich  = 0; ich < reader->CsiNumber; ich++){      
       l1->Fill(reader->CsiID[ich], reader->CsiSignal[ich] );
