@@ -455,8 +455,6 @@ main( int argc ,char ** argv ){
       EtcNumber++;
     }
     
-
-
     nCsI = 0;
     for( int ich  = 0; ich < reader->CsiNumber; ich++){      
       l1->Fill(reader->CsiID[ich], reader->CsiSignal[ich] );

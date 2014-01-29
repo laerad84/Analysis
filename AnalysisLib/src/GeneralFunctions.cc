@@ -1,6 +1,14 @@
 #include "GeneralFunctions.h"
 #include <iostream>
 
+
+double  ConvertRadToDeg( double rad){
+  return rad/TMath::Pi()*180;
+}
+double ConvertDegToRad( double deg ){
+  return deg*TMath::Pi()/180;
+}
+
 double* GenLogArray( int n, double min, double max ){
   if( min < 0 || max < 0 ){
     std::cerr << __LINE__ << " " << __func__ << " : Value is negative" << std::endl;
