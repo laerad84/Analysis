@@ -259,7 +259,7 @@ bool user_rec(std::list<Gamma> const &glist, std::vector<Klong> &klVec){
 
   //// gamma position & energy correction for angle dependency
   E14GNAnaFunction::getFunction()->correctPosition(klVec[0]);  
-  E14GNAnaFunction::getFunction()->correctEnergyWithAngle(klVec[0]);  
+  //E14GNAnaFunction::getFunction()->correctEnergyWithAngle(klVec[0]);  
 
   //// re-reconstruction with corrected gamma
   std::list<Gamma> glist2;
