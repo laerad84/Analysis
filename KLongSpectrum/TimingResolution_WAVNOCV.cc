@@ -310,8 +310,19 @@ int main( int argc, char** argv){
       }
       MeanTimeDelta[i] = MeanTimeDelta[i]/5;
     }
+    for( int i = 1; i < 6; i++){
+      if( GammaHeight[i] < 2000 && GammaHeight[i] > 1000 ){
+	hisGammaDeltaTime[0]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]);
+      }
+    }
     trOut->Fill();
   }
+  for( int i = 0; i< 2; i++){
+    hisGammaDeltaTime[i]->Write();
+    hisGamClusDeltaTime[i]->Write();
+  }
+
+
   trOut->Write();
   tfOut->Close();
 }
