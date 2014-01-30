@@ -194,14 +194,14 @@ int main( int argc, char** argv){
   double GammaY[6];
   double GammaEnergy[6];
   double MeanTimeDelta[6];
-  TimeTree->Branch("GammaID"     ,GammaID,"GammaID[6]/I");
-  TimeTree->Branch("GammaTime"   ,GammaTime,"GammaTime[6]/D");
-  TimeTree->Branch("GammaHeight" ,GammaHeight,"GammaHeight[6]/D");
-  TimeTree->Branch("TOFOffset"   ,TOFOffset,"TOFOffset[6]/D");
-  TimeTree->Branch("ShowerOffset",ShowerOffset,"ShowerOffset[6]/D");
-  TimeTree->Branch("GammaEnergy" ,GammaEnergy,"GammaEnergy[6]/D");
-  TimeTree->Branch("HeightOffset",HeightOffset,"HeightOffset[6]/D");
-  TimeTree->Branch("MeanTimeDelta",MeanTimeDelta,"MeanTimeDelta[6]/D");
+  trOut->Branch("GammaID"     ,GammaID,"GammaID[6]/I");
+  trOut->Branch("GammaTime"   ,GammaTime,"GammaTime[6]/D");
+  trOut->Branch("GammaHeight" ,GammaHeight,"GammaHeight[6]/D");
+  trOut->Branch("TOFOffset"   ,TOFOffset,"TOFOffset[6]/D");
+  trOut->Branch("ShowerOffset",ShowerOffset,"ShowerOffset[6]/D");
+  trOut->Branch("GammaEnergy" ,GammaEnergy,"GammaEnergy[6]/D");
+  trOut->Branch("HeightOffset",HeightOffset,"HeightOffset[6]/D");
+  trOut->Branch("MeanTimeDelta",MeanTimeDelta,"MeanTimeDelta[6]/D");
 
 
   for( int ievent = 0; ievent < tr->GetEntries(); ievent++){      
@@ -268,19 +268,19 @@ int main( int argc, char** argv){
 
     int gIndex = 0;
     for( int i = 0; i< klVec[0].pi0().size(); i++){
-      for( int j = 1; j< klVec[0].pi0().g1().clusterIdvec().size(); j++){
+      for( int j = 1; j< klVec[0].pi0()[i].g1().clusterIdVec().size(); j++){
 	if( j >= 120 ){ break; }
 	if( GamClusCsiSignal[gIndex][j] < 2000 && GamClusCsiSignal[gIndex][j] > 1000 ){
-	  hisGamClusDeltaTime[0]->Fill( GamClusCsiSignal[gIndex][j], klVec[0].pi0().g1().clusterTimeVec()[j] - klVec[0].pi0().g1().clusterTimeVec()[0]);
-	  hisGamClusDeltaTime[1]->Fill( GamClusCsiSignal[gIndex][j], klVec[0].pi0().g1().clusterTimeVec()[i] - klVec[0].pi0().g1().clusterTimeVec()[0] - cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]) +cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]));
+	  hisGamClusDeltaTime[0]->Fill( GamClusCsiSignal[gIndex][j], klVec[0].pi0()[i].g1().clusterTimeVec()[j] - klVec[0].pi0()[i].g1().clusterTimeVec()[0]);
+	  hisGamClusDeltaTime[1]->Fill( GamClusCsiSignal[gIndex][j], klVec[0].pi0()[i].g1().clusterTimeVec()[i] - klVec[0].pi0()[i].g1().clusterTimeVec()[0] - cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]) +cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]));
 	}
       }
       gIndex++;
-      for( int j = 1; j< klVec[0].pi0().g2().clusterIdvec().size(); j++){
+      for( int j = 1; j< klVec[0].pi0()[i].g2().clusterIdVec().size(); j++){
 	if( j >= 120 ){ break; }
 	if( GamClusCsiSignal[gIndex][j] < 2000 && GamClusCsiSignal[gIndex][j] > 1000 ){
-	  hisGamClusDeltaTime[0]->Fill( GamClusCsiSignal[gIndex][j], klVec[0].pi0().g2().clusterTimeVec()[j] - klVec[0].pi0().g2().clusterTimeVec()[0]);
-	  hisGamClusDeltaTime[1]->Fill( GamClusCsiSignal[gIndex][j], klVec[0].pi0().g2().clusterTimeVec()[i] - klVec[0].pi0().g2().clusterTimeVec()[0] - cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]) +cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]));
+	  hisGamClusDeltaTime[0]->Fill( GamClusCsiSignal[gIndex][j], klVec[0].pi0()[i].g2().clusterTimeVec()[j] - klVec[0].pi0()[i].g2().clusterTimeVec()[0]);
+	  hisGamClusDeltaTime[1]->Fill( GamClusCsiSignal[gIndex][j], klVec[0].pi0()[i].g2().clusterTimeVec()[i] - klVec[0].pi0()[i].g2().clusterTimeVec()[0] - cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]) +cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]));
 	}
       }
       gIndex++;
