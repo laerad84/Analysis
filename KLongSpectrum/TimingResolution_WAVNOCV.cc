@@ -140,7 +140,7 @@ int main( int argc, char** argv){
   int      CsiModID[3000];
   int s_arrsize = 120;
   int   GamClusNumbers;
-  double   GamClusSizes[120];
+  int   GamClusSizes[120];
   double   GamClusCsiSignal[120][120];
   
   E14GNAnaDataContainer data;
