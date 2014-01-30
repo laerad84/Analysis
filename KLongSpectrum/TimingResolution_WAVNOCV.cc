@@ -99,7 +99,7 @@ bool LYRegion( double x, double y ){
 }
 
 double TimingHeightDelay( double* x, double *p ){
-  double value  = p[0] + TMath::Log(1+p[1]*TMath::Exp(x[0]/p[2]));
+  double value  = p[0] + p[1]*TMath::Log(1+p[2]*TMath::Exp(x[0]/2000));
   return value; 
 }
 
@@ -129,8 +129,8 @@ int main( int argc, char** argv){
   char* name = "WAVNOCV";//"DATA_NONTIMECALNOCV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
   
   TF1* TimingDelayFunc = new TF1("TimingDelayFunc",TimingHeightDelay,0,20000,3);
-  TimingDelayFunc->SetParameters(0,0.03566,1621);
-
+  //TimingDelayFunc->SetParameters(0,0.03566,1621);
+  TimingDelayFunc->SetParameters(0,1.261,0.07196);
   tf = new TFile(Form("Kl_Total_%s.root",name));
   tr = (TTree*)tf->Get(Form("trKL"));
   Int_t    CsiL1nTrig;
@@ -194,6 +194,7 @@ int main( int argc, char** argv){
   double GammaY[6];
   double GammaEnergy[6];
   double MeanTimeDelta[6];
+  double MeanTimeDeltaAdj[6];
   trOut->Branch("GammaID"     ,GammaID,"GammaID[6]/I");
   trOut->Branch("GammaTime"   ,GammaTime,"GammaTime[6]/D");
   trOut->Branch("GammaHeight" ,GammaHeight,"GammaHeight[6]/D");
@@ -202,7 +203,7 @@ int main( int argc, char** argv){
   trOut->Branch("GammaEnergy" ,GammaEnergy,"GammaEnergy[6]/D");
   trOut->Branch("HeightOffset",HeightOffset,"HeightOffset[6]/D");
   trOut->Branch("MeanTimeDelta",MeanTimeDelta,"MeanTimeDelta[6]/D");
-
+  trOut->Branch("MeanTimeDeltaAdj",MeanTimeDeltaAdj,"MeanTimeDeltaAdj[6]/D");
 
   for( int ievent = 0; ievent < tr->GetEntries(); ievent++){      
   //for( int ievent = 0; ievent < 1500000; ievent++){      
@@ -307,12 +308,19 @@ int main( int argc, char** argv){
       for( int j = 0; j<6; j++){
 	if( i == j ){ continue; }
 	MeanTimeDelta[i] += GammaTime[j]-TOFOffset[j]-GammaTime[i]+TOFOffset[i];
+	MeanTimeDeltaAdj[i] += GammaTime[j]-TOFOffset[j]-GammaTime[i]+TOFOffset[i]-HeightOffset[j]+HeightOffset[i];
       }
+      MeanTimeDeltaAdj[i] = MeanTimeDelta[i]/5;
       MeanTimeDelta[i] = MeanTimeDelta[i]/5;
     }
+
+
     for( int i = 1; i < 6; i++){
       if( GammaHeight[i] < 2000 && GammaHeight[i] > 1000 ){
 	hisGammaDeltaTime[0]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]);
+	if( TMath::Abs(MeanTimeDelta[i]) < 5 ){
+	  hisGammaDeltaTime[1]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]-HeightOffset[0]+HeightOffset[i]);
+	}
       }
     }
     trOut->Fill();
@@ -321,8 +329,6 @@ int main( int argc, char** argv){
     hisGammaDeltaTime[i]->Write();
     hisGamClusDeltaTime[i]->Write();
   }
-
-
   trOut->Write();
   tfOut->Close();
 }
