@@ -306,7 +306,7 @@ int main( int argc, char** argv){
     for( int i = 0; i < 6; i++){
       for( int j = 0; j<6; j++){
 	if( i == j ){ continue; }
-	MeanTimeDelta[i] += GammaTime[j]-TOFOffset[j];
+	MeanTimeDelta[i] += GammaTime[j]-TOFOffset[j]-GammaTime[i]+TOFOffset[i];
       }
       MeanTimeDelta[i] = MeanTimeDelta[i]/5;
     }
