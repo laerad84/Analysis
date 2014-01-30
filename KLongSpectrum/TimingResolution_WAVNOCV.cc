@@ -174,10 +174,10 @@ int main( int argc, char** argv){
   }
   */
 
-  //0:  Offset+ TOF , 1: ShowerTime
-  TH2D* hisGammaDeltaTime[2];
-  TH2D* hisGamClusDeltaTime[2];
-  for( int i = 0; i< 2; i++){
+  //0:  Offset+ TOF , 1: Height 2:ShowerTime
+  TH2D* hisGammaDeltaTime[3];
+  TH2D* hisGamClusDeltaTime[3];
+  for( int i = 0; i< 3; i++){
     hisGammaDeltaTime[i]  = new TH2D(Form("hisGammaDeltaTime_%d",i),Form("hisGammaDeltaTime_%d",i),40,0,20000,400,-20,20);
     hisGamClusDeltaTime[i]= new TH2D(Form("hisGamClusDeltaTime_%d",i),Form("hisGamClusDeltaTime_%d",i),40,0,20000,400,-20,20);
   }
@@ -320,12 +320,13 @@ int main( int argc, char** argv){
 	hisGammaDeltaTime[0]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]);
 	if( TMath::Abs(MeanTimeDelta[i]) < 5 ){
 	  hisGammaDeltaTime[1]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]-HeightOffset[0]+HeightOffset[i]);
+	  hisGammaDeltaTime[2]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]-HeightOffset[0]+HeightOffset[i]-ShowerOffset[0]+ShowerOffset[i]);
 	}
       }
     }
     trOut->Fill();
   }
-  for( int i = 0; i< 2; i++){
+  for( int i = 0; i< 3; i++){
     hisGammaDeltaTime[i]->Write();
     hisGamClusDeltaTime[i]->Write();
   }
