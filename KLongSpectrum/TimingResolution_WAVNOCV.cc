@@ -126,7 +126,7 @@ int main( int argc, char** argv){
 
   TFile* tf;
   TTree* tr;
-  char* name = "DATA_NONTIMECALNOCV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
+  char* name = WAVNOCV;//"DATA_NONTIMECALNOCV";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
   
   TF1* TimingDelayFunc = new TF1("TimingDelayFunc",TimingHeightDelay,0,20000,3);
   TimingDelayFunc->SetParameters(0,0.03566,1621);
