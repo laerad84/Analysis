@@ -187,8 +187,8 @@ int main( int argc, char** argv){
   for( int i = 0; i< 3; i++){
     hisGammaDeltaTime[i]  = new TH2D(Form("hisGammaDeltaTime_%d",i),Form("hisGammaDeltaTime_%d",i),40,0,20000,400,-20,20);
     hisGamClusDeltaTime[i]= new TH2D(Form("hisGamClusDeltaTime_%d",i),Form("hisGamClusDeltaTime_%d",i),40,0,20000,400,-20,20);
-    hisGammaDeltaTimeLog[i]  = new TH2D(Form("hisGammaDeltaTimeLog_%d",i),Form("hisGammaDeltaTimeLog_%d",i),40,GenLogArray(40,0,20000),400,GenLinArray(400,-20,20));
-    hisGamClusDeltaTimeLog[i]= new TH2D(Form("hisGamClusDeltaTimeLog_%d",i),Form("hisGamClusDeltaTimeLog_%d",i),40,GenLogArray(40,0,20000),400,GenLinArray(400,-20,20));
+    hisGammaDeltaTimeLog[i]  = new TH2D(Form("hisGammaDeltaTimeLog_%d",i),Form("hisGammaDeltaTimeLog_%d",i),40,GenLogArray(40,10,20000),400,GenLinArray(400,-20,20));
+    hisGamClusDeltaTimeLog[i]= new TH2D(Form("hisGamClusDeltaTimeLog_%d",i),Form("hisGamClusDeltaTimeLog_%d",i),40,GenLogArray(40,10,20000),400,GenLinArray(400,-20,20));
 
 
   }
