@@ -26,6 +26,8 @@
 #include "IDHandler.h"
 #include "TSpline.h"
 #include "TGraphErrors.h"
+#include "GeneralFunctions.h"
+
 const double KLMass = 497.648;//MeV
 
 double KLSpectrum(double* x,double*p){
@@ -177,9 +179,18 @@ int main( int argc, char** argv){
   //0:  Offset+ TOF , 1: Height 2:ShowerTime
   TH2D* hisGammaDeltaTime[3];
   TH2D* hisGamClusDeltaTime[3];
+  TH2D* hisGammaDeltaTimeLog[3];
+  TH2D* hisGamClusDeltaTimeLog[3];
+
+
+
   for( int i = 0; i< 3; i++){
     hisGammaDeltaTime[i]  = new TH2D(Form("hisGammaDeltaTime_%d",i),Form("hisGammaDeltaTime_%d",i),40,0,20000,400,-20,20);
     hisGamClusDeltaTime[i]= new TH2D(Form("hisGamClusDeltaTime_%d",i),Form("hisGamClusDeltaTime_%d",i),40,0,20000,400,-20,20);
+    hisGammaDeltaTimeLog[i]  = new TH2D(Form("hisGammaDeltaTimeLog_%d",i),Form("hisGammaDeltaTimeLog_%d",i),40,GenLogArray(40,0,20000),400,GenLinArray(400,-20,20));
+    hisGamClusDeltaTimeLog[i]= new TH2D(Form("hisGamClusDeltaTimeLog_%d",i),Form("hisGamClusDeltaTimeLog_%d",i),40,GenLogArray(40,0,20000),400,GenLinArray(400,-20,20));
+
+
   }
   
   TTree* trOut = new TTree("TimeTree","Timetree");
@@ -282,6 +293,8 @@ int main( int argc, char** argv){
 	if( GamClusCsiSignal[gIndex][j] < 2000 && GamClusCsiSignal[gIndex][j] > 1000 ){
 	  hisGamClusDeltaTime[0]->Fill( GamClusCsiSignal[gIndex][0], klVec[0].pi0()[i].g2().clusterTimeVec()[0] - klVec[0].pi0()[i].g2().clusterTimeVec()[j]);
 	  hisGamClusDeltaTime[1]->Fill( GamClusCsiSignal[gIndex][0], klVec[0].pi0()[i].g2().clusterTimeVec()[0] - klVec[0].pi0()[i].g2().clusterTimeVec()[j] - cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]) +cDelayFunc->Eval(GamClusCsiSignal[gIndex][j]));
+	  hisGamClusDeltaTimeLog[0]->Fill( GamClusCsiSignal[gIndex][0], klVec[0].pi0()[i].g2().clusterTimeVec()[0] - klVec[0].pi0()[i].g2().clusterTimeVec()[j]);
+	  hisGamClusDeltaTimeLog[1]->Fill( GamClusCsiSignal[gIndex][0], klVec[0].pi0()[i].g2().clusterTimeVec()[0] - klVec[0].pi0()[i].g2().clusterTimeVec()[j] - cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]) +cDelayFunc->Eval(GamClusCsiSignal[gIndex][j]));
 	}
       }
       gIndex++;
@@ -318,9 +331,12 @@ int main( int argc, char** argv){
     for( int i = 1; i < 6; i++){
       if( GammaHeight[i] < 2000 && GammaHeight[i] > 1000 ){
 	hisGammaDeltaTime[0]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]);
+	hisGammaDeltaTimeLog[0]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]);
 	if( TMath::Abs(MeanTimeDelta[i]) < 5 ){
 	  hisGammaDeltaTime[1]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]-HeightOffset[0]+HeightOffset[i]);
 	  hisGammaDeltaTime[2]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]-HeightOffset[0]+HeightOffset[i]-ShowerOffset[0]+ShowerOffset[i]);
+	  hisGammaDeltaTimeLog[1]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]-HeightOffset[0]+HeightOffset[i]);
+	  hisGammaDeltaTimeLog[2]->Fill(GammaHeight[0],GammaTime[0] -GammaTime[i] -TOFOffset[0]+TOFOffset[i]-HeightOffset[0]+HeightOffset[i]-ShowerOffset[0]+ShowerOffset[i]);
 	}
       }
     }
@@ -329,6 +345,8 @@ int main( int argc, char** argv){
   for( int i = 0; i< 3; i++){
     hisGammaDeltaTime[i]->Write();
     hisGamClusDeltaTime[i]->Write();
+    hisGammaDeltaTimeLog[i]->Write();
+    hisGamClusDeltaTimeLog[i]->Write();
   }
   trOut->Write();
   tfOut->Close();
