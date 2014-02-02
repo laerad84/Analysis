@@ -285,6 +285,8 @@ int main( int argc, char** argv){
 	if( GamClusCsiSignal[gIndex][j] < 2000 && GamClusCsiSignal[gIndex][j] > 1000 ){
 	  hisGamClusDeltaTime[0]->Fill( GamClusCsiSignal[gIndex][0], klVec[0].pi0()[i].g1().clusterTimeVec()[0] - klVec[0].pi0()[i].g1().clusterTimeVec()[j]);
 	  hisGamClusDeltaTime[1]->Fill( GamClusCsiSignal[gIndex][0], klVec[0].pi0()[i].g1().clusterTimeVec()[0] - klVec[0].pi0()[i].g1().clusterTimeVec()[j] - cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]) +cDelayFunc->Eval(GamClusCsiSignal[gIndex][j]));
+	  hisGamClusDeltaTimeLog[0]->Fill( GamClusCsiSignal[gIndex][0], klVec[0].pi0()[i].g1().clusterTimeVec()[0] - klVec[0].pi0()[i].g1().clusterTimeVec()[j]);
+	  hisGamClusDeltaTimeLog[1]->Fill( GamClusCsiSignal[gIndex][0], klVec[0].pi0()[i].g1().clusterTimeVec()[0] - klVec[0].pi0()[i].g1().clusterTimeVec()[j] - cDelayFunc->Eval(GamClusCsiSignal[gIndex][0]) +cDelayFunc->Eval(GamClusCsiSignal[gIndex][j]));
 	}
       }
       gIndex++;
