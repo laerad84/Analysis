@@ -38,10 +38,10 @@ int main( int argc, char** argv){
   soltFunc->SetParameters(soltPar);
   sugarFunc->SetParameters(sugarPar);
 
-  const int nFile = 9;
+  const int nFile = 4;
   TFile* tf[nFile]; 
   TTree* tr[nFile];  
-  char* name[nFile] = {"SIMFAST","3pi0_LaserComp","WAV","SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"};
+  char* name[nFile] = {"WAVNOCV","WAV","SIM_SATO","SIM"};//{"SIMFAST","3pi0_LaserComp","WAV","SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"};
   
   for( int i = 0; i < nFile; i++){
     tf[i] = new TFile(Form("Kl_Total_%s.root",name[i]));
@@ -120,9 +120,9 @@ int main( int argc, char** argv){
       Double_t Ratio   = sugarFunc->Eval(klMom)/soltFunc->Eval(klMom);
 
       if( iFile != 2 ){
-	if( CsiL1nTrig< 5 ){ continue; }
+	if( CsiL1nTrig< 4 ){ continue; }
       }
-      if( klVec[0].chisqZ() > 6 ){continue;} 
+      if( klVec[0].chisqZ() > 10 ){continue;} 
       bool  bInnerGamma = false;
       bool  bOuterGamma = false;
       bool  bClusterMaxE= false;

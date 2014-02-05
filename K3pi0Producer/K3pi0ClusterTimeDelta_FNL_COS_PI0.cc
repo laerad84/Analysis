@@ -73,6 +73,9 @@ main( int argc ,char ** argv ){
   if( TempCorFactor == 0){
     TempCorFactor = 1;
   }
+  TF1* THCorFunc = new TF1("THCorFunc",THCorrectionFunction,0,25000,3);
+  THCorFunc->SetParameters(0, 1.672,0.0319651);
+
   std::cout<< TempCorFactor << std::endl;
   Double_t Pi0PeakCorFactor = 0.9937;
 
@@ -475,7 +478,7 @@ main( int argc ,char ** argv ){
       if( reader->CsiSignal[ich] > 5 && reader->CsiEne[ich]>0.5){
 	CSIDigiID[CsiNumber]     = reader->CsiID[ich];
 	CSIDigiE[CsiNumber]      = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;
-	CSIDigiTime[CsiNumber]   = reader->CsiTime[ich]-TimeDelta[reader->CsiID[ich]];
+	CSIDigiTime[CsiNumber]   = reader->CsiTime[ich]-TimeDelta[reader->CsiID[ich]]-THCorFunc->Eval(reader->CsiSignal[ich];
 	CSIDigiHHTime[CsiNumber] = reader->CsiHHTime[ich];
 	CSIDigiSignal[CsiNumber] = reader->CsiSignal[ich];
 	CsiChisq[CsiNumber]      = reader->CsiChisq[ich];
