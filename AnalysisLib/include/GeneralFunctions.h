@@ -16,11 +16,6 @@ void    DrawRatioPad(TPad* pad);
 TH1D*   GenRatioHist( TH1D* h1, TH1D* h2);
 double  THCorrectionFunction( double* x, double* p);
 
-double  THCorrectionFunction( double* x, double *p){
-  Double_t value(0);
-  value = p[0]+p1[0]*TMath::Log(1+p[2]*TMath::Exp(x[0]/2000));
-  return value;
-}
 
 
 
