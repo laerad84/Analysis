@@ -38,21 +38,23 @@ int main( int argc, char** argv){
   soltFunc->SetParameters(soltPar);
   sugarFunc->SetParameters(sugarPar);
 
-  const int nFile = 2;
+  const int nFile = 3;
   TFile* tf[nFile]; 
   TTree* tr[nFile];  
-  char* name[nFile] = {"SIMFULL","WAVNOCV"};
-  
-  /*
+  char* name[nFile] = {"SIMFULL","WAVNOCV","WAVNOCV_TIME"};
+
+
   for( int i = 0; i < nFile; i++){
     tf[i] = new TFile(Form("Kl_Total_%s.root",name[i]));
+    tr[i] = (TTree*)tf[i]->Get("trKL");
   }
-  */
+
+  /*
   tf[0] = new TFile("Kl_Total_SIMFULL.root");
   tr[0] = (TTree*)tf[0]->Get(Form("trKL"));
   tf[1] = new TFile("kl_Total_WAVNOCV_GammaTime.root");
   tr[1] = (TTree*)tf[1]->Get(Form("trKL"));
-    
+  */
 
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
@@ -129,7 +131,7 @@ int main( int argc, char** argv){
     hisKLSecChisqN[i] = new TH1D(Form("hisKLSecChsiqN_%d",i),Form("hisKLSecChisqN_%s",name[i]),100,0,100);    
   }
 
-  TFile* tfOut = new TFile("DistributionTesterNOCV.root","recreate");
+  TFile* tfOut = new TFile("DistributionTesterNOCV_TIME.root","recreate");
   for( int iFile = 0; iFile < nFile; iFile++){
     E14GNAnaDataContainer data;
     data.setBranchAddress( tr[iFile] );
@@ -255,13 +257,14 @@ int main( int argc, char** argv){
 	}
       }
       */
+      if( !bPi0Pt ){
       hisKLP[iFile]->Fill(klVec[0].p3().mag());
       hisKLE[iFile]->Fill(klVec[0].e());
       hisKLZ[iFile]->Fill(klVec[0].vz());
       hisKLX[iFile]->Fill(klVec[0].vx());
       hisKLY[iFile]->Fill(klVec[0].vy());
       hisKLMass[iFile]->Fill(klVec[0].m());
-
+      }
       if( TMath::IsNaN(Ratio) == 0 ){ 
 	hisKLZPosition[iFile]->Fill(klVec[0].vz(),Ratio);
       }
