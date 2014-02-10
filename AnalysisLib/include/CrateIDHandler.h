@@ -1,3 +1,5 @@
+#ifndef CRATEIDHANDLER_H_
+#define CRATEIDHANDLER_H_
 #include <iostream>
 #include <fstream>
 #include <cstdio>
@@ -22,3 +24,4 @@ class CrateIDHandler {
   Short_t GetL1( int id );
 
 };
+#endif //CRATEIDHANDLER_H_
