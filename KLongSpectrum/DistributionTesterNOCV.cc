@@ -257,7 +257,7 @@ int main( int argc, char** argv){
 	}
       }
       */
-      if( !bPi0Pt ){
+      if( !bPi0Pt && klVec[0].vz()<5000){
       hisKLP[iFile]->Fill(klVec[0].p3().mag());
       hisKLE[iFile]->Fill(klVec[0].e());
       hisKLZ[iFile]->Fill(klVec[0].vz());

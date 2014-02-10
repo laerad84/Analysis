@@ -290,14 +290,14 @@ main( int argc ,char ** argv ){
 	CSIL1nTrig++;
       }
     }
-    if( nCSIDigi < 5 ){ continue;}
+    if( nCSIDigi < 6 ){ continue;}
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
     clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiTime);
     gFinder.findGamma(clist,glist);
     if( clist.size() < 6 ){ continue; }
-    if( glist.size() == 6 ){
+    if( glist.size() >= 6 && glist.size() < 10){
       if( user_rec(glist,klVec)){
 	data.setData(clist);
 	data.setData(glist);
