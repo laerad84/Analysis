@@ -30,7 +30,7 @@ Int_t main( int argc , char** argv ){
 
   const int nFileType = 17;
   int FileType = atoi( argv[1] ); 
-  char *RunName[nFileType] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp","3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal","3pi0_OldComp_NOCV","SIMFULL","DATA_NONTIMECAL1","DATA_NONTIMECALNOCV,WAVNOCV_TIME"};
+  char *RunName[nFileType] = {"SIM","WAV","SUM","SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL","3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp","3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal","3pi0_OldComp_NOCV","SIMFULL","DATA_NONTIMECAL1","DATA_NONTIMECALNOCV","WAVNOCV_TIME"};
 
 
   if( FileType == 0 ){
