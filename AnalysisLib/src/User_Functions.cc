@@ -310,8 +310,10 @@ CsiCut::CsiCut(){
   map        = CsiMap::getCsiMap();
   hisCsiTime = new TH1D("hisCsiTime","hisCsiTime",500,0,500); 
   mWTimeWindow = 10;//ns, initial value.
+  /*
   CsiL1TrigCountThreshold={1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
 			   1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};
+  */
   l1->ReadMapFile();
   l1->SetThreshold(1800);
   l1->Reset();

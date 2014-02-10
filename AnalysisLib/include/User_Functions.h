@@ -24,7 +24,8 @@ bool User_RecG2(std::list<Gamma> const &glist, std::list<Pi0>& piList);
 bool User_RecG4(std::list<Gamma> const &glist, std::vector<Klong>& klVec);
 bool User_RecG6(std::list<Gamma> const &glist, std::vector<Klong>& klVec);
 double const SpeedOfLight = 299.792458;
-
+double const CsiL1TrigCountThreshold[20]={1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
+					  1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};
 void SetGammaTime(Gamma &g);
 void SetGammaTime(std::list<Gamma> glist);
 double GetWeight(Gamma g);
@@ -87,7 +88,7 @@ class CsiCut{
   double CsiEventTimeSigma;
  private:
   double mWTimeWindow;
-  double CsiL1TrigCountThreshold[20];
+  //double CsiL1TrigCountThreshold[20];
   CrateIDHandler* CIDHandler;
   CsiMap*         map;
   L1TrigCounter* l1;
