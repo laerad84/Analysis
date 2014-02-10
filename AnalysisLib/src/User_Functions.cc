@@ -140,6 +140,35 @@ double CalGammaTOF( Klong kl, Gamma g ){
   return length/SpeedOfLight;  
 }
 
+void GammaTimeDeltaCut( std::list<Gamma> glist, std::list<Gamma>& glistOut , double TimeThreshold ){
+  int nGamma;
+  double GTime[20];
+  double GTimeDeltaMean[20];
+  for( int i = 0; i<20 ; i++){
+    GTime[i] = 0;
+    GTimeDeltaMean[i] = 0;
+  }
+  std::list<Gamma>::iterator git = glist.begin();
+  for( ; git != glist.end(); git++){
+    GTime[nGamma] = (*git).t();
+    nGamma++;
+  }
+  for( int i = 0; i< nGamma; i++){    
+    for( int j = 0; j< nGamma; j++){
+      if( i == j){ continue; }
+      GTimeDeltaMean[i] += GTime[j]-GTime[i];
+    }
+    GTimeDeltaMean[i] = GTimeDeltaMean[i]/(nGamma-1);
+  }
+  git = glist.begin();
+  int gIndex = 0;
+  for( ; git != glist.end(); git++){
+    if( abs( GTimeDeltaMean[gIndex] ) < TimeThreshold ){ 
+      glistOut.push_back((*git));
+    }
+    gIndex++;
+  }  
+}
 
 GammaCut::GammaCut(){
   ;
@@ -443,4 +472,38 @@ void CsiCut::SetBranchAddress( TTree* tr ){
   
   tr->SetBranchAddress("CsiEventTime",&CsiEventTime);
   tr->SetBranchAddress("CsiEventTimeSigma",&CsiEventTimeSigma);
+}
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+// KLCut
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+KLCut::KLCut(){
+  ;
+}
+KLCut::~KLCut(){
+  ;
+}
+void KLCut::Branch(TTree* tr){
+  tr->Branch("Pi0PtMax",&Pi0PtMax,"Pi0PtMax/D");  
+}
+void KLCut::SetBranchAddress(TTree* tr ){
+  tr->SetBranchAddress("Pi0PtMax",&Pi0PtMax);
+}
+void KLCut::Reset(){
+  Pi0PtMax = 0;
+}
+void KLCut::Decision(Klong kl){
+  Reset();
+  for( int i = 0; i< kl.pi0().size(); i++){
+    double pi0pt = TMath::Sqrt(kl.pi0()[i].p3()[0]*kl.pi0()[i].p3()[0]+kl.pi0()[i].p3()[1]*kl.pi0()[i].p3()[1]);
+    if( pi0pt > Pi0PtMax ){
+      Pi0PtMax = pi0pt;
+    }
+  }
+}
+void KLCut::Decision( std::vector<Klong> kl){
+  Decision(kl[0]);
 }

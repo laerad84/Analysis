@@ -511,16 +511,19 @@ main( int argc ,char ** argv ){
     gFinder.findGamma( clist, glist );
     gammaCut->Decision( glist );
     SetGammaTime( glist );
-
+    if( clist.size() < 6 ){ continue; }
+    if( glist.size() < 2 ){ continue; }
+    
     //std::cout << "MaxDeltaT:" << gammaCut->GMaxDeltaT << std::endl;
     //std::cout << "MinDist  :" << gammaCut->GMinDist   << std::endl;
-    if( glist.size() < 2 ){ continue; }
-    data.setData( clist );
-    data.setData( glist );
     std::list<Gamma>::iterator git = glist.begin();
     for( ; git != glist.end(); git++){
       SetGammaTime( (*git));
     }
+    GammaTimeDeltaCut( glist, glistTCut );
+    data.setData( clist );
+    data.setData( glistTCut );
+    
     /*
     if( glist.size() < 10 ){ 
       if (User_RecG6( glist, klVec ) ){
@@ -528,8 +531,7 @@ main( int argc ,char ** argv ){
       }
     }
     */
-    if( clist.size() < 6 ){ continue; }
-    if( glist.size() ==6 ){
+    if( glistTCut.size() ==6 ){
       if( user_rec(glist,klVec)){
 	data.setData( clist );
 	data.setData( glist );
