@@ -160,13 +160,6 @@ void GammaCut::Reset(){
 }
 void GammaCut::Decision(Klong kl){
   Reset();
-  int gammaIndex(0);
-  double tmpE[6];
-  double tmpX[6];
-  double tmpY[6];
-  double tmpR[6];
-  double tmpT[6];
-  double tmpChi[6];
   std::list<Gamma> glist;
   for( int i = 0; i< kl.pi0().size();i++){
     glist.push_back(kl.pi0()[i].g1());
@@ -433,5 +426,21 @@ void CsiCut::Branch( TTree* trout){
 }
 
 void CsiCut::SetBranchAddress( TTree* tr ){
-
+  tr->SetBranchAddress("CsiNumber"  ,&CsiNumber);
+  tr->SetBranchAddress("CsiModID"   ,CsiID        );//CsiNumber
+  tr->SetBranchAddress("CsiEne"     ,CsiEne       );//CsiNumber
+  tr->SetBranchAddress("CsiTime"    ,CsiTime      );//CsiNumber
+  tr->SetBranchAddress("CsiHHTime"  ,CsiHHTime    );//CsiNumber
+  tr->SetBranchAddress("CsiSignal"  ,CsiSignal    );//CsiNumber
+  tr->SetBranchAddress("CsiChisq"   ,CsiChisq     );//CsiNumber
+  tr->SetBranchAddress("CsiNDF"     ,CsiNDF       );//CsiNumber
+  tr->SetBranchAddress("CsiPosID"   ,CsiPosID     );//CsiNumber
+  tr->SetBranchAddress("CsiGB"      ,CsiGB        );//CsiNumber
+  tr->SetBranchAddress("CsiCrate"   ,CsiCrate     );//CsiNumber
+  
+  tr->SetBranchAddress("CsiL1nTrig" ,&CsiL1nTrig  );
+  tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
+  
+  tr->SetBranchAddress("CsiEventTime",&CsiEventTime);
+  tr->SetBranchAddress("CsiEventTimeSigma",&CsiEventTimeSigma);
 }

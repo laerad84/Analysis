@@ -20,6 +20,7 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#include "User_Functions.h"
 Int_t main( int argc , char** argv ){
   
   if( argc != 2 ){ 
@@ -283,7 +284,8 @@ Int_t main( int argc , char** argv ){
     }    
   }
   
-
+  CsiCut* csiCut = new CsiCut();
+  GammaCut* gammaCut = new GammaCut();
 
   std::cout<< "Total Event Number : " << ch->GetEntries() << std::endl;  
   int CsiNumber;
@@ -305,11 +307,17 @@ Int_t main( int argc , char** argv ){
   Double_t GamClusCsiChisq[120][120];
   Int_t    GamClusCsiL1[120][120];
   Int_t    GamClusCsiCrate[120][120];
-
+  int RunNumber;
+  int EventNumber;
   int CsiL1nTrig;
   double CsiL1TrigCount[20];
   E14GNAnaDataContainer data;
+
   data.setBranchAddress( ch );
+  csiCut->SetBranchAddress( ch );
+  ch->SetBranchAddress("RunNumber",&RunNumber);
+  ch->SetBranchAddress("EventNumber",&EventNumber);
+  /*
   ch->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   ch->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   ch->SetBranchAddress("CsiNumber",&CsiNumber);
@@ -317,6 +325,7 @@ Int_t main( int argc , char** argv ){
   ch->SetBranchAddress("CsiEne",CsiEne);
   ch->SetBranchAddress("CsiTime",CsiTime);
   ch->SetBranchAddress("CsiSignal",CsiSignal);
+  */
 
   ch->SetBranchAddress("GamClusNumbers",&GamClusNumbers);
   ch->SetBranchAddress("GamClusSizes",GamClusSizes);//GamClusNumbers
@@ -339,19 +348,25 @@ Int_t main( int argc , char** argv ){
   Double_t GammaPos[6][3];
   Double_t GammaTime[6];
 
-  trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
-  trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
+  //trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
+  //trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
 
   E14GNAnaDataContainer dataCopy;
   dataCopy.branchOfClusterList(trKL);
   //dataCopy.branchOfGammaList(trKL);
   //dataCopy.branchOfPi0List(trKL);
   dataCopy.branchOfKlong(trKL);
+  csiCut->Branch(trKL);
+  gammaCut->Branch(trKL);
+  trKL->Branch("RunNumber",&RunNumber,"RunNumber/I");
+  trKL->Branch("EventNumber",&EventNumber,"EventNumber/I");
+  /*
   trKL->Branch("CsiNumber",&cCsiNumber,"CsiNumber/I");
   trKL->Branch("CsiModID",cCsiModID,"CsiModID[CsiNumber]/I");  
   trKL->Branch("CsiEne",cCsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
   trKL->Branch("CsiTime",cCsiTime,"CsiTime[CsiNumber]/D");//CsiNumber
   trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber  
+  */
   trKL->Branch("GamClusNumbers",&GamClusNumbers,"GamClusNumbers/I");
   trKL->Branch("GamClusSizes",GamClusSizes,"GamClusSizes[GamClusNumbers]/I");//GamClusNumbers 
   trKL->Branch("GamClusCsiSignal",GamClusCsiSignal,Form("GamClusCsiSignal[GamClusNumbers][%d]/D",s_arrSize));//GamClusNumbers 
@@ -379,6 +394,7 @@ Int_t main( int argc , char** argv ){
     //data.reset();
     dataCopy.reset();
     //if(ievent > 1000){ break; }
+    /*
     cCsiNumber = 0; 
     for( int i = 0; i< 3000; i++){
       cCsiModID[i] = 0;
@@ -387,14 +403,14 @@ Int_t main( int argc , char** argv ){
       cCsiSignal[i] = 0; 
     }
 
-    for( int i = 0; i< CsiNumber; i++){
-      cCsiModID[i] = CsiModID[i];
-      cCsiEne[i] = CsiEne[i];
-      cCsiTime[i] = CsiTime[i];
-      cCsiSignal[i] = CsiSignal[i];
+    for( int i = 0; i< csiCut->CsiNumber; i++){
+      cCsiModID[i] = CsiCut->CsiID[i];
+      cCsiEne[i] = CsiCut->CsiEne[i];
+      cCsiTime[i] = CsiCut->CsiTime[i];
+      cCsiSignal[i] = CsiCut->CsiSignal[i];
       cCsiNumber++;
     }
-
+    */
     
 
     std::list<Cluster> clist;
@@ -409,8 +425,7 @@ Int_t main( int argc , char** argv ){
     //dataCopy.setData( clist );
     //dataCopy.setData( glist );
     dataCopy.setData( klVec );
-
-
+    gammaCut->Decision( klVec[0]);
     //std::cout<< klVec.size() << "\t" << clist.size() << "\t" << glist.size() << std::endl;
     if( klVec.size() == 0 ){ continue; }
     //if( clist.size() == 0 ){ continue; }
