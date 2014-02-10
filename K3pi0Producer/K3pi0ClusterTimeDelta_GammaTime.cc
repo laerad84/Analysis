@@ -520,10 +520,11 @@ main( int argc ,char ** argv ){
     for( ; git != glist.end(); git++){
       SetGammaTime( (*git));
     }
-    GammaTimeDeltaCut( glist, glistTCut );
+    GammaTimeDeltaCut( glist, glistTCut,2);
     data.setData( clist );
     data.setData( glistTCut );
-    
+    std::list<Gamma>::iterator gitT = glistTCut.begin();
+    //std::cout<<glistTCut.size() << "\t" <<  (*gitT).t() << std::endl;
     /*
     if( glist.size() < 10 ){ 
       if (User_RecG6( glist, klVec ) ){

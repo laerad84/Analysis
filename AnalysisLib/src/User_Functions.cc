@@ -141,7 +141,7 @@ double CalGammaTOF( Klong kl, Gamma g ){
 }
 
 void GammaTimeDeltaCut( std::list<Gamma> glist, std::list<Gamma>& glistOut , double TimeThreshold ){
-  int nGamma;
+  int nGamma=0;
   double GTime[20];
   double GTimeDeltaMean[20];
   for( int i = 0; i<20 ; i++){
@@ -153,6 +153,8 @@ void GammaTimeDeltaCut( std::list<Gamma> glist, std::list<Gamma>& glistOut , dou
     GTime[nGamma] = (*git).t();
     nGamma++;
   }
+  //std::cout<< nGamma << std::endl;
+
   for( int i = 0; i< nGamma; i++){    
     for( int j = 0; j< nGamma; j++){
       if( i == j){ continue; }
