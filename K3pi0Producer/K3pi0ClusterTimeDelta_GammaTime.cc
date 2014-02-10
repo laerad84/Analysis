@@ -39,11 +39,13 @@
 //Extra Libs
 #include "IDHandler.h"
 #include "E14WavReader_V1.h"
-#include "L1TrigCounter.h"
-#include "CrateIDHandler.h"
+//#include "L1TrigCounter.h"
+//#include "CrateIDHandler.h"
 #include "CosmicTriggerTree.h"
 #include "User_Function.h"
+#include "User_Functions.h"
 #include "GeneralFunctions.h"
+
 int
 main( int argc ,char ** argv ){
   
@@ -53,9 +55,8 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_Cal_FNL_COS_newTimeOffset.root";
+  std::string oFileForm="%s/run_wav_%d_GammaTime.root";
 
-  //std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_with_cosmic.dat",ANALYSISLIB.c_str());  
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
 
@@ -64,6 +65,10 @@ main( int argc ,char ** argv ){
   CosmicTriggerTree* cosmicTrig = new CosmicTriggerTree();
   ClusterFinder      cFinder;
   GammaFinder        gFinder;
+  
+  ///////////////////////////////////////////////////////
+  GammaCut* gammaCut = new GammaCut();
+  CsiCut*   csiCut   = new CsiCut();
 
   std::string TempCalibrationFilename = Form("%s/Data/Temperature_Factor/TemperatureCorrectionFactor.root",ANALYSISLIB.c_str());  
   TFile* tfTempCorr  =new TFile(TempCalibrationFilename.c_str());
@@ -74,9 +79,10 @@ main( int argc ,char ** argv ){
   if( TempCorFactor == 0){
     TempCorFactor = 1;
   }
+
   TF1* THCorFunc = new TF1("THCorFunc",THCorrectionFunction,0,25000,3);
   THCorFunc->SetParameters(0, 1.672,0.0319651);
-
+  
   std::cout<< TempCorFactor << std::endl;
   Double_t Pi0PeakCorFactor = 0.9937;
 
@@ -86,6 +92,7 @@ main( int argc ,char ** argv ){
   TTree* trout = new TTree("T", "Output from Time zero" );  
   
   int EventNumber;
+  
   int CsiNumber = 0;
   int CSIDigiID[2716]={-1};
   double CSIDigiE[2716] = {0.};
@@ -101,7 +108,7 @@ main( int argc ,char ** argv ){
   short  CsiL1[2716];
   short  CsiGB[2716];
   short  CsiPosID[2716];
-
+  
   Int_t LaserNumber;
   Double_t LaserSignal[10];
   Double_t LaserHHTime[10];
@@ -154,15 +161,14 @@ main( int argc ,char ** argv ){
   Int_t    GamClusCsiL1[120][120];
   Int_t    GamClusCsiCrate[120][120];
 
-
-
   ;;
   //Branch
   {
-
     trout->Branch("RunNumber"  ,&RunNumber   ,"RunNumber/I");
     trout->Branch("EventNumber",&EventNumber ,"EventNumber/I");
-    
+    csiCut->Branch(trout);
+    gammaCut->Branch(trout);
+    /*
     trout->Branch("CsiNumber"  ,&CsiNumber    ,"CsiNumber/I");
     trout->Branch("CsiModID"   ,CSIDigiID    ,"CsiModID[CsiNumber]/I");//CsiNumber
     trout->Branch("CsiEne"     ,CSIDigiE     ,"CsiEne[CsiNumber]/D");//CsiNumber
@@ -178,7 +184,7 @@ main( int argc ,char ** argv ){
     
     trout->Branch("CsiL1nTrig" ,&CSIL1nTrig  ,"CsiL1nTrig/I");
     trout->Branch("CsiL1TrigCount",CSIL1TrigCount,"CsiL1TrigCount[20]/D");
-    
+    */
     trout->Branch("GamClusNumbers",&GamClusNumbers,"GamClusNumbers/I");
     trout->Branch("GamClusSizes",GamClusSizes,"GamClusSizes[GamClusNumbers]/I");  
     trout->Branch("GamClusCsiSignal",GamClusCsiSignal,Form("GamClusCsiSignal[GamClusNumbers][%d]/D",s_arrSize));
@@ -233,7 +239,6 @@ main( int argc ,char ** argv ){
   data.branchOfClusterList( trout );
   data.branchOfDigi( trout );
   data.branchOfKlong( trout );
-
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -273,10 +278,12 @@ main( int argc ,char ** argv ){
     TimeDeltaLength[i] = length/sol;
   }
 
+  /*
   L1TrigCounter* l1 = new L1TrigCounter();
   l1->ReadMapFile();
   l1->SetThreshold(1800);
   l1->Reset();
+  */
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -321,13 +328,14 @@ main( int argc ,char ** argv ){
     // init 
     ///////////////////////////////////////////////
     {
+
       nCsI = 0;
       CsiNumber = 0;
       CSIL1nTrig=0;
       for( int ich = 0; ich< 20; ich++){
 	CSIL1TrigCount[ich] = 0;
       }
-      l1->Reset();
+      //l1->Reset();
       for( int ich = 0; ich < 2716; ich++){
 	CsIID[ich]     = -1; 
 	CsIEnergy[ich] = 0.;
@@ -349,6 +357,7 @@ main( int argc ,char ** argv ){
 	CsiGB[ich]=0;
 	CsiPosID[ich]=-1;	
       }
+
       LaserNumber = 0;
       for( int ich  =0; ich < 10; ich++){
 	LaserSignal[ich] = 0;
@@ -472,12 +481,9 @@ main( int argc ,char ** argv ){
 	GamClusCsiCrate[i][j]  = -1;
       }
     }
-
-    
-
+    if( LaserSignal[0] > 50 ){ continue; }
     nCsI = 0;
     for( int ich  = 0; ich < reader->CsiNumber; ich++){      
-      l1->Fill(reader->CsiID[ich], reader->CsiSignal[ich] );
       if( reader->CsiSignal[ich] > 5 && reader->CsiEne[ich]>0.5){
 	CSIDigiID[CsiNumber]     = reader->CsiID[ich];
 	CSIDigiE[CsiNumber]      = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;
@@ -487,54 +493,42 @@ main( int argc ,char ** argv ){
 	CsiChisq[CsiNumber]      = reader->CsiChisq[ich];
 	CsiID[CsiNumber]         = reader->CsiID[ich];
 	CsiNDF[CsiNumber]        = reader->CsiNDF[ich];
-	double x(0), y(0);
-	x = map->getX( reader->CsiID[ich] );
-	y = map->getY( reader->CsiID[ich] );
-	if( x > 0 ){
-	  if( y > 0 ){ CsiPosID[CsiNumber]  = 0; }
-	  else{ CsiPosID[CsiNumber] = 1; }
-	}else{
-	  if( y > 0 ){ CsiPosID[CsiNumber] = 2; }
-	  else{ CsiPosID[CsiNumber]  =3; }
-	}
-	if( y > 0 ){
-	  if( x < -100 ){
-	    CsiGB[CsiNumber] = -1;
-	  }else{
-	    CsiGB[CsiNumber] = 1;
-	  }
-	}else{
-	  if( x < 75 ){
-	    CsiGB[CsiNumber] = -1;
-	  }else{
-	    CsiGB[CsiNumber] = 1;
-	  }
-	}
-
-	CsiCrate[CsiNumber] = CIDHandler->GetCrate(reader->CsiID[ich]);
-	CsiL1[CsiNumber]    = CIDHandler->GetL1(reader->CsiID[ich]);
 	CsiNumber++;
       }
     }
-    CSIL1nTrig = 0;
-    std::vector<double> vecCount    = l1->GetCount(); 
-    if( vecCount.size() != 20 ){ std::cout << "Vector Size Error" << std::endl;}
-    for( int i = 0; i< 20; i++){
-      CSIL1TrigCount[i] = vecCount.at(i);
-      if(CSIL1TrigCount[i] > CSIL1TrigCountThreshold[i]){
-	CSIL1nTrig++;
-      }
-    }   
-    if( CsiNumber<5){ continue;}
+
+    if( CsiNumber<6){ continue;}
 
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
+    std::list<Gamma>   glistTCut;
     std::vector<Klong> klVec;
-    
-    clist = cFinder.findCluster( CsiNumber,CSIDigiID,CSIDigiE,CSIDigiTime);
+
+    csiCut->Decision( CsiNumber, CSIDigiID, CSIDigiE,CSIDigiTime, CSIDigiSignal, CsiChisq,CsiNDF);
+    //clist = cFinder.findCluster( CsiNumber,CSIDigiID,CSIDigiE,CSIDigiTime);
+    clist = cFinder.findCluster( csiCut->CsiNumber,csiCut->CsiID,csiCut->CsiEne,csiCut->CsiTime);
     gFinder.findGamma( clist, glist );
+    gammaCut->Decision( glist );
+    SetGammaTime( glist );
+
+    //std::cout << "MaxDeltaT:" << gammaCut->GMaxDeltaT << std::endl;
+    //std::cout << "MinDist  :" << gammaCut->GMinDist   << std::endl;
+    if( glist.size() < 2 ){ continue; }
+    data.setData( clist );
+    data.setData( glist );
+    std::list<Gamma>::iterator git = glist.begin();
+    for( ; git != glist.end(); git++){
+      SetGammaTime( (*git));
+    }
+    /*
+    if( glist.size() < 10 ){ 
+      if (User_RecG6( glist, klVec ) ){
+	data.setData( klVec );
+      }
+    }
+    */
     if( clist.size() < 6 ){ continue; }
-    if( glist.size() ==6 ){ 
+    if( glist.size() >=6 ){ 
       if( user_rec(glist,klVec)){
 	data.setData( clist );
 	data.setData( glist );
@@ -570,9 +564,6 @@ main( int argc ,char ** argv ){
 	    }
 	  }
 	  clNumber++;
-
-
-
 	}
 	trout->Fill();
       }

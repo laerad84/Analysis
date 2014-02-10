@@ -5,4 +5,5 @@
 #pragma link C++ function GenLinArray;
 #pragma link C++ function DrawRatioPad;
 #pragma link C++ function GenRatioHist;
+#pragma link C++ function DrawSlices;
 #endif 

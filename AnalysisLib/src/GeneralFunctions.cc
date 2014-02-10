@@ -75,3 +75,46 @@ double  THCorrectionFunction( double* x, double *p){
   value = p[0]+p[1]*TMath::Log(1+p[2]*TMath::Exp(x[0]/2000));
   return value;
 }
+
+
+//////////////////////////////////////////////////////
+// Utility Functions 
+//////////////////////////////////////////////////////
+void DrawSlices( TH2D* his,TH1D** hisSlices, int cord ){
+  int nSlices;
+  Double_t LowEdge(0);
+  Double_t UpEdge(0);  
+  std::cout<< cord << std::endl;
+  if( cord == 0 ){// Slices by X
+    nSlices = his->GetNbinsX();
+    if( nSlices > 200 ){ 
+      std::cout<< "Number of bin number is over 200" << std::endl;
+      nSlices = 200;
+    }
+    for( int i = 0; i< nSlices; i++ ){//Slices by X
+      hisSlices[i] = his->ProjectionY(Form("%s_Slices_%d",his->GetName(),i),i+1,i+1);
+      LowEdge = his->GetXaxis()->GetBinLowEdge(i+1);
+      UpEdge  = his->GetXaxis()->GetBinUpEdge(i+1);
+      std::cout<< LowEdge << "\t" << UpEdge << std::endl;
+      hisSlices[i]->SetTitle(Form("%lf_%lf", LowEdge, UpEdge));
+    }
+  }else if( cord == 1 ){// Slices by Y
+    nSlices = his->GetNbinsY();
+    if( nSlices > 200 ){
+      std::cout<< "Number of bin number is over 200" << std::endl;
+      nSlices = 200;
+    }
+    for( int i = 0; i< nSlices; i++ ){
+      hisSlices[i] = his->ProjectionX(Form("%s_Slices_%d",his->GetName(),i),i+1,i+1);
+      LowEdge = his->GetYaxis()->GetBinLowEdge(i+1);
+      UpEdge= his->GetYaxis()->GetBinUpEdge(i+1);
+      std::cout<< LowEdge << "\t" << UpEdge << std::endl;
+      hisSlices[i]->SetTitle(Form("%lf_%lf", LowEdge, UpEdge));
+    }
+  }else{
+    std::cout<< "Fail to Evaluate" << std::endl;
+  }
+
+}
+
+

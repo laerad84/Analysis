@@ -130,7 +130,8 @@ int main( int argc, char** argv){
   
   TF1* TimingDelayFunc = new TF1("TimingDelayFunc",TimingHeightDelay,0,20000,3);
   //TimingDelayFunc->SetParameters(0,0.03566,1621);
-  TimingDelayFunc->SetParameters(0,1.261,0.07196);
+  //TimingDelayFunc->SetParameters(0,1.261,0.07196);
+  TimingDelayFunc->SetParameters(0,1.672,0.0319651);
   tf = new TFile(Form("Kl_Total_%s.root",name));
   tr = (TTree*)tf->Get(Form("trKL"));
   Int_t    CsiL1nTrig;
@@ -142,7 +143,7 @@ int main( int argc, char** argv){
   int   GamClusNumbers;
   int   GamClusSizes[120];
   double   GamClusCsiSignal[120][120];
-  
+  int   GamClusCsiCrate[120][120];
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
@@ -153,7 +154,7 @@ int main( int argc, char** argv){
   tr->SetBranchAddress("GamClusNumbers",&GamClusNumbers);
   tr->SetBranchAddress("GamClusSizes",GamClusSizes);//GamClusNumbers
   tr->SetBranchAddress("GamClusCsiSignal",GamClusCsiSignal);//GamClusNumbers
-
+  tr->SetBranchAddress("GamClusCsiCrate",GamClusCsiCrate);//GamClusNumbers
   TFile* tfOut = new TFile(Form("TimeDistribution_%s.root",name),"recreate");
 
   Double_t TimeOffset[2716]={0};
@@ -185,6 +186,7 @@ int main( int argc, char** argv){
   TTree* trOut = new TTree("TimeTree","Timetree");
   int    GammaID[6]; 
   double GammaTime[6];
+  int    CrateID[6];
   double GammaHeight[6];
   double TOFOffset[6];
   double ShowerOffset[6];
@@ -197,6 +199,7 @@ int main( int argc, char** argv){
   double MeanTimeDeltaAdj[6];
   trOut->Branch("GammaID"     ,GammaID,"GammaID[6]/I");
   trOut->Branch("GammaTime"   ,GammaTime,"GammaTime[6]/D");
+  trOut->Branch("CrateID"     ,CrateID,"CrateID[6]/I");
   trOut->Branch("GammaHeight" ,GammaHeight,"GammaHeight[6]/D");
   trOut->Branch("TOFOffset"   ,TOFOffset,"TOFOffset[6]/D");
   trOut->Branch("ShowerOffset",ShowerOffset,"ShowerOffset[6]/D");
@@ -240,6 +243,7 @@ int main( int argc, char** argv){
     }
    
     std::list<Gamma>::iterator git = glist.begin();
+    
     for( int igamma  = 0; igamma < 6; igamma++,git++){
       if( git == glist.end()){ break; }
       GammaTime[igamma]         = (*git).clusterTimeVec()[0];
@@ -287,6 +291,7 @@ int main( int argc, char** argv){
       gIndex++;
     }
 
+    /*
     int nsg = 0; 
     for( int i = 0; i< CsiNumber; i++){
       for( int j = 0; j< 6; j++){
@@ -297,8 +302,12 @@ int main( int argc, char** argv){
       }
       if( nsg == 6 ){ break; }
     }
-    
-    if(nsg < 6 ){ std::cout<<ievent << ":??" << std::endl;}
+    */
+    for( int i = 0; i< 6; i++){
+      GammaHeight[i] = GamClusCsiSignal[i][0];
+      CrateID[i]     = GamClusCsiCrate[i][0];
+    }
+    //if(nsg < 6 ){ std::cout<<ievent << ":??" << std::endl;}
     for( int i = 0; i< 6; i++){
       HeightOffset[i] = TimingDelayFunc->Eval(GammaHeight[i]);
       AllOffset[i]    = TimeOffset[GammaID[i]] + TOFOffset[i];

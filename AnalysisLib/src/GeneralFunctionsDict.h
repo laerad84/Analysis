@@ -41,5 +41,6 @@ using namespace std;
 
 extern G__linked_taginfo G__GeneralFunctionsDictLN_TPad;
 extern G__linked_taginfo G__GeneralFunctionsDictLN_TH1D;
+extern G__linked_taginfo G__GeneralFunctionsDictLN_TH2D;
 
 /* STUB derived class for protected member access */

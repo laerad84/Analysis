@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "TH1.h"
-#include "CsIPoly.h"
+//#include "CsIPoly.h"
 #include "TPad.h"
 
 const int nMaxCrate = 20;
@@ -27,7 +27,7 @@ class L1TrigCounter {
   L1TrigCounter();
   ~L1TrigCounter();
   TH1D* hisTrigCounter; 
-  CsIPoly* CsiL1Map;
+  //  CsIPoly* CsiL1Map;
 
   void   Reset(){ m_Et = 0; m_EtFlag = 0; hisTrigCounter->Reset();}
   int    Fill( int id, double value );

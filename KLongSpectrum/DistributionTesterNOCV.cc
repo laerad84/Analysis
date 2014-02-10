@@ -43,10 +43,17 @@ int main( int argc, char** argv){
   TTree* tr[nFile];  
   char* name[nFile] = {"SIMFULL","WAVNOCV"};
   
+  /*
   for( int i = 0; i < nFile; i++){
     tf[i] = new TFile(Form("Kl_Total_%s.root",name[i]));
-    tr[i] = (TTree*)tf[i]->Get(Form("trKL"));
   }
+  */
+  tf[0] = new TFile("Kl_Total_SIMFULL.root");
+  tr[0] = (TTree*)tf[0]->Get(Form("trKL"));
+  tf[1] = new TFile("kl_Total_WAVNOCV_GammaTime.root");
+  tr[1] = (TTree*)tf[1]->Get(Form("trKL"));
+    
+
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
 
@@ -81,7 +88,8 @@ int main( int argc, char** argv){
   TH1D* hisPi0MassN[nFile];
   TH1D* hisKLChisqN[nFile];
   TH1D* hisKLSecChisqN[nFile];
-  
+  TH1D* hisKLE_EZCut[nFile];
+  TH1D* hisKLZ_EZCut[nFile];
   for( int i = 0; i< nFile; i++){
     for( int j = 0; j< 10; j++){
       hisKLZAcceptance[i][j] = new TH1D(Form("hisKLZAcceptance_%d_%d",i,j),Form("hisKLZAcceptance_%d_%d_%d",i,500*j,500*(j+1)),70,0,7000);
@@ -92,6 +100,9 @@ int main( int argc, char** argv){
     hisKLE[i]        = new TH1D(Form("hisKLE_%d",i),Form("hisKLE_%s",name[i]),100,0,10000);
     hisKLX[i]        = new TH1D(Form("hisKLX_%d",i),Form("hisKLX_%s",name[i]),160,-400,400);
     hisKLY[i]        = new TH1D(Form("hisKLY_%d",i),Form("hisKLY_%s",name[i]),160,-400,400);
+    hisKLE_EZCut[i]        = new TH1D(Form("hisKLE_EZCut_%d",i),Form("hisKLE_EZCut_%s",name[i]),100,0,10000);
+    hisKLZ_EZCut[i]        = new TH1D(Form("hisKLZ_EZCut_%d",i),Form("hisKLZ_EZCut_%s",name[i]),70,0,7000);
+
     hisKLMass[i]     = new TH1D(Form("hisKLMass_%d",i),Form("hisKLMass_%s",name[i]),100,450,550);
     hisKLChisq[i]    = new TH1D(Form("hisKLChisq_%d",i),Form("hisKLChisq_%s",name[i]),100,0,100);
     hisKLSecChisq[i] = new TH1D(Form("hisKLSecChisq_%d",i),Form("hisKLSecChisq_%s",name[i]),100,0,100);
@@ -141,9 +152,9 @@ int main( int argc, char** argv){
       //Double_t Ratio   = 1; 
       Double_t Ratio   = sugarFunc->Eval(klMom)/soltFunc->Eval(klMom);
 
-      if( iFile != 2 ){
+      //if( iFile != 2 ){
 	if( CsiL1nTrig< 5 ){ continue; }
-      }
+	//}
       hisVETOHistory[iFile]->Fill(1);
       hisVETOHistory[iFile]->Fill(2);
       bool  bInnerGamma = false;
@@ -255,9 +266,19 @@ int main( int argc, char** argv){
 	hisKLZPosition[iFile]->Fill(klVec[0].vz(),Ratio);
       }
 
-
+      if( !bEGammaN ){
+	if( klVec[0].vz() > 3000 && klVec[0].vz() < 5000 ){
+	  if( klVec[0].e() > 1500 && klVec[0].e() < 5000 ){
+	    hisKLE_EZCut[iFile]->Fill(klVec[0].e());
+	    hisKLZ_EZCut[iFile]->Fill(klVec[0].vz());
+	  }
+	}
+      }
 
       if( !bEGammaN && !bKLZ && !bKLP && !bPi0Pt ){
+
+
+
 
 	hisKLEN[iFile]->Fill(klVec[0].e());
 	hisKLMassN[iFile]->Fill(klVec[0].m());
@@ -305,6 +326,8 @@ int main( int argc, char** argv){
     hisPi0Mass[i]->Write();
     
     hisKLE[i]->Write();
+    hisKLE_EZCut[i]->Write();
+    hisKLZ_EZCut[i]->Write();
     hisKLP[i]->Write();
     hisKLZ[i]->Write();
     hisKLX[i]->Write();
