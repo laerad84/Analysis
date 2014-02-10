@@ -529,7 +529,7 @@ main( int argc ,char ** argv ){
     }
     */
     if( clist.size() < 6 ){ continue; }
-    if( glist.size() >=6 && glist.size() < 10){ 
+    if( glist.size() ==6 ){
       if( user_rec(glist,klVec)){
 	data.setData( clist );
 	data.setData( glist );
