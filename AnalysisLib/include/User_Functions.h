@@ -20,6 +20,8 @@
 #include "L1TrigCounter.h"
 #include "CrateIDHandler.h"
 
+double Rec_Mass2g( std::list<Gamma> const &glist, double recPosition );
+void RecVtx_ConstM( const Gamma& g1, const Gamma& g2, double Mass, double* recZ, double* recZsig2 );
 bool User_RecG2(std::list<Gamma> const &glist, std::list<Pi0>& piList);
 bool User_RecG4(std::list<Gamma> const &glist, std::vector<Klong>& klVec);
 bool User_RecG6(std::list<Gamma> const &glist, std::vector<Klong>& klVec);

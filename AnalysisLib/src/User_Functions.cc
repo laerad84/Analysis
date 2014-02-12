@@ -1,4 +1,111 @@
 #include "User_Functions.h"
+double Rec_Mass2g( std::list<Gamma> const &glist, double recPosition ){
+  double mass=0;
+  CLHEP::Hep3Vector Vtx(0,0,recPosition);
+  int id = 0;
+  if( glist.size() != 2 ){ return 0; }
+  Gamma g1 = glist.front();
+  Gamma g2 = glist.back();
+  CLHEP::Hep3Vector GPos[2];
+  GPos[0] = g1.pos() -Vtx;
+  GPos[1] = g2.pos() -Vtx;
+  GPos[0].setMag(g1.e());
+  GPos[1].setMag(g2.e());
+  double MassSq = TMath::Power((g1.e() + g2.e()),2) - (GPos[0]-GPos[1]).mag2();// (E1+E2)^2 - G1*G2 
+  mass = TMath::Sqrt( MassSq );
+  return mass;
+}
+void RecVtx_ConstM( const Gamma& g1, const Gamma& g2, double Mass, double* recZ, double* recZsig2 ){
+  //std::cout << "rec2g::recVtxWithConstM() : Mass=" << Mass << std::endl;
+
+  double r1 = g1.pos().perp2();
+  double r2 = g2.pos().perp2();
+  double ip = g1.x()*g2.x() + g1.y()*g2.y();
+  double ct = 1. - Mass*Mass/(2.*g1.e()*g2.e());
+
+  double A = 1. - ct*ct;
+  double B = 2.*ip - (r1 + r2)*ct*ct;
+  double C = ip*ip - r1*r2*ct*ct;
+
+  double D = B*B - 4.*A*C;
+
+
+
+  if( D > 0 ) {
+    double dz1 = (-B + sqrt(D))/(2.*A);
+    double dz2 = (-B - sqrt(D))/(2.*A);
+
+    //    std::cout<<"DEBUG : "<<"E : "<<g1.e()<<"\t sigmaE : "<<g1.sigmaE()<<std::endl; 
+    //  getchar();
+    //    std::cout<<"DEBUG : "<<"sigamE : "<<g2.sigmaE()<<"\t sigmaX : "<<g2.sigmaX()<<std::endl; 
+    //
+    double r12 = (g1.pos() - g2.pos()).perp();
+
+    double rerr_e1   = g1.sigmaE()/g1.e();
+    double rerr_e2   = g2.sigmaE()/g2.e();
+
+    //
+    double sig2r1 = 
+      4.*( g1.x()*g1.x()*g1.sigmaX()*g1.sigmaX() +
+	   g1.y()*g1.y()*g1.sigmaY()*g1.sigmaY() );
+    double sig2r2 = 
+      4.*( g2.x()*g2.x()*g2.sigmaX()*g2.sigmaX() +
+	   g2.y()*g2.y()*g2.sigmaY()*g2.sigmaY() );
+    double sig2ip = 
+      g2.x()*g2.x()*g1.sigmaX()*g1.sigmaX() +
+      g1.x()*g1.x()*g2.sigmaX()*g2.sigmaX() +
+      g2.y()*g2.y()*g1.sigmaY()*g1.sigmaY() +
+      g1.y()*g1.y()*g2.sigmaY()*g2.sigmaY();
+    double sig2ct = 
+      ( (Mass*Mass)/(2*g1.e()*g2.e()) )*( (Mass*Mass)/(2*g1.e()*g2.e()) )*
+      ( rerr_e1*rerr_e1 + rerr_e2*rerr_e2 );
+
+
+    double DA_Dct = -2.*ct;
+    double sig2_A = DA_Dct*DA_Dct*sig2ct;
+    
+    double DB_Dip = 2;
+    double DB_Dr1 = -1.*ct*ct;
+    double DB_Dr2 = -1.*ct*ct;
+    double DB_Dct = -2.*(r1 + r2)*ct;
+    double sig2_B = 
+      DB_Dip*DB_Dip*sig2ip + DB_Dr1*DB_Dr1*sig2r1 + DB_Dr2*DB_Dr2*sig2r2 + DB_Dct*DB_Dct*sig2ct;
+
+    double DC_Dip = 2*ip;
+    double DC_Dr1 = -1.*r2*ct*ct;
+    double DC_Dr2 = -1.*r1*ct*ct;
+    double DC_Dct = -2.*r1*r2*ct;
+    double sig2_C = 
+      DC_Dip*DC_Dip*sig2ip + DC_Dr1*DC_Dr1*sig2r1 + DC_Dr2*DC_Dr2*sig2r2 + DC_Dct*DC_Dct*sig2ct;
+      
+    
+    double DD_DB  =  2.*B;
+    double DD_DA  = -4.*C;
+    double DD_DC  = -4.*A;
+    double sig2_D = DD_DB*DD_DB*sig2_B + DD_DA*DD_DA*sig2_A + DD_DC*DD_DC*sig2_C;
+
+
+    if( dz1 > 0 ) {
+      double Ddz1_DB  = -1./(2.*A);
+      double Ddz1_DA  = -1.*(-1.*B + sqrt(D))/(2.*A*A);
+      double Ddz1_DD  = +1./(4.*A*sqrt(D));
+      double sig2_dz1 = Ddz1_DB*Ddz1_DB*sig2_B + Ddz1_DA*Ddz1_DA*sig2_A + Ddz1_DD*Ddz1_DD*sig2_D;
+
+      recZ[0]     = g1.z() - sqrt(dz1);
+      recZsig2[0] = (-1./(2.*sqrt(dz1)))*(-1./(2.*sqrt(dz1)))*sig2_dz1;
+
+    }
+    if( dz2 > 0 ) {
+      double Ddz2_DB  = -1./(2.*A);
+      double Ddz2_DA  = -1.*(-1.*B - sqrt(D))/(2.*A*A);
+      double Ddz2_DD  = -1./(4.*A*sqrt(D));
+      double sig2_dz2 = Ddz2_DB*Ddz2_DB*sig2_B + Ddz2_DA*Ddz2_DA*sig2_A + Ddz2_DD*Ddz2_DD*sig2_D;
+
+      recZ[1]     = g1.z() - sqrt(dz2);
+      recZsig2[1] = (-1./(2.*sqrt(dz2)))*(-1./(2.*sqrt(dz2)))*sig2_dz2;
+    }
+  }
+}
 
 bool User_RecG2(std::list<Gamma> const &glist, std::list<Pi0>& piList){
   static Rec2g rec2g;      
