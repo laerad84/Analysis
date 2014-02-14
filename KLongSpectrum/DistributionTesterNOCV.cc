@@ -41,7 +41,7 @@ int main( int argc, char** argv){
   const int nFile = 3;
   TFile* tf[nFile]; 
   TTree* tr[nFile];  
-  char* name[nFile] = {"SIMFULL","WAVNOCV","WAVNOCV_TIME"};
+  char* name[nFile] = {"SIMFULL","WAVNOCV","WAVNOCV_GammaTime"};
 
 
   for( int i = 0; i < nFile; i++){
@@ -58,6 +58,9 @@ int main( int argc, char** argv){
 
   Int_t CsiL1nTrig;
   Double_t CsiL1TrigCount[20];
+
+  TH1D* hisGPosX[nFile];
+  TH1D* hisGPosY[nFile];
 
   TH1D* hisKLP[nFile];
   TH1D* hisKLZ[nFile];
@@ -96,6 +99,9 @@ int main( int argc, char** argv){
     for( int j = 0; j< 10; j++){
       hisKLZAcceptance[i][j] = new TH1D(Form("hisKLZAcceptance_%d_%d",i,j),Form("hisKLZAcceptance_%d_%d_%d",i,500*j,500*(j+1)),70,0,7000);
     }
+    hisGPosX[i]      = new TH1D(Form("hisGPosX_%d",i),Form("hisGPosX_%d",i),80,-1000,1000);
+    hisGPosY[i]      = new TH1D(Form("hisGPosY_%d",i),Form("hisGPosY_%d",i),80,-1000,1000);
+				
     hisKLZPosition[i]= new TH1D(Form("hisKLZPosition_%d",i),Form("hisKLZPosition_%s",name[i]),70,0,7000);
     hisKLZ[i]        = new TH1D(Form("hisKLZ_%d",i),Form("hisKLZ_%s",name[i]),70,0,7000);
     hisKLP[i]        = new TH1D(Form("hisKLP_%d",i),Form("hisKLP_%s",name[i]),100,0,10000);
@@ -228,7 +234,9 @@ int main( int argc, char** argv){
       }
       
       for( int il1 = 0; il1 < 20; il1++){
-	hisL1TrigCount[iFile][il1]->Fill(CsiL1TrigCount[il1]);
+	if( klVec[0].e() <3500 ){
+	  hisL1TrigCount[iFile][il1]->Fill(CsiL1TrigCount[il1]);
+	}
       }
 
       for(git= glist.begin();
@@ -270,12 +278,12 @@ int main( int argc, char** argv){
       }
 
       if( !bEGammaN ){
-	if( klVec[0].vz() > 3000 && klVec[0].vz() < 5000 ){
-	  if( klVec[0].e() > 1500 && klVec[0].e() < 5000 ){
-	    hisKLE_EZCut[iFile]->Fill(klVec[0].e());
-	    hisKLZ_EZCut[iFile]->Fill(klVec[0].vz());
-	  }
+	//if( klVec[0].vz() > 3000 && klVec[0].vz() < 5000 ){
+	if( klVec[0].e() > 1500 && klVec[0].e() < 3500 ){
+	  hisKLE_EZCut[iFile]->Fill(klVec[0].e());
+	  hisKLZ_EZCut[iFile]->Fill(klVec[0].vz());
 	}
+	  //}
       }
 
       if( !bEGammaN && !bKLZ && !bKLP && !bPi0Pt ){

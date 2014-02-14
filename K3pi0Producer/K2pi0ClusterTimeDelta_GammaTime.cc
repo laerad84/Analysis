@@ -511,8 +511,8 @@ main( int argc ,char ** argv ){
     gFinder.findGamma( clist, glist );
     gammaCut->Decision( glist );
     SetGammaTime( glist );
-    if( clist.size() < 6 ){ continue; }
-    if( glist.size() < 2 ){ continue; }
+    if( clist.size() < 4 ){ continue; }
+    if( glist.size() < 4 ){ continue; }
     
     //std::cout << "MaxDeltaT:" << gammaCut->GMaxDeltaT << std::endl;
     //std::cout << "MinDist  :" << gammaCut->GMinDist   << std::endl;
