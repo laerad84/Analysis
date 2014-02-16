@@ -51,8 +51,7 @@ class GammaCut{
   
   double GMinEnergy;
   double GMinDist; 
-  double GMinX;
-  double GMinY;
+  double GMinXY;
   double GMaxR;
   double GMaxY;
   double GMaxChi;

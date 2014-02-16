@@ -216,8 +216,8 @@ main( int argc ,char ** argv ){
     for( int ich = 0; ich < 2716; ich++){
       CsIID[ich]     = -1; 
       CsIEnergy[ich] = 0.;
-      CsITime[ich]   = -1;
-      CsIHHTime[ich] = -1;
+      CsITime[ich]   = 0;
+      CsIHHTime[ich] = 0;
       CsISignal[ich] = 0.;
 
       CSIDigiID[ich] = 0;
@@ -297,7 +297,7 @@ main( int argc ,char ** argv ){
 	CSIDigiID[ nCSIDigi ]     = CsIID[idigi];
 	CSIDigiE[ nCSIDigi ]      = CsIEnergy[idigi];
 	//CSIDigiTime[ nCSIDigi ]   = CsITime[idigi]+TimeDelta[CsIID[idigi]];
-	CSIDigiTime[ nCSIDigi ]   = CsITime[idigi]+TimeDelta[CsIID[idigi]];
+	CSIDigiTime[ nCSIDigi ]   = CsITime[idigi]-TimeDelta[CsIID[idigi]];
 	CSIDigiHHTime[ nCSIDigi ] = CsIHHTime[idigi];
 	CSIDigiSignal[nCSIDigi]   = CsISignal[idigi];
 	nCSIDigi++;

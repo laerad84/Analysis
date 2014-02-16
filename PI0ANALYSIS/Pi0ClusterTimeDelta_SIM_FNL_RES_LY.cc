@@ -287,10 +287,6 @@ main( int argc ,char ** argv ){
       }
     }
 
-
-
-
-
     if( nCSIDigi < 5 ){ continue;}
     std::list<Cluster> clist;
     std::list<Gamma>   glist;

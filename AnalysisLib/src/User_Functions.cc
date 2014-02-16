@@ -288,8 +288,7 @@ GammaCut::~GammaCut(){
 void GammaCut::Reset(){
   GMinEnergy = 10000;
   GMinDist   = 10000;
-  GMinY      = 10000;
-  GMinX      = 10000;
+  GMinXY      = 10000;
   GMaxR      = 0;
   GMaxY      = 0;
   GMaxChi    = 0;
@@ -303,49 +302,6 @@ void GammaCut::Decision(Klong kl){
     glist.push_back(kl.pi0()[i].g1());
     glist.push_back(kl.pi0()[i].g2());
   }
-  /*
-  for( int i = 0; i< kl.pi0().size(); i++){
-    tmpE[gammaIndex] = kl.pi0()[i].g1().e();
-    tmpX[gammaIndex] = kl.pi0()[i].g1().x();
-    tmpY[gammaIndex] = kl.pi0()[i].g1().y();
-    tmpR[gammaIndex] = TMath::Sqrt( tmpX[gammaIndex]*tmpX[gammaIndex] + tmpY[gammaIndex]*tmpY[gammaIndex]);
-    tmpT[gammaIndex] = kl.pi0()[i].g1().t();
-    tmpChi[gammaIndex] = kl.pi0()[i].g1().chisq();
-    gammaIndex++;
-    tmpE[gammaIndex] = kl.pi0()[i].g2().e();
-    tmpX[gammaIndex] = kl.pi0()[i].g2().x();
-    tmpY[gammaIndex] = kl.pi0()[i].g2().y();
-    tmpR[gammaIndex] = TMath::Sqrt( tmpX[gammaIndex]*tmpX[gammaIndex] + tmpY[gammaIndex]*tmpY[gammaIndex]);
-    tmpT[gammaIndex] = kl.pi0()[i].g2().t();
-    tmpChi[gammaIndex] = kl.pi0()[i].g2().chisq();
-    gammaIndex++;
-  }
-  for( int i = 0; i< gammaIndex; i++){
-    if( tmpE[i] < GMinEnergy ){
-      GMinEnergy = tmpE[i];
-    }
-    if( TMath::Abs(tmpY[i]) > GMaxY ){
-      GMaxY = TMath::Abs(tmpY[i]);
-    }
-    if( TMath::Abs(tmpY[i]) < GMinY ){
-      GMinY = TMath::Abs(tmpY[i]);
-    }
-    if( TMath::Abs(tmpX[i]) < GMinX ){
-      GMinX = TMath::Abs(tmpX[i]);
-    }
-    if( tmpChi[i] > GMaxChi ){
-      GMaxChi = tmpChi[i];
-    }
-    if( i < gammaIndex -1 ){
-      for( int j = i+1; j< gammaIndex; j++){
-	double R = TMath::Sqrt( (tmpX[i]-tmpX[j])*(tmpX[i]-tmpX[j])+(tmpY[i]-tmpY[j])*(tmpY[i]-tmpY[j]));
-	if( R < GMinDist ){
-	  GMinDist = R;
-	}
-      }
-    }
-  }
-  */
   Decision( glist );
 }
 void GammaCut::Decision( std::vector<Klong> kl ){
@@ -390,12 +346,26 @@ void GammaCut::Decision( std::list<Gamma> g ){
     if( TMath::Abs(tmpY[i]) > GMaxY ){
       GMaxY = TMath::Abs(tmpY[i]);
     }
+
+    /*
     if( TMath::Abs(tmpY[i]) < GMinY ){
       GMinY = TMath::Abs(tmpY[i]);
     }
     if( TMath::Abs(tmpX[i]) < GMinX ){
       GMinX = TMath::Abs(tmpX[i]);
     }
+    */
+
+    if( TMath::Abs( tmpY[i] ) > TMath::Abs( tmpX[i] ) ){
+      if( TMath::Abs( tmpY[i] )< GMinXY ){
+	GMinXY  =TMath::Abs( tmpY[i] );
+      }
+    }else{
+      if( TMath::Abs( tmpX[i] ) < GMinXY ){
+	GMinXY  =TMath::Abs( tmpX[i] );
+      }
+    }
+
     if( tmpChi[i] > GMaxChi ){
       GMaxChi = tmpChi[i];
     }
@@ -417,8 +387,9 @@ void GammaCut::Decision( std::list<Gamma> g ){
 void GammaCut::SetBranchAddress( TTree* tr ){
   tr->SetBranchAddress("GMinEnergy",&GMinEnergy);
   tr->SetBranchAddress("GMinDist",&GMinDist);
-  tr->SetBranchAddress("GMinX",&GMinX);
-  tr->SetBranchAddress("GMinY",&GMinY);
+  tr->SetBranchAddress("GMinXY",&GMinXY);
+  //tr->SetBranchAddress("GMinX",&GMinX);
+  //tr->SetBranchAddress("GMinY",&GMinY);
   tr->SetBranchAddress("GMaxR",&GMaxR);
   tr->SetBranchAddress("GMaxY",&GMaxR);
   tr->SetBranchAddress("GMaxDeltaT",&GMaxDeltaT);
@@ -427,8 +398,7 @@ void GammaCut::SetBranchAddress( TTree* tr ){
 void GammaCut::Branch( TTree* tr ){
   tr->Branch("GMinEnergy"  ,&GMinEnergy  ,"GMinEnergy/D");
   tr->Branch("GMinDist"    ,&GMinDist    ,"GMinDist/D");
-  tr->Branch("GMinX"       ,&GMinX       ,"GMinX/D");
-  tr->Branch("GMinY"       ,&GMinY       ,"GMinY/D");
+  tr->Branch("GMinXY"      ,&GMinXY      ,"GMinXY/D");
   tr->Branch("GMaxR"       ,&GMaxR       ,"GMaxR/D");
   tr->Branch("GMaxY"       ,&GMaxY       ,"GMaxY/D");
   tr->Branch("GMaxDeltaT"  ,&GMaxDeltaT  ,"GMaxDeltaT/D");
