@@ -593,39 +593,6 @@ main( int argc ,char ** argv ){
 	//user_cut( data, klVec );
 	data.setData(plist);    
 	
-	
-
-	std::list<Gamma>::iterator git = glist.begin();
-	int clNumber = 0;	
-	GamClusNumbers = glist.size();
-	for( int pt = 0; pt < klVec[0].pi0().size(); pt++){
-	  GamClusSizes[clNumber] = klVec[0].pi0()[pt].g1().clusterIdVec().size();
-	  for( int i = 0; i < klVec[0].pi0()[pt].g1().clusterIdVec().size(); i++){
-	    for( int in = 0; in < CsiNumber; in++){
-	      if( CsiID[in] == klVec[0].pi0()[pt].g1().clusterIdVec()[i]){
-		GamClusCsiSignal[clNumber][i] = CSIDigiSignal[in];
-		GamClusCsiChisq[clNumber][i]  = CsiChisq[in];
-		GamClusCsiCrate[clNumber][i]  = CsiCrate[in];
-		GamClusCsiL1[clNumber][i]     = CsiL1[in];
-		break;
-	      }
-	    }
-	  }
-	  clNumber++;
-	  GamClusSizes[clNumber] = klVec[0].pi0()[pt].g2().clusterIdVec().size();
-	  for( int i = 0; i < klVec[0].pi0()[pt].g2().clusterIdVec().size(); i++){
-	    for( int in = 0; in < CsiNumber; in++){
-	      if( CsiID[in] == klVec[0].pi0()[pt].g2().clusterIdVec()[i]){
-		GamClusCsiSignal[clNumber][i] = CSIDigiSignal[in];
-		GamClusCsiChisq[clNumber][i]  = CsiChisq[in];
-		GamClusCsiCrate[clNumber][i]  = CsiCrate[in];
-		GamClusCsiL1[clNumber][i]     = CsiL1[in];
-		break;
-	      }
-	    }
-	  }
-	  clNumber++;
-	}
 	trout->Fill();
       }
     }
