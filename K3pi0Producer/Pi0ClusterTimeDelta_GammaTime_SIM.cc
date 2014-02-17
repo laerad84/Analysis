@@ -36,15 +36,20 @@
 #include "TCanvas.h"
 #include "TROOT.h"
 #include "TMath.h"
-#include "IDHandler.h"
-
-//#include "E14WavReader.h"
-#include "E14WavReader_V1.h"
-//#include "E14WaveReader_V2.h"
-#include "L1TrigCounter.h"
-#include "EnergyConverter.h"
-#include "TRandom.h"
 #include "TF1.h"
+#include "IDHandler.h"
+#include "TRandom.h"
+
+#include "E14WavReader_V1.h"
+//#include "L1TrigCounter.h"
+#include "EnergyConverter.h"
+
+#include "User_Functions.h"
+#include "GeneralFunctions.h"
+
+
+
+
 
 double funcResolutionInvSq( double* x, double* p){
   double value = 0;
@@ -106,6 +111,8 @@ main( int argc ,char ** argv ){
   double CsiTime[2716];
   double CsiHHTime[2716];
   double CsiSignal[2716];
+  double CsiChisq[2716];
+  short  CsiNDF[2716];
   int    CsiL1nTrig;
   double CsiL1TrigCount[20];
 
@@ -117,6 +124,8 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("CsiTime",CsiTime);
   trin->SetBranchAddress("CsiHHTime",CsiHHTime);
   trin->SetBranchAddress("CsiSignal",CsiSignal);
+  trin->SetBranchAddress("CsiChisq",CsiChisq);
+  trin->SetBranchAddress("CsiNDF",CsiNDF);
   trin->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   trin->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
 
@@ -165,6 +174,8 @@ main( int argc ,char ** argv ){
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
+  GammaCut* gammaCut = new GammaCut();
+  CsiCut*   csiCut   = new CsiCut();
 
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_SIMPI0.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("T", "Output from Time zero" );  
@@ -180,6 +191,10 @@ main( int argc ,char ** argv ){
 
   trout->Branch("RunNumber"     ,&RunNo        ,"RunNumber/I");
   trout->Branch("EventNumber"   ,&EventNumber  ,"EventNumber/I");
+  csiCut->Branch(trout);
+  gammaCut->Branch(trout);
+
+  /*
   trout->Branch("CsiNumber"     ,&nCSIDigi     ,"CsiNumber/I");
   trout->Branch("CsiModID"      ,CSIDigiID     ,"CsiModID[CsiNumber]/I");//nCSIDigi
   trout->Branch("CsiEne"        ,CSIDigiE      ,"CsiEne[CsiNumber]/D");//nCSIDigi
@@ -188,6 +203,8 @@ main( int argc ,char ** argv ){
   trout->Branch("CsiSignal"     ,CSIDigiSignal ,"CsiSignal[CsiNumber]/D");//nCSIDigi
   trout->Branch("CsiL1nTrig"    ,&CSIL1nTrig   ,"CsiL1nTrig/I");
   trout->Branch("CsiL1TrigCount",CSIL1TrigCount,"CsiL1TrigCount[20]/D");
+  */
+
 
   trout->Branch("nTrack",&nTrack,"nTrack/I"          );
   trout->Branch("track" ,track  ,"track[nTrack]/S"   );//nTrack
@@ -210,14 +227,13 @@ main( int argc ,char ** argv ){
 
   E14GNAnaDataContainer data; 
   data.branchOfClusterList(trout);
-  data.branchOfDigi(trout);
-  data.branchOfKlong(trout);
+  data.branchOfPi0List(trout);
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   GammaFinder gFinder;
-  ClusterFinder clusterFinder;
+  ClusterFinder cFinder;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,69 +261,51 @@ main( int argc ,char ** argv ){
     trin->GetEntry(ievent);
     data.reset();
     if( (ievent%1000) ==0 && ievent ){ std::cout<< ievent << std::endl;}
-    //std::cout<< ievent << std::endl;
     /////// Initialize data /////////
-    for( int ich = 0; ich < 2716; ich++){
-      CsIID[ich]     = -1; 
-      CsIEnergy[ich] = 0.;
-      CsITime[ich]   = -1;
-      CsIHHTime[ich] = -1;
-      CsISignal[ich] = 0.;
 
-      CSIDigiID[ich] = -1;
-      CSIDigiE[ich] = 0;
-      CSIDigiTime[ich]   = 0;
-      CSIDigiHHTime[ich] = 0;
-      CSIDigiSignal[ich] = 0.;
-    }       
-    nCsI = 0; 
-    nCSIDigi = 0;
-    CSIL1nTrig = 0; 
-    nCSIDigi = 0;
-    //std::cout<< __PRETTY_FUNCTION__ << std::endl;
-    for( int ich = 0; ich < CsiNumber; ich++){
-      int tmpID        = CsiModID[ich];
-      double tmpTime   = CsiTime[ich];
-      double tmpHHTime = CsiHHTime[ich]-50;// Just Set //       
-      double tmpSignal = CsiSignal[ich];
-      double tmpEne    = CsiEne[ich];
-      if( tmpSignal > 5 && tmpEne > 0.5 ){
-	func->SetParameter(0,RelativeLY[tmpID]);
-	double value = func->Eval(tmpEne);
-	double mont  = gRandom->PoissonD(value)/value;
-	
-	CSIDigiID[nCSIDigi]     = tmpID;
-	CSIDigiE[nCSIDigi]      = tmpEne*mont;
-	CSIDigiSignal[nCSIDigi] = tmpSignal*mont;
-	CSIDigiTime[nCSIDigi]   = tmpTime;
-	CSIDigiHHTime[nCSIDigi] = tmpHHTime;
-	nCSIDigi++;
-      }
-    }
-    
-    for( int i = 0; i< 20; i++){
-      CSIL1TrigCount[i] = CsiL1TrigCount[i]; 
-      if( CSIL1TrigCount[i] > CsiL1TrigCountThreshold[i] ){
-	CSIL1nTrig++;
-      }
-    }
+    if( CsiNumber<4){ continue;}
 
-    if( nCSIDigi < 5 ){ continue;}
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
+    std::list<Gamma>   glistTCut;
     std::list<Pi0>     plist;
-    clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiTime);
-    gFinder.findGamma(clist,glist);
-    if( clist.size() <2 ){ continue; }
-    if( glist.size() != 2 ){ continue; }
-    if( user_rec( glist,plist)){
+
+    csiCut->Decision( CsiNumber, CsiModID, CsiEne,CsiTime, CsiSignal, CsiChisq,CsiNDF);
+    //clist = cFinder.findCluster( CsiNumber,CSIDigiID,CSIDigiE,CSIDigiTime);
+    clist = cFinder.findCluster( csiCut->CsiNumber,csiCut->CsiID,csiCut->CsiEne,csiCut->CsiTime);
+    gFinder.findGamma( clist, glist );
+    gammaCut->Decision( glist );
+    SetGammaTime( glist );
+
+
+    //////////////////////    //////////////////////
+    //////////////////////    //////////////////////
+    //////////////////////    //////////////////////
+    //////////////////////    //////////////////////
+
+
+
+    if( clist.size() < 2 ){ continue; }
+    if( glist.size() < 2 ){ continue; }
+    
+    std::list<Gamma>::iterator git = glist.begin();
+    for( ; git != glist.end(); git++){
+      SetGammaTime( (*git));
+    }
+    GammaTimeDeltaCut( glist, glistTCut,2);
+    data.setData( clist );
+    data.setData( glistTCut );
+    std::list<Gamma>::iterator gitT = glistTCut.begin();
+    if( glistTCut.size() ==2 ){
+      if( User_RecG2(glist,plist)){
 	std::list<Pi0>::iterator it = plist.begin();
-	(*it).setVtx(0,0,AlzPosition);	
-	(*it).updateVars();	
-	user_cut(data,plist);
-	data.setData(plist);	
+	(*it).setVtx( 0,0,AlzPosition );
+	(*it).updateVars();
+	data.setData( clist );
+	data.setData( glist );
+	data.setData(plist);    
 	trout->Fill();
-	data.eventID++;
+      }
     }
   }
 

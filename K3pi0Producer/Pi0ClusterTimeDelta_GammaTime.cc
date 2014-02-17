@@ -61,7 +61,6 @@ main( int argc ,char ** argv ){
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
 
   CsiMap*            map        = CsiMap::getCsiMap();
-  CrateIDHandler*    CIDHandler = new CrateIDHandler();
   CosmicTriggerTree* cosmicTrig = new CosmicTriggerTree();
   ClusterFinder      cFinder;
   GammaFinder        gFinder;
@@ -255,8 +254,6 @@ main( int argc ,char ** argv ){
   E14GNAnaDataContainer data; 
 
   data.branchOfClusterList( trout );
-  //data.branchOfDigi( trout );
-  //data.branchOfGammaList( trout );
   data.branchOfPi0List( trout );
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -522,7 +519,11 @@ main( int argc ,char ** argv ){
 	GamClusCsiCrate[i][j]  = -1;
       }
     }
+
     if( LaserSignal[0] > 50 ){ continue; }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Convert
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     nCsI = 0;
     for( int ich  = 0; ich < reader->CsiNumber; ich++){      
       if( reader->CsiSignal[ich] > 5 && reader->CsiEne[ich]>0.5){
@@ -537,15 +538,14 @@ main( int argc ,char ** argv ){
 	CsiNumber++;
       }
     }
-
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     if( CsiNumber<4){ continue;}
 
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::list<Gamma>   glistTCut;
     std::list<Pi0>     plist;
-
-    std::vector<Klong> klVec;
 
     csiCut->Decision( CsiNumber, CSIDigiID, CSIDigiE,CSIDigiTime, CSIDigiSignal, CsiChisq,CsiNDF);
     //clist = cFinder.findCluster( CsiNumber,CSIDigiID,CSIDigiE,CSIDigiTime);
@@ -592,7 +592,6 @@ main( int argc ,char ** argv ){
 	data.setData( glist );
 	//user_cut( data, klVec );
 	data.setData(plist);    
-	
 	trout->Fill();
       }
     }
