@@ -49,13 +49,22 @@
 int
 main( int argc ,char ** argv ){
   
-  int RunNumber = atoi( argv[1]);
+  int RunNumber=0;// = atoi( argv[1]);
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
   std::string HOME         = std::getenv("HOME");
 
-  std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_GammaTime_4G.root";
+  std::string iFileForm  ="%s/run_wav_%d.root";
+  std::string oFileForm  ="%s/run_wav_All_GammaTime_4G.root";
+  std::string Pi0RunList = Form("%s/local/Analysis/RunList/Pi0RunList.txt",HOME.c_str());
+  std::ifstream ifs( Pi0RunList.c_str());
+  if( !ifs.is_open() ){ return -1;}
+  std::vector<int> runList;
+  int tmpRun;
+  while( ifs >> tmpRun ){
+    runList.push_back( tmpRun );
+  }
+
 
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
@@ -87,7 +96,10 @@ main( int argc ,char ** argv ){
   Double_t Pi0PeakCorFactor = 0.9937;
 
   TChain* trin = new TChain("Tree"); 
-  trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
+  //trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
+  for( int i = 0; i< runList.size() ; i++){
+    trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),runList.at(i)));
+  }
   TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("T", "Output from Time zero" );  
   
