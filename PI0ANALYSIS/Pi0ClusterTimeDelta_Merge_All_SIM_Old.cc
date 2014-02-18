@@ -24,7 +24,7 @@
 #include "gamma/GammaFinder.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "User_Function.h"
+#include "User_Functions.h"
 
 #include "TTree.h"
 #include "TFile.h"
@@ -41,7 +41,7 @@
 //#include "E14WavReader.h"
 #include "E14WavReader_V1.h"
 //#include "E14WaveReader_V2.h"
-#include "L1TrigCounter.h"
+//#include "L1TrigCounter.h"
 #include "EnergyConverter.h"
 #include "TRandom.h"
 #include "TF1.h"

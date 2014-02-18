@@ -24,7 +24,7 @@
 #include "gamma/GammaFinder.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "User_Function.h"
+#include "User_Functions.h"
 
 #include "TTree.h"
 #include "TFile.h"
@@ -41,7 +41,7 @@
 //#include "E14WavReader.h"
 #include "E14WavReader_V1.h"
 //#include "E14WaveReader_V2.h"
-#include "L1TrigCounter.h"
+//#include "L1TrigCounter.h"
 #include "EnergyConverter.h"
 #include "TRandom.h"
 #include "TF1.h"
@@ -330,7 +330,7 @@ main( int argc ,char ** argv ){
     gFinder.findGamma(clist,glist);
     if( clist.size() <2 ){ continue; }
     if( glist.size() != 2 ){ continue; }
-    if( user_rec( glist,plist)){
+    if( User_RecG2( glist,plist)){
 	std::list<Pi0>::iterator it = plist.begin();
 	(*it).setVtx(0,0,AlzPosition+Position);	
 	(*it).updateVars();	
