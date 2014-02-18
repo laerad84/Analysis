@@ -90,7 +90,7 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("CsiTime",CsiTime);
   
   int     CVNumber      = 0;
-  int_t CVModID[100]  = {-1};
+  int CVModID[100]  = {-1};
   double  CVEne[100] = {0};
   double  CVTime[100]   = {0};
   int     SciNumber = 0;
