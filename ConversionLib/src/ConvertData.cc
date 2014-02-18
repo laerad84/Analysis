@@ -32,6 +32,7 @@ Int_t ConvertData::Add(char* detectorName){
 	//this->mDetectorDigiData[mNDetector] = new(this->mDetectorArray[mNDetector]) ConvertDigiData(this->mInputTree,this->mOutputTree,detectorName);
 	this->mDetectorDigiData[mNDetector] = new ConvertDigiData(this->mInputTree,this->mOutputTree,detectorName);
 	mNDetector++;
+	std::cout<< mNDetector << std::endl;
 	return mNDetector;
 }
 

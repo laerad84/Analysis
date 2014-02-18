@@ -44,6 +44,7 @@ int main( int argc, char** argv){
 	}	
 
 	std::cout << data->GetNDetector() << std::endl;
+	std::cout << "ConvertAll" << std::endl;
 	Long_t nentries = data->ConvertAll();
 	std::cout << nentries << std::endl;
 	data->~ConvertData();

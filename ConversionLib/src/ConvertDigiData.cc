@@ -91,7 +91,6 @@ Bool_t ConvertDigiData::Convert(){
   m_Arr          = this->m_EventData->digi;
   this->m_TotalE = 0;
 
-  //std::cout<< m_nDigi << std::endl;
   for( Int_t digiIndex = 0; digiIndex < m_nDigi; digiIndex++){
     GsimDigiData* digi        = (GsimDigiData*)m_Arr->UncheckedAt(digiIndex);	    
     this->m_ID[digiIndex]     = (int)digi->modID;
