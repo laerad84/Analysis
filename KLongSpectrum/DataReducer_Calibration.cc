@@ -361,7 +361,7 @@ Int_t main( int argc , char** argv ){
   //dataCopy.branchOfGammaList(trKL);
   //dataCopy.branchOfPi0List(trKL);
   dataCopy.branchOfKlong(trKL);
-  csiCut->Branch(trKL);
+  //csiCut->Branch(trKL);
   gammaCut->Branch(trKL);
   trKL->Branch("RunNumber",&RunNumber,"RunNumber/I");
   trKL->Branch("EventNumber",&EventNumber,"EventNumber/I");
