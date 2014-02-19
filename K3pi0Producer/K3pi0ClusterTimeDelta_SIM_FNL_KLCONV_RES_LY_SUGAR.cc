@@ -262,6 +262,7 @@ main( int argc ,char ** argv ){
     nCSIDigi = 0;
     CSIL1nTrig = 0; 
     nCSIDigi = 0;
+    if( CsiNumber < 6 ){continue ;}
     //std::cout<< __PRETTY_FUNCTION__ << std::endl;
     for( int ich = 0; ich < CsiNumber; ich++){
       int tmpID        = CsiModID[ich];
@@ -302,8 +303,8 @@ main( int argc ,char ** argv ){
 	data.setData(glist);
 	user_cut( data, klVec);
 	data.setData(klVec);
+	trout->Fill();
       }
-      trout->Fill();
     }
   }
 
