@@ -319,10 +319,10 @@ Int_t main( int argc , char** argv ){
   E14GNAnaDataContainer data;
 
   data.setBranchAddress( ch );
-  csiCut->SetBranchAddress( ch );
+  //csiCut->SetBranchAddress( ch );
   ch->SetBranchAddress("RunNumber",&RunNumber);
   ch->SetBranchAddress("EventNumber",&EventNumber);
-  /*
+  
   ch->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   ch->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   ch->SetBranchAddress("CsiNumber",&CsiNumber);
@@ -330,7 +330,7 @@ Int_t main( int argc , char** argv ){
   ch->SetBranchAddress("CsiEne",CsiEne);
   ch->SetBranchAddress("CsiTime",CsiTime);
   ch->SetBranchAddress("CsiSignal",CsiSignal);
-  */
+  
   /*
   ch->SetBranchAddress("GamClusNumbers",&GamClusNumbers);
   ch->SetBranchAddress("GamClusSizes",GamClusSizes);//GamClusNumbers
@@ -353,8 +353,8 @@ Int_t main( int argc , char** argv ){
   Double_t GammaPos[6][3];
   Double_t GammaTime[6];
 
-  //trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
-  //trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
+  trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
+  trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
 
   E14GNAnaDataContainer dataCopy;
   dataCopy.branchOfClusterList(trKL);
@@ -365,13 +365,16 @@ Int_t main( int argc , char** argv ){
   gammaCut->Branch(trKL);
   trKL->Branch("RunNumber",&RunNumber,"RunNumber/I");
   trKL->Branch("EventNumber",&EventNumber,"EventNumber/I");
-  /*
+  
   trKL->Branch("CsiNumber",&cCsiNumber,"CsiNumber/I");
   trKL->Branch("CsiModID",cCsiModID,"CsiModID[CsiNumber]/I");  
   trKL->Branch("CsiEne",cCsiEne,"CsiEne[CsiNumber]/D");//CsiNumber
   trKL->Branch("CsiTime",cCsiTime,"CsiTime[CsiNumber]/D");//CsiNumber
   trKL->Branch("CsiSignal",cCsiSignal,"CsiSignal[CsiNumber]/D");//CsiNumber  
-  */
+
+  trKL->Branch("CsiL1nTrig",&CsiL1nTrig,"CsiL1nTrig/I");
+  trKL->Branch("CsiL1TrigCount",CsiL1TrigCount,"CsiL1TrigCount[20]/D");
+
   
   /*
   trKL->Branch("GamClusNumbers",&GamClusNumbers,"GamClusNumbers/I");
