@@ -246,7 +246,7 @@ Int_t main( int argc , char** argv ){
       //ch->Add(Form("%s/Calibration_with_4e9/Calibration_%03d0_15.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
       //ch->Add(Form("%s/out_KL3pi0.mac_1000000_%d_FEB_CL_KL.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
       //ch->Add(Form("%s/Sim3pi0_wav_KL_RES_LY_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
-      ch->Add(Form("%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_5E8KL_NONLIN_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+      ch->Add(Form("%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_5E8_KL_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
     }
   }else if( FileType == 14){
     std::string HOMEDIR = std::getenv("HOME");
