@@ -331,14 +331,14 @@ Int_t main( int argc , char** argv ){
   ch->SetBranchAddress("CsiTime",CsiTime);
   ch->SetBranchAddress("CsiSignal",CsiSignal);
   */
-
+  /*
   ch->SetBranchAddress("GamClusNumbers",&GamClusNumbers);
   ch->SetBranchAddress("GamClusSizes",GamClusSizes);//GamClusNumbers
   ch->SetBranchAddress("GamClusCsiSignal",GamClusCsiSignal);//GamClusNumbers
   ch->SetBranchAddress("GamClusCsiChisq",GamClusCsiChisq);//GamClusNumbers
   ch->SetBranchAddress("GamClusCsiL1",GamClusCsiL1);//GamClusNumbers
   ch->SetBranchAddress("GamClusCsiCrate",GamClusCsiCrate);//GamClusNumbers
-  
+  */
 
   //// Set Output File //// 
   TFile* tfout = new TFile(Form("Kl_Total_%s.root",RunName[FileType]),"RECREATE");
