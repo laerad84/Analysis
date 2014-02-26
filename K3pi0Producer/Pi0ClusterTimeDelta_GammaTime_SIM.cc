@@ -74,8 +74,13 @@ main( int argc ,char ** argv ){
   //std::string iFileForm          = "%s/SimPi0_1E6_Al_BS_%d.root";        // ROOTFILE_SIMCONV
   //std::string oFileForm          = "%s/SimPi0_1E6_LYRES_Al_BS_%d.root"; // ROOTFILE_SIM3PI0
 
-  std::string iFileForm          = "%s/SimPi0_1E6_KLBEAM_%d.root";        // ROOTFILE_SIMCONV
-  std::string oFileForm          = "%s/SimPi0_1E6_LYRES_KL_%d.root"; // ROOTFILE_SIM3PI0
+  // KLBeam Event
+  //std::string iFileForm          = "%s/SimPi0_1E6_KLBEAM_%d.root";        // ROOTFILE_SIMCONV
+  //std::string oFileForm          = "%s/SimPi0_1E6_LYRES_KL_%d.root"; // ROOTFILE_SIM3PI0
+
+  // Neutron Beam Event
+  std::string iFileForm          = "%s/SimPi0_e14_AL_Target_BS.mac_1811388_%d.root";        // ROOTFILE_SIMCONV
+  std::string oFileForm          = "%s/SimPi0_1.8M_LYRES_BS_%d.root"; // ROOTFILE_SIM3PI0
 
   TF1* func = new TF1("ResFunc", funcResolutionInvSq, 0, 10000,1);
   /*

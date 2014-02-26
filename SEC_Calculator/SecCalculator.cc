@@ -67,5 +67,6 @@ int main( int argc, char** argv){
   std::cout<< "TotalnTrigRequested: " << TotalnTrigRequested << std::endl;
   std::cout<< "TotalnTrigCalib    : " << TotalnCalibTrig     << std::endl;
   std::cout<< "Avg. Accept Ratio  : " << (double)(TotalnTrigAccepted)/(double)TotalnTrigRequested << std::endl;
+  std::cout<< "Avg. Accept Ratio  : " << (double)(TotalnTrigAccepted-TotalnCalibTrig)/(double)(TotalnTrigRequested-TotalnCalibTrig) << std::endl;
   std::cout<< "Total KL           : " << secNumber*2.33e9*4.19e7/2e14*accRatio << std::endl;
 }
