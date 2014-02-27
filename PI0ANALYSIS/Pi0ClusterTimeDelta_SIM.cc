@@ -110,7 +110,7 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("SciEne"   ,SciEne);//SciNumber
 
   trout->Branch("CVNumber" ,&CVNumber ,"CVNumber/I");
-  trout->Branch("CVModID"  ,CVModID   ,"CVModID[CVNumber]/D");//CVNumber
+  trout->Branch("CVModID"  ,CVModID   ,"CVModID[CVNumber]/I");//CVNumber
   trout->Branch("CVEne"    ,CVEne     ,"CVEne[CVNumber]/D");//CVNumber
   trout->Branch("CVTime"   ,CVTime    ,"CVTime[CVNumber]/D");//CVNumber
   trout->Branch("SciNumber",&SciNumber,"SciNumber/I");
