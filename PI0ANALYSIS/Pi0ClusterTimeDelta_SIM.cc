@@ -61,7 +61,7 @@ main( int argc ,char ** argv ){
 
   // Neutron Beam Event
   std::string iFileForm = "%s/Conv_e14_AL_Target_BS.mac_1811388_%d.root";// ROOTFILE_SIMCONV
-  std::string OFileForm = "%s/SimPi0_e14_AL_Target_BS.mac_1811388_%d.root";// ROOTFILE_SIMCONV
+  std::string oFileForm = "%s/SimPi0_e14_AL_Target_BS.mac_1811388_%d.root";// ROOTFILE_SIMCONV
 
 
 
