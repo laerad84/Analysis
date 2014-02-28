@@ -28,6 +28,8 @@ bool User_RecG6(std::list<Gamma> const &glist, std::vector<Klong>& klVec);
 double const SpeedOfLight = 299.792458;
 double const CsiL1TrigCountThreshold[20]={1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
 					  1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};
+double const CsiL1TrigCountThresholdPi0[20]={1000,3000,3000,3400,3400,3400,2200,2200,2400,2400,
+					     2400,1000,1000,1000,1000,1000,1000,1000,1000,1000};
 void   SetGammaTime(Gamma &g);
 void   SetGammaTime(std::list<Gamma> glist);
 double GetWeight(Gamma g);
@@ -35,7 +37,7 @@ double GetTiming(Gamma g);
 double GetClusterTSigma(Gamma g);
 double CalGammaTOF( Klong kl, Gamma g );
 void   GammaTimeDeltaCut( std::list<Gamma> glist, std::list<Gamma>& glistOut, double TimeTheshold=2);
-
+void   GammaTimeDeltaCutEventTime( std::list<Gamma> glist, std::list<Gamma>& glistOut, double EventTime, double TimeThreshold=2);
 class GammaCut{
  public:
   GammaCut();
@@ -67,6 +69,7 @@ class CsiCut{
   void Branch( TTree *tr );
   void SetBranchAddress( TTree* tr );
   void Decision( int  ICsiNumber, int* ICsiID, double* ICsiEne, double* ICsiTime ,double* ICsiSignal, double* ICsiChisq, short* ICsiNDF);
+  void DecisionForPi0Run( int  ICsiNumber, int* ICsiID, double* ICsiEne, double* ICsiTime ,double* ICsiSignal, double* ICsiChisq, short* ICsiNDF);
   void Reset();
   void SetCutValue(double wTimeWindow);
 

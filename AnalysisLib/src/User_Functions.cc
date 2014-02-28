@@ -279,6 +279,41 @@ void GammaTimeDeltaCut( std::list<Gamma> glist, std::list<Gamma>& glistOut , dou
   }  
 }
 
+void GammaTimeDeltaCutEventTime( std::list<Gamma> glist, std::list<Gamma>& glistOut , double EventTime, double TimeThreshold ){
+  int nGamma=0;
+  double GTime[20];
+  double GTimeDeltaMean[20];
+  double MinDeltaTime=500;
+  double SecMinDeltaTime=500;
+  for( int i = 0; i<20 ; i++){
+    GTime[i] = 0;
+    GTimeDeltaMean[i] = 0;
+  }
+
+  std::list<Gamma>::iterator git = glist.begin();
+  for( ; git != glist.end(); git++){
+    GTime[nGamma] = (*git).t();
+    nGamma++;
+  }
+  //std::cout<< nGamma << std::endl;
+
+  for( int i = 0; i< nGamma; i++){    
+    for( int j = 0; j< nGamma; j++){
+      if( i == j){ continue; }
+      GTimeDeltaMean[i] += GTime[j]-GTime[i];
+    }
+    GTimeDeltaMean[i] = GTimeDeltaMean[i]/(nGamma-1);
+  }
+  git = glist.begin();
+  int gIndex = 0;
+  for( ; git != glist.end(); git++){
+    if( abs( GTime[gIndex]-EventTime ) < TimeThreshold ){ 
+      glistOut.push_back((*git));
+    }
+    gIndex++;
+  }  
+}
+
 GammaCut::GammaCut(){
   ;
 }
@@ -508,8 +543,67 @@ void CsiCut::Decision( int ICsiNumber, int* ICsiID, double* ICsiEne, double* ICs
     }
   }
 }
-
-
+void CsiCut::DecisionForPi0Run( int ICsiNumber, int* ICsiID, double* ICsiEne, double* ICsiTime , double* ICsiSignal, double* ICsiChisq, short* ICsiNDF){
+  Reset();
+  for( int i = 0; i< ICsiNumber; i++){
+    hisCsiTime->Fill( ICsiTime[i],ICsiEne[i] );    
+  }
+  CsiEventTime = hisCsiTime->GetBinCenter(hisCsiTime->GetMaximumBin());
+  CsiEventTimeSigma= hisCsiTime->GetRMS();
+  for( int i = 0; i< ICsiNumber; i++){
+    if( ICsiSignal[i] < 5 || ICsiEne[i] < 0.5){ continue; }
+    if( TMath::Abs( ICsiTime[i] - CsiEventTime ) < mWTimeWindow ){
+      CsiID[CsiNumber]    = ICsiID[i];
+      CsiEne[CsiNumber]   = ICsiEne[i];
+      CsiTime[CsiNumber]  = ICsiTime[i];
+      CsiSignal[CsiNumber]= ICsiSignal[i];
+      CsiChisq[CsiNumber] = ICsiChisq[i];
+      CsiNDF[CsiNumber]   = ICsiNDF[i];
+      //std::cout<< CsiNumber << "\t" << CsiID[CsiNumber] << std::endl;
+      double x(0),y(0);
+      x = map->getX( CsiID[CsiNumber] );
+      y = map->getY( CsiID[CsiNumber] );
+      if( x > 0 ){
+	if( y > 0 ){ CsiPosID[CsiNumber]  = 0; }
+	else{ CsiPosID[CsiNumber] = 1; }
+      }else{
+	if( y > 0 ){ CsiPosID[CsiNumber] = 2; }
+	else{ CsiPosID[CsiNumber]  =3; }
+      }
+      if( y > 0 ){
+	if( x < -100 ){
+	  CsiGB[CsiNumber] = -1;
+	}else{
+	  CsiGB[CsiNumber] = 1;
+	}
+      }else{
+	if( x < 75 ){
+	  CsiGB[CsiNumber] = -1;
+	}else{
+	  CsiGB[CsiNumber] = 1;
+	}
+      }
+      
+      CsiCrate[CsiNumber] = CIDHandler->GetCrate(CsiID[CsiNumber]);
+      CsiL1[CsiNumber]    = CIDHandler->GetL1(CsiID[CsiNumber]);
+      CsiNumber++;
+    }
+  }
+  ///////////////////////////////////////////////////////////////////////
+  //L1 Trigger Counter
+  for( int i = 0; i< CsiNumber; i++){
+    l1->Fill( CsiID[i], CsiSignal[i]);
+  }
+  
+  std::vector<double> vecCount = l1->GetCount();
+  if( vecCount.size() != 20 ){ std::cout<< "VectorSize Error" << std::endl;}
+  for( int i = 0; i< 20; i++){
+    CsiL1TrigCount[i] = vecCount.at(i);
+    if( CsiL1TrigCount[i] > CsiL1TrigCountThresholdPi0[i] ){
+      CsiL1nTrig++;
+    }
+  }
+}
 void CsiCut::SetCutValue( double wTimeWindow ){
   mWTimeWindow = wTimeWindow;
 }
@@ -532,7 +626,6 @@ void CsiCut::Branch( TTree* trout){
     trout->Branch("CsiEventTime",&CsiEventTime,"CsiEventTime/D");
     trout->Branch("CsiEventTimeSigma",&CsiEventTimeSigma,"CsiEventTimeSigma/D");
 }
-
 void CsiCut::SetBranchAddress( TTree* tr ){
   tr->SetBranchAddress("CsiNumber"  ,&CsiNumber);
   tr->SetBranchAddress("CsiModID"   ,CsiID        );//CsiNumber

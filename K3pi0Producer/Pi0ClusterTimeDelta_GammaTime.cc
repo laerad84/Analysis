@@ -337,7 +337,8 @@ main( int argc ,char ** argv ){
   std::cout<< __PRETTY_FUNCTION__ << " : " << __LINE__ << std::endl;
   Long_t entries =  reader->fChain->GetEntries();
   for( int ievent  = 0; ievent < entries ; ievent++){
-    EventNumber = ievent;
+    RunNumber   = reader->RunNo;
+    EventNumber = reader->EventNo;
     ////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -563,7 +564,7 @@ main( int argc ,char ** argv ){
     std::list<Gamma>   glistTCut;
     std::list<Pi0>     plist;
 
-    csiCut->Decision( CsiNumber, CSIDigiID, CSIDigiE,CSIDigiTime, CSIDigiSignal, CsiChisq,CsiNDF);
+    csiCut->DecisionForPi0Run( CsiNumber, CSIDigiID, CSIDigiE,CSIDigiTime, CSIDigiSignal, CsiChisq,CsiNDF);
     //clist = cFinder.findCluster( CsiNumber,CSIDigiID,CSIDigiE,CSIDigiTime);
     clist = cFinder.findCluster( csiCut->CsiNumber,csiCut->CsiID,csiCut->CsiEne,csiCut->CsiTime);
     gFinder.findGamma( clist, glist );
@@ -587,7 +588,8 @@ main( int argc ,char ** argv ){
     for( ; git != glist.end(); git++){
       SetGammaTime( (*git));
     }
-    GammaTimeDeltaCut( glist, glistTCut,2);
+    //GammaTimeDeltaCut( glist, glistTCut,2);
+    GammaTimeDeltaCutEventTime( glist, glistTCut,csiCut->CsiEventTime,3);
     data.setData( clist );
     data.setData( glistTCut );
     std::list<Gamma>::iterator gitT = glistTCut.begin();

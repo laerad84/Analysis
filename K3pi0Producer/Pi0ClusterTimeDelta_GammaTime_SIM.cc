@@ -62,8 +62,15 @@ double funcResolutionInvSq( double* x, double* p){
 
 int
 main( int argc ,char ** argv ){
+  if( argc !=3 ){ 
+    std::cout<< argv[0] << "\t" << "[0/1](BS/KL)\t" << "RunNumber" << std::endl;
+    return -1;
+  }
+
   
-  int RunNumber = atoi( argv[1]);
+  int BSKL      = std::atoi(argv[1]); // 0: BS, 1:KL
+  int RunNumber = std::atoi( argv[2]);
+
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
   std::string HOME         = std::getenv("HOME");
@@ -79,9 +86,21 @@ main( int argc ,char ** argv ){
   //std::string oFileForm          = "%s/SimPi0_1E6_LYRES_KL_%d.root"; // ROOTFILE_SIM3PI0
 
   // Neutron Beam Event
-  std::string iFileForm          = "%s/SimPi0_e14_AL_Target_BS.mac_1811388_%d.root";        // ROOTFILE_SIMCONV
-  std::string oFileForm          = "%s/SimPi0_1.8M_LYRES_BS_%d.root"; // ROOTFILE_SIM3PI0
-
+  std::string iFileForm;
+  std::string oFileForm;
+  switch( BSKL ){
+  case 0:
+    //BS
+    iFileForm = "%s/SimPi0_e14_AL_Target_BS.mac_1811388_%d.root";        // ROOTFILE_SIMCONV
+    oFileForm = "%s/SimPi0_1.8M_LYRES_BS_%d.root"; // ROOTFILE_SIM3PI0
+    break;
+  case 1:
+    iFileForm          = "%s/SimPi0_1E6_KLBEAM_%d.root";        // ROOTFILE_SIMCONV
+    oFileForm          = "%s/SimPi0_1E6_LYRES_KL_%d.root"; // ROOTFILE_SIM3PI0
+    break;
+  default:
+    return -1;
+  }
   TF1* func = new TF1("ResFunc", funcResolutionInvSq, 0, 10000,1);
   /*
   EnergyConverter* Converter = new EnergyConverter();
@@ -275,7 +294,7 @@ main( int argc ,char ** argv ){
     std::list<Gamma>   glistTCut;
     std::list<Pi0>     plist;
 
-    csiCut->Decision( CsiNumber, CsiModID, CsiEne,CsiTime, CsiSignal, CsiChisq,CsiNDF);
+    csiCut->DecisionForPi0Run( CsiNumber, CsiModID, CsiEne,CsiTime, CsiSignal, CsiChisq,CsiNDF);
     //clist = cFinder.findCluster( CsiNumber,CSIDigiID,CSIDigiE,CSIDigiTime);
     clist = cFinder.findCluster( csiCut->CsiNumber,csiCut->CsiID,csiCut->CsiEne,csiCut->CsiTime);
     gFinder.findGamma( clist, glist );
@@ -297,7 +316,8 @@ main( int argc ,char ** argv ){
     for( ; git != glist.end(); git++){
       SetGammaTime( (*git));
     }
-    GammaTimeDeltaCut( glist, glistTCut,2);
+    //GammaTimeDeltaCut( glist, glistTCut,2);
+    GammaTimeDeltaCutEventTime( glist, glistTCut,csiCut->CsiEventTime,3);
     data.setData( clist );
     data.setData( glistTCut );
     std::list<Gamma>::iterator gitT = glistTCut.begin();
