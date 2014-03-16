@@ -55,7 +55,7 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_All_GammaTime_2G_FitNoCal.root";
+  std::string oFileForm="%s/run_wav_All_GammaTime_2G_FitNoTemp.root";
   std::string Pi0RunList = Form("%s/local/Analysis/RunList/Pi0RunList.txt",HOME.c_str());
   std::ifstream ifs( Pi0RunList.c_str());
   if( !ifs.is_open() ){ return -1;}
@@ -547,7 +547,7 @@ main( int argc ,char ** argv ){
     for( int ich  = 0; ich < reader->CsiNumber; ich++){      
       if( reader->CsiSignal[ich] > 5 && reader->CsiEne[ich]>0.5){
 	CSIDigiID[CsiNumber]     = reader->CsiID[ich];
-	CSIDigiE[CsiNumber]      = reader->CsiEne[ich]/TempCorFactor*Pi0PeakCorFactor;//*CalibrationFactor[reader->CsiID[ich]]
+	CSIDigiE[CsiNumber]      = reader->CsiEne[ich]*Pi0PeakCorFactor;// /TempCorFactor*CalibrationFactor[reader->CsiID[ich]]
 	CSIDigiTime[CsiNumber]   = reader->CsiTime[ich]-TimeDelta[reader->CsiID[ich]]-THCorFunc->Eval(reader->CsiSignal[ich]);
 	CSIDigiHHTime[CsiNumber] = reader->CsiHHTime[ich];
 	CSIDigiSignal[CsiNumber] = reader->CsiSignal[ich];
