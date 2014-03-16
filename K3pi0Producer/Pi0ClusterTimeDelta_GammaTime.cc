@@ -547,7 +547,7 @@ main( int argc ,char ** argv ){
     for( int ich  = 0; ich < reader->CsiNumber; ich++){      
       if( reader->CsiSignal[ich] > 5 && reader->CsiEne[ich]>0.5){
 	CSIDigiID[CsiNumber]     = reader->CsiID[ich];
-	CSIDigiE[CsiNumber]      = reader->CsiEne[ich]*/TempCorFactor*Pi0PeakCorFactor;//CalibrationFactor[reader->CsiID[ich]]
+	CSIDigiE[CsiNumber]      = reader->CsiEne[ich]/TempCorFactor*Pi0PeakCorFactor;//*CalibrationFactor[reader->CsiID[ich]]
 	CSIDigiTime[CsiNumber]   = reader->CsiTime[ich]-TimeDelta[reader->CsiID[ich]]-THCorFunc->Eval(reader->CsiSignal[ich]);
 	CSIDigiHHTime[CsiNumber] = reader->CsiHHTime[ich];
 	CSIDigiSignal[CsiNumber] = reader->CsiSignal[ich];
