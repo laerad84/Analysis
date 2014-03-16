@@ -55,7 +55,7 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_All_GammaTime_2G.root";
+  std::string oFileForm="%s/run_wav_All_GammaTime_2G_RAW.root";
   std::string Pi0RunList = Form("%s/local/Analysis/RunList/Pi0RunList.txt",HOME.c_str());
   std::ifstream ifs( Pi0RunList.c_str());
   if( !ifs.is_open() ){ return -1;}
@@ -93,7 +93,8 @@ main( int argc ,char ** argv ){
   THCorFunc->SetParameters(0, 1.672,0.0319651);
   
   std::cout<< TempCorFactor << std::endl;
-  Double_t Pi0PeakCorFactor = 0.9937;
+  //  Double_t Pi0PeakCorFactor = 0.9937;
+  Double_t Pi0PeakCorFactor = 1;//20140316
 
   TChain* trin = new TChain("Tree"); 
   //trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));

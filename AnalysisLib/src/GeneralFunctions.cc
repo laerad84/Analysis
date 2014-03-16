@@ -58,12 +58,16 @@ TH1D*   GenRatioHist( TH1D* h1, TH1D* h2 ){
     double n[2]={0,0};
     n[0]= h1->GetBinContent(ibin);
     n[1]= h2->GetBinContent(ibin);
-    e[0]= h1->GetBinError(ibin);
-    e[1]= h2->GetBinError(ibin);
+    //e[0]= h1->GetBinError(ibin);
+    //e[1]= h2->GetBinError(ibin);
+    e[0]= TMath::Sqrt(h1->GetBinContent(ibin));
+    e[1]= TMath::Sqrt(h2->GetBinContent(ibin));
     if( n[0] ==0 || n[1] == 0 ){
       continue; 
     }
-    double Error=TMath::Sqrt( TMath::Power(e[0]*n[1]/n[0],2)+ TMath::Power(e[1],2))/n[1];
+
+    //double Error=TMath::Sqrt( TMath::Power(e[0]*n[1]/n[0],2)+ TMath::Power(e[1],2))/n[1];
+    double Error=TMath::Sqrt( TMath::Power(e[0]/n[0],2)+ TMath::Power(e[1]/n[1],2))*n[0]/n[1];
     hisRatio->SetBinContent(ibin,n[0]/n[1]);
     hisRatio->SetBinError(ibin,Error);
   }

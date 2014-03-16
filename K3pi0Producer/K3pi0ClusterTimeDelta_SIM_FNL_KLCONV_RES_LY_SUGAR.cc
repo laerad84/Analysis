@@ -119,7 +119,8 @@ main( int argc ,char ** argv ){
   */
 
   TChain* trin = new TChain("Tree");
-  for( int i = RunNumber*100; i < (RunNumber+1)*100; i++){
+  //for( int i = RunNumber*100; i < (RunNumber+1)*100; i++){
+  for( int i = RunNumber*5; i < (RunNumber+1)*5; i++){//for kl rec test
     trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIM3PI0.c_str(),i));
   }
   int    RunNo;
