@@ -55,9 +55,11 @@ int main( int argc ,char** argv){
   ///////////////////////////////////////////////////////////////////////////////////////////////
   TChain* ch = new TChain("trCalibration");
   ch->Add("CalibrationADV_*_10.root");
-  E14GNAnaDataContainer data;
-  data.setBranchAddress(ch);
-
+  //E14GNAnaDataContainer data;
+  //data.setBranchAddress(ch);
+  Int_t    GamClusNumber;
+  Double_t GamClusDepE[12];
+  Int_t    CutCondition;
   Double_t GammaEnergy[6];
   Double_t Ratio[6];
   Double_t SecondRatio[6];
@@ -72,7 +74,9 @@ int main( int argc ,char** argv){
   Int_t    LeadingChID[6];
   Double_t LeadingHeight[6];
   Double_t LeadingEnergy[6];
-
+  ch->SetBranchAddress("CutCondition",&CutCondition);
+  ch->SetBranchAddress("GamClusNumber",&GamClusNumber);
+  ch->SetBranchAddress("GamClusDepE",GamClusDepE);//GamClusNumber;
   ch->SetBranchAddress("FlagKL_prefit",&FlagKL_prefit);
   ch->SetBranchAddress("GammaEnergy",GammaEnergy);
   ch->SetBranchAddress("Ratio",Ratio);
@@ -157,12 +161,13 @@ int main( int argc ,char** argv){
     */
     //- Fill Calibration Sample
     
-    std::vector<Klong> klVec;
-    data.setData(klVec);
+    //std::vector<Klong> klVec;
+    //data.setData(klVec);
     
-    if((data.CutCondition & (1+8)) != 0){continue;}
+    if((CutCondition & (1+8)) != 0){continue;}
     if( FlagKL_prefit != 0){continue;}
     if( nCalibrated  == 0 ){continue;} 
+    /*
     double depE[6]={0};
     Int_t gIndex = 0;
     for( int i = 0; i< klVec[0].pi0().size(); i++){
@@ -171,10 +176,10 @@ int main( int argc ,char** argv){
       depE[gIndex] = klVec[0].pi0()[i].g2().edep();
       gIndex++;
     }
-
+    */
     for( int i = 0; i< 6; i++){
       if( FlagCalibrated[i] == 0 ){
-	double ratio = 1+((Corr[i]-1)*depE[i]/LeadingEnergy[i]);
+	double ratio = 1+((Corr[i]-1)*GamClusDepE[i]/LeadingEnergy[i]);
 	hisCalibrationFactor[CorrID[i]]->Fill(Corr[i]);
 	hisCalibrationFactorEne[CorrID[i]]->Fill(GammaEnergy[i],Corr[i]);
 	hisCalibrationFactorRatio[CorrID[i]]->Fill(Ratio[i], Corr[i]);
