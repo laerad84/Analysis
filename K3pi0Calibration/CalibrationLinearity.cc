@@ -19,7 +19,6 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include <list>
 
 #include <fstream>
 #include <sstream>
@@ -58,7 +57,6 @@ int main( int argc ,char** argv){
   ch->Add("CalibrationADV_*_10.root");
   E14GNAnaDataContainer data;
   data.setBranchAddress(ch);
-  std::vector<int>::iterator iRun;
 
   Double_t GammaEnergy[6];
   Double_t Ratio[6];
