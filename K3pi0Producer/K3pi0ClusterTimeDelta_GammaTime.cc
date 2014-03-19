@@ -55,8 +55,8 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_GammaTime.root";
-
+  std::string oFileForm="%s/run_wav_%d_GammaTime_7G.root";
+  const int nGammaCut = 7;
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
 
@@ -531,8 +531,8 @@ main( int argc ,char ** argv ){
 	data.setData( klVec );
       }
     }
-    */
-    if( glistTCut.size() ==6 ){
+    */ 
+    if( glistTCut.size() == nGammaCut ){
       if( user_rec(glist,klVec)){
 	data.setData( clist );
 	data.setData( glist );
