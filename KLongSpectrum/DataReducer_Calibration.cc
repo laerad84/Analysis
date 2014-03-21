@@ -34,7 +34,7 @@ Int_t main( int argc , char** argv ){
 			      "SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL",
 			      "3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp",
 			      "3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal",
-			      "3pi0_OldComp_NOCV","SIMFULL_NEW","DATA_NONTIMECAL1",
+			      "3pi0_OldComp_NOCV","SIMFULL_NEW_7G","DATA_NONTIMECAL1",
 			      "DATA_NONTIMECALNOCV","test","WAVNOCV_TIME_7G"};
   std::cout<< RunName[FileType] << std::endl;
 
@@ -246,7 +246,8 @@ Int_t main( int argc , char** argv ){
       //ch->Add(Form("%s/Calibration_with_4e9/Calibration_%03d0_15.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
       //ch->Add(Form("%s/out_KL3pi0.mac_1000000_%d_FEB_CL_KL.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
       //ch->Add(Form("%s/Sim3pi0_wav_KL_RES_LY_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
-      ch->Add(Form("%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_5E8_KL_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+      //ch->Add(Form("%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_5E8_KL_%d.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
+      ch->Add(Form("%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_5E8_KL_%d_7G.root",ROOTFILE_3PI0CALIBRATIONSIM.c_str(),i));
     }
   }else if( FileType == 14){
     std::string HOMEDIR = std::getenv("HOME");
