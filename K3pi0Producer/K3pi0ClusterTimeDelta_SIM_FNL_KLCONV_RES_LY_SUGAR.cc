@@ -92,7 +92,7 @@ main( int argc ,char ** argv ){
   //std::string oFileForm          = "%s/Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_NON10_%d.root"; // ROOTFILE_SIM3PI0
 
   std::string iFileForm          = "%s/Sim3pi0_wav_ALCV_5E8_NOADJ_%d.root";    //ROOTFILE_SIM3PI0
-  std::string oFileForm          = "%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_5E8_KL_%d.root"; // ROOTFILE_SIM3PI0
+  std::string oFileForm          = "%s/Sim3pi0_wav_ALCV_KL_RES_LY_pe_5E8_KL_%d_7G.root"; // ROOTFILE_SIM3PI0
 
   //std::string iFileForm = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";
   //std::string oFileForm = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_%s.root";
@@ -119,8 +119,8 @@ main( int argc ,char ** argv ){
   */
 
   TChain* trin = new TChain("Tree");
-  //for( int i = RunNumber*100; i < (RunNumber+1)*100; i++){
-  for( int i = RunNumber*5; i < (RunNumber+1)*5; i++){//for kl rec test
+  for( int i = RunNumber*100; i < (RunNumber+1)*100; i++){
+  //for( int i = RunNumber*5; i < (RunNumber+1)*5; i++){//for kl rec test
     trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIM3PI0.c_str(),i));
   }
   int    RunNo;
@@ -298,7 +298,7 @@ main( int argc ,char ** argv ){
     clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiTime);
     gFinder.findGamma(clist,glist);
     if( clist.size() < 6 ){ continue; }
-    if( glist.size() == 6){
+    if( glist.size() == 7){
       if( user_rec(glist,klVec)){
 	data.setData(clist);
 	data.setData(glist);
