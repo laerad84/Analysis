@@ -526,7 +526,7 @@ main( int argc ,char ** argv ){
       SetGammaTime( (*git));
     }
     //GammaTimeDeltaCut( glist, glistTCut,4);
-    GammaTimeDeltaCut( glist, glistTCut, csiCut->CsiEventTime,2);
+    GammaTimeDeltaCutEventTime( glist, glistTCut, csiCut->CsiEventTime,2);
     data.setData( clist );
     data.setData( glistTCut );
     GammaNumberInitialTCut = glistTCut.size();
