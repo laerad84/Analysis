@@ -55,7 +55,7 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_GammaTime_TCut.root";
+  std::string oFileForm="%s/run_wav_%d_GammaTime_TCut_bar.root";
   const int nGammaCut = 6;
   std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
