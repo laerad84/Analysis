@@ -509,7 +509,7 @@ main( int argc ,char ** argv ){
     //clist = cFinder.findCluster( CsiNumber,CSIDigiID,CSIDigiE,CSIDigiTime);
     clist = cFinder.findCluster( csiCut->CsiNumber,csiCut->CsiID,csiCut->CsiEne,csiCut->CsiTime);
     gFinder.findGamma( clist, glist );
-    gammaCut->Decision( glist );
+    //gammaCut->Decision( glist );
     SetGammaTime( glist );
     if( clist.size() < 6 ){ continue; }
     if( glist.size() < 2 ){ continue; }
@@ -520,7 +520,8 @@ main( int argc ,char ** argv ){
     for( ; git != glist.end(); git++){
       SetGammaTime( (*git));
     }
-    GammaTimeDeltaCut( glist, glistTCut,4);
+    //GammaTimeDeltaCut( glist, glistTCut,4);
+    GammaTimeDeltaCut( glist, glistTCut, csiCut->CsiEventTime,2);
     data.setData( clist );
     data.setData( glistTCut );
     std::list<Gamma>::iterator gitT = glistTCut.begin();
@@ -536,8 +537,9 @@ main( int argc ,char ** argv ){
     if( glistTCut.size() != nGammaCut ){ continue; }
     if( glistTCut.size() >= nGammaCut ){
       if( user_rec(glistTCut,klVec)){
+	gammaCut->Decision( glistTCut );
 	data.setData( clist );
-	data.setData( glist );
+	data.setData( glistTCut );
 	user_cut( data, klVec );
 	data.setData(klVec);    
 	std::list<Gamma>::iterator git = glist.begin();
