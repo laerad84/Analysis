@@ -35,7 +35,7 @@ Int_t main( int argc , char** argv ){
 			      "3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp",
 			      "3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal",
 			      "3pi0_OldComp_NOCV","SIMFULL_NEW_7G","DATA_NONTIMECAL1",
-			      "DATA_NONTIMECALNOCV","test","WAVNOCV_TIME_7G"};
+			      "DATA_NONTIMECALNOCV","test","WAVNOCV_TIME_TCUT"};
   std::cout<< RunName[FileType] << std::endl;
 
   if( FileType == 0 ){
@@ -286,7 +286,7 @@ Int_t main( int argc , char** argv ){
       //if( tmpRunNumber < 4249 ){ continue; }
       //if( tmpRunNumber > 4624 ){ continue; }
       //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
-      ch->Add(Form("%s/run_wav_%d_GammaTime_7G.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+      ch->Add(Form("%s/run_wav_%d_GammaTime_TCUT.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
     }    
   }
   
