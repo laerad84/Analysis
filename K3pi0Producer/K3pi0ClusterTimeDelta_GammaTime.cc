@@ -161,6 +161,8 @@ main( int argc ,char ** argv ){
   Int_t    GamClusCsiL1[120][120];
   Int_t    GamClusCsiCrate[120][120];
 
+  Int_t   GammaNumberInitial;;
+  Int_t   GammaNumberInitialTCut;
   ;;
   //Branch
   {
@@ -228,7 +230,8 @@ main( int argc ,char ** argv ){
     trout->Branch("LaserChisq",LaserChisq,"LaserChisq[LaserNumber]/D");//LaserNumber
     trout->Branch("LaserID",LaserID,"LaserID[LaserNumber]/S");//LaserNumber
     trout->Branch("LaserNDF",LaserNDF,"LaserNDF[LaserNumber]/S");//LaserNumber  
-    
+    trout->Branch("GammaNumberInitial",&GammaNumberInitial,"GammaNumberInitial/I");
+    trout->Branch("GammaNumberInitialTCut",&GammaNumberInitialTCut,"GammaNumberInitialTCut/I");
   }
   cosmicTrig->Branch(trout);
   double CSIL1TrigCountThreshold[20] = {1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
@@ -514,6 +517,8 @@ main( int argc ,char ** argv ){
     if( clist.size() < 6 ){ continue; }
     if( glist.size() < 2 ){ continue; }
     
+    GammaNumberInitial = glist.size();
+
     //std::cout << "MaxDeltaT:" << gammaCut->GMaxDeltaT << std::endl;
     //std::cout << "MinDist  :" << gammaCut->GMinDist   << std::endl;
     std::list<Gamma>::iterator git = glist.begin();
@@ -524,6 +529,7 @@ main( int argc ,char ** argv ){
     GammaTimeDeltaCut( glist, glistTCut, csiCut->CsiEventTime,2);
     data.setData( clist );
     data.setData( glistTCut );
+    GammaNumberInitialTCut = glistTCut.size();
     std::list<Gamma>::iterator gitT = glistTCut.begin();
     //std::cout<<glistTCut.size() << "\t" <<  (*gitT).t() << std::endl;
     /*
@@ -534,7 +540,7 @@ main( int argc ,char ** argv ){
     }
     */ 
     if( glist.size() < 6 ){ continue; }
-    if( glistTCut.size() != nGammaCut ){ continue; }
+    //if( glistTCut.size() != nGammaCut ){ continue; }
     if( glistTCut.size() >= nGammaCut ){
       if( user_rec(glistTCut,klVec)){
 	gammaCut->Decision( glistTCut );
