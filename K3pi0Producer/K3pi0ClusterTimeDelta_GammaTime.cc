@@ -532,10 +532,11 @@ main( int argc ,char ** argv ){
       }
     }
     */ 
-    if( glistTCut.size() == nGammaCut ){
-      if( user_rec(glistTCut,klVec)){
+    if( glist.size() < 6 ){ continue; }
+    if( glistTCut.size() != nGammaCut ){
+      if( user_rec(glist,klVec)){
 	data.setData( clist );
-	data.setData( glistTCut );
+	data.setData( glist );
 	user_cut( data, klVec );
 	data.setData(klVec);    
 	std::list<Gamma>::iterator git = glist.begin();
