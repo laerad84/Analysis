@@ -520,7 +520,7 @@ main( int argc ,char ** argv ){
     for( ; git != glist.end(); git++){
       SetGammaTime( (*git));
     }
-    GammaTimeDeltaCut( glist, glistTCut,2);
+    GammaTimeDeltaCut( glist, glistTCut,4);
     data.setData( clist );
     data.setData( glistTCut );
     std::list<Gamma>::iterator gitT = glistTCut.begin();
@@ -533,8 +533,9 @@ main( int argc ,char ** argv ){
     }
     */ 
     if( glist.size() < 6 ){ continue; }
-    if( glistTCut.size() != nGammaCut ){
-      if( user_rec(glist,klVec)){
+    if( glistTCut.size() != nGammaCut ){ continue; }
+    if( glistTCut.size() >= nGammaCut ){
+      if( user_rec(glistTCut,klVec)){
 	data.setData( clist );
 	data.setData( glist );
 	user_cut( data, klVec );
