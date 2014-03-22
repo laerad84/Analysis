@@ -525,8 +525,8 @@ main( int argc ,char ** argv ){
     for( ; git != glist.end(); git++){
       SetGammaTime( (*git));
     }
-    //GammaTimeDeltaCut( glist, glistTCut,4);
-    GammaTimeDeltaCutEventTime( glist, glistTCut, csiCut->CsiEventTime,8);
+    GammaTimeDeltaCut( glist, glistTCut,8);
+    //GammaTimeDeltaCutEventTime( glist, glistTCut, csiCut->CsiEventTime,8);
     data.setData( clist );
     data.setData( glistTCut );
     GammaNumberInitialTCut = glistTCut.size();
@@ -579,8 +579,8 @@ main( int argc ,char ** argv ){
 	  }
 	  clNumber++;
 	}
-	trout->Fill();
       }
+      trout->Fill();
     }
   }
   std::cout<< "End" << std::endl;
