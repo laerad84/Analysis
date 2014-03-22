@@ -437,10 +437,10 @@ Int_t main( int argc , char** argv ){
     //dataCopy.setData( clist );
     //dataCopy.setData( glist );
     dataCopy.setData( clist );
+    if( klVec.size() == 0 ){ continue; }
     dataCopy.setData( klVec );
     gammaCut->Decision( klVec );
     //std::cout<< klVec.size() << "\t" << clist.size() << "\t" << glist.size() << std::endl;
-    if( klVec.size() == 0 ){ continue; }
     //if( clist.size() == 0 ){ continue; }
     if( glist.size() <  6 ){ continue; }
     //if( glist.size() != 6 ){ continue; }
