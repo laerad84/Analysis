@@ -55,7 +55,7 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_GammaTime_TCut_NOCUT.root";
+  std::string oFileForm="%s/run_wav_%d_GammaTime_1ns.root";
   const int nGammaCut = 6;
   //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
   std::string TCalFile = Form("%s/Data/CalibrationFile/TimeOffset_ShowerHeight_10.dat",ANALYSISLIB.c_str());  
@@ -526,8 +526,8 @@ main( int argc ,char ** argv ){
     for( ; git != glist.end(); git++){
       SetGammaTime( (*git));
     }
-    //GammaTimeDeltaCut( glist, glistTCut,10);
-    GammaTimeDeltaCutEventTime( glist, glistTCut, csiCut->CsiEventTime,100);
+    GammaTimeDeltaCut( glist, glistTCut,1);
+    //GammaTimeDeltaCutEventTime( glist, glistTCut, csiCut->CsiEventTime,100);
     data.setData( clist );
     data.setData( glistTCut );
     GammaNumberInitialTCut = glistTCut.size();
