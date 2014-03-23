@@ -19,7 +19,7 @@ int main( int argc, char** argv){
   Double_t par1[3] = {1.933,2.851,1.234};
   Double_t par2[3] = {0.01316,0.01282,0.04478};
 
-  std::ifstream ifs("/home/jwlee/local/Analysis/AnalysisLib/Data/ch_map_CsI_L1.txt");
+  std::ifstream ifs("/home/had/jwlee/local/Analysis/AnalysisLib/Data/ch_map_CsI_L1.txt");
   if( !ifs.is_open()){std::cout<< "Error" << std::endl;return -1; }
   Int_t Crate[2716]={-1};
   Int_t FADC[2716]={-1};
@@ -52,8 +52,8 @@ int main( int argc, char** argv){
   tr->Branch("HeightRMS",HeightRMS,"HeightRMS[2716]/D");
   tr->Branch("Entries",Entries,"Entries[2716]/D");
 
-  //for( int i = 4158; i < 4738; i++){
-  for( int i = 4158; i < 4200; i++){
+  for( int i = 4158; i < 4738; i++){
+  //for( int i = 4158; i < 4200; i++){
     if( i== 4225 ){ continue; }
     if( i== 4354 ){ continue;}
     TFile* tfin  = new TFile(Form("Data/LaserTimeStability_%d.root",i));
@@ -73,12 +73,10 @@ int main( int argc, char** argv){
       Height[j] = 0;
       TimingRMS[j] = 0;
       HeightRMS[j] = 0;
-      Entries[j] = 0;
-      
+      Entries[j] = 0;      
       ID[j] = j;
-
+      if( hisTimeDelta[j] == NULL || hisTimeDelta[j]->GetEntries() < 10 ){ continue; }
       Timing[j]= hisTimeDelta[j]->GetMean();
-
       Height[j]= hisHeight[j]->GetMean();
       TimingRMS[j] = hisTimeDelta[j]->GetRMS();
       HeightRMS[j] = hisHeight[j]->GetRMS();
