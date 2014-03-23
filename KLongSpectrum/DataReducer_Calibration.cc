@@ -437,12 +437,6 @@ Int_t main( int argc , char** argv ){
     data.getData( glist );
     data.getData( klVec );
    
-    std::list<Gamma>   klglist;
-    for( int i = 0; i< klVec[0].pi0().size() ; i++){
-      klglist.push_back( klVec[0].pi0()[i].g1());
-      klglist.push_back( klVec[0].pi0()[i].g2());
-    }
-   
 
     //dataCopy.setData( clist );
     //dataCopy.setData( glist );
@@ -465,20 +459,37 @@ Int_t main( int argc , char** argv ){
     bool bKlongE     = false;
 
     double pi0MaxPt = 0;
-    std::list<Gamma>::iterator git = klglist.begin();    
-    for( ; git != klglist.end(); git++){ 
-      double x = (*git).x();
-      double y = (*git).y();
-      
+
+    for( int i = 0; i< klVec[0].pi0().size();i++){
+      double x(0);
+      double y(0);
+      x = klVec[0].pi0()[i].g1().x();
+      y = klVec[0].pi0()[i].g1().y();
       if( TMath::Abs(x) < 150 && TMath::Abs(y)< 150 ){
 	bGPosition = true;
       }   
       if(TMath::Sqrt( x*x +y*y) > 850 ){continue; }
       if(TMath::Abs(y) > 550 ){ continue; }
-      if( (*git).e() < 200 ){
+      if(klVec[0].pi0()[i].g1().e() < 200 ){
 	bGEne = true; 
       }
     }
+    for( int i = 0; i< klVec[0].pi0().size();i++){
+      double x(0);
+      double y(0);
+      x = klVec[0].pi0()[i].g2().x();
+      y = klVec[0].pi0()[i].g2().y();
+      if( TMath::Abs(x) < 150 && TMath::Abs(y)< 150 ){
+	bGPosition = true;
+      }   
+      if(TMath::Sqrt( x*x +y*y) > 850 ){continue; }
+      if(TMath::Abs(y) > 550 ){ continue; }
+      if( klVec[0].pi0()[i].g2().e() < 200 ){
+	bGEne = true; 
+      }
+    }
+
+
     for( int i = 0; i< klVec[0].pi0().size(); i++){
       double px = klVec[0].pi0()[i].p3()[0];
       double py = klVec[0].pi0()[i].p3()[1];
