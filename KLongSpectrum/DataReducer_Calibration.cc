@@ -367,8 +367,8 @@ Int_t main( int argc , char** argv ){
   dataCopy.branchOfKlong(trKL);
   csiCut->Branch(trKL);
   gammaCut->Branch(trKL);
-  //int DataCutCondition;
-  //trKL->Branch("DataCutCondition",&DataCutCondition,"DataCutCondition/I");
+  int DataCutCondition;
+  trKL->Branch("DataCutCondition",&DataCutCondition,"DataCutCondition/I");
   trKL->Branch("RunNumber",&RunNumber,"RunNumber/I");
   trKL->Branch("EventNumber",&EventNumber,"EventNumber/I");
 
