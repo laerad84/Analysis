@@ -57,7 +57,8 @@ main( int argc ,char ** argv ){
   std::string iFileForm="%s/run_wav_%d.root";
   std::string oFileForm="%s/run_wav_%d_GammaTime_TCut_bar.root";
   const int nGammaCut = 6;
-  std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
+  //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());  
+  std::string TCalFile = Form("%s/Data/CalibrationFile/TimeOffset_Shower_10.dat",ANALYSISLIB.c_str());  
   std::string ECalFile = Form("%s/local/Analysis/K3pi0Producer/Data/CalibrationFactorADV_15.dat",HOME.c_str());
 
   CsiMap*            map        = CsiMap::getCsiMap();
@@ -92,7 +93,7 @@ main( int argc ,char ** argv ){
   TTree* trout = new TTree("T", "Output from Time zero" );  
   
   int EventNumber;
-  
+
   int CsiNumber = 0;
   int CSIDigiID[2716]={-1};
   double CSIDigiE[2716] = {0.};

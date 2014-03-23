@@ -319,9 +319,9 @@ Int_t main( int argc , char** argv ){
   int CsiL1nTrig;
   double CsiL1TrigCount[20];
   E14GNAnaDataContainer data;
-
   data.setBranchAddress( ch );
   csiCut->SetBranchAddress( ch );
+  
   ch->SetBranchAddress("RunNumber",&RunNumber);
   ch->SetBranchAddress("EventNumber",&EventNumber);
   /*
@@ -345,6 +345,7 @@ Int_t main( int argc , char** argv ){
   //// Set Output File //// 
   TFile* tfout = new TFile(Form("Kl_Total_%s.root",RunName[FileType]),"RECREATE");
   TTree* trKL = new TTree("trKL","Klong Tree");
+
   Double_t KLMass;
   Double_t KLChisq;
   Double_t KLSecChisq;
