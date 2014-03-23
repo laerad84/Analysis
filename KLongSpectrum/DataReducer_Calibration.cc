@@ -27,6 +27,7 @@ Int_t main( int argc , char** argv ){
     std::cerr <<" Input File type " << std::endl;
     return -1; 
   }
+  const double KLMassdata = 497.614;
 
   const int nFileType = 18;
   int FileType = atoi( argv[1] ); 
@@ -366,8 +367,11 @@ Int_t main( int argc , char** argv ){
   dataCopy.branchOfKlong(trKL);
   csiCut->Branch(trKL);
   gammaCut->Branch(trKL);
+  int DataCutCondition;
+  trKL->Branch("DataCutCondition",&DataCutCondition,"DataCutCondition/I");
   trKL->Branch("RunNumber",&RunNumber,"RunNumber/I");
   trKL->Branch("EventNumber",&EventNumber,"EventNumber/I");
+
   /*
   trKL->Branch("CsiNumber",&cCsiNumber,"CsiNumber/I");
   trKL->Branch("CsiModID",cCsiModID,"CsiModID[CsiNumber]/I");  
@@ -432,7 +436,11 @@ Int_t main( int argc , char** argv ){
     data.getData( clist );
     data.getData( glist );
     data.getData( klVec );
-
+    std::list<Gamma>   klglist;
+    for( int i = 0; i< klVec[0].pi0().size() ; i++){
+      klglist.push_back( klVec[0].pi0()[i].g1());
+      klglist.push_back( klVec[0].pi0()[i].g2());
+    }
     
 
     //dataCopy.setData( clist );
@@ -444,35 +452,75 @@ Int_t main( int argc , char** argv ){
     //std::cout<< klVec.size() << "\t" << clist.size() << "\t" << glist.size() << std::endl;
     //if( clist.size() == 0 ){ continue; }
     if( glist.size() <  6 ){ continue; }
-    //if( glist.size() != 6 ){ continue; }
-    //std::cout<< clist.size() << std::endl;
-    /*
-    int GammaID = 0;
+    bool bGPosition  = false;
+    bool bGEne       = false;
+    bool bPi0pt      = false;
 
-    for( std::list<Gamma>::iterator itGamma = glist.begin();itGamma != glist.end();itGamma++,GammaID++){
-      //std::cout<<"G:"<< GammaID << std::endl;
-      if( GammaID >=  6 ){ break; }
-      GammaE[GammaID]      = (*itGamma).e();
-      GammaPos[GammaID][0] = (*itGamma).x();
-      GammaPos[GammaID][1] = (*itGamma).y();
-      GammaPos[GammaID][2] = (*itGamma).z();
-      GammaTime[GammaID]   = (*itGamma).t();
+    bool bKlongMass  = false;
+    bool bKlongChisq = false;
+    bool bKlongChisqD= false;
+    bool bKlongVtxZ  = false;
+    bool bKlongE     = false;
+
+    double pi0MaxPt = 0;
+    std::list<Gamma>::iterator git = klglist.begin();    
+    for( ; git != klglist.end(); git++){ 
+      double x = (*git).x();
+      double y = (*git).y();
+      
+      if( TMath::Abs(x) < 150 && TMath::Abs(y)< 150 ){
+	bGPosition = true;
+      }   
+      if(TMath::Sqrt( x*x +y*y) > 850 ){continue; }
+      if(TMath::Abs(y) > 550 ){ continue; }
+      if( (*git).e() < 200 ){
+	bGEne = true; 
+      }
     }
-    KLMass   = klVec[0].m();
-    KLE      = klVec[0].e();
-    KLPos[0] = klVec[0].vx();
-    KLPos[1] = klVec[0].vy();
-    KLPos[2] = klVec[0].vz();
-    KLMom[0] = (klVec[0].p3()).x();
-    KLMom[1] = (klVec[0].p3()).y();
-    KLMom[2] = (klVec[0].p3()).z();
-    KLChisq  = (klVec[0]).chisqZ();
-    if( klVec.size()==2){
-      KLSecChisq = (klVec[1]).chisqZ();
-    }else{
-      KLSecChisq = 0xFFFF;
+    for( int i = 0; i< klVec[0].pi0().size(); i++){
+      double px = klVec[0].pi0()[i].p3()[0];
+      double py = klVec[0].pi0()[i].p3()[1];
+      double pt = TMath::Sqrt( px*px+py*py );
+      if( pt > pi0MaxPt ){ pi0MaxPt = pt ;}
+    }    
+    if( pi0MaxPt > 150 ){ bPi0pt  = true; }
+
+
+    if( TMath::Abs( klVec[0].m() - KLMassdata ) > 20 ){
+      bKlongMass = true;
     }
-    */
+
+    if( klVec[0].chisqZ() > 50 ){ bKlongChisq = true; }
+    if( klVec[1].chisqZ() - klVec[0].chisqZ() > 50 ){ bKlongChisqD = true; }
+    if( klVec[0].e() > 5000 ){ bKlongE = true; }
+    if( klVec[0].vz() > 5000 || klVec[0].vz() < 1500 ){ bKlongVtxZ = true; }
+
+    DataCutCondition =0;
+    if( bGPosition ){
+      DataCutCondition |= 1<< 1;
+    }
+    if( bGEne ){
+      DataCutCondition |= 1<< 2;
+    }
+    if( bPi0pt ){
+      DataCutCondition |= 1<< 3;      
+    }
+    if( bKlongChisq ){
+      DataCutCondition |= 1<< 4;
+    }
+    if( bKlongChisqD ){
+      DataCutCondition |= 1<< 5;
+    }
+    if( bKlongE ){
+      DataCutCondition |= 1 << 6;
+    }
+    if( bKlongVtxZ ){
+      DataCutCondition |= 1 << 7;
+    }
+    if( bKlongMass ){
+      DataCutCondition |= 1 << 8;
+    }
+
     trKL->Fill();
   }
   
