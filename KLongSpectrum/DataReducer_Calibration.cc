@@ -453,7 +453,7 @@ Int_t main( int argc , char** argv ){
     //std::cout<< klVec.size() << "\t" << clist.size() << "\t" << glist.size() << std::endl;
     //if( clist.size() == 0 ){ continue; }
     if( glist.size() <  6 ){ continue; }
-    /*
+
     bool bGPosition  = false;
     bool bGEne       = false;
     bool bPi0pt      = false;
@@ -522,7 +522,7 @@ Int_t main( int argc , char** argv ){
     if( bKlongMass ){
       DataCutCondition |= 1 << 8;
     }
-    */
+    
     trKL->Fill();
   }
   
