@@ -369,7 +369,7 @@ void GammaCut::Decision( std::list<Gamma> g ){
     tmpMeanDelta[i] = 0;
     for( int j = 0; j< gammaIndex; j++){
       if( i==j ){ continue; }
-      tmpMeanDelta[i] = tmpT[j] - tmpT[i];
+      tmpMeanDelta[i] += tmpT[j] - tmpT[i];
     }
     tmpMeanDelta[i] = tmpMeanDelta[i]/( gammaIndex - 1 );
   }
