@@ -287,7 +287,7 @@ Int_t main( int argc , char** argv ){
       //if( tmpRunNumber < 4249 ){ continue; }
       //if( tmpRunNumber > 4624 ){ continue; }
       //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
-      ch->Add(Form("%s/run_wav_%d_GammaTime_1ns.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+      ch->Add(Form("%s/run_wav_%d_GammaTime_10ns.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
       //ch->Add(Form("/media/3TB_1/DataAll/DataAll/Data/run_wav_%d_GammaTime_TCut.root",tmpRunNumber));
     }    
   }
@@ -447,7 +447,7 @@ Int_t main( int argc , char** argv ){
     //std::cout<< klVec.size() << "\t" << clist.size() << "\t" << glist.size() << std::endl;
     //if( clist.size() == 0 ){ continue; }
     if( glist.size() <  6 ){ continue; }
-
+    /*
     bool bGPosition  = false;
     bool bGEne       = false;
     bool bPi0pt      = false;
@@ -533,7 +533,7 @@ Int_t main( int argc , char** argv ){
     if( bKlongMass ){
       DataCutCondition |= 1 << 8;
     }
-    
+    */
     trKL->Fill();
   }
   

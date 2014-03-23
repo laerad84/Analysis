@@ -252,7 +252,7 @@ void GammaTimeDeltaCut( std::list<Gamma> glist, std::list<Gamma>& glistOut , dou
   double GTime[20];
   double GTimeDeltaMean[20];
   for( int i = 0; i<20 ; i++){
-    GTime[i] = 0;
+    GTime[i] = 0; 
     GTimeDeltaMean[i] = 0;
   }
   std::list<Gamma>::iterator git = glist.begin();
