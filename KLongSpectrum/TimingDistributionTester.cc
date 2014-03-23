@@ -98,7 +98,8 @@ int main( int argc, char** argv){
   const int nFile = 1;
   TFile* tf;
   TTree* tr;
-  char* name = "DATA_NONTIMECAL";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
+  //  char* name = "DATA_NONTIMECAL";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
+  char* name = "WAVNOCV_TIME_TCUT_bar";//"SIM","3pi0_OldComp","WAVNOCV","3pi0_OldComp_wopi0","3pi0_noCompNoCal","3pi0_LaserComp_NOCV"
 
   tf = new TFile(Form("Kl_Total_%s.root",name));
   tr = (TTree*)tf->Get(Form("trKL"));
@@ -123,11 +124,13 @@ int main( int argc, char** argv){
   //double sol = 299.792458;//[mm/nsec]
   E14GNAnaDataContainer data;
   data.setBranchAddress( tr );
+  /*
   tr->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
   tr->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   tr->SetBranchAddress("CsiNumber",&CsiNumber);
   tr->SetBranchAddress("CsiSignal",CsiSignal);//CsiNumber
   tr->SetBranchAddress("CsiModID",CsiModID);//CsiNumber
+  */
   /*T0Manager* man = new T0Manager();
   if( nTimeIteration > 0 ){
     if( !(man->ReadFile(Form("TimeOffset_%d.dat",nTimeIteration)))){
@@ -139,7 +142,7 @@ int main( int argc, char** argv){
   //man->PrintOffset();
 
   Double_t TimeOffset[2716]={0};
-  if( nTimeIteration > 1 ){ 
+  if( nTimeIteration > 0 ){ 
     std::ifstream ifs(Form("TimeOffset_ShowerHeight_%d.dat",nTimeIteration));
     if( !ifs.is_open() ){
       std::cout<< "No CalibrationFile" << std::endl;
@@ -156,7 +159,7 @@ int main( int argc, char** argv){
   for( int ievent = 0; ievent < tr->GetEntries(); ievent++){      
     tr->GetEntry(ievent);
     //if( ievent  >= 100000 ){ break ; } 
-    if(CsiNumber > 500 ){ continue; }
+    //if(CsiNumber > 500 ){ continue; }
     std::list<Cluster> clist;
     std::list<Gamma>   glist;
     std::vector<Klong> klVec;
@@ -197,6 +200,8 @@ int main( int argc, char** argv){
       GammaTimeSigma += (*git).t()*(*git).t();
       GammaTimeMean  += (*git).t();
       CrystalID[igamma] =  (*git).clusterIdVec()[0];
+      CrystalHeight[igamma] = (*git).clusterEVec()[0];
+      /*
       for( int icsi = 0; icsi < CsiNumber; icsi++){
 	if( CrystalID[igamma] == CsiModID[icsi]){
 	  CrystalHeight[igamma] = CsiSignal[icsi];
@@ -204,8 +209,9 @@ int main( int argc, char** argv){
 	  break;
 	}
       }
+      */
     }
-    g0Delta+=HeightOffset[0];
+    //g0Delta+=HeightOffset[0];
 
     GammaTimeMean /= 6;
     GammaTimeSigma = sqrt((GammaTimeSigma/6) - (GammaTimeMean*GammaTimeMean));
@@ -215,11 +221,11 @@ int main( int argc, char** argv){
 
     git = glist.begin();
     git++;
-    if(CrystalHeight[0] > 4000 && nTimeIteration < 17){ continue; }
-    if(CrystalHeight[0] < 100 ){continue; }
+    if(CrystalHeight[0] > 500 && nTimeIteration < 17){ continue; }
+    if(CrystalHeight[0] < 10 ){continue; }
     for( int igamma = 1; igamma < 6; igamma++,git++){
-      if( CrystalHeight[igamma] > 4000 &&nTimeIteration < 17){ continue; }
-      if( CrystalHeight[igamma] < 100  ){ continue; }
+      if( CrystalHeight[igamma] > 500 &&nTimeIteration < 17){ continue; }
+      if( CrystalHeight[igamma] < 10  ){ continue; }
       int crystalID = (*git).clusterIdVec()[0];
       double Ene = (*git).clusterEVec()[0];
       if(Ene > g0Ene){ continue; }
@@ -229,7 +235,7 @@ int main( int argc, char** argv){
 				   + TMath::Power(((*git).y() - klVec[0].vy()),2) 
 				   + TMath::Power(((*git).z() - klVec[0].vz()),2));
       double Shower = showerTimeDelayAdj(klVec[0],(*git));
-      double Delta = Offset+length/sol+Shower+HeightOffset[igamma];//man->GetT0Offset(crystalID);
+      double Delta = Offset+length/sol+Shower;//+HeightOffset[igamma];//man->GetT0Offset(crystalID);
       hisTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Offset)-(g0time-g0Offset));
       hisAdjTimeID->Fill(crystalID,((*git).clusterTimeVec()[0]-Delta)-(g0time-g0Delta));
     }
