@@ -436,13 +436,13 @@ Int_t main( int argc , char** argv ){
     data.getData( clist );
     data.getData( glist );
     data.getData( klVec );
-    /*
+   
     std::list<Gamma>   klglist;
     for( int i = 0; i< klVec[0].pi0().size() ; i++){
       klglist.push_back( klVec[0].pi0()[i].g1());
       klglist.push_back( klVec[0].pi0()[i].g2());
     }
-    */
+   
 
     //dataCopy.setData( clist );
     //dataCopy.setData( glist );
