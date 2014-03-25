@@ -540,8 +540,7 @@ main( int argc ,char ** argv ){
 	data.setData( klVec );
       }
     }
-    */ 
-    if( glist.size() != 6 ){ continue; }
+    */
     //if( glistTCut.size() != nGammaCut ){ continue; }
     if( glistTCut.size() == nGammaCut ){
       if( user_rec(glist,klVec)){
