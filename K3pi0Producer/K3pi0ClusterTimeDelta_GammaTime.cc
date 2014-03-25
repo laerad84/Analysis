@@ -542,8 +542,8 @@ main( int argc ,char ** argv ){
     }
     */
     //if( glistTCut.size() != nGammaCut ){ continue; }
-    if( glistTCut.size() < nGammaCut ){
-      if( user_rec(glist,klVec)){
+    if( glistTCut.size() > nGammaCut ){
+      if( user_rec(glistTCut,klVec)){
 	gammaCut->Decision( glistTCut );
 	data.setData( clist );
 	data.setData( glistTCut );
