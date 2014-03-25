@@ -55,7 +55,7 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_GammaTime_5ns3nsCut_7g.root";
+  std::string oFileForm="%s/run_wav_%d_GammaTime_5ns3nsCut.root";
   const int nGammaCut = 6;
   std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_gamclus_method.dat",ANALYSISLIB.c_str());//TADJ
   //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());
@@ -542,7 +542,7 @@ main( int argc ,char ** argv ){
     }
     */
     //if( glistTCut.size() != nGammaCut ){ continue; }
-    if( glistTCut.size() > nGammaCut ){
+    if( glistTCut.size() == nGammaCut ){
       if( user_rec(glistTCut,klVec)){
 	gammaCut->Decision( glistTCut );
 	data.setData( clist );
