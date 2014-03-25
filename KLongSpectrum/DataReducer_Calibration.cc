@@ -36,7 +36,7 @@ Int_t main( int argc , char** argv ){
 			      "3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp",
 			      "3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal",
 			      "3pi0_OldComp_NOCV","SIMFULL_NEW_7G","DATA_NONTIMECAL1",
-			      "DATA_NONTIMECALNOCV","test","WAVNOCV_TIME_5ns3nsCut"};
+			      "DATA_NONTIMECALNOCV","test","WAVNOCV_TIME_5ns3nsCut_7g"};
   std::cout<< RunName[FileType] << std::endl;
 
   if( FileType == 0 ){
