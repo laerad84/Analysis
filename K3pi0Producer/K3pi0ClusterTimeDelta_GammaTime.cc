@@ -55,7 +55,7 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_GammaTime_TADJ.root";
+  std::string oFileForm="%s/run_wav_%d_GammaTime_5nsCut.root";
   const int nGammaCut = 6;
   std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_gamclus_method.dat",ANALYSISLIB.c_str());//TADJ
   //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());
@@ -527,8 +527,8 @@ main( int argc ,char ** argv ){
     for( ; git != glist.end(); git++){
       SetGammaTime( (*git));
     }
-    GammaTimeDeltaCut( glist, glistTCut,10);
-    //GammaTimeDeltaCutEventTime( glist, glistTCut, csiCut->CsiEventTime,100);
+    //GammaTimeDeltaCut( glist, glistTCut,10);
+    GammaTimeDeltaCutEventTime( glist, glistTCut, csiCut->CsiEventTime,5);
     GammaNumberInitialTCut = glistTCut.size();
     std::list<Gamma>::iterator gitT = glistTCut.begin();
     //std::cout<<glistTCut.size() << "\t" <<  (*gitT).t() << std::endl;
@@ -541,16 +541,16 @@ main( int argc ,char ** argv ){
     */ 
     if( glist.size() != 6 ){ continue; }
     //if( glistTCut.size() != nGammaCut ){ continue; }
-    if( glist.size() == nGammaCut ){
+    if( glistTCut.size() == nGammaCut ){
       if( user_rec(glist,klVec)){
-	gammaCut->Decision( glist );
+	gammaCut->Decision( glistTCut );
 	data.setData( clist );
-	data.setData( glist );
+	data.setData( glistTCut );
 	user_cut( data, klVec );
 	data.setData(klVec);    
-	std::list<Gamma>::iterator git = glist.begin();
+	std::list<Gamma>::iterator git = glistTCut.begin();
 	int clNumber = 0;
-	GamClusNumbers = glist.size();
+	GamClusNumbers = glistTCut.size();
 	for( int pt = 0; pt < klVec[0].pi0().size(); pt++){
 	  GamClusSizes[clNumber] = klVec[0].pi0()[pt].g1().clusterIdVec().size();
 	  for( int i = 0; i < klVec[0].pi0()[pt].g1().clusterIdVec().size(); i++){
