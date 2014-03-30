@@ -248,11 +248,11 @@ main( int argc ,char ** argv ){
   double CSIL1TrigCountThreshold[20] = {1000,1800,1800,1800,1800,1800,1200,1200,1200,1200,
 					1300,1000,1000,1000,1000,1000,1000,1000,1000,1000};
 
-  E14GNAnaDataContainer data; 
+  //E14GNAnaDataContainer data; 
 
-  data.branchOfClusterList( trout );
-  data.branchOfDigi( trout );
-  data.branchOfKlong( trout );
+  //data.branchOfClusterList( trout );
+  //data.branchOfDigi( trout );
+  //data.branchOfKlong( trout );
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -328,9 +328,9 @@ main( int argc ,char ** argv ){
     ////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    if( (ievent%100) ==0 && ievent ){ std::cout<< ievent << std::endl;}
+    if( (ievent%100) ==0 && ievent ){ std::cout<< ievent << "/" << entries << std::endl;}
     reader->GetEntry( ievent  );
-    data.reset();
+    //data.reset();
     EventNumber = reader->EventNo;
     //if(( reader->TrigFlag & 3 ) != 0 ){ continue; }
     //if( reader->CsinTimeCluster == 0 ){ continue; }
