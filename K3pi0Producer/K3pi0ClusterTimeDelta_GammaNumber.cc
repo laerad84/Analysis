@@ -559,7 +559,7 @@ main( int argc ,char ** argv ){
       }
     }
     bool l1Cut = false;
-    if( csiCut->L1nTrig < 5 ){ l1Cut = true; }
+    if( csiCut->CsiL1nTrig < 5 ){ l1Cut = true; }
 
     if( !l1Cut && !gPosCut && !gECut ){
       hisGammaNumber->Fill(glist.size());
