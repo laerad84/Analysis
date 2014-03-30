@@ -63,6 +63,7 @@ int main( int argc, char** argv){
   }
   double accRatio = ((double)(TotalnTrigAccepted))/(double)(TotalnTrigRequested-TotalnCalibTrig);
   std::cout<< "TotalnSEC          : " << secNumber           << std::endl;
+  std::cout<< "P.O.T              : " << secNumber*2.33e9    << std::endl;           
   std::cout<< "TotalnTrigAccepted : " << TotalnTrigAccepted  << std::endl;
   std::cout<< "TotalnTrigRequested: " << TotalnTrigRequested << std::endl;
   std::cout<< "TotalnTrigCalib    : " << TotalnCalibTrig     << std::endl;
