@@ -99,7 +99,7 @@ main( int argc ,char ** argv ){
   TFile* tfout = new TFile(Form(oFileForm.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("T", "Output from Time zero" );  
   TH1D*  hisGammaNumber = new TH1D("hisGammaNumber","hisGammaNumber",10,0,10);
-  TH1D*  hisGammaNumberTimeCut = new TH1D("hisGammaNumber","hisGammaNumber",10,0,10);
+  TH1D*  hisGammaNumberTimeCut = new TH1D("hisGammaNumberTimeCut","hisGammaNumber",10,0,10);
   TH1D*  hisGammaNumberTightTimeCut = new TH1D("hisGammaNumberTightTimeCut","hisGammaNumberTightTimeCut",10,0,10);
   
   int EventNumber;
@@ -548,26 +548,26 @@ main( int argc ,char ** argv ){
     GammaTimeDeltaCut( glistTCut1, glistTCut,3);    
     GammaNumberInitialTCut = glistTCut.size();
     GammaTimeDeltaCut( glistTCut1, glistTCut2,2);
-    bool gPosCut = false;
-    bool gECut   = false; 
+    bool gPosCut = true;
+    bool gECut   = true; 
     for( git = glist.begin();git != glist.end(); git++){
       if( TMath::Abs((*git).x()) < 150 && TMath::Abs((*git).y()) < 150 ){
-	gPosCut = true; 
+	gPosCut = false; 
       }
       if( TMath::Abs((*git).y()) > 550 ){
-	gPosCut = true;
+	gPosCut = false;
       }
       if( TMath::Sqrt((*git).x()*(*git).x() + (*git).y()*(*git).y() ) > 850 ){
-	gPosCut = true; 
+	gPosCut = false; 
       }
-      if( (*git).e() > 200 ){
-	gECut = true; 
+      if( (*git).e() < 200 ){
+	gECut = false; 
       }
     }
-    bool l1Cut = false;
-    if( csiCut->CsiL1nTrig < 5 ){ l1Cut = true; }
+    bool l1Cut = true;
+    if( csiCut->CsiL1nTrig < 5 ){ l1Cut = false; }
 
-    if( !l1Cut && !gPosCut && !gECut ){
+    if( l1Cut && gPosCut && gECut ){
       hisGammaNumber->Fill(glist.size());
       hisGammaNumberTimeCut->Fill(glistTCut.size());
       hisGammaNumberTightTimeCut->Fill(glistTCut2.size());

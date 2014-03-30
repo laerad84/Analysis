@@ -334,31 +334,34 @@ main( int argc ,char ** argv ){
     GammaTimeDeltaCutEventTime( glist,glistTCut1, csiCut->CsiEventTime, 5 );
     GammaTimeDeltaCut( glistTCut1,glistTCut,3);
     GammaTimeDeltaCut( glistTCut1,glistTCut2,2);
-    bool gPosCut = false;
-    bool gECut   = false; 
+    bool gPosCut = true;
+    bool gECut   = true; 
     for( git = glist.begin();git != glist.end(); git++){
       if( TMath::Abs((*git).x()) < 150 && TMath::Abs((*git).y()) < 150 ){
-	gPosCut = true; 
+	gPosCut = false; 
       }
       if( TMath::Abs((*git).y()) > 550 ){
-	gPosCut = true;
+	gPosCut = false;
       }
       if( TMath::Sqrt((*git).x()*(*git).x() + (*git).y()*(*git).y() ) > 850 ){
-	gPosCut = true; 
+	gPosCut = false; 
       }
-      if( (*git).e() > 200 ){
-	gECut = true; 
+      if( (*git).e() < 200 ){
+	gECut = false; 
       }
     }
-    bool l1Cut = false;
-    if( csiCut->CsiL1nTrig < 5 ){ l1Cut = true; }
+    bool l1Cut = true;
+    if( csiCut->CsiL1nTrig < 5 ){ l1Cut = false; }
 
-    if( !l1Cut && !gPosCut && !gECut ){
+    if( l1Cut && gPosCut && gECut ){
       hisGammaNumber->Fill(glist.size());
       hisGammaNumberTimeCut->Fill(glistTCut.size());
       hisGammaNumberTightTimeCut->Fill(glistTCut2.size());
     }
     
+
+
+
 
 
 
