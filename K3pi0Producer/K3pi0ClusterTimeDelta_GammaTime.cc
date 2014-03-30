@@ -519,7 +519,7 @@ main( int argc ,char ** argv ){
     SetGammaTime( glist );
     if( clist.size() < 6 ){ continue; }
     if( glist.size() < 6 ){ continue; }
-    
+    if( glist.size() > 20 ){ continue; }
     GammaNumberInitial = glist.size();
 
     //std::cout << "MaxDeltaT:" << gammaCut->GMaxDeltaT << std::endl;
