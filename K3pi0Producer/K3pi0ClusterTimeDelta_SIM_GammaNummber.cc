@@ -71,8 +71,8 @@ double NonLinFunction_1( double E ){
 
 int
 main( int argc ,char ** argv ){
-  
-  int RunNumber=0;// = atoi( argv[1]);
+  //int TestNumber = atoi( argv[1]);
+  int RunNumber= atoi( argv[1]);
 
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
@@ -94,7 +94,7 @@ main( int argc ,char ** argv ){
   //std::string oFileForm          = "%s/Sim_e14_KL3pi0_KL_RES_LY_pe_1E8_NON10_%d.root"; // ROOTFILE_SIM3PI0
 
   std::string iFileForm          = "%s/Sim3pi0_wav_ALCV_5E8_NOADJ_%d.root";    //ROOTFILE_SIM3PI0
-  std::string oFileForm          = "Sim_GammaNumber.root"; // ROOTFILE_SIM3PI0
+  std::string oFileForm          = "Sim_GammaNumber_%d.root"; // ROOTFILE_SIM3PI0
 
   //std::string iFileForm = "%s/Sim3pi0_wav_fast_5E6_%d_Calibration.root";
   //std::string oFileForm = "%s/Sim3pi0_wav_fast_KL_RES_LY_pe_5E6_%d_Calibration_%s.root";
@@ -121,8 +121,8 @@ main( int argc ,char ** argv ){
   */
 
   TChain* trin = new TChain("Tree");
-  for( int i = 0; i < 800; i++){
-  //for( int i = RunNumber*5; i < (RunNumber+1)*5; i++){//for kl rec test
+  //for( int i = 0; i < 800; i++){
+  for( int i = RunNumber*100; i < (RunNumber+1)*100; i++){//for kl rec test
     trin->Add(Form(iFileForm.c_str(),ROOTFILE_SIM3PI0.c_str(),i));
   }
   int    RunNo;
@@ -185,7 +185,7 @@ main( int argc ,char ** argv ){
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  TFile* tfout = new TFile(oFileForm.c_str(),"recreate");
+  TFile* tfout = new TFile(Form(oFileForm.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("T", "Output from Time zero" );  
   TH1D*  hisGammaNumber = new TH1D("hisGammaNumber","hisGammaNumber",10,0,10);
   TH1D*  hisGammaNumberTimeCut = new TH1D("hisGammaNumber","hisGammaNumber",10,0,10);
