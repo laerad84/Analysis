@@ -539,15 +539,16 @@ main( int argc ,char ** argv ){
       SetGammaTime( (*git));
     }
     //GammaTimeDeltaCut( glist, glistTCut,10);
-    
-    
 
+    if( glist.size() == 0 ){continue; }
+    if( glist.size() > 20 ){ continue; }
+    GammaTimeDeltaCutEventTime( glist,glistTCut1, csiCut->CsiEventTime, 5. );
+    if( glistTCut1.size() == 0 ) { continue; }
+    GammaTimeDeltaCut( glistTCut1,glistTCut,3);
+    if( glistTCut.size() == 0 ){ continue; }
+    GammaTimeDeltaCut( glistTCut1,glistTCut2,2);
+    if( glistTCut2.size() == 0 ){ continue; }
 
-
-    GammaTimeDeltaCutEventTime( glist, glistTCut1, csiCut->CsiEventTime,5);
-    GammaTimeDeltaCut( glistTCut1, glistTCut,3);    
-    GammaNumberInitialTCut = glistTCut.size();
-    GammaTimeDeltaCut( glistTCut1, glistTCut2,2);
     bool gPosCut = true;
     bool gECut   = true; 
     for( git = glist.begin();git != glist.end(); git++){

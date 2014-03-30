@@ -327,7 +327,6 @@ main( int argc ,char ** argv ){
     std::list<Gamma>   glistTCut2;
     std::list<Gamma>::iterator git;
     std::vector<Klong> klVec;
-    std::cout<< ievent << std::endl;
     csiCut->Decision( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiSignal,CSIDigiTime,CsiChisq, CsiNDF );
     //clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiTime);
     clist = clusterFinder.findCluster( csiCut->CsiNumber, csiCut->CsiID, csiCut->CsiEne,csiCut->CsiTime);    
