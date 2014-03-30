@@ -331,9 +331,14 @@ main( int argc ,char ** argv ){
     //clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiTime);
     clist = clusterFinder.findCluster( csiCut->CsiNumber, csiCut->CsiID, csiCut->CsiEne,csiCut->CsiTime);    
     gFinder.findGamma(clist,glist);
+    if( glist.size() == 0 ){continue; }
     GammaTimeDeltaCutEventTime( glist,glistTCut1, csiCut->CsiEventTime, 5 );
+    if( glistTCut1.size() == 0 ) { continue; }
     GammaTimeDeltaCut( glistTCut1,glistTCut,3);
+    if( glistTCut.size() == 0 ){ continue; }
     GammaTimeDeltaCut( glistTCut1,glistTCut2,2);
+    if( glistTCut2.size() == 0 ){ continue; }
+
     bool gPosCut = true;
     bool gECut   = true; 
     for( git = glist.begin();git != glist.end(); git++){
