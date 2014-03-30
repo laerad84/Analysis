@@ -512,6 +512,7 @@ main( int argc ,char ** argv ){
     std::list<Gamma>   glist;
     std::list<Gamma>   glistTCut;
     std::list<Gamma>   glistTCut1;
+    std::list<Gamma>   glistTCut2;
     std::vector<Klong> klVec;
 
     csiCut->Decision( CsiNumber, CSIDigiID, CSIDigiE,CSIDigiTime, CSIDigiSignal, CsiChisq,CsiNDF);
@@ -520,8 +521,8 @@ main( int argc ,char ** argv ){
     gFinder.findGamma( clist, glist );
     //gammaCut->Decision( glist );
     SetGammaTime( glist );
-    if( clist.size() < 6 ){ continue; }
-    if( glist.size() < 6 ){ continue; }
+    //if( clist.size() < 6 ){ continue; }
+    //if( glist.size() < 6 ){ continue; }
     
     GammaNumberInitial = glist.size();
 
@@ -540,8 +541,7 @@ main( int argc ,char ** argv ){
     GammaTimeDeltaCutEventTime( glist, glistTCut1, csiCut->CsiEventTime,5);
     GammaTimeDeltaCut( glistTCut1, glistTCut,3);    
     GammaNumberInitialTCut = glistTCut.size();
-    std::list<Gamma> glistTCut2;
-    GammaTimeDeltaCut( glistTCut1, glistTCut,2);
+    GammaTimeDeltaCut( glistTCut1, glistTCut2,2);
     bool gPosCut = false;
     bool gECut   = false; 
     for( git = glist.begin();git != glist.end(); git++){
