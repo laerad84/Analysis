@@ -49,13 +49,14 @@
 int
 main( int argc ,char ** argv ){
   
-  int RunNumber = atoi( argv[1]);
+  int RunNumber;
+  //int RunNumber = atoi( argv[1]);
   std::string ROOTFILE_WAV = std::getenv("ROOTFILE_WAV");
   std::string ANALYSISLIB  = std::getenv("ANALYSISLIB");
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_GammaNumber.root";
+  std::string oFileForm="run_wav_GammaNumber.root";
   const int nGammaCut = 6;
   std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_gamclus_method.dat",ANALYSISLIB.c_str());//TADJ
   //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());
@@ -89,8 +90,13 @@ main( int argc ,char ** argv ){
   Double_t Pi0PeakCorFactor = 0.9937;
 
   TChain* trin = new TChain("Tree"); 
-  trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
-  TFile* tfout = new TFile(Form(oFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber),"recreate");
+  std::string runListFileName = argv[1];
+  std::ifstream ifsRun( runListFileName.c_str() );
+  while( ifsRun >> RunNumber ){
+    trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
+  }
+
+  TFile* tfout = new TFile(oFileForm.c_str(),"recreate");
   TTree* trout = new TTree("T", "Output from Time zero" );  
   TH1D*  hisGammaNumber = new TH1D("hisGammaNumber","hisGammaNumber",10,0,10);
   TH1D*  hisGammaNumberTimeCut = new TH1D("hisGammaNumber","hisGammaNumber",10,0,10);
