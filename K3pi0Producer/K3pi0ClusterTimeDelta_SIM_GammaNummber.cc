@@ -119,6 +119,8 @@ main( int argc ,char ** argv ){
   TFile* tfin = new TFile(Form(iFileForm.c_str(),ROOTFILE_SIM3PI0.c_str(),RunNumber));
   TTree* trin = (TTree*)tfin->Get("Tree");
   */
+  CsiCut* csiCut = new CsiCut();
+  GammaCut* gammaCut = new GammaCut();
 
   TChain* trin = new TChain("Tree");
   //for( int i = 0; i < 800; i++){
@@ -143,9 +145,11 @@ main( int argc ,char ** argv ){
   }
 
 
-
   trin->SetBranchAddress("RunNumber",&RunNo);
   trin->SetBranchAddress("EventNumber",&EventNumber);
+  csiCut->SetBranchAddress(trin);
+
+  /*
   trin->SetBranchAddress("CsiNumber",&CsiNumber);
   trin->SetBranchAddress("CsiModID",CsiModID);
   trin->SetBranchAddress("CsiEne",CsiEne);
@@ -154,7 +158,7 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("CsiSignal",CsiSignal);
   trin->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   trin->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
-
+  */
 
   int    nTrack;
   UShort_t  track[200];
@@ -213,8 +217,6 @@ main( int argc ,char ** argv ){
   trout->Branch("CsiL1TrigCount",CSIL1TrigCount,"CsiL1TrigCount[20]/D");
   */
 
-  CsiCut* csiCut = new CsiCut();
-  GammaCut* gammaCut = new GammaCut();
   csiCut->Branch(trout);
   gammaCut->Branch(trout);
   
@@ -328,9 +330,9 @@ main( int argc ,char ** argv ){
     std::list<Gamma>   glistTCut2;
     std::list<Gamma>::iterator git;
     std::vector<Klong> klVec;
-    //csiCut->Decision( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiSignal,CSIDigiTime,CsiChisq, CsiNDF );
-    clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiTime);
-    //clist = clusterFinder.findCluster( csiCut->CsiNumber, csiCut->CsiID, csiCut->CsiEne,csiCut->CsiTime);    
+    csiCut->Decision( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiSignal,CSIDigiTime,CsiChisq, CsiNDF );
+    //clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiTime);
+    clist = clusterFinder.findCluster( csiCut->CsiNumber, csiCut->CsiID, csiCut->CsiEne,csiCut->CsiTime);    
     gFinder.findGamma(clist,glist);
     if( glist.size() == 0 ){continue; }
     if( glist.size() > 20 ){ continue; }
