@@ -334,6 +334,10 @@ main( int argc ,char ** argv ){
     gFinder.findGamma(clist,glist);
     if( glist.size() == 0 ){continue; }
     if( glist.size() > 20 ){ continue; }
+    git = glist.begin();
+    for( ; git != glist.end(); git++){
+      SetGammaTime( (*git));
+    }
     GammaTimeDeltaCutEventTime( glist,glistTCut1, csiCut->CsiEventTime, 5. );
     //if( glistTCut1.size() == 0 ) { continue; }
     GammaTimeDeltaCut( glistTCut1,glistTCut,3);
@@ -366,13 +370,6 @@ main( int argc ,char ** argv ){
       hisGammaNumberTimeCut->Fill(glistTCut.size());
       hisGammaNumberTightTimeCut->Fill(glistTCut2.size());
     }
-    
-
-
-
-
-
-
 
     
     //if( clist.size() < 6 ){ continue; }
