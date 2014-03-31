@@ -512,6 +512,7 @@ main( int argc ,char ** argv ){
       }
     }
 
+    if( CsiNumber > 500 ){ continue; }
     if( CsiNumber<6){ continue;}
 
     std::list<Cluster> clist;
