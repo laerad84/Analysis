@@ -188,7 +188,7 @@ main( int argc ,char ** argv ){
   TFile* tfout = new TFile(Form(oFileForm.c_str(),RunNumber),"recreate");
   TTree* trout = new TTree("T", "Output from Time zero" );  
   TH1D*  hisGammaNumber = new TH1D("hisGammaNumber","hisGammaNumber",10,0,10);
-  TH1D*  hisGammaNumberTimeCut = new TH1D("hisGammaNumber","hisGammaNumber",10,0,10);
+  TH1D*  hisGammaNumberTimeCut = new TH1D("hisGammaNumberTimeCut","hisGammaNumber",10,0,10);
   TH1D*  hisGammaNumberTightTimeCut = new TH1D("hisGammaNumberTightTimeCut","hisGammaNumberTightTimeCut",10,0,10);
  
   int nCSIDigi = 0;
@@ -340,6 +340,7 @@ main( int argc ,char ** argv ){
     if( glistTCut.size() == 0 ){ continue; }
     GammaTimeDeltaCut( glistTCut1,glistTCut2,2);
     if( glistTCut2.size() == 0 ){ continue; }
+    std::cout<< glistTCut1.size() << "\t" << glistTCut1.size() << "\t" << glistTCut2.size() << std::endl;
 
     bool gPosCut = true;
     bool gECut   = true; 
