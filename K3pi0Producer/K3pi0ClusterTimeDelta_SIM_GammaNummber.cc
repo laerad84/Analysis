@@ -345,7 +345,6 @@ main( int argc ,char ** argv ){
     //if( glistTCut.size() == 0 ){ continue; }
     GammaTimeDeltaCut( glistTCut1,glistTCut2,2);
     //if( glistTCut2.size() == 0 ){ continue; }
-    std::cout<< glist.size() << "\t" << glistTCut1.size() << "\t" << glistTCut1.size() << "\t" << glistTCut2.size() << std::endl;
 
     bool gPosCut = true;
     bool gECut   = true; 
@@ -367,6 +366,7 @@ main( int argc ,char ** argv ){
     if(CsiL1nTrig < 5 ){ l1Cut = false; }
     
     if( l1Cut && gPosCut && gECut ){
+      std::cout<< glist.size() << "\t" << glistTCut1.size() << "\t" << glistTCut1.size() << "\t" << glistTCut2.size() << std::endl;
       hisGammaNumber->Fill(glist.size());
       hisGammaNumberTimeCut->Fill(glistTCut.size());
       hisGammaNumberTightTimeCut->Fill(glistTCut2.size());
