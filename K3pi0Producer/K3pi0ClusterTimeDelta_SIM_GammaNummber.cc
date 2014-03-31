@@ -328,9 +328,9 @@ main( int argc ,char ** argv ){
     std::list<Gamma>   glistTCut2;
     std::list<Gamma>::iterator git;
     std::vector<Klong> klVec;
-    csiCut->Decision( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiSignal,CSIDigiTime,CsiChisq, CsiNDF );
-    //clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiTime);
-    clist = clusterFinder.findCluster( csiCut->CsiNumber, csiCut->CsiID, csiCut->CsiEne,csiCut->CsiTime);    
+    //csiCut->Decision( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiSignal,CSIDigiTime,CsiChisq, CsiNDF );
+    clist = clusterFinder.findCluster( nCSIDigi, CSIDigiID, CSIDigiE,CSIDigiTime);
+    //clist = clusterFinder.findCluster( csiCut->CsiNumber, csiCut->CsiID, csiCut->CsiEne,csiCut->CsiTime);    
     gFinder.findGamma(clist,glist);
     if( glist.size() == 0 ){continue; }
     if( glist.size() > 20 ){ continue; }
