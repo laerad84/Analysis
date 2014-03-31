@@ -366,7 +366,7 @@ main( int argc ,char ** argv ){
     if(CsiL1nTrig < 5 ){ l1Cut = false; }
     
     if( l1Cut && gPosCut && gECut ){
-      std::cout<< glist.size() << "\t" << glistTCut1.size() << "\t" << glistTCut1.size() << "\t" << glistTCut2.size() << std::endl;
+      //std::cout<< glist.size() << "\t" << glistTCut1.size() << "\t" << glistTCut1.size() << "\t" << glistTCut2.size() << std::endl;
       hisGammaNumber->Fill(glist.size());
       hisGammaNumberTimeCut->Fill(glistTCut.size());
       hisGammaNumberTightTimeCut->Fill(glistTCut2.size());
