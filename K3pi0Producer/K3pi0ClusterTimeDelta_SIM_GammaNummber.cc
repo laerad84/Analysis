@@ -263,6 +263,7 @@ main( int argc ,char ** argv ){
   for( int ievent  = 0; ievent < entries ; ievent++){
     //for( int ievent  = 0; ievent < 100 ; ievent++){
     trin->GetEntry(ievent);
+    if( ievent > 10000 ){ continue; }
     data.reset();
     if( (ievent%1000) ==0 && ievent ){ std::cout<< ievent << std::endl;}
     //std::cout<< ievent << std::endl;
