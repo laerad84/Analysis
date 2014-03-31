@@ -147,9 +147,8 @@ main( int argc ,char ** argv ){
 
   trin->SetBranchAddress("RunNumber",&RunNo);
   trin->SetBranchAddress("EventNumber",&EventNumber);
-  csiCut->SetBranchAddress(trin);
+  //csiCut->SetBranchAddress(trin);
 
-  /*
   trin->SetBranchAddress("CsiNumber",&CsiNumber);
   trin->SetBranchAddress("CsiModID",CsiModID);
   trin->SetBranchAddress("CsiEne",CsiEne);
@@ -158,7 +157,7 @@ main( int argc ,char ** argv ){
   trin->SetBranchAddress("CsiSignal",CsiSignal);
   trin->SetBranchAddress("CsiL1nTrig",&CsiL1nTrig);
   trin->SetBranchAddress("CsiL1TrigCount",CsiL1TrigCount);
-  */
+
 
   int    nTrack;
   UShort_t  track[200];
@@ -265,7 +264,7 @@ main( int argc ,char ** argv ){
   for( int ievent  = 0; ievent < entries ; ievent++){
     //for( int ievent  = 0; ievent < 100 ; ievent++){
     trin->GetEntry(ievent);
-    if( ievent > 1000000 ){ break; }
+    //if( ievent > 1000000 ){ break; }
     data.reset();
     if( (ievent%1000) ==0 && ievent ){ std::cout<< ievent << std::endl;}
     //std::cout<< ievent << std::endl;
@@ -341,11 +340,11 @@ main( int argc ,char ** argv ){
       SetGammaTime( (*git));
     }
     GammaTimeDeltaCutEventTime( glist,glistTCut1, csiCut->CsiEventTime, 5. );
-    //if( glistTCut1.size() == 0 ) { continue; }
+    if( glistTCut1.size() == 0 ) { continue; }
     GammaTimeDeltaCut( glistTCut1,glistTCut,3);
-    //if( glistTCut.size() == 0 ){ continue; }
+    if( glistTCut.size() == 0 ){ continue; }
     GammaTimeDeltaCut( glistTCut1,glistTCut2,2);
-    //if( glistTCut2.size() == 0 ){ continue; }
+    if( glistTCut2.size() == 0 ){ continue; }
     std::cout<< glist.size() << "\t" << glistTCut1.size() << "\t" << glistTCut1.size() << "\t" << glistTCut2.size() << std::endl;
 
     bool gPosCut = true;
