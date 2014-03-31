@@ -340,11 +340,11 @@ main( int argc ,char ** argv ){
       SetGammaTime( (*git));
     }
     GammaTimeDeltaCutEventTime( glist,glistTCut1, csiCut->CsiEventTime, 5. );
-    if( glistTCut1.size() == 0 ) { continue; }
+    //if( glistTCut1.size() == 0 ) { continue; }
     GammaTimeDeltaCut( glistTCut1,glistTCut,3);
-    if( glistTCut.size() == 0 ){ continue; }
+    //if( glistTCut.size() == 0 ){ continue; }
     GammaTimeDeltaCut( glistTCut1,glistTCut2,2);
-    if( glistTCut2.size() == 0 ){ continue; }
+    //if( glistTCut2.size() == 0 ){ continue; }
     std::cout<< glist.size() << "\t" << glistTCut1.size() << "\t" << glistTCut1.size() << "\t" << glistTCut2.size() << std::endl;
 
     bool gPosCut = true;
