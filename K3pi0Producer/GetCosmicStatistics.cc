@@ -123,6 +123,7 @@ main( int argc, char** argv){
     int tmpRunList;
     std::ifstream ifs( inputFileList.c_str());
     while( ifs >> tmpRunList ){
+      std::cout<< tmpRunList << std::endl;
       RunList.push_back(tmpRunList);
       trCosmic->Add(Form("%s/run%d_cosmic.root",ROOTFILE_COSMIC.c_str(),tmpRunList));
     }
@@ -136,6 +137,6 @@ main( int argc, char** argv){
   }else{
     return -1; 
   } 
-  std::cout<< trCosmic->GetEntries() << std::endl;
+  std::cout<<"STS:"<< trCosmic->GetEntries() << std::endl;
 }
  
