@@ -67,7 +67,7 @@ TStyle* AtlasStyle()
   //atlasStyle->SetErrorX(0.001);
 
   // do not display any of the standard histogram decorations
-  atlasStyle->SetOptTitle(0);
+  atlasStyle->SetOptTitle(1);
   //atlasStyle->SetOptStat(1111);
   atlasStyle->SetOptStat(0);
   //atlasStyle->SetOptFit(1111);
