@@ -91,9 +91,9 @@ int main(int argc,char** argv){
 
     for( cit = clist.begin(); cit != clist.end(); cit++){
       for( int i = 0; i< (*cit).clusterIdVec().size(); i++){
-	CsiID[i] = (*cit).clusterIdVec().at(i);
-	CsiE[i]  = (*cit).clusterEVec().at(i) * Output[CsiID[i]];
-	CsiT[i]  = (*cit).clusterTimeVec().at(i);
+	CsiID[nDigi] = (*cit).clusterIdVec().at(i);
+	CsiE[nDigi]  = (*cit).clusterEVec().at(i) * Output[(*cit).clusterIdVec().at(i)];
+	CsiT[nDigi]  = (*cit).clusterTimeVec().at(i);
 	nDigi++;
       }
     }
