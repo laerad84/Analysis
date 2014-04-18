@@ -92,7 +92,7 @@ int main(int argc,char** argv){
     for( cit = clist.begin(); cit != clist.end(); cit++){
       for( int i = 0; i< (*cit).clusterIdVec().size(); i++){
 	CsiID[nDigi] = (*cit).clusterIdVec().at(i);
-	CsiE[nDigi]  = (*cit).clusterEVec().at(i) * Output[(*cit).clusterIdVec().at(i)];
+	CsiE[nDigi]  = (*cit).clusterEVec().at(i) * Output[(*cit).clusterIdVec().at(i)]*(1-TMath::Power((*cit).clusterEVec().at(i)/1000,2));
 	CsiT[nDigi]  = (*cit).clusterTimeVec().at(i);
 	nDigi++;
       }
