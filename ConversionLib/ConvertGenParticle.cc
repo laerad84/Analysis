@@ -7,14 +7,19 @@
 #include "TMath.h"
 
 int main( int argc, char** argv){
+  //argv[1] = InputFilename
+  //argv[2] = outputFilename
 
-  TFile* tf = new TFile("CVEtaBgNeutronEta.root");
+  if( argc != 3 ){ return -1 ;}
+  TFile* tf = new TFile(argv[1]);
   TTree* tr = (TTree*)tf->Get("eventTree00");
   GsimTrackData* trackData          = new GsimTrackData();
   GsimGenParticleData* particleData = new GsimGenParticleData();
   tr->SetBranchAddress("GenParticle.",&(particleData));
+  UInt_t NCCnhit;
+  //tr->SetBranchAddress("NCC.nHit",&NCCnhit);
   
-  TFile* tfout = new TFile("CVEtaBgNeutronEtaMinimize.root","recreate");
+  TFile* tfout = new TFile(argv[2],"recreate");
   TTree* trout = new TTree("HEPEvt","HEPEvt");
   int nMax = 300;
   int NHEP;
@@ -37,6 +42,7 @@ int main( int argc, char** argv){
   trout->Branch("IDHEP",IDHEP,"IDHEP[NHEP]/I");//NHEP
   trout->Branch("JDAHEP1",JDAHEP1,"JDAHEP1[NHEP]/I");//NHEP
   trout->Branch("JDAHEP2",JDAHEP2,"JDAHEP2[NHEP]/I");//NHEP
+  trout->Branch("ISTHEP",ISTHEP,"ISTHEP[NHEP]/I");//NHEP
   trout->Branch("PHEP1",PHEP1,"PHEP1[NHEP]/D");//NHEP
   trout->Branch("PHEP2",PHEP2,"PHEP2[NHEP]/D");//NHEP
   trout->Branch("PHEP3",PHEP3,"PHEP3[NHEP]/D");//NHEP
@@ -51,6 +57,9 @@ int main( int argc, char** argv){
   TClonesArray* trackArr;
   for( int i = 0; i< tr->GetEntries(); i++){
     tr->GetEntry(i);    
+    //std::cout<< NCCnhit << std::endl;
+    //if(NCCnhit == 0){ continue;}
+    for( int j = 0; j< 100; j++){//100 times duplicate
     NHEP=0;
     for( int it = 0; it < nMax; it++){
       ISTHEP[it] = 0;
@@ -73,12 +82,17 @@ int main( int argc, char** argv){
     bool bEtaTrack = true;
     for( int itrack= 0; itrack < nTrack; itrack++){
       GsimTrackData* trackData = (GsimTrackData*)trackArr->UncheckedAt(itrack);
+      /*
       if( trackData->mother == 1 ){
 	if( trackData->pid != 221 ){
 	  bEtaTrack = false;
 	}
       }
-      if(trackData->mother == 1 && trackData->pid == 221 ){
+      */
+      //if(trackData->mother == 1 && trackData->pid == 221 ){
+      if( trackData->mother != 1 ){ continue; }
+      if( trackData->v[2] > 6080 ){ continue; }
+      ISTHEP[NHEP] = 1;
 	JDAHEP1[NHEP] = 0;
 	JDAHEP2[NHEP] = 0;
 	IDHEP[NHEP] = trackData->pid;
@@ -101,11 +115,13 @@ int main( int argc, char** argv){
 	  */
 	PHEP5[NHEP] = trackData->mass/1000;
 	NHEP++;
-      }
+	//}
     }
-    if( !bEtaTrack ){ continue; }
+    //if( !bEtaTrack ){ continue; }
     
     trout->Fill();
+
+  }
   }
 
   trout->Write();
