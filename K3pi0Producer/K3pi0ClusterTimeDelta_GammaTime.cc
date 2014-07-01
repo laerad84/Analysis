@@ -55,7 +55,7 @@ main( int argc ,char ** argv ){
   std::string HOME         = std::getenv("HOME");
 
   std::string iFileForm="%s/run_wav_%d.root";
-  std::string oFileForm="%s/run_wav_%d_GammaTime_5ns3nsCut.root";
+  std::string oFileForm="%s/run_wav_%d_GammaTime_5ns3nsCut_NoComp.root";
   const int nGammaCut = 6;
   std::string TCalFile = Form("%s/Data/TimeOffset/TimeOffset_gamclus_method.dat",ANALYSISLIB.c_str());//TADJ
   //std::string TCalFile = Form("%s/Data/TimeOffset/testNewWORKCompileOffset.txt",ANALYSISLIB.c_str());
@@ -86,7 +86,8 @@ main( int argc ,char ** argv ){
   THCorFunc->SetParameters(0, 1.672,0.0319651);
   
   std::cout<< TempCorFactor << std::endl;
-  Double_t Pi0PeakCorFactor = 0.9937;
+  //Double_t Pi0PeakCorFactor = 0.9937;
+  Double_t Pi0PeakCorFactor = 1.004;
 
   TChain* trin = new TChain("Tree"); 
   trin->Add(Form(iFileForm.c_str(),ROOTFILE_WAV.c_str(),RunNumber));
@@ -492,7 +493,8 @@ main( int argc ,char ** argv ){
     for( int ich  = 0; ich < reader->CsiNumber; ich++){      
       if( reader->CsiSignal[ich] > 5 && reader->CsiEne[ich]>0.5){
 	CSIDigiID[CsiNumber]     = reader->CsiID[ich];
-	CSIDigiE[CsiNumber]      = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;
+	//CSIDigiE[CsiNumber]      = reader->CsiEne[ich]*CalibrationFactor[reader->CsiID[ich]]/TempCorFactor*Pi0PeakCorFactor;
+	CSIDigiE[CsiNumber]      = reader->CsiEne[ich]/TempCorFactor;
 	CSIDigiTime[CsiNumber]   = reader->CsiTime[ich]-TimeDelta[reader->CsiID[ich]]-THCorFunc->Eval(reader->CsiSignal[ich]);
 	CSIDigiHHTime[CsiNumber] = reader->CsiHHTime[ich];
 	CSIDigiSignal[CsiNumber] = reader->CsiSignal[ich];

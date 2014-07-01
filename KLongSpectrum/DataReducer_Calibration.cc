@@ -29,14 +29,15 @@ Int_t main( int argc , char** argv ){
   }
   const double KLMassdata = 497.614;
 
-  const int nFileType = 18;
+  const int nFileType = 19;
   int FileType = atoi( argv[1] ); 
   char *RunName[nFileType] = {"SIM","WAV","SUM",
 			      "SIMFAST","WAVNOCV","WAVNEWCOMPNONCAL",
 			      "3pi0_OldComp","3pi0_LaserComp","3pi0_3pi0Comp",
 			      "3pi0_noComp_wopi0","3pi0_OldComp_wopi0","3pi0_NoCompNoCal",
 			      "3pi0_OldComp_NOCV","SIMFULL_NEW_7G","DATA_NONTIMECAL1",
-			      "DATA_NONTIMECALNOCV","test","WAVNOCV_TIME_5ns3nsCut"};
+			      "DATA_NONTIMECALNOCV","test","WAVNOCV_TIME_5ns3nsCut",
+			      "WAVNOCV_TIME_5ns3nsCut_NoComp"};
   std::cout<< RunName[FileType] << std::endl;
 
   if( FileType == 0 ){
@@ -75,6 +76,8 @@ Int_t main( int argc , char** argv ){
     std::cout << "ReadData(Time Cal(NOCV) File" << std::endl;
   }else if( FileType == 17 ){
     std::cout << "ReadData(NOCV_FULL) File" << std::endl;
+  }else if( FileType == 18 ){
+    std::cout << "ReadData(NOCV_NOCOMP) File" << std::endl;
   }else{
     return -1;
   }
@@ -289,8 +292,24 @@ Int_t main( int argc , char** argv ){
       //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
       ch->Add(Form("%s/run_wav_%d_GammaTime_5ns3nsCut.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
       //ch->Add(Form("/media/3TB_1/DataAll/DataAll/Data/run_wav_%d_GammaTime_TCut.root",tmpRunNumber));
-    }    
+    }
+  }else if(FileType == 18){
+    std::string HOMEDIR = std::getenv("HOME");
+    std::ifstream ifsRunNumber(Form("%s/local/Analysis/RunList/3pi0WOCVRunList.txt",HOMEDIR.c_str()));
+    if( !ifsRunNumber.is_open() ){ 
+      std::cerr << "File dosen't exist" << std::endl;
+      return -1; 
+    }
+    int tmpRunNumber; 
+    while( ifsRunNumber >> tmpRunNumber ){
+      //if( tmpRunNumber < 4249 ){ continue; }
+      //if( tmpRunNumber > 4624 ){ continue; }
+      //ch->Add(Form("%s/CalibrationADV_%d_15.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+      ch->Add(Form("%s/run_wav_%d_GammaTime_5ns3nsCut.root",ROOTFILE_3PI0CALIBRATIONWAV.c_str(),tmpRunNumber));
+      //ch->Add(Form("/media/3TB_1/DataAll/DataAll/Data/run_wav_%d_GammaTime_TCut.root",tmpRunNumber));
+    }
   }
+
   
   CsiCut* csiCut = new CsiCut();
   GammaCut* gammaCut = new GammaCut();
